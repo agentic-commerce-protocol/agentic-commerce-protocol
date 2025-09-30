@@ -310,7 +310,7 @@ components:
             enum: [avs, cvv, ani, auth0]
         iin:
           type: string
-          maxLength: 6
+          maxLength: 8
         display_card_funding_type:
           type: string
           enum: [credit, debit, prepaid]
