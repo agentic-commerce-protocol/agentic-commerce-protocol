@@ -377,9 +377,9 @@ components:
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
         latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     FulfillmentOptionDigital:
@@ -390,9 +390,9 @@ components:
         id: { type: string }
         title: { type: string }
         subtitle: { type: string }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     MessageInfo:
