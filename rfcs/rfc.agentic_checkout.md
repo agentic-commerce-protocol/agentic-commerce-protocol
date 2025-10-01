@@ -1,7 +1,7 @@
 # RFC: Agentic Checkout — Merchant REST API
 
 **Status:** Draft  
-**Version:** 2025-09-29  
+**Version:** 2025-09-30  
 **Scope:** Checkout session lifecycle and webhook integration
 
 This RFC defines the **Agentic Checkout Specification (ACS)**, a standardized REST API contract that merchants SHOULD implement to support experiences across agent platforms.
@@ -16,7 +16,7 @@ This specification ensures that:
 
 ## 1. Scope & Goals
 
-- Provide a **stable, versioned** API surface (`API-Version: 2025-09-29`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
+- Provide a **stable, versioned** API surface (`API-Version: 2025-09-30`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
 - Ensure ChatGPT renders an **authoritative cart state** on every response.
 - Keep **payments on merchant rails**; optional delegated payments are covered separately.
 - Support **safe retries** via idempotency and **strong security** via authentication and request signing.
@@ -67,7 +67,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
-- `API-Version: 2025-09-29` (**REQUIRED**)
+- `API-Version: 2025-09-30` (**REQUIRED**)
 
 **Response Headers:**
 
@@ -160,6 +160,8 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
+- **FulfillmentAddress**: `name`, `line_one`, `city`, `state`, `country`, `postal_code` (all required); `line_two` (optional)
+- **BillingAddress**: `postal_code`, `country` (required); `name`, `line_one`, `line_two`, `city`, `state` (optional)
 - **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
@@ -546,7 +548,7 @@ All money fields are **integers (minor units)**.
 
 ## 10. Conformance Checklist
 
-- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-09-29`
+- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-09-30`
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
@@ -559,4 +561,5 @@ All money fields are **integers (minor units)**.
 
 ## 11. Change Log
 
+- **2025-09-30**: Split `Address` into `BillingAddress` and `FulfillmentAddress` schemas. Breaking change: address types now context-specific.
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.

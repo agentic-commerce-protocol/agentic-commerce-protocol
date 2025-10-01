@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce — Delegate Payment API
-  version: "2025-09-29"
+  version: "2025-09-30"
   description: |
     Delegate a payment using a provided payment method and allowance.
 servers:
@@ -252,7 +252,7 @@ components:
       required: true
       schema:
         type: string
-        example: "2025-09-29"
+        example: "2025-09-30"
 
   schemas:
     DelegatePaymentRequest:
@@ -264,7 +264,7 @@ components:
         allowance:
           $ref: "#/components/schemas/Allowance"
         billing_address:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/BillingAddress"
         risk_signals:
           type: array
           minItems: 1
@@ -326,7 +326,7 @@ components:
           additionalProperties: { type: string }
       required: [type, card_number_type, number, display_card_funding_type, metadata]
 
-    Address:
+    BillingAddress:
       type: object
       additionalProperties: false
       properties:
@@ -343,7 +343,7 @@ components:
             description: "ISO-3166-1 alpha-2",
           }
         postal_code: { type: string, maxLength: 20 }
-      required: [name, line_one, city, state, country, postal_code]
+      required: [postal_code, country]
 
     Allowance:
       type: object

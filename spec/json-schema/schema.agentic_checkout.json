@@ -3,7 +3,38 @@
   "$id": "https://example.com/schemas/agentic-checkout/bundle.schema.json",
   "title": "Agentic Checkout \u2014 Schema Bundle",
   "$defs": {
-    "Address": {
+    "BillingAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "line_one": {
+          "type": "string"
+        },
+        "line_two": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "postal_code",
+        "country"
+      ]
+    },
+    "FulfillmentAddress": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -303,7 +334,7 @@
           "enum": ["stripe"]
         },
         "billing_address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/BillingAddress"
         }
       },
       "required": ["token", "provider"]
@@ -372,7 +403,7 @@
           }
         },
         "fulfillment_address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/FulfillmentAddress"
         },
         "fulfillment_options": {
           "type": "array",
@@ -465,7 +496,7 @@
           "minItems": 1
         },
         "fulfillment_address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/FulfillmentAddress"
         }
       },
       "required": ["items"]
@@ -484,7 +515,7 @@
           }
         },
         "fulfillment_address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/FulfillmentAddress"
         },
         "fulfillment_option_id": {
           "type": "string"
