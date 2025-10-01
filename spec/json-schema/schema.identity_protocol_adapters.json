@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/agentic-commerce-protocol/specification/blob/main/spec/json-schema/schema.identity_protocol_adapters.json",
+  "title": "Identity Protocol Adapters Schema",
+  "description": "Schema for adapting between different identity protocols in the Agentic Commerce Protocol",
+  "type": "object",
+  "properties": {
+    "protocol_adapter": {
+      "$ref": "#/$defs/IdentityProtocolAdapter"
+    },
+    "credential_conversion": {
+      "$ref": "#/$defs/CredentialConversion"
+    },
+    "authorization_translation": {
+      "$ref": "#/$defs/AuthorizationTranslation"
+    }
+  },
+  "required": ["protocol_adapter"],
+  "$defs": {
+    "IdentityProtocolAdapter": {
+      "type": "object",
+      "description": "Adapter for translating between identity protocols",
+      "properties": {
+        "adapter_id": {
+          "type": "string",
+          "description": "Unique identifier for the adapter"
+        },
+        "source_protocol": {
+          "type": "string",
+          "description": "Source identity protocol",
+          "enum": ["did", "oauth2", "jwt", "saml", "openid_connect", "kerberos"]
+        },
+        "target_protocol": {
+          "type": "string",
+          "description": "Target identity protocol",
+          "enum": ["did", "oauth2", "jwt", "saml", "openid_connect", "kerberos"]
+        },
+        "translation_rules": {
+          "type": "array",
+          "description": "Rules for translating between protocols",
+          "items": {
+            "$ref": "#/$defs/TranslationRule"
+          }
+        },
+        "supported_claims": {
+          "type": "array",
+          "description": "Claims supported by this adapter",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adapter_capabilities": {
+          "type": "array",
+          "description": "Capabilities of this adapter",
+          "items": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the adapter"
+        }
+      },
+      "required": ["adapter_id", "source_protocol", "target_protocol"]
+    },
+    "TranslationRule": {
+      "type": "object",
+      "description": "Rule for translating between protocol elements",
+      "properties": {
+        "source_field": {
+          "type": "string",
+          "description": "Field in the source protocol"
+        },
+        "target_field": {
+          "type": "string",
+          "description": "Corresponding field in target protocol"
+        },
+        "transformation_type": {
+          "type": "string",
+          "enum": ["direct_mapping", "format_conversion", "value_transformation", "conditional_mapping"]
+        },
+        "transformation_logic": {
+          "type": "object",
+          "description": "Logic for the transformation",
+          "additionalProperties": true
+        },
+        "validation_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValidationRule"
+          }
+        }
+      },
+      "required": ["source_field", "target_field", "transformation_type"]
+    },
+    "ValidationRule": {
+      "type": "object",
+      "description": "Rule for validating translated data",
+      "properties": {
+        "validation_type": {
+          "type": "string",
+          "enum": ["format", "range", "required", "custom"]
+        },
+        "validation_parameters": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "error_message": {
+          "type": "string"
+        }
+      },
+      "required": ["validation_type"]
+    },
+    "CredentialConversion": {
+      "type": "object",
+      "description": "Conversion between different credential formats",
+      "properties": {
+        "source_format": {
+          "type": "string",
+          "description": "Source credential format",
+          "enum": ["jwt", "vc", "x509", "saml_assertion"]
+        },
+        "target_format": {
+          "type": "string",
+          "description": "Target credential format",
+          "enum": ["jwt", "vc", "x509", "saml_assertion"]
+        },
+        "conversion_algorithm": {
+          "type": "string",
+          "description": "Algorithm for credential conversion"
+        },
+        "credential_mapping": {
+          "type": "object",
+          "description": "Mapping of credential fields",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "signature_preservation": {
+          "type": "boolean",
+          "description": "Whether to preserve original signatures",
+          "default": false
+        }
+      },
+      "required": ["source_format", "target_format", "conversion_algorithm"]
+    },
+    "AuthorizationTranslation": {
+      "type": "object",
+      "description": "Translation of authorization between protocols",
+      "properties": {
+        "source_authorization": {
+          "$ref": "#/$defs/SourceAuthorization"
+        },
+        "target_authorization": {
+          "$ref": "#/$defs/TargetAuthorization"
+        },
+        "translation_chain": {
+          "type": "array",
+          "description": "Chain of translations applied",
+          "items": {
+            "$ref": "#/$defs/TranslationStep"
+          }
+        },
+        "translation_metadata": {
+          "$ref": "#/$defs/TranslationMetadata"
+        }
+      },
+      "required": ["source_authorization", "target_authorization"]
+    },
+    "SourceAuthorization": {
+      "type": "object",
+      "description": "Authorization in the source protocol",
+      "properties": {
+        "protocol_type": {
+          "type": "string"
+        },
+        "authorization_format": {
+          "type": "string"
+        },
+        "authorization_data": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "signature_data": {
+          "type": "string"
+        }
+      },
+      "required": ["protocol_type", "authorization_data"]
+    },
+    "TargetAuthorization": {
+      "type": "object",
+      "description": "Authorization in the target protocol",
+      "properties": {
+        "protocol_type": {
+          "type": "string"
+        },
+        "authorization_format": {
+          "type": "string"
+        },
+        "authorization_data": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "signature_data": {
+          "type": "string"
+        }
+      },
+      "required": ["protocol_type", "authorization_data"]
+    },
+    "TranslationStep": {
+      "type": "object",
+      "description": "Individual step in authorization translation",
+      "properties": {
+        "step_number": {
+          "type": "integer"
+        },
+        "translation_type": {
+          "type": "string",
+          "enum": ["field_mapping", "format_conversion", "signature_recomputation", "credential_transformation"]
+        },
+        "input_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "output_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "transformation_result": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["step_number", "translation_type"]
+    },
+    "TranslationMetadata": {
+      "type": "object",
+      "description": "Metadata about the translation process",
+      "properties": {
+        "translation_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "translation_duration_ms": {
+          "type": "integer"
+        },
+        "translation_success": {
+          "type": "boolean"
+        },
+        "translation_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["translation_timestamp", "translation_success"]
+    }
+  }
+}

@@ -1,0 +1,415 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/agentic-commerce-protocol/specification/blob/main/spec/json-schema/schema.cross_platform_identity_federation.json",
+  "title": "Cross-Platform Identity Federation Schema",
+  "description": "Schema for cross-platform agent identity federation in the Agentic Commerce Protocol",
+  "type": "object",
+  "properties": {
+    "universal_agent_identity": {
+      "$ref": "#/$defs/UniversalAgentIdentity"
+    },
+    "platform_bindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/PlatformIdentity"
+      }
+    },
+    "reputation_federation": {
+      "$ref": "#/$defs/ReputationFederation"
+    },
+    "authorization_continuity": {
+      "$ref": "#/$defs/AuthorizationContinuity"
+    }
+  },
+  "required": ["universal_agent_identity"],
+  "$defs": {
+    "UniversalAgentIdentity": {
+      "type": "object",
+      "description": "Universal agent identity that works across multiple platforms",
+      "properties": {
+        "primary_did": {
+          "type": "string",
+          "description": "Primary decentralized identifier for the agent",
+          "format": "uri"
+        },
+        "platform_bindings": {
+          "type": "object",
+          "description": "Identity bindings for different platforms",
+          "additionalProperties": {
+            "$ref": "#/$defs/PlatformIdentity"
+          }
+        },
+        "reputation_sources": {
+          "type": "array",
+          "description": "Sources of reputation data across platforms",
+          "items": {
+            "$ref": "#/$defs/ReputationSource"
+          }
+        },
+        "capability_endorsements": {
+          "type": "array",
+          "description": "Endorsements of agent capabilities from different platforms",
+          "items": {
+            "$ref": "#/$defs/CapabilityEndorsement"
+          }
+        },
+        "federation_metadata": {
+          "$ref": "#/$defs/FederationMetadata"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Timestamp when the universal identity was created",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Timestamp when the universal identity was last updated",
+          "format": "date-time"
+        }
+      },
+      "required": ["primary_did", "created_at"]
+    },
+    "PlatformIdentity": {
+      "type": "object",
+      "description": "Identity binding for a specific platform",
+      "properties": {
+        "platform_id": {
+          "type": "string",
+          "description": "Identifier for the platform (ethereum, solana, cosmos, etc.)",
+          "enum": ["ethereum", "solana", "cosmos", "polygon", "arbitrum", "optimism", "base", "avalanche", "enterprise"]
+        },
+        "platform_did": {
+          "type": "string",
+          "description": "Platform-specific decentralized identifier",
+          "format": "uri"
+        },
+        "binding_proof": {
+          "$ref": "#/$defs/CryptographicProof"
+        },
+        "capability_map": {
+          "type": "object",
+          "description": "Mapping of capabilities between platforms",
+          "additionalProperties": {
+            "$ref": "#/$defs/PlatformCapability"
+          }
+        },
+        "validity_period": {
+          "$ref": "#/$defs/TimeWindow"
+        },
+        "binding_metadata": {
+          "type": "object",
+          "description": "Additional metadata for the platform binding",
+          "additionalProperties": true
+        }
+      },
+      "required": ["platform_id", "platform_did", "binding_proof"]
+    },
+    "PlatformCapability": {
+      "type": "object",
+      "description": "Capability definition for a specific platform",
+      "properties": {
+        "capability_type": {
+          "type": "string",
+          "description": "Type of capability (payment, authentication, etc.)"
+        },
+        "capability_level": {
+          "type": "string",
+          "description": "Level or scope of the capability"
+        },
+        "verification_method": {
+          "type": "string",
+          "description": "How this capability was verified"
+        },
+        "endorsements": {
+          "type": "array",
+          "description": "Endorsements from other parties",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["capability_type", "capability_level"]
+    },
+    "ReputationSource": {
+      "type": "object",
+      "description": "Source of reputation data for cross-platform aggregation",
+      "properties": {
+        "source_platform": {
+          "type": "string",
+          "description": "Platform providing the reputation data"
+        },
+        "reputation_score": {
+          "type": "number",
+          "description": "Reputation score from this source",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_level": {
+          "type": "number",
+          "description": "Confidence in this reputation score",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "last_updated": {
+          "type": "string",
+          "description": "When this reputation data was last updated",
+          "format": "date-time"
+        },
+        "verification_proof": {
+          "$ref": "#/$defs/CryptographicProof"
+        }
+      },
+      "required": ["source_platform", "reputation_score", "last_updated"]
+    },
+    "ReputationFederation": {
+      "type": "object",
+      "description": "Federated reputation across multiple platforms",
+      "properties": {
+        "aggregated_score": {
+          "type": "number",
+          "description": "Overall aggregated reputation score",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "source_contributions": {
+          "type": "array",
+          "description": "Contribution from each source platform",
+          "items": {
+            "$ref": "#/$defs/SourceContribution"
+          }
+        },
+        "federation_algorithm": {
+          "type": "string",
+          "description": "Algorithm used for federation",
+          "enum": ["weighted_average", "trust_based", "consensus"]
+        },
+        "last_federation": {
+          "type": "string",
+          "description": "When reputation was last federated",
+          "format": "date-time"
+        },
+        "next_federation_due": {
+          "type": "string",
+          "description": "When next federation should occur",
+          "format": "date-time"
+        }
+      },
+      "required": ["aggregated_score", "federation_algorithm"]
+    },
+    "SourceContribution": {
+      "type": "object",
+      "description": "Contribution from a specific reputation source",
+      "properties": {
+        "source_platform": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "contribution_value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["source_platform", "weight", "contribution_value"]
+    },
+    "CapabilityEndorsement": {
+      "type": "object",
+      "description": "Endorsement of agent capabilities",
+      "properties": {
+        "endorsing_party": {
+          "type": "string",
+          "description": "Party providing the endorsement"
+        },
+        "endorsed_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "endorsement_level": {
+          "type": "string",
+          "enum": ["basic", "verified", "premium", "enterprise"]
+        },
+        "endorsement_proof": {
+          "$ref": "#/$defs/CryptographicProof"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["endorsing_party", "endorsed_capabilities", "endorsement_level"]
+    },
+    "FederationMetadata": {
+      "type": "object",
+      "description": "Metadata for identity federation",
+      "properties": {
+        "federation_version": {
+          "type": "string",
+          "description": "Version of the federation protocol"
+        },
+        "supported_platforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "federation_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "last_sync": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["federation_version"]
+    },
+    "AuthorizationContinuity": {
+      "type": "object",
+      "description": "Authorization continuity across platforms",
+      "properties": {
+        "session_continuity": {
+          "$ref": "#/$defs/SessionContinuity"
+        },
+        "cross_platform_sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CrossPlatformSession"
+          }
+        },
+        "authorization_chain": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuthorizationStep"
+          }
+        }
+      }
+    },
+    "SessionContinuity": {
+      "type": "object",
+      "description": "Session continuity management",
+      "properties": {
+        "master_session_id": {
+          "type": "string",
+          "description": "Master session identifier"
+        },
+        "platform_sessions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "continuity_token": {
+          "type": "string",
+          "description": "Token for maintaining session continuity"
+        },
+        "continuity_expires": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["master_session_id"]
+    },
+    "CrossPlatformSession": {
+      "type": "object",
+      "description": "Session on a specific platform",
+      "properties": {
+        "platform_id": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "platform_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "session_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["platform_id", "session_id"]
+    },
+    "AuthorizationStep": {
+      "type": "object",
+      "description": "Step in the authorization chain",
+      "properties": {
+        "step_order": {
+          "type": "integer",
+          "description": "Order of this step in the chain"
+        },
+        "platform_context": {
+          "type": "string",
+          "description": "Platform context for this step"
+        },
+        "authorization_type": {
+          "type": "string",
+          "enum": ["delegation", "endorsement", "verification"]
+        },
+        "authorization_proof": {
+          "$ref": "#/$defs/CryptographicProof"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["step_order", "authorization_type", "timestamp"]
+    },
+    "CryptographicProof": {
+      "type": "object",
+      "description": "Cryptographic proof for verification",
+      "properties": {
+        "proof_type": {
+          "type": "string",
+          "enum": ["signature", "zero_knowledge", "merkle_proof", "hash_chain"]
+        },
+        "proof_data": {
+          "type": "string",
+          "description": "Base64 encoded proof data"
+        },
+        "verification_method": {
+          "type": "string",
+          "description": "Method used for verification"
+        },
+        "public_inputs": {
+          "type": "array",
+          "description": "Public inputs for the proof",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["proof_type", "proof_data"]
+    },
+    "TimeWindow": {
+      "type": "object",
+      "description": "Time window for validity",
+      "properties": {
+        "start_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "timezone": {
+          "type": "string",
+          "default": "UTC"
+        }
+      },
+      "required": ["start_time", "end_time"]
+    }
+  }
+}
