@@ -1,7 +1,7 @@
 # RFC: Agentic Checkout — Merchant REST API
 
 **Status:** Draft  
-**Version:** 2025-09-29  
+**Version:** 2025-10-02  
 **Scope:** Checkout session lifecycle and webhook integration
 
 This RFC defines the **Agentic Checkout Specification (ACS)**, a standardized REST API contract that merchants SHOULD implement to support experiences across agent platforms.
@@ -16,7 +16,7 @@ This specification ensures that:
 
 ## 1. Scope & Goals
 
-- Provide a **stable, versioned** API surface (`API-Version: 2025-09-29`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
+- Provide a **stable, versioned** API surface (`API-Version: 2025-10-02`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
 - Ensure ChatGPT renders an **authoritative cart state** on every response.
 - Keep **payments on merchant rails**; optional delegated payments are covered separately.
 - Support **safe retries** via idempotency and **strong security** via authentication and request signing.
@@ -35,7 +35,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-09-29`).
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
-- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
+- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`, `pickup`).
 
 ### 2.2 Session Lifecycle
 
@@ -67,7 +67,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
-- `API-Version: 2025-09-29` (**REQUIRED**)
+- `API-Version: 2025-10-02` (**REQUIRED**)
 
 **Response Headers:**
 
@@ -125,7 +125,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
 - `fulfillment_address` (if known)
-- `fulfillment_options[]` (shipping/digital) with integer costs and optional delivery windows
+- `fulfillment_options[]` (shipping/digital/pickup) with integer costs and optional delivery/pickup windows
 - `fulfillment_option_id` (selected option)
 - `totals[]` each with integer `amount`
 - `messages[]` (`info` / `error` entries)
@@ -160,6 +160,7 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
+- **FulfillmentOption (pickup)**: `id`, `title`, `subtitle?`, `pickup_address?`, `pickup_window?`,`subtotal`, `tax`, `total` (**int**)
 - **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
@@ -546,7 +547,7 @@ All money fields are **integers (minor units)**.
 
 ## 10. Conformance Checklist
 
-- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-09-29`
+- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-10-02`
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
@@ -559,4 +560,5 @@ All money fields are **integers (minor units)**.
 
 ## 11. Change Log
 
+- **2025-10-02**: Feature addition: `FulfillmentOptionPickup` and relevant fields
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.

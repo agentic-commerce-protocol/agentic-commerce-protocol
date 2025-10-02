@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "2025-09-29"
+  version: "2025-10-02"
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -284,7 +284,7 @@ components:
       name: API-Version
       in: header
       required: true
-      schema: { type: string, example: "2025-09-29" }
+      schema: { type: string, example: "2025-10-02" }
 
   schemas:
     Address:
@@ -395,6 +395,32 @@ components:
         total: { type: string }
       required: [type, id, title, subtotal, tax, total]
 
+    FulfillmentOptionPickup:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: pickup }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        pickup_address: 
+          type: object
+          additionalProperties: false
+          properties: 
+            name: { type: string }
+            line_one: { type: string }
+            line_two: { type: string }
+            city: { type: string }
+            state: { type: string }
+            country: { type: string }
+            postal_code: { type: string } 
+          required: [line_one, city, state, country, postal_code]
+        pickup_window: { type: string, format: date-time }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
+      required: [type, id, title, subtotal, tax, total]
+
     MessageInfo:
       type: object
       additionalProperties: false
@@ -489,6 +515,7 @@ components:
             oneOf:
               - $ref: "#/components/schemas/FulfillmentOptionShipping"
               - $ref: "#/components/schemas/FulfillmentOptionDigital"
+              - $ref: "#/components/schemas/FulfillmentOptionPickup"
         fulfillment_option_id: { type: string }
         totals:
           type: array

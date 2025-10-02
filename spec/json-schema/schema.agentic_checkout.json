@@ -221,6 +221,67 @@
       },
       "required": ["type", "id", "title", "subtotal", "tax", "total"]
     },
+    "FulfillmentOptionPickup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "pickup"
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },       
+        "pickup_address": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "line_one": {
+              "type": "string"
+            },
+            "line_two": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "postal_code": {
+              "type": "string"
+            }
+          },
+          "required": ["name", "line_one", "city", "state", "country", "postal_code"]
+        },
+        "pickup_window": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "subtotal": {
+          "type": "integer"
+        },
+        "tax": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      },
+      "required": ["type", "id", "title", "subtotal", "tax", "total"]
+    },
     "MessageInfo": {
       "type": "object",
       "additionalProperties": false,
@@ -382,7 +443,10 @@
                 "$ref": "#/$defs/FulfillmentOptionShipping"
               },
               {
-                "$ref": "#/$defs/FulfillmentOptionDigital"
+                "$ref": "#/$defs/FulfillmentOptionDigital" 
+              },
+              {
+                "$ref": "#/$defs/FulfillmentOptionPickup"
               }
             ]
           }
