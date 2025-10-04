@@ -266,7 +266,11 @@
           },
           "required": ["name", "line_one", "city", "state", "country", "postal_code"]
         },
-        "pickup_window": {
+        "earliest_pickup_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "latest_pickup_time": {
           "type": "string",
           "format": "date-time"
         },

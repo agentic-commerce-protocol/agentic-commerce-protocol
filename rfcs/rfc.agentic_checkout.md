@@ -160,7 +160,7 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
-- **FulfillmentOption (pickup)**: `id`, `title`, `subtitle?`, `pickup_address?`, `pickup_window?`,`subtotal`, `tax`, `total` (**int**)
+- **FulfillmentOption (pickup)**: `id`, `title`, `subtitle?`, `pickup_address?`, `earliest_pickup_time?`, `latest_pickup_time?`, `subtotal`, `tax`, `total` (**int**)
 - **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`

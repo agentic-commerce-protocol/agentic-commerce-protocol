@@ -414,8 +414,9 @@ components:
             state: { type: string }
             country: { type: string }
             postal_code: { type: string } 
-          required: [line_one, city, state, country, postal_code]
-        pickup_window: { type: string, format: date-time }
+          required: [name, line_one, city, state, country, postal_code]
+        earliest_pickup_time: { type: string, format: date-time }
+        latest_pickup_time: { type: string, format: date-time }
         subtotal: { type: integer }
         tax: { type: integer }
         total: { type: integer }
