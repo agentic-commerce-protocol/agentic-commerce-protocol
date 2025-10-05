@@ -86,6 +86,7 @@ To start building with ACP:
   - Status: external example; does not change ACP spec
 
 Note: This project is community‑maintained and is not part of the ACP standard. It illustrates one approach to add verifiable authorization for agent marketplaces without modifying ACP.
+This demo is complementary to ACP and intended for environments where the agent runtime is not trusted or is third‑party.
 
 ---
 
