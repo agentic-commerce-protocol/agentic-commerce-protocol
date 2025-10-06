@@ -114,6 +114,10 @@
   },
   "update_checkout_session_response": {
     "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
     "status": "ready_for_payment",
     "currency": "usd",
     "line_items": [
@@ -255,7 +259,7 @@
       "country": "US",
       "postal_code": "94131"
     },
-    "fulfillment_option_id": "fulfillment_option_123",
+    "fulfillment_option_id": "fulfillment_option_456",
     "totals": [
       {
         "type": "items_base_amount",
@@ -275,12 +279,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 100
+        "amount": 500
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 430
+        "amount": 830
       }
     ],
     "fulfillment_options": [
@@ -315,10 +319,19 @@
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
-    ]
+    ],
+    "order": {
+      "id": "ord_123",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/ord_123"
+    }
   },
   "get_checkout_session_response": {
     "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
     "status": "ready_for_payment",
     "currency": "usd",
     "line_items": [
@@ -408,6 +421,10 @@
   },
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
     "status": "canceled",
     "currency": "usd",
     "line_items": [
