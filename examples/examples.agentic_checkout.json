@@ -259,7 +259,7 @@
       "country": "US",
       "postal_code": "94131"
     },
-    "fulfillment_option_id": "fulfillment_option_456",
+    "fulfillment_option_id": "fulfillment_option_123",
     "totals": [
       {
         "type": "items_base_amount",
@@ -279,12 +279,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 500
+        "amount": 100
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 830
+        "amount": 430
       }
     ],
     "fulfillment_options": [
