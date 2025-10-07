@@ -181,13 +181,13 @@
           "format": "date-time"
         },
         "subtotal": {
-          "type": "number"
+          "type": "integer"
         },
         "tax": {
-          "type": "number"
+          "type": "integer"
         },
         "total": {
-          "type": "number"
+          "type": "integer"
         }
       },
       "required": ["type", "id", "title", "subtotal", "tax", "total"]
@@ -210,13 +210,13 @@
           "type": "string"
         },
         "subtotal": {
-          "type": "number"
+          "type": "integer"
         },
         "tax": {
-          "type": "number"
+          "type": "integer"
         },
         "total": {
-          "type": "number"
+          "type": "integer"
         }
       },
       "required": ["type", "id", "title", "subtotal", "tax", "total"]
