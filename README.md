@@ -76,6 +76,7 @@ To start building with ACP:
 | --------------------- | ---------------------------------------------------------------------------------------- |
 | Checkout API Spec     | [spec/openapi/openapi.agentic_checkout.yaml](spec/openapi/openapi.agentic_checkout.yaml) |
 | Delegate Payment Spec | [spec/openapi/openapi.delegate_payment.yaml](spec/openapi/openapi.delegate_payment.yaml) |
+| Webhook Implementation | [rfcs/rfc.agentic_checkout_webhook.md](rfcs/rfc.agentic_checkout_webhook.md) |
 
 ---
 
