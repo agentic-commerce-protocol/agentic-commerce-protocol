@@ -1,7 +1,7 @@
 # RFC: Agentic Commerce — Delegate Payment API
 
 **Status:** Draft  
-**Version:** 2025-09-29
+**Version:** 2025-10-23
 **Scope:** Delegate payment credential tokenization and controlled usage via allowance constraints
 
 This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **delegated vault token** for a payment credential. The token may then be used by the merchant’s existing PSP **only** within explicit _Allowance_ constraints. Payments, settlement, and compliance remain on the merchant’s rails.
@@ -12,7 +12,7 @@ This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **dele
 
 - Enable merchants to **safely delegate** a payment credential for use in ChatGPT-initiated checkouts.
 - Preserve merchant PSP flows, idempotency, auditability, and risk controls.
-- Provide a **stable, versioned** surface (API-Version = `2025-09-29`).
+- Provide a **stable, versioned** surface (API-Version = `2025-10-23`).
 
 **Out of scope:** PSP-specific authorization/capture, multi-use tokens beyond allowance, refund semantics.
 
@@ -26,7 +26,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 
 ### 2.1 Initialization (MUST happen before tokenization)
 
-- **Version compatibility:** Client **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-09-29`).
+- **Version compatibility:** Client **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-10-23`).
 - **Identity proofing requirements:** Server advertises acceptable signature algorithms (e.g., Ed25519, ES256) out-of-band.
 - **Implementation details:** Client capabilities (risk signals, wallet types) **SHOULD** be documented or discoverable.
 - **Client preparation:** Canonical JSON of request; cryptographic key material for signing.
@@ -51,7 +51,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
   - `Request-Id: <string>` (RECOMMENDED)
   - `Signature: <base64url>` (RECOMMENDED; identity verification over canonical request)
   - `Timestamp: <RFC3339>` (RECOMMENDED)
-  - `API-Version: 2025-09-29` (**REQUIRED**)
+  - `API-Version: 2025-10-23` (**REQUIRED**)
 
 ### 2.4 Token Creation & Response
 
@@ -84,51 +84,45 @@ POST /agentic_commerce/delegate_payment
 
 ### 3.2 Request Body (Top-level)
 
-Exactly **one** credential type is supported today: **card**.
+Credential types supported today: **card**, **account_to_account**.
 
-| Field             | Type                 | Req | Description                                        |
-| ----------------- | -------------------- | :-: | -------------------------------------------------- |
-| `payment_method`  | PaymentMethodCard    | ✅  | The credential to tokenize. (type MUST be `card`.) |
-| `allowance`       | Allowance            | ✅  | Constraints on how the token may be used.          |
-| `billing_address` | Address              | ❌  | Address associated with the payment method.        |
-| `risk_signals`    | RiskSignal[]         | ✅  | One or more risk signals.                          |
-| `metadata`        | object (map<string>) | ✅  | Arbitrary key/values for correlation.              |
+| Field             | Type                 | Req  | Description                                                                 |
+| ----------------- | -------------------- | :--: | --------------------------------------------------------------------------- |
+| `payment_method`  | PaymentMethod        |  ✅  | The credential to tokenize (`card` pull or `account_to_account` push).      |
+| `allowance`       | Allowance            | ✅\* | Constraints on delegated usage; required when `payment_method.type = card`. |
+| `billing_address` | Address              |  ❌  | Address associated with the payment method (card only).                     |
+| `risk_signals`    | RiskSignal[]         |  ✅  | One or more risk signals.                                                   |
+| `metadata`        | object (map<string>) |  ✅  | Arbitrary key/values for correlation.                                       |
 
-### 3.3 PaymentMethodCard (REQUIRED)
+### 3.3 PaymentMethod (Conditional Fields)
 
-- `type`: **MUST** equal `card`.
-- `card_number_type`: `fpan` | `network_token` (**REQUIRED**)
-- `virtual`: boolean (**REQUIRED**)
-- `number`: string (**REQUIRED**) (FPAN/DPAN/network token/virtual PAN)
-- `exp_month`: string (max 2; `"01"`–`"12"`)
-- `exp_year`: string (max 4; four-digit year)
-- `name`: string
-- `cvc`: string (max 4)
-- `checks_performed`: array of `avs` | `cvv` | `ani` | `auth0`
-- `iin`: string (max 6)
-- `display_card_funding_type`: `credit` | `debit` | `prepaid` (**REQUIRED**)
-- `display_wallet_type`: string (e.g., wallet indicator for virtual)
-- `display_brand`: string (e.g., `visa`, `amex`)
-- `display_last4`: string (max 4)
-- `metadata`: map<string,string> (**REQUIRED**)
+- `type`: **MUST** equal `card` or `account_to_account`.
+- When `type = card` (**pull** payment):
+  - Require `card_number_type`, `number`, `display_card_funding_type`.
+  - Support optional `virtual`, `exp_month`, `exp_year`, `name`, `cvc`, `cryptogram`, `eci_value`, `checks_performed[]`, `iin`, `display_wallet_type`, `display_brand`, `display_last4`, `metadata`.
+- When `type = account_to_account` (**push** payment):
+  - Require `bank_instructions` containing destination details: `account_address` (IBAN or domestic account number), `bank_identifier?` (domestic clearing code), `bic?`, `bank_name`, `reference`, `expires_at?`.
+  - MAY include `confirmation` representing settlement status (`status: pending|received`, `received_at?`, `reference?`).
 
 ### 3.4 Address (OPTIONAL)
 
 - `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),  
   `state` (ISO-3166-2 where applicable), `country` (ISO-3166-1 alpha-2), `postal_code` (≤20)
 
-### 3.5 Allowance (REQUIRED)
+### 3.5 Allowance (Conditional)
 
-- `reason`: **MUST** be `one_time`
-- `max_amount`: integer, minor units (e.g., $20 → `2000`)
-- `currency`: string, lowercase ISO-4217 (e.g., `usd`)
-- `checkout_session_id`: string
-- `merchant_id`: string (≤256)
-- `expires_at`: RFC 3339 timestamp
+- Required whenever `payment_method.type = card` (pull payment). Not used for push payments initiated by the buyer (`account_to_account`).
+- Fields (when required):
+  - `reason`: `one_time`
+  - `max_amount`: integer, minor units (e.g., `$20` → `2000`)
+  - `currency`: string, lowercase ISO-4217 (e.g., `usd`)
+  - `checkout_session_id`: string
+  - `merchant_id`: string (≤256)
+  - `expires_at`: RFC 3339 timestamp
 
 ### 3.6 RiskSignal (REQUIRED, one or more)
 
-- `type`: **MUST** be `card_testing`
+- `type`: `card_testing` for card credentials; MAY be `bank_transfer_review` for account-to-account credentials
 - `score`: integer
 - `action`: `blocked` | `manual_review` | `authorized`
 
@@ -210,16 +204,16 @@ Exactly **one** credential type is supported today: **card**.
 
 ## 7. Validation Rules (non-exhaustive)
 
-- `payment_method.type` **MUST** be `card`.
+- `payment_method.type` **MUST** be `card` or `account_to_account`.
 - `payment_method.card_number_type` ∈ `fpan|network_token`.
-- `payment_method.virtual` present (boolean).
+- When `payment_method.type = card`, `payment_method.virtual` **MUST** be present (boolean).
 - `payment_method.number` present (string).
 - When present:
   - `exp_month` length ≤ 2 and value `"01"`–`"12"`.
   - `exp_year` length ≤ 4 and four digits.
   - `cvc` length ≤ 4.
   - `iin` length ≤ 6.
-- `display_card_funding_type` ∈ `credit|debit|prepaid`.
+- When `payment_method.type = card`, `display_card_funding_type` ∈ `credit|debit|prepaid`.
 - `allowance.currency` matches `^[a-z]{3}$` (e.g., `usd`).
 - `allowance.expires_at` must be RFC 3339.
 - At least one `risk_signal` item.
@@ -286,7 +280,54 @@ Exactly **one** credential type is supported today: **card**.
 }
 ```
 
-### 8.2 Error (invalid expiry)
+### 8.2 Success (Account-to-Account push payment)
+
+```json
+{
+  "payment_method": {
+    "type": "account_to_account",
+    "bank_instructions": {
+      "account_address": "DE89370400440532013000",
+      "bank_identifier": "37040044",
+      "bic": "COBADEFFXXX",
+      "bank_name": "Example Bank",
+      "reference": "ORDER123456",
+      "expires_at": "2025-10-24T00:00:00Z"
+    },
+    "confirmation": {
+      "status": "pending"
+    }
+  },
+  "allowance": null,
+  "risk_signals": [
+    {
+      "type": "bank_transfer_review",
+      "score": 5,
+      "action": "manual_review"
+    }
+  ],
+  "metadata": {
+    "source": "agent_checkout",
+    "transfer_type": "account_to_account"
+  }
+}
+```
+
+**201 Created**
+
+```json
+{
+  "id": "vt_01J8Z3WXYZ9A2A",
+  "created": "2025-10-23T11:00:00Z",
+  "metadata": {
+    "source": "agent_checkout",
+    "merchant_id": "acme",
+    "idempotency_key": "idem_a2a123"
+  }
+}
+```
+
+### 8.3 Error (invalid expiry)
 
 **400 Bad Request**
 
@@ -299,7 +340,7 @@ Exactly **one** credential type is supported today: **card**.
 }
 ```
 
-### 8.3 Error (idempotency conflict)
+### 8.4 Error (idempotency conflict)
 
 **409 Conflict**
 
@@ -315,18 +356,19 @@ Exactly **one** credential type is supported today: **card**.
 
 ## 9. Conformance Checklist
 
-- [ ] Accepts `API-Version` and validates `2025-09-29`
+- [ ] Accepts `API-Version` and validates `2025-10-23`
 - [ ] Verifies `Authorization` (Bearer)
 - [ ] Validates request fields per §3 & §7
-- [ ] Enforces **exactly one** credential type (`card`)
+- [ ] Enforces supported credential types (`card`, `account_to_account`)
+- [ ] Requires `allowance` when `payment_method.type = card`
 - [ ] Honors `Idempotency-Key`; returns `409` on conflict
 - [ ] Emits **flat** error object with `type`/`code`/`message`/`param?`
 - [ ] Returns `201` with `id`, `created`, and `metadata`
-- [ ] Enforces `allowance` constraints and expiry
 - [ ] Redacts PCI data in logs/telemetry
 
 ---
 
 ## 10. Change Log
 
+- **2025-10-23**: Added account-to-account push payment credential support and updated API version.
 - **2025-09-29**: Initial draft. Errors changed to **flat object** (no envelope). Tightened allowance and card display requirements.

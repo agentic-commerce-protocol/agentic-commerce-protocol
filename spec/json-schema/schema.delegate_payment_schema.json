@@ -46,13 +46,13 @@
         "postal_code"
       ]
     },
-    "PaymentMethodCard": {
+    "PaymentMethod": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
-          "const": "card"
+          "enum": ["card", "account_to_account"]
         },
         "card_number_type": {
           "type": "string",
@@ -114,14 +114,85 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "bank_instructions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "account_address": {
+              "type": "string",
+              "description": "Destination account identifier (e.g., IBAN or local account number)"
+            },
+            "bank_identifier": {
+              "type": "string",
+              "description": "Domestic clearing code (e.g., ABA, sort code); optional"
+            },
+            "bic": {
+              "type": "string",
+              "description": "SWIFT/BIC (ISO 9362) identifier; optional"
+            },
+            "bank_name": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": ["account_address", "bank_name", "reference"]
+        },
+        "confirmation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "received"]
+            },
+            "received_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "reference": {
+              "type": "string"
+            }
+          },
+          "required": ["status"]
         }
       },
-      "required": [
-        "type",
-        "card_number_type",
-        "number",
-        "display_card_funding_type",
-        "metadata"
+      "required": ["type", "metadata"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "card"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "card_number_type",
+              "number",
+              "display_card_funding_type"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "account_to_account"
+              }
+            }
+          },
+          "then": {
+            "required": ["bank_instructions"]
+          }
+        }
       ]
     },
     "Allowance": {
@@ -168,7 +239,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["card_testing"]
+          "enum": ["card_testing", "bank_transfer_review"]
         },
         "score": {
           "type": "integer"
@@ -185,7 +256,7 @@
       "additionalProperties": false,
       "properties": {
         "payment_method": {
-          "$ref": "#/$defs/PaymentMethodCard"
+          "$ref": "#/$defs/PaymentMethod"
         },
         "allowance": {
           "$ref": "#/$defs/Allowance"
@@ -207,7 +278,25 @@
           }
         }
       },
-      "required": ["payment_method", "allowance", "risk_signals", "metadata"]
+      "required": ["payment_method", "risk_signals", "metadata"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "payment_method": {
+                "properties": {
+                  "type": {
+                    "const": "card"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": ["allowance"]
+          }
+        }
+      ]
     },
     "DelegatePaymentResponse": {
       "type": "object",

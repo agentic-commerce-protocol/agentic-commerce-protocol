@@ -20,7 +20,7 @@
     "id": "checkout_session_123",
     "payment_provider": {
       "provider": "stripe",
-      "supported_payment_methods": ["card"]
+      "supported_payment_methods": ["card", "account_to_account"]
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -201,7 +201,7 @@
       }
     ]
   },
-  "complete_checkout_session_request": {
+  "complete_checkout_session_request_card": {
     "buyer": {
       "first_name": "John",
       "last_name": "Smith",
@@ -209,6 +209,7 @@
       "phone_number": "15552003434"
     },
     "payment_data": {
+      "type": "card",
       "token": "spt_123",
       "provider": "stripe",
       "billing_address": {
@@ -222,7 +223,7 @@
       }
     }
   },
-  "complete_checkout_session_response": {
+  "complete_checkout_session_response_card": {
     "id": "checkout_session_123",
     "buyer": {
       "first_name": "John",
@@ -315,7 +316,93 @@
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
-    ]
+    ],
+    "order": {
+      "id": "ord_abc123",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://example.com/orders/ord_abc123"
+    }
+  },
+  "complete_checkout_session_request_account_to_account": {
+    "buyer": {
+      "first_name": "Ada",
+      "last_name": "Lovelace",
+      "email": "ada@example.com",
+      "phone_number": "+4915200000000"
+    },
+    "payment_data": {
+      "type": "account_to_account",
+      "bank_instructions": {
+        "account_address": "DE89370400440532013000",
+        "bank_identifier": "37040044",
+        "bic": "COBADEFFXXX",
+        "bank_name": "Example Bank",
+        "reference": "ORDER123456",
+        "expires_at": "2025-10-24T00:00:00Z"
+      }
+    }
+  },
+  "complete_checkout_session_response_account_to_account": {
+    "id": "checkout_session_a2a",
+    "status": "in_progress",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 330
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Send the transfer to Example Bank IBAN DE89 3704 0044 0532 0130 00 with reference ORDER123456."
+      }
+    ],
+    "payment_data": {
+      "type": "account_to_account",
+      "bank_instructions": {
+        "account_address": "DE89370400440532013000",
+        "bank_identifier": "37040044",
+        "bic": "COBADEFFXXX",
+        "bank_name": "Example Bank",
+        "reference": "ORDER123456",
+        "expires_at": "2025-10-24T00:00:00Z"
+      },
+      "confirmation": {
+        "status": "pending"
+      }
+    }
   },
   "get_checkout_session_response": {
     "id": "checkout_session_123",

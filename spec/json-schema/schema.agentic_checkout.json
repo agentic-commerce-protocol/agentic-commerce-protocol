@@ -84,7 +84,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["card"]
+            "enum": ["card", "account_to_account"]
           }
         }
       },
@@ -295,6 +295,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["card", "account_to_account"]
+        },
         "token": {
           "type": "string"
         },
@@ -304,9 +308,82 @@
         },
         "billing_address": {
           "$ref": "#/$defs/Address"
+        },
+        "bank_instructions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "account_address": {
+              "type": "string",
+              "description": "Destination account identifier (e.g., IBAN or local account number)"
+            },
+            "bank_identifier": {
+              "type": "string",
+              "description": "Domestic clearing code (e.g., ABA, sort code); optional"
+            },
+            "bic": {
+              "type": "string",
+              "description": "SWIFT/BIC (ISO 9362) identifier; optional"
+            },
+            "bank_name": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": ["account_address", "bank_name", "reference"]
+        },
+        "confirmation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "received"]
+            },
+            "received_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "reference": {
+              "type": "string"
+            }
+          },
+          "required": ["status"]
         }
       },
-      "required": ["token", "provider"]
+      "required": ["type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "card"
+              }
+            }
+          },
+          "then": {
+            "required": ["token", "provider"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "account_to_account"
+              }
+            }
+          },
+          "then": {
+            "required": ["bank_instructions"]
+          }
+        }
+      ]
     },
     "Order": {
       "type": "object",
@@ -443,10 +520,20 @@
           "type": "object",
           "properties": {
             "order": {
-              "$ref": "#/$defs/Order"
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/Order"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "payment_data": {
+              "$ref": "#/$defs/PaymentData"
             }
           },
-          "required": ["order"]
+          "required": ["payment_data"]
         }
       ]
     },

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "2025-09-29"
+  version: "2025-10-23"
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -170,20 +170,91 @@ paths:
       summary: Complete a checkout session
       operationId: completeCheckoutSession
       description: |
-        Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+        Finalizes the checkout by applying a payment method.
+        - For pull methods (e.g., `card`), the merchant processes the payment synchronously and returns a completed order.
+        - For push methods (e.g., `account_to_account`), the merchant returns payment instructions and MUST transition the session to `in_progress` while awaiting asynchronous settlement.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+            examples:
+              card:
+                summary: Tokenized card payment
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    type: card
+                    token: "spt_123"
+                    provider: stripe
+              account_to_account:
+                summary: Account to account transfer instructions
+                value:
+                  buyer:
+                    first_name: "Ada"
+                    last_name: "Lovelace"
+                    email: "ada@example.com"
+                  payment_data:
+                    type: account_to_account
+                    bank_instructions:
+                      account_address: "DE89370400440532013000"
+                      bank_identifier: "37040044"
+                      bic: "COBADEFFXXX"
+                      bank_name: "Example Bank"
+                      reference: "ORDER123456"
+                      expires_at: "2025-10-24T00:00:00Z"
       responses:
         "200":
-          description: Completed session with order
+          description: Completed session with card order or session pending account-to-account payment
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CheckoutSessionWithOrder"
+                oneOf:
+                  - $ref: "#/components/schemas/CheckoutSessionWithOrder"
+                  - $ref: "#/components/schemas/CheckoutSessionAsyncStatus"
+              examples:
+                card:
+                  summary: Synchronous card success
+                  value:
+                    id: "checkout_session_123"
+                    status: "completed"
+                    currency: "usd"
+                    line_items: []
+                    totals: []
+                    fulfillment_options: []
+                    messages: []
+                    links: []
+                    order:
+                      id: "ord_abc123"
+                      checkout_session_id: "checkout_session_123"
+                      permalink_url: "https://merchant.example.com/orders/ord_abc123"
+                account_to_account_pending:
+                  summary: Awaiting bank transfer
+                  value:
+                    id: "checkout_session_atat"
+                    status: "in_progress"
+                    currency: "usd"
+                    line_items: []
+                    totals: []
+                    fulfillment_options: []
+                    messages:
+                      - type: info
+                        content_type: plain
+                        content: "Send the transfer to Example Bank IBAN DE89 3704 0044 0532 0130 00 with reference ORDER123456."
+                    links: []
+                    payment_data:
+                      type: account_to_account
+                      bank_instructions:
+                        account_address: "DE89370400440532013000"
+                        bank_identifier: "37040044"
+                        bic: "COBADEFFXXX"
+                        bank_name: "Example Bank"
+                        reference: "ORDER123456"
+                        expires_at: "2025-10-24T00:00:00Z"
         "4XX":
           description: Client error
           content:
@@ -329,7 +400,7 @@ components:
           type: array
           items:
             type: string
-            enum: [card]
+            enum: [card, account_to_account]
       required: [provider, supported_payment_methods]
 
     LineItem:
@@ -424,7 +495,11 @@ components:
               ],
           }
         param:
-          { type: string, description: "RFC 9535 JSONPath", nullable: true }
+          {
+            type: string,
+            description: "RFC 9535 JSONPath (optional)",
+            nullable: true,
+          }
         content_type: { type: string, enum: [plain, markdown] }
         content: { type: string }
       required: [type, code, content_type, content]
@@ -444,11 +519,56 @@ components:
     PaymentData:
       type: object
       additionalProperties: false
+      description: |
+        Checkout-time payment payload. Uses a single `type` discriminator to differentiate card pull payments versus account-to-account push instructions.
       properties:
+        type:
+          type: string
+          enum: [card, account_to_account]
         token: { type: string }
         provider: { type: string, enum: [stripe] }
         billing_address: { $ref: "#/components/schemas/Address" }
-      required: [token, provider]
+        bank_instructions:
+          type: object
+          additionalProperties: false
+          properties:
+            account_address:
+              type: string
+              description: "Destination account identifier (e.g., IBAN or local account number)"
+            bank_identifier:
+              type: string
+              description: "Domestic clearing code (e.g., ABA, sort code); optional"
+            bic:
+              type: string
+              description: "SWIFT/BIC (ISO 9362) identifier; optional"
+            bank_name: { type: string }
+            reference: { type: string }
+            expires_at: { type: string, format: date-time }
+          required: [account_address, bank_name, reference]
+        confirmation:
+          type: object
+          additionalProperties: false
+          properties:
+            status:
+              type: string
+              enum: [pending, received]
+            received_at: { type: string, format: date-time }
+            reference: { type: string }
+          required: [status]
+      required: [type]
+      allOf:
+        - if:
+            properties:
+              type:
+                const: card
+          then:
+            required: [token, provider]
+        - if:
+            properties:
+              type:
+                const: account_to_account
+          then:
+            required: [bank_instructions]
 
     Order:
       type: object
@@ -523,8 +643,11 @@ components:
         - $ref: "#/components/schemas/CheckoutSessionBase"
         - type: object
           properties:
-            order: { $ref: "#/components/schemas/Order" }
-          required: [order]
+            order:
+              oneOf:
+                - $ref: "#/components/schemas/Order"
+                - type: "null"
+            payment_data: { $ref: "#/components/schemas/PaymentData" }
 
     CheckoutSessionCreateRequest:
       type: object
@@ -556,6 +679,15 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
       required: [payment_data]
+
+    CheckoutSessionAsyncStatus:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: pending }
+        payment_data:
+          $ref: "#/components/schemas/PaymentData"
+      required: [type, payment_data]
 
     Error:
       type: object

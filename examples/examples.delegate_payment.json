@@ -1,5 +1,5 @@
 {
-  "delegate_payment_request": {
+  "delegate_payment_request_card": {
     "payment_method": {
       "type": "card",
       "card_number_type": "fpan",
@@ -46,6 +46,33 @@
     "metadata": {
       "campaign": "q4",
       "source": "chatgpt_checkout"
+    }
+  },
+  "delegate_payment_request_account_to_account": {
+    "payment_method": {
+      "type": "account_to_account",
+      "bank_instructions": {
+        "account_address": "DE89370400440532013000",
+        "bank_identifier": "37040044",
+        "bic": "COBADEFFXXX",
+        "bank_name": "Example Bank",
+        "reference": "ORDER123456",
+        "expires_at": "2025-10-24T00:00:00Z"
+      },
+      "confirmation": {
+        "status": "pending"
+      }
+    },
+    "risk_signals": [
+      {
+        "type": "bank_transfer_review",
+        "score": 5,
+        "action": "manual_review"
+      }
+    ],
+    "metadata": {
+      "source": "agent_checkout",
+      "transfer_type": "account_to_account"
     }
   },
   "delegate_payment_success_response": {
