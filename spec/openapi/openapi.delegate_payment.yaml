@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce — Delegate Payment API
-  version: "2025-10-24"
+  version: "2025-09-29"
   description: |
-    Delegate a payment using a provided payment method and allowance. Pull payment methods (`card`) carry delegated allowance constraints; push payments (`account_to_account`) rely on buyer-initiated transfers without an allowance envelope.
+    Delegate a payment using a provided payment method and allowance.
 servers:
   - url: https://merchant.example.com
 security:
@@ -19,7 +19,7 @@ paths:
       operationId: delegatePayment
       description: |
         Tokenizes a credential for controlled usage by the merchant's PSP per the **Allowance** constraints.
-        Credential types currently supported: **card**, **account_to_account**.
+        Exactly one credential type is currently supported: **card**.
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -74,26 +74,6 @@ paths:
                       score: 10
                       action: manual_review
                   metadata: { "campaign": "q4" }
-              account_to_account_pending:
-                summary: Account-to-account push payment instructions
-                value:
-                  payment_method:
-                    type: account_to_account
-                    bank_instructions:
-                      account_address: "DE89370400440532013000"
-                      bank_identifier: "37040044"
-                      bank_name: "Example Bank"
-                      reference: "ORDER123456"
-                      expires_at: "2025-10-24T00:00:00Z"
-                    confirmation:
-                      status: pending
-                  risk_signals:
-                    - type: bank_transfer_review
-                      score: 5
-                      action: manual_review
-                  metadata:
-                    source: agent_checkout
-                    transfer_type: account_to_account
       responses:
         "201":
           description: Created
@@ -278,12 +258,9 @@ components:
     DelegatePaymentRequest:
       type: object
       additionalProperties: false
-      description: |
-        Request envelope for issuing a delegated payment credential.
-        `allowance` MUST be supplied for pull payment methods (`card`). Push payment methods (`account_to_account`) rely on customer-initiated settlement and therefore omit `allowance`.
       properties:
         payment_method:
-          $ref: "#/components/schemas/PaymentMethod"
+          $ref: "#/components/schemas/PaymentMethodCard"
         allowance:
           $ref: "#/components/schemas/Allowance"
         billing_address:
@@ -295,26 +272,15 @@ components:
         metadata:
           type: object
           additionalProperties: { type: string }
-      required: [payment_method, risk_signals, metadata]
-      allOf:
-        - if:
-            properties:
-              payment_method:
-                properties:
-                  type:
-                    const: card
-          then:
-            required: [allowance]
+      required: [payment_method, allowance, risk_signals, metadata]
 
-    PaymentMethod:
+    PaymentMethodCard:
       type: object
       additionalProperties: false
-      description: |
-        Delegated credential payload. A single object keyed by `type` that supports pull (`card`) and push (`account_to_account`) payment methods.
       properties:
         type:
           type: string
-          enum: [card, account_to_account]
+          enum: [card]
         card_number_type:
           type: string
           enum: [fpan, network_token]
@@ -358,46 +324,7 @@ components:
         metadata:
           type: object
           additionalProperties: { type: string }
-        bank_instructions:
-          type: object
-          additionalProperties:
-            type: string
-            description: "Additional implementation-defined hints (e.g., bic, branch codes)."
-          properties:
-            account_address:
-              type: string
-              description: "Destination account identifier (e.g., IBAN or local account number)"
-            bank_identifier:
-              type: string
-              description: "Domestic clearing code (e.g., ABA, sort code); optional"
-            bank_name: { type: string }
-            reference: { type: string }
-            expires_at: { type: string, format: date-time }
-          required: [account_address, bank_name, reference]
-        confirmation:
-          type: object
-          additionalProperties: false
-          properties:
-            status:
-              type: string
-              enum: [pending, received]
-            received_at: { type: string, format: date-time }
-            reference: { type: string }
-          required: [status]
-      required: [type, metadata]
-      allOf:
-        - if:
-            properties:
-              type:
-                const: card
-          then:
-            required: [card_number_type, number, display_card_funding_type]
-        - if:
-            properties:
-              type:
-                const: account_to_account
-          then:
-            required: [bank_instructions]
+      required: [type, card_number_type, number, display_card_funding_type, metadata]
 
     Address:
       type: object
@@ -456,7 +383,7 @@ components:
       properties:
         type:
           type: string
-          enum: [card_testing, bank_transfer_review]
+          enum: [card_testing]
         score:
           type: integer
         action:
