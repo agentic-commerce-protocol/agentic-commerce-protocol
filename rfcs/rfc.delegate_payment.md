@@ -1,7 +1,7 @@
 # RFC: Agentic Commerce — Delegate Payment API
 
 **Status:** Draft  
-**Version:** 2025-10-23
+**Version:** 2025-10-24
 **Scope:** Delegate payment credential tokenization and controlled usage via allowance constraints
 
 This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **delegated vault token** for a payment credential. The token may then be used by the merchant’s existing PSP **only** within explicit _Allowance_ constraints. Payments, settlement, and compliance remain on the merchant’s rails.
@@ -12,7 +12,7 @@ This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **dele
 
 - Enable merchants to **safely delegate** a payment credential for use in ChatGPT-initiated checkouts.
 - Preserve merchant PSP flows, idempotency, auditability, and risk controls.
-- Provide a **stable, versioned** surface (API-Version = `2025-10-23`).
+- Provide a **stable, versioned** surface (API-Version = `2025-10-24`).
 
 **Out of scope:** PSP-specific authorization/capture, multi-use tokens beyond allowance, refund semantics.
 
@@ -26,7 +26,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 
 ### 2.1 Initialization (MUST happen before tokenization)
 
-- **Version compatibility:** Client **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-10-23`).
+- **Version compatibility:** Client **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-10-24`).
 - **Identity proofing requirements:** Server advertises acceptable signature algorithms (e.g., Ed25519, ES256) out-of-band.
 - **Implementation details:** Client capabilities (risk signals, wallet types) **SHOULD** be documented or discoverable.
 - **Client preparation:** Canonical JSON of request; cryptographic key material for signing.
@@ -51,7 +51,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
   - `Request-Id: <string>` (RECOMMENDED)
   - `Signature: <base64url>` (RECOMMENDED; identity verification over canonical request)
   - `Timestamp: <RFC3339>` (RECOMMENDED)
-  - `API-Version: 2025-10-23` (**REQUIRED**)
+  - `API-Version: 2025-10-24` (**REQUIRED**)
 
 ### 2.4 Token Creation & Response
 
@@ -101,7 +101,7 @@ Credential types supported today: **card**, **account_to_account**.
   - Require `card_number_type`, `number`, `display_card_funding_type`.
   - Support optional `virtual`, `exp_month`, `exp_year`, `name`, `cvc`, `cryptogram`, `eci_value`, `checks_performed[]`, `iin`, `display_wallet_type`, `display_brand`, `display_last4`, `metadata`.
 - When `type = account_to_account` (**push** payment):
-  - Require `bank_instructions` containing destination details: `account_address` (IBAN or domestic account number), `bank_identifier?` (domestic clearing code), `bic?`, `bank_name`, `reference`, `expires_at?`.
+  - Require `bank_instructions` containing destination details: `account_address` (IBAN or domestic account number), `bank_identifier?` (domestic clearing code), optional additional hints (e.g., BIC) via `additionalProperties`, `bank_name`, `reference`, `expires_at?`.
   - MAY include `confirmation` representing settlement status (`status: pending|received`, `received_at?`, `reference?`).
 
 ### 3.4 Address (OPTIONAL)
@@ -289,7 +289,6 @@ Credential types supported today: **card**, **account_to_account**.
     "bank_instructions": {
       "account_address": "DE89370400440532013000",
       "bank_identifier": "37040044",
-      "bic": "COBADEFFXXX",
       "bank_name": "Example Bank",
       "reference": "ORDER123456",
       "expires_at": "2025-10-24T00:00:00Z"
@@ -356,7 +355,7 @@ Credential types supported today: **card**, **account_to_account**.
 
 ## 9. Conformance Checklist
 
-- [ ] Accepts `API-Version` and validates `2025-10-23`
+- [ ] Accepts `API-Version` and validates `2025-10-24`
 - [ ] Verifies `Authorization` (Bearer)
 - [ ] Validates request fields per §3 & §7
 - [ ] Enforces supported credential types (`card`, `account_to_account`)
@@ -370,5 +369,5 @@ Credential types supported today: **card**, **account_to_account**.
 
 ## 10. Change Log
 
-- **2025-10-23**: Added account-to-account push payment credential support and updated API version.
+- **2025-10-24**: Added account-to-account push payment credential support and updated API version.
 - **2025-09-29**: Initial draft. Errors changed to **flat object** (no envelope). Tightened allowance and card display requirements.

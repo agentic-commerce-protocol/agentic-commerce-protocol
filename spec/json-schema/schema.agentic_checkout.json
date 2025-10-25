@@ -311,7 +311,10 @@
         },
         "bank_instructions": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": {
+            "type": "string",
+            "description": "Additional implementation-defined hints (e.g., bic, branch codes)."
+          },
           "properties": {
             "account_address": {
               "type": "string",
@@ -320,10 +323,6 @@
             "bank_identifier": {
               "type": "string",
               "description": "Domestic clearing code (e.g., ABA, sort code); optional"
-            },
-            "bic": {
-              "type": "string",
-              "description": "SWIFT/BIC (ISO 9362) identifier; optional"
             },
             "bank_name": {
               "type": "string"

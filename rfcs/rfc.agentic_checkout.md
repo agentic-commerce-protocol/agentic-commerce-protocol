@@ -1,7 +1,7 @@
 # RFC: Agentic Checkout — Merchant REST API
 
 **Status:** Draft  
-**Version:** 2025-10-23  
+**Version:** 2025-10-24  
 **Scope:** Checkout session lifecycle and webhook integration
 
 This RFC defines the **Agentic Checkout Specification (ACS)**, a standardized REST API contract that merchants SHOULD implement to support experiences across agent platforms.
@@ -16,7 +16,7 @@ This specification ensures that:
 
 ## 1. Scope & Goals
 
-- Provide a **stable, versioned** API surface (`API-Version: 2025-10-23`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
+- Provide a **stable, versioned** API surface (`API-Version: 2025-10-24`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
 - Ensure ChatGPT renders an **authoritative cart state** on every response.
 - Keep **payments on merchant rails**; optional delegated payments are covered separately.
 - Support **safe retries** via idempotency and **strong security** via authentication and request signing.
@@ -33,7 +33,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 ### 2.1 Initialization
 
-- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-10-23`).
+- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-10-24`).
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`, `account_to_account`) and fulfillment types (`shipping`, `digital`).
 
@@ -67,7 +67,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
-- `API-Version: 2025-10-23` (**REQUIRED**)
+- `API-Version: 2025-10-24` (**REQUIRED**)
 
 **Response Headers:**
 
@@ -163,7 +163,7 @@ Responses using pull payments (`card`) **MUST** complete synchronously (`status:
 - **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card", "account_to_account"]`)
 - **PaymentData** (one object keyed by `type`)
   - When `type = "card"`: `token`, `provider` (`stripe`), `billing_address?`
-  - When `type = "account_to_account"`: `bank_instructions` (account/routing/bank/reference/expiry), `confirmation.status` (`pending|received`), `confirmation.received_at?`
+  - When `type = "account_to_account"`: `bank_instructions` (address, bank identifier, optional extra hints such as BIC, reference, expiry), `confirmation.status` (`pending|received`), `confirmation.received_at?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
@@ -539,7 +539,6 @@ All money fields are **integers (minor units)**.
     "bank_instructions": {
       "account_address": "DE89370400440532013000",
       "bank_identifier": "37040044",
-      "bic": "COBADEFFXXX",
       "bank_name": "Example Bank",
       "reference": "ORDER123456",
       "expires_at": "2025-10-24T00:00:00Z"
@@ -601,7 +600,7 @@ All money fields are **integers (minor units)**.
 
 ## 10. Conformance Checklist
 
-- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-10-23`
+- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-10-24`
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
@@ -614,5 +613,5 @@ All money fields are **integers (minor units)**.
 
 ## 11. Change Log
 
-- **2025-10-23**: Added account-to-account payment option with asynchronous settlement guidance and updated API version.
+- **2025-10-24**: Added account-to-account payment option with asynchronous settlement guidance and updated API version.
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.

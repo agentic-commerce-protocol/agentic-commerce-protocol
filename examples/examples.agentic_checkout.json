@@ -335,7 +335,6 @@
       "bank_instructions": {
         "account_address": "DE89370400440532013000",
         "bank_identifier": "37040044",
-        "bic": "COBADEFFXXX",
         "bank_name": "Example Bank",
         "reference": "ORDER123456",
         "expires_at": "2025-10-24T00:00:00Z"
@@ -394,7 +393,6 @@
       "bank_instructions": {
         "account_address": "DE89370400440532013000",
         "bank_identifier": "37040044",
-        "bic": "COBADEFFXXX",
         "bank_name": "Example Bank",
         "reference": "ORDER123456",
         "expires_at": "2025-10-24T00:00:00Z"

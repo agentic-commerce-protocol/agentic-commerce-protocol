@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout Webhooks API
-  version: "2025-10-23"
+  version: "2025-10-24"
   description: |
     Webhook receiver hosted by OpenAI to accept merchant order lifecycle events.
 servers:
@@ -58,7 +58,6 @@ paths:
                       bank_instructions:
                         account_address: "DE89370400440532013000"
                         bank_identifier: "37040044"
-                        bic: "COBADEFFXXX"
                         bank_name: "Example Bank"
                         reference: "ORDER123456"
                         expires_at: "2025-10-24T00:00:00Z"
@@ -80,7 +79,6 @@ paths:
                       bank_instructions:
                         account_address: "DE89370400440532013000"
                         bank_identifier: "37040044"
-                        bic: "COBADEFFXXX"
                         bank_name: "Example Bank"
                         reference: "ORDER123456"
                         expires_at: "2025-10-24T00:00:00Z"
@@ -166,7 +164,9 @@ components:
           required: [status]
         bank_instructions:
           type: object
-          additionalProperties: false
+          additionalProperties:
+            type: string
+            description: "Additional implementation-defined hints (e.g., bic, branch codes)."
           properties:
             account_address:
               type: string
@@ -174,9 +174,6 @@ components:
             bank_identifier:
               type: string
               description: "Domestic clearing code (e.g., ABA, sort code); optional"
-            bic:
-              type: string
-              description: "SWIFT/BIC (ISO 9362) identifier; optional"
             bank_name: { type: string }
             reference: { type: string }
             expires_at: { type: string, format: date-time }

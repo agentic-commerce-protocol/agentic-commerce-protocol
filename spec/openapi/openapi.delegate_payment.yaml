@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce — Delegate Payment API
-  version: "2025-10-23"
+  version: "2025-10-24"
   description: |
     Delegate a payment using a provided payment method and allowance. Pull payment methods (`card`) carry delegated allowance constraints; push payments (`account_to_account`) rely on buyer-initiated transfers without an allowance envelope.
 servers:
@@ -83,7 +83,6 @@ paths:
                       account_address: "DE89370400440532013000"
                       bank_identifier: "37040044"
                       bank_name: "Example Bank"
-                      bic: "COBADEFFXXX"
                       reference: "ORDER123456"
                       expires_at: "2025-10-24T00:00:00Z"
                     confirmation:
@@ -361,7 +360,9 @@ components:
           additionalProperties: { type: string }
         bank_instructions:
           type: object
-          additionalProperties: false
+          additionalProperties:
+            type: string
+            description: "Additional implementation-defined hints (e.g., bic, branch codes)."
           properties:
             account_address:
               type: string
@@ -369,9 +370,6 @@ components:
             bank_identifier:
               type: string
               description: "Domestic clearing code (e.g., ABA, sort code); optional"
-            bic:
-              type: string
-              description: "SWIFT/BIC (ISO 9362) identifier; optional"
             bank_name: { type: string }
             reference: { type: string }
             expires_at: { type: string, format: date-time }
