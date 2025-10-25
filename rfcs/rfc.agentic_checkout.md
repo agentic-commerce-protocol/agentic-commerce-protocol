@@ -144,7 +144,7 @@ Returns the full authoritative session state.
 ### 4.4 Complete Session
 
 `POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success  
-Body includes `payment_data` (card token or account-to-account instructions) and optional `buyer`.  
+Body includes `payment_data` (card token or account to account intent) and optional `buyer`.  
 Responses using pull payments (`card`) **MUST** complete synchronously (`status: completed`) and include an `order` with `id`, `checkout_session_id`, and `permalink_url`. Push payments (`account_to_account`) **MUST** return pending instructions (`status: in_progress`) until asynchronous settlement completes via webhook.
 
 ### 4.5 Cancel Session
@@ -234,7 +234,7 @@ All money fields are **integers (minor units)**.
   "id": "checkout_session_123",
   "payment_provider": {
     "provider": "stripe",
-    "supported_payment_methods": ["card"]
+    "supported_payment_methods": ["card", "account_to_account"]
   },
   "status": "ready_for_payment",
   "currency": "usd",
@@ -398,6 +398,7 @@ All money fields are **integers (minor units)**.
     "phone_number": "15552003434"
   },
   "payment_data": {
+    "type": "card",
     "token": "spt_123",
     "provider": "stripe",
     "billing_address": {

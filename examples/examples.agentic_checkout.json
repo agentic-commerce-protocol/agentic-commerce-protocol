@@ -331,14 +331,7 @@
       "phone_number": "+4915200000000"
     },
     "payment_data": {
-      "type": "account_to_account",
-      "bank_instructions": {
-        "account_address": "DE89370400440532013000",
-        "bank_identifier": "37040044",
-        "bank_name": "Example Bank",
-        "reference": "ORDER123456",
-        "expires_at": "2025-10-24T00:00:00Z"
-      }
+      "type": "account_to_account"
     }
   },
   "complete_checkout_session_response_account_to_account": {
