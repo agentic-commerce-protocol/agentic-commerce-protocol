@@ -324,12 +324,12 @@ components:
       properties:
         provider:
           type: string
-          enum: [stripe]
+          enum: [stripe, mercadopago, pagseguro]
         supported_payment_methods:
           type: array
           items:
             type: string
-            enum: [card]
+            enum: [card, pix]
       required: [provider, supported_payment_methods]
 
     LineItem:
@@ -446,7 +446,7 @@ components:
       additionalProperties: false
       properties:
         token: { type: string }
-        provider: { type: string, enum: [stripe] }
+        provider: { type: string, enum: [stripe, mercadopago, pagseguro] }
         billing_address: { $ref: "#/components/schemas/Address" }
       required: [token, provider]
 

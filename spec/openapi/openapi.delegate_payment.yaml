@@ -260,7 +260,14 @@ components:
       additionalProperties: false
       properties:
         payment_method:
-          $ref: "#/components/schemas/PaymentMethodCard"
+          oneOf:
+            - $ref: "#/components/schemas/PaymentMethodCard"
+            - $ref: "#/components/schemas/PaymentMethodPix"
+          discriminator:
+            propertyName: type
+            mapping:
+              card: "#/components/schemas/PaymentMethodCard"
+              pix: "#/components/schemas/PaymentMethodPix"
         allowance:
           $ref: "#/components/schemas/Allowance"
         billing_address:
@@ -325,6 +332,32 @@ components:
           type: object
           additionalProperties: { type: string }
       required: [type, card_number_type, number, display_card_funding_type, metadata]
+
+    PaymentMethodPix:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [pix]
+        cpf_cnpj:
+          type: string
+          description: "Brazilian tax ID (CPF for individuals, CNPJ for businesses)"
+          pattern: "^[0-9]{11}$|^[0-9]{14}$"
+        pix_key:
+          type: string
+          description: "PIX key for payment routing (optional)"
+        pix_key_type:
+          type: string
+          enum: [cpf, cnpj, email, phone, random]
+          description: "Type of PIX key used"
+        qr_code_data:
+          type: string
+          description: "PIX QR code EMV payload (optional)"
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+      required: [type, cpf_cnpj, metadata]
 
     Address:
       type: object

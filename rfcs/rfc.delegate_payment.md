@@ -84,11 +84,11 @@ POST /agentic_commerce/delegate_payment
 
 ### 3.2 Request Body (Top-level)
 
-Exactly **one** credential type is supported today: **card**.
+The protocol supports two credential types: **card** and **pix**.
 
-| Field             | Type                 | Req | Description                                        |
-| ----------------- | -------------------- | :-: | -------------------------------------------------- |
-| `payment_method`  | PaymentMethodCard    | ✅  | The credential to tokenize. (type MUST be `card`.) |
+| Field             | Type                                | Req | Description                                                      |
+| ----------------- | ----------------------------------- | :-: | ---------------------------------------------------------------- |
+| `payment_method`  | PaymentMethodCard \| PaymentMethodPix | ✅  | The credential to tokenize. (type MUST be `card` or `pix`.)      |
 | `allowance`       | Allowance            | ✅  | Constraints on how the token may be used.          |
 | `billing_address` | Address              | ❌  | Address associated with the payment method.        |
 | `risk_signals`    | RiskSignal[]         | ✅  | One or more risk signals.                          |
@@ -112,12 +112,42 @@ Exactly **one** credential type is supported today: **card**.
 - `display_last4`: string (max 4)
 - `metadata`: map<string,string> (**REQUIRED**)
 
-### 3.4 Address (OPTIONAL)
+### 3.4 PaymentMethodPix (REQUIRED for PIX payments)
 
-- `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),  
+**PIX** is the instant payment system developed by the Brazilian Central Bank (Banco Central do Brasil). When tokenizing PIX credentials:
+
+- `type`: **MUST** equal `pix`.
+- `cpf_cnpj`: string (**REQUIRED**) — Brazilian tax ID. Must be 11 digits (CPF for individuals) or 14 digits (CNPJ for businesses). Pattern: `^[0-9]{11}$|^[0-9]{14}$`
+- `pix_key`: string (**OPTIONAL**) — PIX key for payment routing (can be CPF, CNPJ, email, phone, or random key)
+- `pix_key_type`: string (**OPTIONAL**) — Type of PIX key used. Must be one of: `cpf`, `cnpj`, `email`, `phone`, `random`
+- `qr_code_data`: string (**OPTIONAL**) — PIX QR code EMV payload (BR Code format) for payment initiation
+- `metadata`: map<string,string> (**REQUIRED**) — Arbitrary key/values for correlation (e.g., PIX provider, transaction ID)
+
+**PIX-specific considerations:**
+- PIX payments are instant and typically settle within seconds
+- The `currency` in the associated `Allowance` **SHOULD** be `brl` (Brazilian Real)
+- At least one of `pix_key` or `qr_code_data` **SHOULD** be provided for routing
+- CPF/CNPJ validation follows Brazilian regulations
+
+**Example:**
+```json
+{
+  "type": "pix",
+  "cpf_cnpj": "12345678901",
+  "pix_key": "user@example.com",
+  "pix_key_type": "email",
+  "metadata": {
+    "pix_provider": "mercadopago"
+  }
+}
+```
+
+### 3.5 Address (OPTIONAL)
+
+- `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),
   `state` (ISO-3166-2 where applicable), `country` (ISO-3166-1 alpha-2), `postal_code` (≤20)
 
-### 3.5 Allowance (REQUIRED)
+### 3.6 Allowance (REQUIRED)
 
 - `reason`: **MUST** be `one_time`
 - `max_amount`: integer, minor units (e.g., $20 → `2000`)
@@ -126,13 +156,13 @@ Exactly **one** credential type is supported today: **card**.
 - `merchant_id`: string (≤256)
 - `expires_at`: RFC 3339 timestamp
 
-### 3.6 RiskSignal (REQUIRED, one or more)
+### 3.7 RiskSignal (REQUIRED, one or more)
 
 - `type`: **MUST** be `card_testing`
 - `score`: integer
 - `action`: `blocked` | `manual_review` | `authorized`
 
-### 3.7 Metadata (REQUIRED)
+### 3.8 Metadata (REQUIRED)
 
 - Free-form key/value pairs (strings). Store correlation fields (e.g., `source`, `campaign`, `merchant_id`).
 
@@ -210,6 +240,8 @@ Exactly **one** credential type is supported today: **card**.
 
 ## 7. Validation Rules (non-exhaustive)
 
+### 7.1 Card Payment Method
+
 - `payment_method.type` **MUST** be `card`.
 - `payment_method.card_number_type` ∈ `fpan|network_token`.
 - `payment_method.virtual` present (boolean).
@@ -220,7 +252,18 @@ Exactly **one** credential type is supported today: **card**.
   - `cvc` length ≤ 4.
   - `iin` length ≤ 6.
 - `display_card_funding_type` ∈ `credit|debit|prepaid`.
-- `allowance.currency` matches `^[a-z]{3}$` (e.g., `usd`).
+
+### 7.2 PIX Payment Method
+
+- `payment_method.type` **MUST** be `pix`.
+- `payment_method.cpf_cnpj` **MUST** match pattern `^[0-9]{11}$|^[0-9]{14}$` (11 digits for CPF, 14 for CNPJ).
+- When `pix_key_type` is present, it **MUST** be one of: `cpf`, `cnpj`, `email`, `phone`, `random`.
+- At least one of `pix_key` or `qr_code_data` **SHOULD** be provided.
+- `allowance.currency` **SHOULD** be `brl` when using PIX.
+
+### 7.3 Common Validation
+
+- `allowance.currency` matches `^[a-z]{3}$` (e.g., `usd`, `brl`).
 - `allowance.expires_at` must be RFC 3339.
 - At least one `risk_signal` item.
 

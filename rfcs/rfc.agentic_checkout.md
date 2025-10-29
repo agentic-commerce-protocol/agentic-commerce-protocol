@@ -35,7 +35,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-09-29`).
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
-- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
+- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`, `pix`) and fulfillment types (`shipping`, `digital`).
 
 ### 2.2 Session Lifecycle
 
@@ -120,7 +120,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 **Response body (authoritative cart):**
 
 - `id` (string)
-- `payment_provider` (e.g., `stripe`, `supported_payment_methods: ["card"]`)
+- `payment_provider` (e.g., `stripe`, `mercadopago`, or `pagseguro`, with `supported_payment_methods: ["card"]` or `["pix"]` or both)
 - `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
@@ -160,13 +160,34 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
-- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
-- **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
+- **PaymentProvider**: `provider` (`stripe`, `mercadopago`, or `pagseguro`), `supported_payment_methods` (`["card"]`, `["pix"]`, or both)
+- **PaymentData**: `token`, `provider` (`stripe`, `mercadopago`, or `pagseguro`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
 
 All money fields are **integers (minor units)**.
+
+### 5.1 PIX Payment Method
+
+**PIX** is an instant payment system developed by the Brazilian Central Bank (Banco Central do Brasil). When `supported_payment_methods` includes `"pix"`:
+
+- **Geography:** PIX is Brazil-specific. Merchants **SHOULD** only advertise PIX support for transactions in Brazilian Real (`brl`).
+- **Payment Flow:** PIX payments are typically instant, with settlement occurring within seconds. Merchants **SHOULD** handle near-instant payment confirmations.
+- **Identification:** PIX transactions may require Brazilian tax identification (CPF for individuals, CNPJ for businesses) during the payment delegation flow (see Delegate Payment specification).
+- **Providers:**
+  - `stripe` — Stripe supports PIX in Brazil
+  - `mercadopago` — Mercado Pago is a major Latin American payment platform with full PIX support
+  - `pagseguro` — PagSeguro is a Brazilian payment gateway with native PIX integration
+- **Currency:** When offering PIX, the `currency` field **SHOULD** be `"brl"` (Brazilian Real). All amounts remain in minor units (centavos).
+
+**Example PaymentProvider with PIX:**
+```json
+{
+  "provider": "mercadopago",
+  "supported_payment_methods": ["pix"]
+}
+```
 
 ---
 

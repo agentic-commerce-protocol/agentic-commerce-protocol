@@ -513,5 +513,232 @@
         }
       ]
     }
+  },
+  "create_checkout_session_response_pix_stripe": {
+    "id": "checkout_session_456",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card", "pix"]
+    },
+    "status": "ready_for_payment",
+    "currency": "brl",
+    "line_items": [
+      {
+        "id": "line_item_456",
+        "item": {
+          "id": "item_456",
+          "quantity": 1
+        },
+        "base_amount": 10000,
+        "discount": 0,
+        "subtotal": 10000,
+        "tax": 1000,
+        "total": 11000
+      }
+    ],
+    "fulfillment_address": {
+      "name": "João Silva",
+      "line_one": "Avenida Paulista, 1000",
+      "line_two": "Apto 123",
+      "city": "São Paulo",
+      "state": "SP",
+      "country": "BR",
+      "postal_code": "01310-100"
+    },
+    "fulfillment_option_id": "fulfillment_option_digital_001",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Total dos Itens",
+        "amount": 10000
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 10000
+      },
+      {
+        "type": "tax",
+        "display_text": "Impostos",
+        "amount": 1000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 11000
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "digital",
+        "id": "fulfillment_option_digital_001",
+        "title": "Entrega Digital",
+        "subtitle": "Disponível imediatamente",
+        "subtotal": 0,
+        "tax": 0,
+        "total": 0
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com.br/legal/termos-de-uso"
+      }
+    ]
+  },
+  "create_checkout_session_response_pix_mercadopago": {
+    "id": "checkout_session_789",
+    "payment_provider": {
+      "provider": "mercadopago",
+      "supported_payment_methods": ["pix"]
+    },
+    "status": "ready_for_payment",
+    "currency": "brl",
+    "line_items": [
+      {
+        "id": "line_item_789",
+        "item": {
+          "id": "item_789",
+          "quantity": 2
+        },
+        "base_amount": 5000,
+        "discount": 500,
+        "subtotal": 9500,
+        "tax": 950,
+        "total": 10450
+      }
+    ],
+    "fulfillment_address": {
+      "name": "Maria Santos",
+      "line_one": "Rua das Flores, 456",
+      "line_two": "",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "country": "BR",
+      "postal_code": "20000-000"
+    },
+    "fulfillment_option_id": "fulfillment_option_shipping_br",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Total dos Itens",
+        "amount": 10000
+      },
+      {
+        "type": "items_discount",
+        "display_text": "Desconto",
+        "amount": -500
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 9500
+      },
+      {
+        "type": "tax",
+        "display_text": "Impostos",
+        "amount": 950
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Frete",
+        "amount": 1500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 11950
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_shipping_br",
+        "title": "Correios PAC",
+        "subtitle": "Chega em 7-10 dias úteis",
+        "carrier": "Correios",
+        "earliest_delivery_time": "2025-11-05T00:00:00Z",
+        "latest_delivery_time": "2025-11-10T00:00:00Z",
+        "subtotal": 1500,
+        "tax": 0,
+        "total": 1500
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com.br/legal/termos-de-uso"
+      }
+    ]
+  },
+  "create_checkout_session_response_pix_pagseguro": {
+    "id": "checkout_session_012",
+    "payment_provider": {
+      "provider": "pagseguro",
+      "supported_payment_methods": ["pix"]
+    },
+    "status": "ready_for_payment",
+    "currency": "brl",
+    "line_items": [
+      {
+        "id": "line_item_012",
+        "item": {
+          "id": "item_012",
+          "quantity": 1
+        },
+        "base_amount": 15000,
+        "discount": 0,
+        "subtotal": 15000,
+        "tax": 0,
+        "total": 15000
+      }
+    ],
+    "fulfillment_address": {
+      "name": "Carlos Oliveira",
+      "line_one": "Avenida Atlântica, 2000",
+      "line_two": "Cobertura",
+      "city": "Salvador",
+      "state": "BA",
+      "country": "BR",
+      "postal_code": "40000-000"
+    },
+    "fulfillment_option_id": "fulfillment_option_digital_002",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Total dos Itens",
+        "amount": 15000
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 15000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 15000
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "digital",
+        "id": "fulfillment_option_digital_002",
+        "title": "Download Imediato",
+        "subtitle": "Acesso após confirmação do pagamento",
+        "subtotal": 0,
+        "tax": 0,
+        "total": 0
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com.br/legal/termos-de-uso"
+      }
+    ]
   }
 }

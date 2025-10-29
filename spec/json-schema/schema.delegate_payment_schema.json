@@ -124,6 +124,41 @@
         "metadata"
       ]
     },
+    "PaymentMethodPix": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "pix"
+        },
+        "cpf_cnpj": {
+          "type": "string",
+          "description": "Brazilian tax ID (CPF for individuals, CNPJ for businesses)",
+          "pattern": "^[0-9]{11}$|^[0-9]{14}$"
+        },
+        "pix_key": {
+          "type": "string",
+          "description": "PIX key for payment routing (optional)"
+        },
+        "pix_key_type": {
+          "type": "string",
+          "enum": ["cpf", "cnpj", "email", "phone", "random"],
+          "description": "Type of PIX key used"
+        },
+        "qr_code_data": {
+          "type": "string",
+          "description": "PIX QR code EMV payload (optional)"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["type", "cpf_cnpj", "metadata"]
+    },
     "Allowance": {
       "type": "object",
       "additionalProperties": false,
@@ -185,7 +220,14 @@
       "additionalProperties": false,
       "properties": {
         "payment_method": {
-          "$ref": "#/$defs/PaymentMethodCard"
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PaymentMethodCard"
+            },
+            {
+              "$ref": "#/$defs/PaymentMethodPix"
+            }
+          ]
         },
         "allowance": {
           "$ref": "#/$defs/Allowance"

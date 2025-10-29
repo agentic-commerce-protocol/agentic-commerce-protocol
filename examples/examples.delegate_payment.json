@@ -72,5 +72,138 @@
     "type": "rate_limit_exceeded",
     "code": "too_many_requests",
     "message": "Too many requests, please retry later"
+  },
+  "delegate_payment_request_pix_with_key": {
+    "payment_method": {
+      "type": "pix",
+      "cpf_cnpj": "12345678901",
+      "pix_key": "joao.silva@example.com",
+      "pix_key_type": "email",
+      "metadata": {
+        "pix_provider": "banco_do_brasil"
+      }
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 50000,
+      "currency": "brl",
+      "checkout_session_id": "csn_br_01HV3P3XYZ9ABC",
+      "merchant_id": "loja_brasil",
+      "expires_at": "2025-10-09T07:20:50.52Z"
+    },
+    "billing_address": {
+      "name": "João Silva",
+      "line_one": "Avenida Paulista, 1000",
+      "line_two": "Apto 123",
+      "city": "São Paulo",
+      "state": "SP",
+      "country": "BR",
+      "postal_code": "01310-100"
+    },
+    "risk_signals": [
+      {
+        "type": "card_testing",
+        "score": 5,
+        "action": "authorized"
+      }
+    ],
+    "metadata": {
+      "campaign": "black_friday_br",
+      "source": "chatgpt_checkout_pix"
+    }
+  },
+  "delegate_payment_request_pix_with_qr": {
+    "payment_method": {
+      "type": "pix",
+      "cpf_cnpj": "12345678000190",
+      "qr_code_data": "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890520400005303986540550.005802BR5913Loja Exemplo6009SAO PAULO62070503***63041D3D",
+      "metadata": {
+        "pix_provider": "mercadopago"
+      }
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 100000,
+      "currency": "brl",
+      "checkout_session_id": "csn_br_02HV3P3XYZ9ABC",
+      "merchant_id": "loja_brasil",
+      "expires_at": "2025-10-09T07:20:50.52Z"
+    },
+    "billing_address": {
+      "name": "Empresa LTDA",
+      "line_one": "Rua do Comércio, 500",
+      "line_two": "Sala 201",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "country": "BR",
+      "postal_code": "20000-000"
+    },
+    "risk_signals": [
+      {
+        "type": "card_testing",
+        "score": 3,
+        "action": "authorized"
+      }
+    ],
+    "metadata": {
+      "campaign": "corporate_sales",
+      "source": "chatgpt_checkout_pix",
+      "business_customer": "true"
+    }
+  },
+  "delegate_payment_request_pix_cpf_phone": {
+    "payment_method": {
+      "type": "pix",
+      "cpf_cnpj": "98765432100",
+      "pix_key": "+5511987654321",
+      "pix_key_type": "phone",
+      "metadata": {
+        "pix_provider": "pagseguro"
+      }
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 25000,
+      "currency": "brl",
+      "checkout_session_id": "csn_br_03HV3P3XYZ9ABC",
+      "merchant_id": "loja_brasil",
+      "expires_at": "2025-10-09T07:20:50.52Z"
+    },
+    "billing_address": {
+      "name": "Maria Santos",
+      "line_one": "Rua das Flores, 456",
+      "line_two": "",
+      "city": "Belo Horizonte",
+      "state": "MG",
+      "country": "BR",
+      "postal_code": "30000-000"
+    },
+    "risk_signals": [
+      {
+        "type": "card_testing",
+        "score": 8,
+        "action": "manual_review"
+      }
+    ],
+    "metadata": {
+      "campaign": "summer_sale",
+      "source": "chatgpt_checkout_pix"
+    }
+  },
+  "delegate_payment_success_response_pix": {
+    "id": "vt_pix_01J8Z3WXYZ9ABC",
+    "created": "2025-09-29T11:00:00Z",
+    "metadata": {
+      "source": "agent_checkout_pix",
+      "merchant_id": "loja_brasil",
+      "idempotency_key": "idem_pix_abc123",
+      "payment_method_type": "pix"
+    }
+  },
+  "delegate_payment_error_invalid_cpf": {
+    "type": "invalid_request",
+    "code": "invalid_card",
+    "message": "Invalid CPF/CNPJ format",
+    "param": "payment_method.cpf_cnpj"
   }
 }
