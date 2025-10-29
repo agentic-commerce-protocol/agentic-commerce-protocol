@@ -47,6 +47,7 @@
 - **Coverage**: Preparation, stabilization, activation, validation, monitoring, troubleshooting, and deactivation guidance consolidated into a single runbook.
 - **Operator Aids**: Quick-reference checklist, phase-by-phase tasks, and command reference tailored for QGE device rev 3.4+.
 - **Safety & Compliance**: Dual custody requirements, audit ledger checkpoints, and escalation triggers for drift, desync, and entropy anomalies.
+- **Remote Evidence Capture**: Prescribes controller login, service verification, and log archival steps to satisfy post-activation audit controls.
 
 ---
 
@@ -56,6 +57,13 @@
 - `qgectl loop engage --stability auto` with shear deviations ≤ ±0.05 microplanck during 180-second observation.
 - `qgectl activate --handshake chrono` producing handshake hash archived in the secure ledger within the two-minute window.
 - `qgectl diagnostics --since activation` and `qgectl metrics export --window 15m` providing post-activation subsystem and telemetry artifacts.
+
+### Remote Validation Session
+1. `ssh root@<device-ip>` – authenticate to the QGE controller and confirm you are on the intended device by validating host fingerprints.
+2. `uptime` – capture the session window and ensure runtime exceeds the activation start plus 15 minutes before filing completion evidence.
+3. `cat /etc/firmware_version` – record the active firmware build to verify it matches the approved release for the current activation.
+4. `qge_status` – verify the service reports `ACTIVE`, `LOCKED`, and `STABLE` with no warning flags prior to handoff.
+5. `journalctl -u qge_service --no-pager | tail -n 100` – archive the final 100 log lines, checking for error or warning entries and attaching the output to the activation record.
 
 ---
 
