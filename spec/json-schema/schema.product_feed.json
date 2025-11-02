@@ -1,0 +1,448 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openai.com/schemas/product-feed.json",
+  "title": "Product Feed",
+  "description": "Schema for product feed data provided by merchants to OpenAI for ChatGPT search and shopping experiences.",
+  "type": "object",
+  "required": [
+    "enable_search",
+    "enable_checkout",
+    "id",
+    "title",
+    "description",
+    "link",
+    "product_category",
+    "image_link",
+    "price",
+    "availability",
+    "seller_name",
+    "seller_url",
+    "return_policy",
+    "return_window"
+  ],
+  "properties": {
+    "enable_search": {
+      "type": "string",
+      "enum": ["true", "false"],
+      "description": "Controls whether the product can be surfaced in ChatGPT search results"
+    },
+    "enable_checkout": {
+      "type": "string",
+      "enum": ["true", "false"],
+      "description": "Allows direct purchase inside ChatGPT. enable_search must be true for this to be enabled"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.-]+$",
+      "description": "Merchant product ID (unique, alphanumeric)",
+      "maxLength": 100
+    },
+    "gtin": {
+      "type": "string",
+      "description": "Universal product identifier (GTIN, UPC, ISBN)",
+      "pattern": "^[0-9]{8,14}$"
+    },
+    "mpn": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.-]+$",
+      "description": "Manufacturer part number (alphanumeric)",
+      "maxLength": 70
+    },
+    "title": {
+      "type": "string",
+      "description": "Product title",
+      "maxLength": 150
+    },
+    "description": {
+      "type": "string",
+      "description": "Full product description",
+      "maxLength": 5000
+    },
+    "link": {
+      "type": "string",
+      "format": "uri",
+      "description": "Product detail page URL"
+    },
+    "condition": {
+      "type": "string",
+      "enum": ["new", "refurbished", "used"],
+      "description": "Condition of product"
+    },
+    "product_category": {
+      "type": "string",
+      "description": "Category path (use '>' separator)"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Product brand",
+      "maxLength": 70
+    },
+    "material": {
+      "type": "string",
+      "description": "Primary material(s)",
+      "maxLength": 100
+    },
+    "dimensions": {
+      "type": "string",
+      "description": "Overall dimensions in LxWxH format with units"
+    },
+    "length": {
+      "type": "string",
+      "description": "Individual dimension with unit"
+    },
+    "width": {
+      "type": "string",
+      "description": "Individual dimension with unit"
+    },
+    "height": {
+      "type": "string",
+      "description": "Individual dimension with unit"
+    },
+    "weight": {
+      "type": "string",
+      "description": "Product weight with unit"
+    },
+    "age_group": {
+      "type": "string",
+      "enum": ["infant", "toddler", "kids", "adult"],
+      "description": "Age category"
+    },
+    "image_link": {
+      "type": "string",
+      "format": "uri",
+      "description": "Primary product image (min 800x800px)"
+    },
+    "additional_image_link": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^https?://[^,]+(,https?://[^,]+)*$",
+          "description": "Comma-separated URLs"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Array of URLs"
+        }
+      ],
+      "description": "Additional product images (comma-separated string or array of URLs)"
+    },
+    "video_link": {
+      "type": "string",
+      "format": "uri",
+      "description": "Product video URL"
+    },
+    "model_3d_link": {
+      "type": "string",
+      "format": "uri",
+      "description": "3D model URL for AR/VR experiences"
+    },
+    "price": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]{2} [A-Z]{3}$",
+      "description": "Regular price with ISO 4217 currency code (e.g., '99.99 USD')"
+    },
+    "sale_price": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]{2} [A-Z]{3}$",
+      "description": "Discounted price with ISO 4217 currency code (must be less than price)"
+    },
+    "sale_price_effective_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Sale period in ISO 8601 format (start/end)"
+    },
+    "unit_pricing_measure": {
+      "type": "string",
+      "description": "Measure of the product for unit pricing (e.g., '100 ml', '5 kg')"
+    },
+    "base_measure": {
+      "type": "string",
+      "description": "Denominator for unit price calculation (e.g., '1 l', '100 g')"
+    },
+    "pricing_trend": {
+      "type": "string",
+      "enum": ["increasing", "decreasing", "stable"],
+      "description": "Recent price trend indicator"
+    },
+    "availability": {
+      "type": "string",
+      "enum": ["in_stock", "out_of_stock", "preorder"],
+      "description": "Product availability"
+    },
+    "availability_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when product becomes available (ISO 8601 format)"
+    },
+    "inventory_quantity": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Stock count"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Product expiration date in ISO 8601 format"
+    },
+    "pickup_method": {
+      "type": "string",
+      "enum": ["in_store", "reserve", "not_supported"],
+      "description": "Available pickup options"
+    },
+    "pickup_sla": {
+      "type": "string",
+      "description": "Pickup service level agreement (e.g., 'Ready in 2 hours', 'Same day')"
+    },
+    "item_group_id": {
+      "type": "string",
+      "description": "Shared identifier for product variants in the same group",
+      "maxLength": 70
+    },
+    "item_group_title": {
+      "type": "string",
+      "description": "Title for the product group",
+      "maxLength": 150
+    },
+    "color": {
+      "type": "string",
+      "description": "Color option",
+      "maxLength": 40
+    },
+    "size": {
+      "type": "string",
+      "description": "Size option",
+      "maxLength": 20
+    },
+    "size_system": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "Size system standard (ISO 3166-1 alpha-2 country code)"
+    },
+    "gender": {
+      "type": "string",
+      "enum": ["male", "female", "unisex"],
+      "description": "Gender target"
+    },
+    "offer_id": {
+      "type": "string",
+      "description": "Offer ID combining SKU, seller, and price"
+    },
+    "Custom_variant1_category": {
+      "type": "string",
+      "description": "Custom variant dimension 1"
+    },
+    "Custom_variant1_option": {
+      "type": "string",
+      "description": "Custom variant 1 option"
+    },
+    "Custom_variant2_category": {
+      "type": "string",
+      "description": "Custom variant dimension 2"
+    },
+    "Custom_variant2_option": {
+      "type": "string",
+      "description": "Custom variant 2 option"
+    },
+    "Custom_variant3_category": {
+      "type": "string",
+      "description": "Custom variant dimension 3"
+    },
+    "Custom_variant3_option": {
+      "type": "string",
+      "description": "Custom variant 3 option"
+    },
+    "shipping": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}:[A-Z*]{1,2}:[^:,]+:[0-9]+\\.[0-9]{2} [A-Z]{3}(,[A-Z]{2}:[A-Z*]{1,2}:[^:,]+:[0-9]+\\.[0-9]{2} [A-Z]{3})*$",
+      "description": "Shipping method/cost/region in format country:region:service_class:price (multiple entries can be comma-separated)"
+    },
+    "delivery_estimate": {
+      "type": "string",
+      "format": "date",
+      "description": "Estimated arrival date in ISO 8601 format"
+    },
+    "seller_name": {
+      "type": "string",
+      "description": "Seller name",
+      "maxLength": 70
+    },
+    "seller_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Seller page"
+    },
+    "seller_privacy_policy": {
+      "type": "string",
+      "format": "uri",
+      "description": "Seller-specific privacy policy (required if enable_checkout is true)"
+    },
+    "seller_tos": {
+      "type": "string",
+      "format": "uri",
+      "description": "Seller-specific terms of service (required if enable_checkout is true)"
+    },
+    "return_policy": {
+      "type": "string",
+      "format": "uri",
+      "description": "Return policy URL"
+    },
+    "return_window": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Days allowed for return"
+    },
+    "popularity_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Popularity indicator (0-5 scale)"
+    },
+    "return_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Return rate percentage"
+    },
+    "warning": {
+      "type": "string",
+      "description": "Product disclaimers or warnings"
+    },
+    "warning_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to product warnings"
+    },
+    "age_restriction": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Minimum purchase age"
+    },
+    "product_review_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of product reviews"
+    },
+    "product_review_rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Average review score (0-5 scale)"
+    },
+    "store_review_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of brand/store reviews"
+    },
+    "store_review_rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Average store rating (0-5 scale)"
+    },
+    "q_and_a": {
+      "type": "string",
+      "description": "FAQ content"
+    },
+    "raw_review_data": {
+      "type": "string",
+      "description": "Raw review payload (may include JSON blob)"
+    },
+    "related_product_id": {
+      "type": "string",
+      "description": "Associated product IDs (comma-separated list allowed)"
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "part_of_set",
+        "required_part",
+        "often_bought_with",
+        "substitute",
+        "different_brand",
+        "accessory"
+      ],
+      "description": "Relationship type for related products"
+    },
+    "geo_price": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]{2} [A-Z]{3} \\([^)]+\\)(,[0-9]+\\.[0-9]{2} [A-Z]{3} \\([^)]+\\))*$",
+      "description": "Region-specific pricing with ISO 4217 currency (format: price with region indicator, e.g., '79.99 USD (California)' or multiple: '39.99 CAD (CA),24.99 GBP (GB)')"
+    },
+    "geo_availability": {
+      "type": "string",
+      "description": "Region-specific availability (format: availability with region indicator, e.g., 'in_stock (Texas)')"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "gtin": {
+            "not": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": ["mpn"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "enable_checkout": {
+            "const": "true"
+          }
+        }
+      },
+      "then": {
+        "required": ["seller_privacy_policy", "seller_tos"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "condition": {
+            "not": {
+              "const": "new"
+            }
+          }
+        },
+        "required": ["condition"]
+      }
+    },
+    {
+      "if": {
+        "required": ["unit_pricing_measure"]
+      },
+      "then": {
+        "required": ["base_measure"]
+      }
+    },
+    {
+      "if": {
+        "required": ["base_measure"]
+      },
+      "then": {
+        "required": ["unit_pricing_measure"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "availability": {
+            "const": "preorder"
+          }
+        }
+      },
+      "then": {
+        "required": ["availability_date"]
+      }
+    }
+  ]
+}
