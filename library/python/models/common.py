@@ -18,6 +18,7 @@ class Address(CoreAPIModel):
     state: str
     country: CountryCode
     postal_code: str
+    phone_number: str | None = None
 
     @field_validator("country", mode="before")
     def _convert_country(cls, value: str | CountryCode) -> CountryCode:

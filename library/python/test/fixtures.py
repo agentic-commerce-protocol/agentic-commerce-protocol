@@ -112,9 +112,7 @@ def get_delegate_payment_payload():
             action=RiskAction.AUTHORIZED,
             score=10,
         ),
-        metadata={
-            "a": "b",
-        }
+        metadata={}
     )
 
 def get_headers_with_omissions(omits):

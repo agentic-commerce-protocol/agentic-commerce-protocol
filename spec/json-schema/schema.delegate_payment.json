@@ -219,7 +219,7 @@
           "type": "string",
           "description": "Vault token id, e.g., vt_..."
         },
-        "created": {
+        "created_at": {
           "type": "string",
           "format": "date-time"
         },
@@ -230,7 +230,7 @@
           }
         }
       },
-      "required": ["id", "created", "metadata"]
+      "required": ["id", "created_at", "metadata"]
     },
     "Error": {
       "type": "object",

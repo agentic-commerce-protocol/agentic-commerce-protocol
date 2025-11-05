@@ -298,6 +298,7 @@ components:
         state: { type: string }
         country: { type: string }
         postal_code: { type: string }
+        phone_number: { type: string }
       required: [name, line_one, city, state, country, postal_code]
 
     Buyer:

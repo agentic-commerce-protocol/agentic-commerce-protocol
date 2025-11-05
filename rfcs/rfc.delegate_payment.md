@@ -152,7 +152,7 @@ Exactly **one** credential type is supported today: **card**.
 ```json
 {
   "id": "vt_01J8Z3WXYZ9ABC",
-  "created": "2025-09-29T11:00:00Z",
+  "created_at": "2025-09-29T11:00:00Z",
   "metadata": {
     "source": "agent_checkout",
     "merchant_id": "acme",
@@ -277,7 +277,7 @@ Exactly **one** credential type is supported today: **card**.
 ```json
 {
   "id": "vt_01J8Z3WXYZ9ABC",
-  "created": "2025-09-29T11:00:00Z",
+  "created_at": "2025-09-29T11:00:00Z",
   "metadata": {
     "source": "agent_checkout",
     "merchant_id": "acme",
@@ -321,7 +321,7 @@ Exactly **one** credential type is supported today: **card**.
 - [ ] Enforces **exactly one** credential type (`card`)
 - [ ] Honors `Idempotency-Key`; returns `409` on conflict
 - [ ] Emits **flat** error object with `type`/`code`/`message`/`param?`
-- [ ] Returns `201` with `id`, `created`, and `metadata`
+- [ ] Returns `201` with `id`, `created_at`, and `metadata`
 - [ ] Enforces `allowance` constraints and expiry
 - [ ] Redacts PCI data in logs/telemetry
 

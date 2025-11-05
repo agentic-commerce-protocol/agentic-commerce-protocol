@@ -27,6 +27,9 @@
         },
         "postal_code": {
           "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
         }
       },
       "required": [

@@ -86,7 +86,7 @@ class DelegatePaymentRequest(CoreAPIModel):
 
 class DelegatePaymentResponse(CoreAPIModel):
     id: str
-    created: str  # RFC 3339
+    created_at: str  # RFC 3339
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 

@@ -394,13 +394,13 @@ components:
         id:
           type: string
           description: "Unique vault token identifier (vt_...)"
-        created:
+        created_at:
           type: string
           format: date-time
         metadata:
           type: object
           additionalProperties: { type: string }
-      required: [id, created, metadata]
+      required: [id, created_at, metadata]
 
     Error:
       type: object

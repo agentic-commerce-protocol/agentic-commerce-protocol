@@ -34,7 +34,7 @@ from merchant.merchant_constants import CHECKOUT_BASE_URL, PAYMENT_BASE_URL, PRI
 
 class CheckoutClient:
     
-    def _headers(self, method: str, body: Optional[Dict[str, Any]], idem_key: Optional[str] = None, omit: Optional[list] = None, overrides: Optional[dict] = None, ts_offset: Optional[int] = None) -> Dict[str, str]:
+    def _headers(self, body: Optional[Dict[str, Any]], idem_key: Optional[str] = None, omit: Optional[list] = None, overrides: Optional[dict] = None, ts_offset: Optional[int] = None) -> Dict[str, str]:
         request_id = str(uuid.uuid4())
         date_time_now = datetime.now(UTC)
         timestamp = date_time_now.isoformat().replace("+00:00", "Z")
@@ -67,7 +67,7 @@ class CheckoutClient:
     
     async def _request(self, method: str, path: str, body: Optional[Dict[str, Any]], idem_key: Optional[str] = None, omit: Optional[list] = None, overrides: Optional[dict] = None, ts_offset: Optional[int] = None) -> Tuple[int, Dict[str, Any], Dict[str, str]]:
         url = path if path.startswith("http") else urljoin(CHECKOUT_BASE_URL.rstrip('/') + '/', path.lstrip('/'))
-        headers = self._headers(method, body, idem_key=idem_key, omit=omit, overrides=overrides, ts_offset=ts_offset)
+        headers = self._headers(body, idem_key=idem_key, omit=omit, overrides=overrides, ts_offset=ts_offset)
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=API_TIMEOUT)) as session:
             async with session.request(method, url, json=body, headers=headers) as resp:
                 try:
@@ -89,9 +89,6 @@ class CheckoutClient:
         return await self._request(REST_METHOD_POST, CHECKOUT_COMPLETE_PATH.format(checkout_session_id=session_id), payload or {}, idem_key=idem_key, omit=omit, overrides=overrides, ts_offset=ts_offset)
 
     async def delegated_payment(self, payload: Dict[str, Any], idem_key: Optional[str] = None, omit: Optional[list] = None, overrides: Optional[dict] = None, ts_offset: Optional[int] = None):
-        """
-        Calls the delegated payment endpoint with the provided payload.
-        """
         return await self._request(
             REST_METHOD_POST,
             PAYMENT_BASE_URL + DELEGATE_PAYMENT_PATH,
