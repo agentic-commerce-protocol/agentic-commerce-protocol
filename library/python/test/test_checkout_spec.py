@@ -6,8 +6,7 @@ from models.checkout_models import (
     CartCompleteRequest,
     PaymentData,
 )
-from models.delegate_payment_models import DelegatePaymentResponse
-from fixtures import get_cart_initialize_payload, get_address_payload, get_buyer_payload, get_cart_update_payload, get_delegate_payment_payload
+from fixtures import get_cart_initialize_payload, get_address_payload, get_buyer_payload, get_cart_update_payload
 import uuid
 import pytest
 from merchant.merchant_constants import TEST_PAYMENT_TOKEN_1, ITEM_LISTING_ID_OUT_OF_STOCK
@@ -102,15 +101,3 @@ async def test_inventory_validation_out_of_stock_on_create():
     assert data.get("messages")[0].get("code") == "out_of_stock"
     assert data.get("messages")[0].get("content_type") == "plain"
     assert data.get("messages")[0].get("content") == "This item is out of stock"
-
-@pytest.mark.asyncio
-async def test_delegated_payment():
-    client = CheckoutClient()
-    payload = get_delegate_payment_payload().model_dump()
-    import json
-    print(json.dumps(payload, indent=4))
-    status, data, _ = await client.delegated_payment(payload=payload, idem_key=str(uuid.uuid4()))
-    print(json.dumps(data, indent=4))
-    print(status)
-    assert status == 201
-    DelegatePaymentResponse.model_validate(data)

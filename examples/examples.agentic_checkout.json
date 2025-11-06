@@ -65,6 +65,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 100
@@ -155,6 +160,11 @@
         "type": "tax",
         "display_text": "Tax",
         "amount": 30
+      },
+      {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
       },
       {
         "type": "fulfillment",
@@ -271,6 +281,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 100
@@ -360,6 +375,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 100
@@ -447,6 +467,11 @@
         "type": "tax",
         "display_text": "Tax",
         "amount": 30
+      },
+      {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
       },
       {
         "type": "fulfillment",

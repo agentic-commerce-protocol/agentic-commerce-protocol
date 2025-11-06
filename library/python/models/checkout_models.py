@@ -34,6 +34,7 @@ class TotalType(StrEnum):
     FULFILLMENT = "fulfillment"
     TAX = "tax"
     FEE = "fee"
+    TIP = "tip"
     TOTAL = "total"
 
 

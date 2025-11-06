@@ -143,6 +143,7 @@
             "fulfillment",
             "tax",
             "fee",
+            "tip",
             "total"
           ]
         },

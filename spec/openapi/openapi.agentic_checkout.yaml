@@ -361,6 +361,7 @@ components:
               fulfillment,
               tax,
               fee,
+              tip,
               total,
             ]
         display_text: { type: string }
