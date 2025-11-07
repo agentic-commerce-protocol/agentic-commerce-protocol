@@ -8,7 +8,7 @@ from typing import Any
 from pydantic import Field, field_validator, model_validator
 
 from utils.enums import CurrencyCode
-from models.common import Address, CoreAPIModel
+from models.common import Address, CoreAPIModel, ErrorResponse
 
 
 class PaymentProviderType(StrEnum):
@@ -93,14 +93,6 @@ class TargetType(StrEnum):
     CART = "cart"
     SHIPPING_OPTION = "shipping_option"
     PAYMENT_METHOD = "payment_method"
-
-
-class ErrorResponseType(StrEnum):
-    INVALID_REQUEST = "invalid_request"
-
-
-class ErrorResponseCode(StrEnum):
-    REQUEST_NOT_IDEMPOTENT = "request_not_idempotent"
 
 
 class Buyer(CoreAPIModel):
@@ -446,11 +438,8 @@ class CartCompleteRequest(CoreAPIModel):
         self.payment_data = value
 
 
-class ErrorResponse(CoreAPIModel):
-    type: ErrorResponseType
-    code: ErrorResponseCode
-    message: str
-    param: str | None = None
+class CheckoutErrorResponse(ErrorResponse):
+    pass
 
 
 def _target_type_from_path(path: str | None) -> TargetType:

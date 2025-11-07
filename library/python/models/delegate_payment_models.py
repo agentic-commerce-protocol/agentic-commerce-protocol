@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import Field
 
-from models.common import Address, CoreAPIModel
+from models.common import Address, CoreAPIModel, ErrorResponse
 
 
 class PaymentMethodType(StrEnum):
@@ -15,7 +15,7 @@ class CardNumberType(StrEnum):
     NETWORK_TOKEN = "network_token"
 
 
-class DisplayCardType(StrEnum):
+class DisplayCardFundingType(StrEnum):
     CREDIT = "credit"
     DEBIT = "debit"
     PREPAID = "prepaid"
@@ -35,13 +35,6 @@ class RiskAction(StrEnum):
     AUTHORIZED = "authorized"
 
 
-class ErrorResponseType(StrEnum):
-    INVALID_REQUEST = "invalid_request"
-    RATE_LIMIT_EXCEEDED = "rate_limit_exceeded"
-    PROCESSING_ERROR = "processing_error"
-    SERVICE_UNAVAILABLE = "service_unavailable"
-
-
 class PaymentMethod(CoreAPIModel):
     type: PaymentMethodType
     card_number_type: CardNumberType
@@ -53,7 +46,7 @@ class PaymentMethod(CoreAPIModel):
     cvc: str | None = Field(None, max_length=4)
     checks_performed: list[str] | None = Field(default_factory=list)
     iin: str | None = Field(None, max_length=6)
-    display_card_type: DisplayCardType
+    display_card_funding_type: DisplayCardFundingType
     display_wallet_type: str | None = None
     display_brand: str | None = None
     display_last4: str | None = Field(None, max_length=4)
@@ -77,7 +70,6 @@ class RiskSignal(CoreAPIModel):
 
 class DelegatePaymentRequest(CoreAPIModel):
     payment_method: PaymentMethod | None = None
-    payment_method_encrypted: str | None = None
     allowance: Allowance
     billing_address: Address | None = None
     risk_signals: list[RiskSignal]
@@ -90,12 +82,5 @@ class DelegatePaymentResponse(CoreAPIModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class DelegatePaymentError(CoreAPIModel):
-    type: ErrorResponseType
-    code: str
-    message: str
-    param: str | None = None
-
-
-class DelegatePaymentErrorResponse(CoreAPIModel):
-    error: DelegatePaymentError
+class DelegatePaymentErrorResponse(ErrorResponse):
+    pass
