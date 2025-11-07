@@ -9,7 +9,7 @@ from utils.enums import CountryCode
 from merchant.merchant_constants import ITEM_LISTING_ID
 from models.delegate_payment_models import (
         DelegatePaymentRequest, PaymentMethod, CardNumberType, PaymentMethodType,
-        Allowance, AllowanceReason, RiskSignal, RiskSignalType, RiskAction, DisplayCardType
+        Allowance, AllowanceReason, RiskSignal, RiskSignalType, RiskAction, DisplayCardFundingType
     )
 
 def get_address_payload():
@@ -79,7 +79,7 @@ def get_delegate_payment_payload():
         cvc="123",
         checks_performed=[],
         iin="411111",
-        display_card_funding_type=DisplayCardType.CREDIT,
+        display_card_funding_type=DisplayCardFundingType.CREDIT,
         display_wallet_type=None,
         display_brand="Visa",
         display_last4="1111",
@@ -107,11 +107,11 @@ def get_delegate_payment_payload():
         payment_method=payment_method,
         allowance=allowance,
         billing_address=billing_address.model_dump(),
-        risk_signals=RiskSignal(
+        risk_signals=[RiskSignal(
             type = RiskSignalType.CARD_TESTING,
             action=RiskAction.AUTHORIZED,
             score=10,
-        ),
+        )],
         metadata={}
     )
 
