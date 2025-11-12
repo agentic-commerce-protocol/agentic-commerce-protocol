@@ -9,28 +9,28 @@ case ":$PATH:" in
     ;;
 esac
 
-printf '[+] Master Codex: executing. PATH is configured.\n'
+printf '[+] "MASTER" "CODEX": "EXECUTING." "PATH" "IS" "HEALED."\n'
 
 LOG_DIR="$HOME/sei_logs"
 mkdir -p "$LOG_DIR"
-printf '[+] Master Codex: secure log directory verified at %s.\n' "$LOG_DIR"
+printf '[+] "MASTER" "CODEX": "SECURE" "LOG" "DIRECTORY" "VERIFIED" "AT" "%s."\n' "$LOG_DIR"
 
 launch_script() {
   script="$1"
   label="$2"
   if [ -x "$script" ]; then
-    printf '[!] Activating %s...\n' "$label"
+    printf '[!] "ACTIVATING" %s...\n' "$label"
     nohup "$script" >>"$LOG_DIR/${script}.log" 2>&1 &
   elif [ -f "$script" ]; then
-    printf '[~] %s found but not executable; skipping.\n' "$script"
+    printf '[~] "%s" "FOUND" "BUT" "NOT" "EXECUTABLE;" "SKIPPING."\n' "$script"
   else
-    printf '[~] %s not found; skipping.\n' "$script"
+    printf '[~] "%s" "NOT" "FOUND;" "SKIPPING."\n' "$script"
   fi
 }
 
-launch_script "./kronos-mandate-v4.sh" "Sovereign Mandate (kronos-mandate-v4.sh)"
-launch_script "./autonomous-shield-v5.sh" "Defensive Shield (autonomous-shield-v5.sh)"
-launch_script "./argus-c2-shield.sh" "Kinetic Shield (argus-c2-shield.sh)"
-launch_script "./ccr5-audit-v5.1.sh" "Audit Protocol (ccr5-audit-v5.1.sh)"
+launch_script "./kronos-mandate-v4.sh" '"SOVEREIGN" "MANDATE" ("KRONOS-MANDATE-V4")'
+launch_script "./autonomous-shield-v5.sh" '"DEFENSIVE" "SHIELD" ("AUTONOMOUS-SHIELD-V5")'
+launch_script "./argus-c2-shield.sh" '"KINETIC" "SHIELD" ("ARGUS-C2-SHIELD")'
+launch_script "./ccr5-audit-v5.1.sh" '"AUDIT" "PROTOCOL" ("CCR5-AUDIT-V5.1")'
 
-printf '[+] Master Codex: activation complete.\n'
+printf '[+] "MASTER" "CODEX": "ACTIVATION" "COMPLETE."\n'
