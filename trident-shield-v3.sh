@@ -18,22 +18,30 @@ MAX_LOG_BYTES="${MAX_LOG_BYTES:-1048576}"
 mkdir -p "$LOGDIR"
 touch "$LOGFILE"
 
-echo "$$" > "$PIDFILE"
+echo "$$" >"$PIDFILE"
 
 cleanup() {
   printf '[+] TRIDENT SHUTDOWN requested at %s\n' "$(date -Is)" >>"$LOGFILE"
   rm -f "$PIDFILE"
-  exit 0
 }
 
-trap cleanup INT TERM
+trap 'cleanup; exit 0' INT TERM
+trap cleanup EXIT
 
 sleep_interval() {
   awk -v ms="$SLEEP_MS" 'BEGIN { if (ms <= 0) ms = 1000; printf "%.3f", ms/1000 }'
 }
 
 get_filesize() {
-  size=$( { stat -c %s "$LOGFILE" 2>/dev/null || stat -f %z "$LOGFILE" 2>/dev/null || wc -c <"$LOGFILE"; } 2>/dev/null ) || size=0
+  if size=$(stat -c %s "$LOGFILE" 2>/dev/null); then
+    :
+  elif size=$(stat -f %z "$LOGFILE" 2>/dev/null); then
+    :
+  elif size=$(wc -c <"$LOGFILE" 2>/dev/null); then
+    :
+  else
+    size=0
+  fi
   printf '%s' "$size" | tr -d '[:space:]'
 }
 
@@ -48,8 +56,7 @@ rotate_log_if_needed() {
 log_line() {
   message="$1"
   stamp="$(date -Is)"
-  formatted="[$stamp] $message"
-  printf '%s\n' "$formatted" | tee -a "$LOGFILE" >/dev/null
+  printf '[%s] %s\n' "$stamp" "$message" | tee -a "$LOGFILE" >/dev/null
 }
 
 log_line '[+] TRIDENT-SHIELD-V3 CODEX ACTIVATED (vX.501).'
