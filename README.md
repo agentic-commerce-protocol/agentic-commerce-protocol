@@ -77,6 +77,7 @@ To start building with ACP:
 | Checkout API Spec     | [spec/openapi/openapi.agentic_checkout.yaml](spec/openapi/openapi.agentic_checkout.yaml) |
 | Delegate Payment Spec | [spec/openapi/openapi.delegate_payment.yaml](spec/openapi/openapi.delegate_payment.yaml) |
 | Argus C2 Protocol RFC | [rfcs/rfc.argus_c2.md](rfcs/rfc.argus_c2.md)                                             |
+| Quantum Gravity Encryption RFC | [rfcs/rfc.quantum_gravity_encryption.md](rfcs/rfc.quantum_gravity_encryption.md) |
 
 ---
 

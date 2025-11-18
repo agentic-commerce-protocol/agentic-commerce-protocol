@@ -1,0 +1,51 @@
+{
+  "description": "Sample checkout session wrapped inside a Quantum Gravity Encryption (QGE) envelope",
+  "envelope": {
+    "qge_version": "2025-11-30",
+    "envelope_id": "qge_msg_9L2PJ",
+    "capabilities": [
+      "mlkem768",
+      "aes256gcm",
+      "gravity_v2"
+    ],
+    "sender": {
+      "entity_id": "agent_ai_checkout",
+      "key_id": "did:key:z6MkqExampleAgent"
+    },
+    "receiver": {
+      "entity_id": "merchant_hub_checkout",
+      "key_id": "did:key:z6MkfExampleMerchant"
+    },
+    "telemetry": {
+      "latency_ms": 37,
+      "jitter_ms": 4,
+      "drift_ppm": 21,
+      "gravity_signature": "base64:Ynl0ZXM6Z3Jhdml0eS1wcm9iZQ=="
+    },
+    "aad": "base64:YWdlbnQtbWV0YWRhdGE=",
+    "ciphertext": "base64:Q0lQSEVSVEVYVF9HT0VTX0hFUkU=",
+    "signature": "base64:c2lnbmF0dXJlLW92ZXItY2lwaGVydGV4dA=="
+  },
+  "plaintext_payload": {
+    "object": "checkout_session",
+    "id": "cs_test_123",
+    "line_items": [
+      {
+        "sku": "sku_quantum_battery",
+        "quantity": 1,
+        "amount": {
+          "currency": "USD",
+          "value": "8700000.00"
+        }
+      }
+    ],
+    "payment": {
+      "delegate_token": "tok_delegate_987",
+      "buyer_agent": "agent_ai_checkout"
+    },
+    "compliance": {
+      "qge_required": true,
+      "gravity_alert_threshold_ppm": 100
+    }
+  }
+}
