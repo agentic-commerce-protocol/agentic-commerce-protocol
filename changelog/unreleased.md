@@ -1,0 +1,1 @@
+adding change for CatalogFeed and Rate Hydration feed for Hotels
