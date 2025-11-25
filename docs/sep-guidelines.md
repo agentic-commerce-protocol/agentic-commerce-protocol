@@ -43,7 +43,7 @@ Consider proposing a SEP if your change involves any of the following:
 
 ACP recognizes **two kinds of SEPs**:
 
-1. **Major Changes (Require SEPs)** — Any substantial, complex, or controversial change to
+1. **Major Changes (Require SEPs)** - Any substantial, complex, or controversial change to
    the ACP specification. Examples include:
 
 - Adding, modifying, or removing features in the specification.
@@ -51,9 +51,9 @@ ACP recognizes **two kinds of SEPs**:
 - Breaking changes that are not backwards-compatible.
 - Complex or controversial protocol topics requiring community discussion.
 
-2. **Process Changes (Require SEPs)** — Adjustments to how the project is governed or how
+2. **Process Changes (Require SEPs)** - Adjustments to how the project is governed or how
    core processes operate. This includes changes to governance roles, responsibilities,
-   decision‑making rules, contributor processes, or any structural revisions to the project itself.
+   decision-making rules, contributor processes, or any structural revisions to the project itself.
 
 ## Submitting a SEP
 
@@ -71,15 +71,14 @@ Discussions) is the best way to go about this.
 
 ### SEP Workflow
 
-SEPs should be submitted as a GitHub Issue in the [primary repository](github.com/agentic-
-commerce-protocol/agentic-commerce-protocol). The standard SEP workflow is:
+SEPs should be submitted as a GitHub Issue in the [primary repository](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol). The standard SEP workflow is:
 
 1. You, the SEP author, create a well-formatted GitHub Issue with the `SEP` and `proposal`
    tags. The SEP number is the same as the GitHub Issue number, the two can be used
    interchangeably.
 2. Find a Founding Maintainer or Maintainer (future tier) to sponsor your proposal. Founding
    Maintainers and Maintainers will regularly go over the list of open proposals to determine which
-   proposals to sponsor.&#x20;
+   proposals to sponsor.
 3. Once a sponsor is found, the GitHub Issue is assigned to the sponsor. The sponsor will add
    the `draft` tag, ensure the SEP number is in the title, and assign a milestone.
 4. The sponsor will informally review the proposal and may request changes based on
@@ -121,7 +120,7 @@ Each SEP should have the following parts:
 
 ### SEP States
 
-SEPs can be one one of the following states
+SEPs can be one of the following states:
 
 - `proposal`: SEP proposal without a sponsor.
 - `draft`: SEP proposal with a sponsor.

@@ -3,11 +3,11 @@
 ## Overview
 
 The **Agentic Commerce Protocol (ACP)** is an interaction model and open standard for
-connecting buyers, their AI agents, and businesses to complete purchases seamlessly. ACP’s
+connecting buyers, their AI agents, and businesses to complete purchases seamlessly. ACP's
 governance is inspired by the Model Context Protocol (MCP)
 (https://modelcontextprotocol.io/community/governance) and similar open-source standards
 projects such as PyTorch and Python.
-ACP’s governance is designed to ensure clear decision-making, transparent evolution of the
+ACP's governance is designed to ensure clear decision-making, transparent evolution of the
 specification, and a stable foundation for long-term stewardship as the protocol matures.
 
 ---
@@ -15,8 +15,7 @@ specification, and a stable foundation for long-term stewardship as the protocol
 ## Governance Structure
 
 ACP operates under a two-tier governance model. Collectively these are known as "The
-Stewards". All Stewards agree to act and make decisions in accordance with the principles
-[TODO LINK].
+Stewards". All Stewards agree to act and make decisions in accordance with the [ACP Principles](./principles-mission.md#core-principles).
 
 1. **Founding Maintainers**: Entities (OpenAI and Stripe) that hold final decision-making
    authority for the specification.
@@ -28,8 +27,8 @@ Stewards". All Stewards agree to act and make decisions in accordance with the p
 The **Founding Maintainers** serve as the primary stewards of the ACP project. This tier is
 composed of the following organizations:
 
-- **OpenAI** — represented by Aravind Rao, Bhavin Modi and Riley Strong
-- **Stripe** — represented by TBD
+- **OpenAI** - represented by Aravind Rao, Bhavin Modi and Riley Strong
+- **Stripe** - represented by TBD
 
 The Founding Maintainers are co-equal. Together, they are jointly responsible for approving all
 substantive specification changes, including Specification Enhancement Proposals (SEPs), and
@@ -92,8 +91,7 @@ There are three categories of changes within the ACP project:
 ### Specification Enhancement Proposals (SEPs)
 
 ACP follows a simplified version of the MCP SEP process. SEPs are design documents
-describing proposed changes or extensions to the ACP specification. [TODO Link to SEP
-Guidelines page]
+describing proposed changes or extensions to the ACP specification. Refer to the [SEP Guidelines](./sep-guidelines.md).
 All SEPs, Major Changes and Process Changes require **unanimous approval** from Founding
 Maintainers. Either may delegate day-to-day review authority on SEPs to designated
 representatives, but final approval must be explicit and recorded publicly.

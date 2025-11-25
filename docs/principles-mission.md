@@ -4,8 +4,8 @@
 
 The **Agentic Commerce Protocol (ACP)** exists to promote open, secure, and interoperable
 commerce between agents, payment providers, and sellers. Our mission is to advance adoption
-and real-world use of ACP as a neutral, open standard—one that evolves rapidly alongside the
-pace of AI while maintaining trust, safety, and technical integrity.
+and real-world use of ACP as a neutral, open standard that evolves rapidly alongside the pace of
+AI while maintaining trust, safety, and technical integrity.
 
 ---
 
@@ -16,7 +16,7 @@ resolve disputes, and make directional decisions.
 
 ##### 1. Trust, Security and Compliance
 
-ACP’s first responsibility is to ensure that participants can **safely conduct commerce** through
+ACP's first responsibility is to ensure that participants can **safely conduct commerce** through
 the protocol.
 The protocol should help developers build **secure, trustworthy, and compliant systems** that
 protect users and maintain confidence across the ecosystem.
@@ -27,7 +27,7 @@ The specification is meant to be used. This may seem obvious, but we insist on t
 (agents transacting with sellers) to be front and center. Design changes should focus on real,
 deployable improvements with clear adoption paths, not theoretical ideas. The protocol should
 evolve from actual participant needs, not speculation. Additionally, we recognize that these
-commerce flows are complex – we will write high quality documentation and provide testing
+commerce flows are complex - we will write high quality documentation and provide testing
 tools to ensure confidence in user deployment.
 
 ##### 3. Open and Neutral
