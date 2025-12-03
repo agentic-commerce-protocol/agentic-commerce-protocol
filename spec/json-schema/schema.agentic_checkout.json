@@ -78,13 +78,13 @@
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
+          "enum": ["stripe", "razorpay"]
         },
         "supported_payment_methods": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["card"]
+            "enum": ["card", "upi"]
           }
         }
       },
@@ -300,7 +300,7 @@
         },
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
+          "enum": ["stripe", "razorpay"]
         },
         "billing_address": {
           "$ref": "#/$defs/Address"

@@ -124,6 +124,31 @@
         "metadata"
       ]
     },
+    "PaymentMethodUPI": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "upi"
+        },
+        "delegate_id": {
+          "type": "string",
+          "description": "Unique identifier of the delegation set up by the user on an AI Agent"
+        },
+        "cryptogram": {
+          "type": "string",
+          "description": "Cryptogram provided for the delegated UPI payment"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["type", "delegate_id", "cryptogram"]
+    },
     "Allowance": {
       "type": "object",
       "additionalProperties": false,
@@ -185,7 +210,14 @@
       "additionalProperties": false,
       "properties": {
         "payment_method": {
-          "$ref": "#/$defs/PaymentMethodCard"
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PaymentMethodCard"
+            },
+            {
+              "$ref": "#/$defs/PaymentMethodUPI"
+            }
+          ]
         },
         "allowance": {
           "$ref": "#/$defs/Allowance"
