@@ -156,7 +156,10 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 ## 5. Data Model (authoritative extract)
 
 - **Item**: `id` (string), `quantity` (int ≥ 1)
-- **LineItem**: `id`, `item`, `base_amount`, `discount`, `subtotal`, `tax`, `total` (**int**)
+- **LineItem**: `id`, `item`, `base_amount`, `discount`, `subtotal`, `tax`, `total` (**int**), `name?` (string), `description?` (string), `images?` (array of URI strings), `unit_amount?` (**int**), `disclosures?` (array of **Disclosure**), `custom_attributes?` (array of **CustomAttribute**), `marketplace_seller_details?` (**MarketplaceSellerDetails**)
+- **Disclosure**: `type` (`disclaimer`), `content_type` (`plain | markdown`), `content` (string)
+- **CustomAttribute**: `display_name` (string), `value` (string)
+- **MarketplaceSellerDetails**: `name` (string)
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)

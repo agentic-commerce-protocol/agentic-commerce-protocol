@@ -318,6 +318,30 @@ components:
         quantity: { type: integer, minimum: 1 }
       required: [id, quantity]
 
+    Disclosure:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [disclaimer] }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    CustomAttribute:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name: { type: string }
+        value: { type: string }
+      required: [display_name, value]
+
+    MarketplaceSellerDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+      required: [name]
+
     PaymentProvider:
       type: object
       additionalProperties: false
@@ -343,6 +367,20 @@ components:
         subtotal: { type: integer }
         tax: { type: integer }
         total: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        images:
+          type: array
+          items: { type: string, format: uri }
+        unit_amount: { type: integer }
+        disclosures:
+          type: array
+          items: { $ref: "#/components/schemas/Disclosure" }
+        custom_attributes:
+          type: array
+          items: { $ref: "#/components/schemas/CustomAttribute" }
+        marketplace_seller_details:
+          { $ref: "#/components/schemas/MarketplaceSellerDetails" }
       required: [id, item, base_amount, discount, subtotal, tax, total]
 
     Total:

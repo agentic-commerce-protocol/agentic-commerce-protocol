@@ -35,7 +35,31 @@
         "discount": 0,
         "subtotal": 300,
         "tax": 30,
-        "total": 330
+        "total": 330,
+        "name": "Vintage Denim Jacket",
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg",
+          "https://www.testshop.com/products/item_123/image2.jpg"
+        ],
+        "unit_amount": 300,
+        "custom_attributes": [
+          {
+            "display_name": "Size",
+            "value": "Medium"
+          },
+          {
+            "display_name": "Color",
+            "value": "Blue"
+          }
+        ],
+        "disclosures": [
+          {
+            "type": "disclaimer",
+            "content_type": "plain",
+            "content": "This item is vintage and may show signs of previous wear."
+          }
+        ]
       }
     ],
     "fulfillment_address": {
@@ -257,7 +281,16 @@
         "discount": 0,
         "subtotal": 300,
         "tax": 30,
-        "total": 330
+        "total": 330,
+        "name": "Vintage Denim Jacket",
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg"
+        ],
+        "unit_amount": 300,
+        "marketplace_seller_details": {
+          "name": "VintageClothingCo"
+        }
       }
     ],
     "fulfillment_address": {
