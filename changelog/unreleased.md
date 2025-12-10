@@ -25,3 +25,14 @@ In the OpenAPI specification (`spec/openapi/openapi.agentic_checkout.yaml`), the
 This is a **clarification/bug fix**, not a breaking change. The specification has always required integer amounts in minor units (per the RFC), and all examples demonstrate integer usage. Implementations following the RFC and examples should already be using integers, so this change aligns the OpenAPI schema with the actual specification behavior.
 
 If any implementation was incorrectly sending/receiving these values as quoted strings (e.g., `"100"` instead of `100`), they should update to use numeric integers to comply with the specification.
+
+## Total Description Field
+
+- Added optional `description` field to the `Total` type to provide additional context for line items, especially fees
+- The `description` field is optional and can be used to explain charges (e.g., "Processing and handling fee")
+- Updated specification files:
+  - `spec/json-schema/schema.agentic_checkout.json`
+  - `spec/openapi/openapi.agentic_checkout.yaml`
+  - `rfcs/rfc.agentic_checkout.md`
+  - `examples/examples.agentic_checkout.json`
+

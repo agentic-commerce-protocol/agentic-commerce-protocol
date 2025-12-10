@@ -148,6 +148,9 @@
         },
         "amount": {
           "type": "integer"
+        },
+        "description": {
+          "type": "string"
         }
       },
       "required": ["type", "display_text", "amount"]
