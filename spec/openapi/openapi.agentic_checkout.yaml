@@ -437,7 +437,7 @@ components:
         type:
           {
             type: string,
-            enum: [terms_of_use, privacy_policy, seller_shop_policies],
+            enum: [terms_of_use, privacy_policy, seller_shop_policies, return_policy],
           }
         url: { type: string, format: uri }
       required: [type, url]

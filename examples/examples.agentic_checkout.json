@@ -112,6 +112,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -204,6 +208,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -320,6 +328,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -409,6 +421,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -492,6 +508,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },

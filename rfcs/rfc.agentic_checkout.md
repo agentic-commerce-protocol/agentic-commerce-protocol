@@ -165,6 +165,7 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
+- **Link**: `type` (`terms_of_use|privacy_policy|seller_shop_policies|return_policy`), `url`
 
 All money fields are **integers (minor units)**.
 
