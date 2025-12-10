@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/quantum-gravity-encryption/envelope.schema.json",
+  "title": "Quantum Gravity Encryption (QGE) Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "qge_version": {
+      "type": "string",
+      "const": "2025-11-30"
+    },
+    "envelope_id": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "mlkem512",
+          "mlkem768",
+          "mlkem1024",
+          "aes256gcm",
+          "chacha20poly1305",
+          "gravity_v1",
+          "gravity_v2",
+          "gravity_none"
+        ]
+      },
+      "minItems": 2,
+      "uniqueItems": true,
+      "allOf": [
+        {
+          "contains": {
+            "enum": ["mlkem512", "mlkem768", "mlkem1024"]
+          }
+        },
+        {
+          "contains": {
+            "enum": ["aes256gcm", "chacha20poly1305"]
+          }
+        }
+      ]
+    },
+    "sender": {
+      "$ref": "#/$defs/Participant"
+    },
+    "receiver": {
+      "$ref": "#/$defs/Participant"
+    },
+    "telemetry": {
+      "$ref": "#/$defs/Telemetry"
+    },
+    "ciphertext": {
+      "$ref": "#/$defs/Base64Value"
+    },
+    "aad": {
+      "$ref": "#/$defs/Base64Value"
+    },
+    "signature": {
+      "$ref": "#/$defs/Base64Value"
+    }
+  },
+  "required": [
+    "qge_version",
+    "envelope_id",
+    "capabilities",
+    "sender",
+    "receiver",
+    "ciphertext",
+    "signature"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "capabilities": {
+            "type": "array",
+            "contains": {
+              "enum": ["gravity_v1", "gravity_v2"]
+            }
+          }
+        },
+        "required": ["capabilities"]
+      },
+      "then": {
+        "required": ["telemetry"]
+      }
+    }
+  ],
+  "$defs": {
+    "Participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "type": "string"
+        },
+        "key_id": {
+          "type": "string"
+        }
+      },
+      "required": ["entity_id", "key_id"]
+    },
+    "Telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jitter_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "drift_ppm": {
+          "type": "integer"
+        },
+        "gravity_signature": {
+          "$ref": "#/$defs/Base64Value"
+        }
+      },
+      "required": [
+        "latency_ms",
+        "jitter_ms",
+        "drift_ppm",
+        "gravity_signature"
+      ]
+    },
+    "Base64Value": {
+      "type": "string",
+      "pattern": "^base64:"
+    }
+  }
+}
