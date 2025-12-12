@@ -38,6 +38,25 @@
         "postal_code"
       ]
     },
+    "FulfillmentDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "address": {
+          "$ref": "#/$defs/Address"
+        }
+      }
+    },
     "Buyer": {
       "type": "object",
       "additionalProperties": false,
@@ -266,7 +285,7 @@
           "type": "integer"
         }
       },
-      "required": ["type", "id", "title", "subtotal", "tax", "total"]
+      "required": ["type", "id", "title", "total"]
     },
     "FulfillmentOptionDigital": {
       "type": "object",
@@ -295,7 +314,70 @@
           "type": "integer"
         }
       },
-      "required": ["type", "id", "title", "subtotal", "tax", "total"]
+      "required": ["type", "id", "title", "total"]
+    },
+    "SelectedShippingFulfillmentOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "type": "string"
+        },
+        "item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["option_id", "item_ids"]
+    },
+    "SelectedDigitalFulfillmentOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "type": "string"
+        },
+        "item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["option_id", "item_ids"]
+    },
+    "SelectedFulfillmentOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["shipping", "digital"]
+        },
+        "shipping": {
+          "$ref": "#/$defs/SelectedShippingFulfillmentOption"
+        },
+        "digital": {
+          "$ref": "#/$defs/SelectedDigitalFulfillmentOption"
+        }
+      },
+      "required": ["type"],
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "shipping" }
+          },
+          "required": ["shipping"]
+        },
+        {
+          "properties": {
+            "type": { "const": "digital" }
+          },
+          "required": ["digital"]
+        }
+      ]
     },
     "MessageInfo": {
       "type": "object",
@@ -447,8 +529,8 @@
             "$ref": "#/$defs/LineItem"
           }
         },
-        "fulfillment_address": {
-          "$ref": "#/$defs/Address"
+        "fulfillment_details": {
+          "$ref": "#/$defs/FulfillmentDetails"
         },
         "fulfillment_options": {
           "type": "array",
@@ -463,8 +545,11 @@
             ]
           }
         },
-        "fulfillment_option_id": {
-          "type": "string"
+        "selected_fulfillment_options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SelectedFulfillmentOption"
+          }
         },
         "totals": {
           "type": "array",
@@ -540,8 +625,8 @@
           },
           "minItems": 1
         },
-        "fulfillment_address": {
-          "$ref": "#/$defs/Address"
+        "fulfillment_details": {
+          "$ref": "#/$defs/FulfillmentDetails"
         }
       },
       "required": ["items"]
@@ -559,11 +644,14 @@
             "$ref": "#/$defs/Item"
           }
         },
-        "fulfillment_address": {
-          "$ref": "#/$defs/Address"
+        "fulfillment_details": {
+          "$ref": "#/$defs/FulfillmentDetails"
         },
-        "fulfillment_option_id": {
-          "type": "string"
+        "selected_fulfillment_options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SelectedFulfillmentOption"
+          }
         }
       }
     },
@@ -576,6 +664,9 @@
         },
         "payment_data": {
           "$ref": "#/$defs/PaymentData"
+        },
+        "shipping_address": {
+          "$ref": "#/$defs/Address"
         }
       },
       "required": ["payment_data"]
