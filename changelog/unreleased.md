@@ -33,7 +33,8 @@ If any implementation was incorrectly sending/receiving these values as quoted s
 
 ## Link Type: return_policy
 
-- Added `return_policy` as a new link type option alongside `terms_of_use`, `privacy_policy`, and `seller_shop_policies`
+- Added `return_policy` as a new link type option alongside `terms_of_use` and `privacy_policy`
+- Removed `seller_shop_policies` link type (redundant; item/seller-specific policies should be attached to line items in marketplace scenarios)
 - Updated specification files:
   - `spec/json-schema/schema.agentic_checkout.json`
   - `spec/openapi/openapi.agentic_checkout.yaml`
