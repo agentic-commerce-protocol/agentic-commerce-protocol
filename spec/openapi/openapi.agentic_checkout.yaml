@@ -502,6 +502,10 @@ components:
         links:
           type: array
           items: { $ref: "#/components/schemas/Link" }
+        authentication:
+          $ref: "#/components/schemas/CheckoutSessionAuthentication"
+        authentication_metadata:
+          $ref: "#/components/schemas/authentication_metadata"
       required:
         [
           id,
@@ -555,7 +559,63 @@ components:
       properties:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
+        authentication_result:
+          $ref: "#/components/schemas/AuthenticationResult"
       required: [payment_data]
+
+    CheckoutSessionAuthentication:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [required, completed, not_required, failed]
+          description: >
+            Authentication state. "required" indicates the payment is blocked until
+            authentication completes; "completed" indicates authentication succeeded;
+            "not_required" indicates no authentication is needed; "failed" indicates
+            an attempted authentication failed.
+        method:
+          type: string
+          description: Authentication mechanism (for example, "3ds")
+        authentication_metadata:
+          $ref: "#/components/schemas/authentication_metadata"
+      required: [status]
+
+    authentication_metadata:
+      type: object
+      additionalProperties: true
+      description: >
+        Seller-provided authentication metadata. This object is intentionally
+        generic and extensible. Integrations SHOULD document required keys for a
+        given seller/acquirer. Example keys (non-exhaustive):
+      properties:
+        acquirer_details:
+          type: object
+          additionalProperties: true
+          description: Example group containing acquirer-related fields (this is only an example)
+          properties:
+            acquirer_bin:
+              type: string
+            acquirer_merchant_id:
+              type: string
+            acquirer_country:
+              type: string
+
+    AuthenticationResult:
+      type: object
+      additionalProperties: true
+      description: >
+        Agent-provided authentication results returned to the seller. Fields listed
+        below are common examples; this object is extensible.
+      properties:
+        three_ds_cryptogram:
+          type: string
+          description: 3DS cryptogram / authentication value
+        eci:
+          type: string
+          description: Electronic Commerce Indicator
+      required: []
 
     Error:
       type: object
