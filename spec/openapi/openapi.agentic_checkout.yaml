@@ -227,6 +227,70 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+  /checkout_sessions/{checkout_session_id}/authenticate:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/ContentType"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Submit 3DS authentication result
+      operationId: authenticateCheckoutSession
+      description: |
+        Submits the result of a 3DS challenge authentication to continue payment processing.
+        This endpoint is called after the user completes 3DS authentication in the agent platform.
+        See the 3DS Authentication RFC for the complete flow.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionAuthenticateRequest"
+            examples:
+              success:
+                summary: Submit successful authentication result
+                value:
+                  authentication_result:
+                    session_data: "cs_3ds_01HV3P3ABC123XYZ"
+                    cres: "eyJ0cmFuc1N0YXR1cyI6IlkiLCJhdXRoZW50aWNhdGlvblZhbHVlIjoiQWdBQUFBQT0ifQ=="
+      responses:
+        "200":
+          description: Authentication processed, session updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "400":
+          description: Invalid or malformed request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Session not found or session_data invalid
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Idempotency conflict
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "410":
+          description: 3DS session expired
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -428,6 +492,9 @@ components:
           { type: string, description: "RFC 9535 JSONPath", nullable: true }
         content_type: { type: string, enum: [plain, markdown] }
         content: { type: string }
+        authentication_data:
+          $ref: "#/components/schemas/ThreeDsAuthenticationData"
+          description: Present when code is requires_3ds
       required: [type, code, content_type, content]
 
     Link:
@@ -557,6 +624,52 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
       required: [payment_data]
+
+    ThreeDsAuthenticationData:
+      type: object
+      additionalProperties: false
+      description: 3DS challenge parameters returned when authentication is required
+      properties:
+        version:
+          type: string
+          enum: ["2.1.0", "2.2.0", "2.3.0"]
+          description: 3DS protocol version
+        acs_url:
+          type: string
+          format: uri
+          description: Access Control Server URL for challenge
+        creq:
+          type: string
+          description: Base64-encoded Challenge Request
+        session_data:
+          type: string
+          description: Opaque session identifier for continuation
+        three_ds_server_trans_id:
+          type: string
+          description: 3DS Server Transaction ID
+      required: [version, acs_url, creq, session_data]
+
+    ThreeDsAuthenticationResult:
+      type: object
+      additionalProperties: false
+      description: 3DS authentication result submitted after challenge completion
+      properties:
+        session_data:
+          type: string
+          description: Opaque session identifier from authentication_data
+        cres:
+          type: string
+          description: Base64-encoded Challenge Response from ACS
+      required: [session_data, cres]
+
+    CheckoutSessionAuthenticateRequest:
+      type: object
+      additionalProperties: false
+      description: Request body for submitting 3DS authentication result
+      properties:
+        authentication_result:
+          $ref: "#/components/schemas/ThreeDsAuthenticationResult"
+      required: [authentication_result]
 
     Error:
       type: object
