@@ -81,21 +81,27 @@ When the issuer requires user authentication:
    Merchant → PSP: Complete 3DS with cres
    PSP → Issuer: Validate authentication
 
-4. Payment Completion
-   Merchant → PSP: Authorize payment with authentication result
+   Merchant → Agent: 200 OK
+                     CheckoutSession (
+                       status=ready_for_payment,
+                       three_ds_result: { eci, cavv, ... }
+                     )
+
+4. Complete Payment with 3DS Proof
+   Agent → Merchant: POST /checkout_sessions/{id}/complete
+                     (payment_data with token + three_ds_proof)
+
+   Merchant → PSP: Authorize payment with 3DS proof
 
    Merchant → Agent: 200 OK
                      CheckoutSession (status=completed, order={...})
 ```
 
-### 2.3 Alternative: Polling for Completion
+**Key Design Decision:** The `/authenticate` endpoint validates the 3DS challenge and returns the authentication proof (ECI, CAVV, etc.), but does **not** create the order. The agent must call `/complete` again with the `three_ds_proof` to finalize the payment. This separation provides:
 
-Instead of the agent submitting the `cres`, some implementations may have the ACS redirect to a merchant-hosted callback URL. In this case:
-
-```
-Agent: Polls GET /checkout_sessions/{id} until status changes
-       from "in_progress" to "completed" or "ready_for_payment"
-```
+- **Semantic clarity**: `/complete` always creates the order, `/authenticate` only handles authentication
+- **Retry flexibility**: If authorization fails after successful 3DS, the agent can retry `/complete` without re-authenticating
+- **Alignment with PSP flows**: Mirrors how most payment processors separate authentication from authorization
 
 ---
 
@@ -143,7 +149,64 @@ Submitted by the agent to complete authentication:
 }
 ```
 
-### 3.3 Extended MessageError
+### 3.3 ThreeDsResult
+
+Returned by `/authenticate` after successful 3DS authentication. Contains the cryptographic proof of authentication:
+
+| Field | Type | Req | Description |
+|-------|------|:---:|-------------|
+| `eci` | string | ✅ | Electronic Commerce Indicator (e.g., `"05"`, `"02"`) |
+| `cavv` | string | ✅ | Cardholder Authentication Verification Value (base64) |
+| `ds_transaction_id` | string | ✅ | Directory Server Transaction ID |
+| `acs_transaction_id` | string | ❌ | ACS Transaction ID |
+| `version` | string | ✅ | 3DS protocol version used |
+| `authentication_status` | string | ✅ | Authentication status (`Y`, `A`, `N`, `U`, `R`) |
+
+**Example:**
+
+```json
+{
+  "eci": "05",
+  "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+  "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+  "acs_transaction_id": "3ac794b8-db5f-4f73-a1a6-457891234567",
+  "version": "2.1.0",
+  "authentication_status": "Y"
+}
+```
+
+**Authentication Status Values:**
+- `Y` - Authentication successful
+- `A` - Attempted authentication (proof generated)
+- `N` - Authentication failed
+- `U` - Authentication unavailable
+- `R` - Authentication rejected
+
+### 3.4 ThreeDsProof
+
+Submitted with `/complete` to authorize payment using 3DS authentication proof:
+
+| Field | Type | Req | Description |
+|-------|------|:---:|-------------|
+| `eci` | string | ✅ | Electronic Commerce Indicator |
+| `cavv` | string | ✅ | Cardholder Authentication Verification Value |
+| `ds_transaction_id` | string | ✅ | Directory Server Transaction ID |
+| `trans_status` | string | ❌ | Transaction status (`Y`, `A`, `N`, `U`, `R`, `C`) |
+| `version` | string | ❌ | 3DS protocol version |
+
+**Example:**
+
+```json
+{
+  "eci": "05",
+  "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+  "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+  "trans_status": "Y",
+  "version": "2.1.0"
+}
+```
+
+### 3.5 Extended MessageError
 
 The existing `MessageError` type is extended with an optional `authentication_data` field:
 
@@ -156,6 +219,14 @@ The existing `MessageError` type is extended with an optional `authentication_da
 | `content` | string | ✅ | Human-readable message |
 | `authentication_data` | ThreeDsAuthenticationData | ❌ | Present when `code` is `requires_3ds` |
 
+### 3.6 Extended CheckoutSession
+
+The `CheckoutSession` response is extended with an optional `three_ds_result` field:
+
+| Field | Type | Req | Description |
+|-------|------|:---:|-------------|
+| `three_ds_result` | ThreeDsResult | ❌ | Present after successful `/authenticate` call |
+
 ---
 
 ## 4. Endpoints
@@ -164,11 +235,32 @@ The existing `MessageError` type is extended with an optional `authentication_da
 
 `POST /checkout_sessions/{checkout_session_id}/complete`
 
-**New behavior when 3DS challenge is required:**
+The `/complete` endpoint now accepts an optional `three_ds_proof` field for payments authenticated via 3DS.
 
-Returns `200 OK` with:
-- `status`: `in_progress`
-- `messages[]`: Contains `requires_3ds` error with `authentication_data`
+**Request Body (with 3DS proof):**
+
+```json
+{
+  "buyer": { ... },
+  "payment_data": {
+    "token": "vt_01J8Z3WXYZ9ABC",
+    "provider": "stripe"
+  },
+  "three_ds_proof": {
+    "eci": "05",
+    "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+    "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+    "trans_status": "Y",
+    "version": "2.1.0"
+  }
+}
+```
+
+**Behavior:**
+
+1. **Without `three_ds_proof`**: Merchant initiates 3DS. If challenge required, returns `status: in_progress` with `requires_3ds` error and `authentication_data`.
+
+2. **With `three_ds_proof`**: Merchant authorizes payment using the provided 3DS proof. Returns `status: completed` with `order` on success.
 
 The session remains in `in_progress` state until authentication completes or times out.
 
@@ -203,7 +295,7 @@ Submits the 3DS authentication result after the user completes the challenge.
 
 | Status | Description |
 |--------|-------------|
-| `200 OK` | Authentication processed, returns updated `CheckoutSession` |
+| `200 OK` | Authentication processed, returns updated `CheckoutSession` with `three_ds_result` |
 | `400 Bad Request` | Invalid or malformed request |
 | `404 Not Found` | Session not found or `session_data` invalid |
 | `409 Conflict` | Idempotency conflict |
@@ -211,14 +303,19 @@ Submits the 3DS authentication result after the user completes the challenge.
 
 **Success Response (Authentication Succeeded):**
 
+The response includes `three_ds_result` containing the authentication proof. The session status returns to `ready_for_payment`, and the agent must call `/complete` again with `three_ds_proof` to finalize the payment.
+
 ```json
 {
   "id": "checkout_session_123",
-  "status": "completed",
-  "order": {
-    "id": "ord_abc123",
-    "checkout_session_id": "checkout_session_123",
-    "permalink_url": "https://merchant.example.com/orders/ord_abc123"
+  "status": "ready_for_payment",
+  "three_ds_result": {
+    "eci": "05",
+    "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+    "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+    "acs_transaction_id": "3ac794b8-db5f-4f73-a1a6-457891234567",
+    "version": "2.1.0",
+    "authentication_status": "Y"
   },
   "messages": [],
   ...
@@ -252,14 +349,14 @@ Submits the 3DS authentication result after the user completes the challenge.
                     │  ready_for_payment  │
                     └──────────┬──────────┘
                                │
-                    POST /complete (with payment)
+                    POST /complete (without 3DS proof)
                                │
               ┌────────────────┼────────────────┐
               │                │                │
               ▼                ▼                ▼
      ┌─────────────┐   ┌─────────────┐   ┌───────────┐
      │  completed  │   │ in_progress │   │  declined │
-     │ (frictionless)│  │ (challenge) │   │           │
+     │(frictionless)│  │ (challenge) │   │           │
      └─────────────┘   └──────┬──────┘   └───────────┘
                               │
                    POST /authenticate
@@ -267,10 +364,18 @@ Submits the 3DS authentication result after the user completes the challenge.
               ┌───────────────┼───────────────┐
               │               │               │
               ▼               ▼               ▼
-     ┌─────────────┐  ┌──────────────────┐  ┌─────────┐
-     │  completed  │  │ ready_for_payment│  │ timeout │
-     │  (success)  │  │    (failure)     │  │(expired)│
-     └─────────────┘  └──────────────────┘  └─────────┘
+  ┌───────────────────┐  ┌───────────────┐  ┌─────────┐
+  │ ready_for_payment │  │ready_for_payment│ │ timeout │
+  │ + three_ds_result │  │   (failure)    │  │(expired)│
+  └─────────┬─────────┘  └───────────────┘  └─────────┘
+            │
+    POST /complete (with three_ds_proof)
+            │
+            ▼
+     ┌─────────────┐
+     │  completed  │
+     │  + order    │
+     └─────────────┘
 ```
 
 ---
@@ -345,7 +450,7 @@ if (threeDsMessage) {
 
 #### 6.2.2 Presenting the Challenge
 
-**Option A: Iframe (Recommended)**
+Agent platforms **MUST** present 3DS challenges using an iframe. This keeps the user within the checkout context and provides the best user experience.
 
 ```html
 <iframe
@@ -365,41 +470,43 @@ if (threeDsMessage) {
 </script>
 ```
 
-**Option B: Redirect**
-
-Redirect user to a merchant-hosted 3DS page that handles the challenge and redirects back.
-
 #### 6.2.3 Capturing the Response
 
-After the user completes the challenge, the ACS returns a `cres` (Challenge Response). Agent platforms **MUST**:
+After the user completes the challenge, the ACS posts the `cres` (Challenge Response) back to the iframe. Agent platforms **MUST**:
 
-1. Capture the `cres` from the ACS response
-2. Submit to merchant via `POST /authenticate`
-3. Handle the resulting session state
-
-#### 6.2.4 Polling for Completion
-
-If using the redirect approach, poll for completion:
+1. Listen for the `cres` from the ACS response (typically via `postMessage` or form POST to a notification URL)
+2. Extract the base64-encoded `cres` value
+3. Submit to merchant via `POST /authenticate`
+4. On success, call `POST /complete` with the `three_ds_proof` from the response
+5. Handle errors appropriately (show message, allow retry with different payment method)
 
 ```javascript
-const pollInterval = 2000; // 2 seconds
-const maxPolls = 150; // 5 minutes max
+// Example: Listening for 3DS completion
+window.addEventListener('message', async (event) => {
+  if (event.data.type === '3ds-complete') {
+    const { cres } = event.data;
 
-let polls = 0;
-while (polls < maxPolls) {
-  const session = await getCheckoutSession(sessionId);
+    // Submit authentication result
+    const authResponse = await authenticateCheckout(sessionId, {
+      authentication_result: { session_data, cres }
+    });
 
-  if (session.status === 'completed') {
-    return session.order;
+    if (authResponse.three_ds_result) {
+      // Complete payment with 3DS proof
+      const completeResponse = await completeCheckout(sessionId, {
+        payment_data,
+        three_ds_proof: {
+          eci: authResponse.three_ds_result.eci,
+          cavv: authResponse.three_ds_result.cavv,
+          ds_transaction_id: authResponse.three_ds_result.ds_transaction_id,
+          trans_status: authResponse.three_ds_result.authentication_status,
+          version: authResponse.three_ds_result.version
+        }
+      });
+      // Order created successfully
+    }
   }
-  if (session.status === 'ready_for_payment') {
-    throw new Error('Authentication failed');
-  }
-
-  await sleep(pollInterval);
-  polls++;
-}
-throw new Error('Authentication timeout');
+});
 ```
 
 ---
@@ -430,7 +537,6 @@ Agent platforms presenting 3DS challenges **SHOULD**:
 ### 7.4 Rate Limiting
 
 - Merchants **SHOULD** rate limit `/authenticate` (e.g., 10 requests/minute per session)
-- Agent platforms **SHOULD** rate limit polling (e.g., 1 request/2 seconds)
 
 ---
 
@@ -544,6 +650,63 @@ Content-Type: application/json
 
 {
   "id": "cs_123",
+  "status": "ready_for_payment",
+  "currency": "usd",
+  "line_items": [...],
+  "totals": [...],
+  "three_ds_result": {
+    "eci": "05",
+    "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+    "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+    "acs_transaction_id": "3ac794b8-db5f-4f73-a1a6-457891234567",
+    "version": "2.1.0",
+    "authentication_status": "Y"
+  },
+  "messages": [],
+  "links": [...]
+}
+```
+
+### 9.3 Complete Session with 3DS Proof — Success
+
+**Request:**
+
+```http
+POST /checkout_sessions/cs_123/complete HTTP/1.1
+Host: merchant.example.com
+Authorization: Bearer api_key_123
+Content-Type: application/json
+Idempotency-Key: idem_complete_xyz789
+API-Version: 2025-12-16
+
+{
+  "buyer": {
+    "first_name": "John",
+    "last_name": "Smith",
+    "email": "john@example.com"
+  },
+  "payment_data": {
+    "token": "vt_01J8Z3WXYZ9ABC",
+    "provider": "stripe"
+  },
+  "three_ds_proof": {
+    "eci": "05",
+    "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+    "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+    "trans_status": "Y",
+    "version": "2.1.0"
+  }
+}
+```
+
+**Response:**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "cs_123",
   "status": "completed",
   "currency": "usd",
   "line_items": [...],
@@ -558,7 +721,7 @@ Content-Type: application/json
 }
 ```
 
-### 9.3 Authenticate Session — Failure
+### 9.4 Authenticate Session — Failure
 
 **Response:**
 
@@ -581,7 +744,7 @@ Content-Type: application/json
 }
 ```
 
-### 9.4 Authenticate Session — Expired
+### 9.5 Authenticate Session — Expired
 
 **Response:**
 
@@ -616,11 +779,11 @@ Content-Type: application/json
 
 - [ ] Detects `requires_3ds` in messages array
 - [ ] Extracts `authentication_data` from error message
-- [ ] Presents 3DS challenge in secure iframe or via redirect
-- [ ] Captures `cres` from ACS response
-- [ ] Submits authentication result to merchant
-- [ ] Implements polling with reasonable rate limits
-- [ ] Handles timeout gracefully (max 5 minutes polling)
+- [ ] Presents 3DS challenge in secure iframe
+- [ ] Captures `cres` from ACS response (via postMessage or notification URL)
+- [ ] Submits authentication result to merchant via `/authenticate`
+- [ ] Calls `/complete` with `three_ds_proof` after successful authentication
+- [ ] Handles timeout gracefully (10-minute session limit)
 - [ ] Shows clear user messaging during authentication
 
 ---

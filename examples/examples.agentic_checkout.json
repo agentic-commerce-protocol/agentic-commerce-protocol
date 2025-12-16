@@ -651,6 +651,125 @@
       "email": "johnsmith@mail.com",
       "phone_number": "15552003434"
     },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      }
+    ],
+    "three_ds_result": {
+      "eci": "05",
+      "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+      "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+      "acs_transaction_id": "3ac794b8-db5f-4f73-a1a6-457891234567",
+      "version": "2.1.0",
+      "authentication_status": "Y"
+    },
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "complete_checkout_session_with_3ds_proof_request": {
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "payment_data": {
+      "token": "spt_123",
+      "provider": "stripe",
+      "billing_address": {
+        "name": "John Smith",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    },
+    "three_ds_proof": {
+      "eci": "05",
+      "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+      "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+      "trans_status": "Y",
+      "version": "2.1.0"
+    }
+  },
+  "complete_checkout_session_with_3ds_proof_response": {
+    "id": "checkout_session_123",
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
     "status": "completed",
     "currency": "usd",
     "line_items": [
