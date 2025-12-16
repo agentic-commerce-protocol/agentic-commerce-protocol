@@ -561,6 +561,9 @@ components:
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+        three_ds_result:
+          $ref: "#/components/schemas/ThreeDsResult"
+          description: Present after successful /authenticate call
         messages:
           type: array
           items:
@@ -623,6 +626,7 @@ components:
       properties:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
+        three_ds_proof: { $ref: "#/components/schemas/ThreeDsProof" }
       required: [payment_data]
 
     ThreeDsAuthenticationData:
@@ -661,6 +665,57 @@ components:
           type: string
           description: Base64-encoded Challenge Response from ACS
       required: [session_data, cres]
+
+    ThreeDsResult:
+      type: object
+      additionalProperties: false
+      description: 3DS authentication proof returned after successful authentication
+      properties:
+        eci:
+          type: string
+          description: Electronic Commerce Indicator (e.g., "05", "02")
+        cavv:
+          type: string
+          description: Cardholder Authentication Verification Value (base64)
+        ds_transaction_id:
+          type: string
+          description: Directory Server Transaction ID
+        acs_transaction_id:
+          type: string
+          description: ACS Transaction ID
+        version:
+          type: string
+          enum: ["2.1.0", "2.2.0", "2.3.0"]
+          description: 3DS protocol version used
+        authentication_status:
+          type: string
+          enum: ["Y", "A", "N", "U", "R"]
+          description: "Authentication status: Y=Success, A=Attempted, N=Failed, U=Unavailable, R=Rejected"
+      required: [eci, cavv, ds_transaction_id, version, authentication_status]
+
+    ThreeDsProof:
+      type: object
+      additionalProperties: false
+      description: 3DS proof submitted with /complete to authorize payment
+      properties:
+        eci:
+          type: string
+          description: Electronic Commerce Indicator
+        cavv:
+          type: string
+          description: Cardholder Authentication Verification Value
+        ds_transaction_id:
+          type: string
+          description: Directory Server Transaction ID
+        trans_status:
+          type: string
+          enum: ["Y", "A", "N", "U", "R", "C"]
+          description: "Transaction status from 3DS authentication (Y=Authenticated, A=Attempted, N=Failed, U=Unavailable, R=Rejected, C=Challenge required)"
+        version:
+          type: string
+          enum: ["2.1.0", "2.2.0", "2.3.0"]
+          description: 3DS protocol version
+      required: [eci, cavv, ds_transaction_id]
 
     CheckoutSessionAuthenticateRequest:
       type: object
