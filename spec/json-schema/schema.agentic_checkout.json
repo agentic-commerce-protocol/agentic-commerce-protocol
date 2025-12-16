@@ -275,6 +275,10 @@
         },
         "content": {
           "type": "string"
+        },
+        "authentication_data": {
+          "$ref": "#/$defs/ThreeDsAuthenticationData",
+          "description": "Present when code is requires_3ds"
         }
       },
       "required": ["type", "code", "content_type", "content"]
@@ -506,6 +510,63 @@
         }
       },
       "required": ["payment_data"]
+    },
+    "ThreeDsAuthenticationData": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "3DS challenge parameters returned when authentication is required",
+      "properties": {
+        "version": {
+          "type": "string",
+          "enum": ["2.1.0", "2.2.0", "2.3.0"],
+          "description": "3DS protocol version"
+        },
+        "acs_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Access Control Server URL for challenge"
+        },
+        "creq": {
+          "type": "string",
+          "description": "Base64-encoded Challenge Request"
+        },
+        "session_data": {
+          "type": "string",
+          "description": "Opaque session identifier for continuation"
+        },
+        "three_ds_server_trans_id": {
+          "type": "string",
+          "description": "3DS Server Transaction ID"
+        }
+      },
+      "required": ["version", "acs_url", "creq", "session_data"]
+    },
+    "ThreeDsAuthenticationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "3DS authentication result submitted after challenge completion",
+      "properties": {
+        "session_data": {
+          "type": "string",
+          "description": "Opaque session identifier from authentication_data"
+        },
+        "cres": {
+          "type": "string",
+          "description": "Base64-encoded Challenge Response from ACS"
+        }
+      },
+      "required": ["session_data", "cres"]
+    },
+    "CheckoutSessionAuthenticateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Request body for submitting 3DS authentication result",
+      "properties": {
+        "authentication_result": {
+          "$ref": "#/$defs/ThreeDsAuthenticationResult"
+        }
+      },
+      "required": ["authentication_result"]
     },
     "Error": {
       "type": "object",
