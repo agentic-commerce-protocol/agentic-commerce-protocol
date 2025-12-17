@@ -213,7 +213,15 @@ paths:
       tags: [CheckoutSessions]
       summary: Cancel a checkout session
       operationId: cancelCheckoutSession
-      description: Cancels a session if not already completed or canceled.
+      description: |
+        Cancels a session if not already completed or canceled.
+        Agents MAY include an intent_trace to communicate why the session is being abandoned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelSessionRequest"
       responses:
         "200":
           description: Canceled session
@@ -377,9 +385,9 @@ components:
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
         latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     FulfillmentOptionDigital:
@@ -390,9 +398,9 @@ components:
         id: { type: string }
         title: { type: string }
         subtitle: { type: string }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     MessageInfo:
@@ -556,6 +564,41 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
       required: [payment_data]
+
+    IntentTrace:
+      type: object
+      properties:
+        reason_code:
+          type: string
+          description: |
+            Reason for abandonment. This enum is extensible: servers SHOULD accept
+            unrecognized values and treat them as "other" (see RFC Section 7.2).
+            Validators SHOULD be configured for lenient enum handling.
+          enum:
+            - price_sensitivity
+            - shipping_cost
+            - shipping_speed
+            - product_fit
+            - trust_security
+            - returns_policy
+            - payment_options
+            - comparison
+            - timing_deferred
+            - other
+        trace_summary:
+          type: string
+          maxLength: 500
+          description: A generated summary of the specific objection or negotiation gap.
+        metadata:
+          type: object
+          additionalProperties:
+            type: [string, number, boolean]
+      required: [reason_code]
+
+    CancelSessionRequest:
+      type: object
+      properties:
+        intent_trace: { $ref: "#/components/schemas/IntentTrace" }
 
     Error:
       type: object

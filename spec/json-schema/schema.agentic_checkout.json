@@ -504,6 +504,47 @@
       },
       "required": ["payment_data"]
     },
+    "IntentTrace": {
+      "type": "object",
+      "properties": {
+        "reason_code": {
+          "type": "string",
+          "description": "Reason for abandonment. This enum is extensible: servers SHOULD accept unrecognized values and treat them as 'other' (see RFC Section 7.2). Validators SHOULD be configured for lenient enum handling.",
+          "enum": [
+            "price_sensitivity",
+            "shipping_cost",
+            "shipping_speed",
+            "product_fit",
+            "trust_security",
+            "returns_policy",
+            "payment_options",
+            "comparison",
+            "timing_deferred",
+            "other"
+          ]
+        },
+        "trace_summary": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "A generated summary of the specific objection or negotiation gap."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number", "boolean"]
+          }
+        }
+      },
+      "required": ["reason_code"]
+    },
+    "CancelSessionRequest": {
+      "type": "object",
+      "properties": {
+        "intent_trace": {
+          "$ref": "#/$defs/IntentTrace"
+        }
+      }
+    },
     "Error": {
       "type": "object",
       "additionalProperties": false,

@@ -406,6 +406,26 @@
       }
     ]
   },
+  "cancel_checkout_session_request": {
+    "intent_trace": {
+      "reason_code": "shipping_cost",
+      "trace_summary": "User loves the item but isn't willing to pay $10 for standard shipping.",
+      "metadata": {
+        "target_shipping_cost": 0,
+        "competitor_reference": "amazon_prime"
+      }
+    }
+  },
+  "cancel_checkout_session_request_timing_deferred": {
+    "intent_trace": {
+      "reason_code": "timing_deferred",
+      "trace_summary": "User confirmed product fit and price but plans to purchase after next paycheck.",
+      "metadata": {
+        "anticipated_timeframe": "2_weeks",
+        "deferral_trigger": "budget_cycle"
+      }
+    }
+  },
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
     "status": "canceled",
