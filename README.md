@@ -76,6 +76,7 @@ To start building with ACP:
 | --------------------- | ---------------------------------------------------------------------------------------- |
 | Checkout API Spec     | [spec/openapi/openapi.agentic_checkout.yaml](spec/openapi/openapi.agentic_checkout.yaml) |
 | Delegate Payment Spec | [spec/openapi/openapi.delegate_payment.yaml](spec/openapi/openapi.delegate_payment.yaml) |
+| Product Feed Spec     | [spec/json-schema/schema.product_feed.json](spec/json-schema/schema.product_feed.json) |
 
 ---
 
