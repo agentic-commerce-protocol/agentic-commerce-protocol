@@ -2,5 +2,8 @@
   // Run Prettier on save
   "editor.formatOnSave": true,
   // Use Prettier as the default formatter
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "main"
+  ]
 }

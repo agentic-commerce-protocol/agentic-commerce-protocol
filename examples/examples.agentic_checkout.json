@@ -86,7 +86,8 @@
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "subtotal": 100,
         "tax": 0,
-        "total": 100
+        "total": 100000000000
+        
       },
       {
         "type": "shipping",
