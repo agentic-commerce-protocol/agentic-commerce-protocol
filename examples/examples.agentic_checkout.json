@@ -513,5 +513,233 @@
         }
       ]
     }
+  },
+  "create_checkout_session_razorpay_upi_response": {
+    "id": "checkout_session_456",
+    "payment_provider": {
+      "provider": "razorpay",
+      "supported_payment_methods": ["card", "upi"]
+    },
+    "status": "ready_for_payment",
+    "currency": "inr",
+    "line_items": [
+      {
+        "id": "line_item_456",
+        "item": {
+          "id": "item_456",
+          "quantity": 2
+        },
+        "base_amount": 50000,
+        "discount": 5000,
+        "subtotal": 45000,
+        "tax": 8100,
+        "total": 53100
+      }
+    ],
+    "fulfillment_address": {
+      "name": "Priya Sharma",
+      "line_one": "456 Brigade Road",
+      "line_two": "Floor 3",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "country": "IN",
+      "postal_code": "560001"
+    },
+    "fulfillment_option_id": "fulfillment_option_789",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 50000
+      },
+      {
+        "type": "items_discount",
+        "display_text": "Discount",
+        "amount": -5000
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 45000
+      },
+      {
+        "type": "tax",
+        "display_text": "GST (18%)",
+        "amount": 8100
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Delivery Charges",
+        "amount": 5000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 58100
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_789",
+        "title": "Standard Delivery",
+        "subtitle": "Arrives in 3-4 days",
+        "carrier": "Delhivery",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 5000,
+        "tax": 0,
+        "total": 5000
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_890",
+        "title": "Express Delivery",
+        "subtitle": "Arrives tomorrow",
+        "carrier": "Dunzo",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-09T18:00:00.00Z",
+        "subtotal": 15000,
+        "tax": 0,
+        "total": 15000
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Free delivery on orders above ₹1000"
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.swiggy.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "complete_checkout_session_razorpay_upi_request": {
+    "buyer": {
+      "first_name": "Priya",
+      "last_name": "Sharma",
+      "email": "priya.sharma@mail.com",
+      "phone_number": "919876543210"
+    },
+    "payment_data": {
+      "token": "rzp_vt_123abc",
+      "provider": "razorpay",
+      "billing_address": {
+        "name": "Priya Sharma",
+        "line_one": "456 Brigade Road",
+        "line_two": "Floor 3",
+        "city": "Bangalore",
+        "state": "Karnataka",
+        "country": "IN",
+        "postal_code": "560001"
+      }
+    }
+  },
+  "complete_checkout_session_razorpay_upi_response": {
+    "id": "checkout_session_456",
+    "buyer": {
+      "first_name": "Priya",
+      "last_name": "Sharma",
+      "email": "priya.sharma@mail.com",
+      "phone_number": "919876543210"
+    },
+    "payment_provider": {
+      "provider": "razorpay",
+      "supported_payment_methods": ["card", "upi"]
+    },
+    "status": "completed",
+    "currency": "inr",
+    "line_items": [
+      {
+        "id": "line_item_456",
+        "item": {
+          "id": "item_456",
+          "quantity": 2
+        },
+        "base_amount": 50000,
+        "discount": 5000,
+        "subtotal": 45000,
+        "tax": 8100,
+        "total": 53100
+      }
+    ],
+    "fulfillment_address": {
+      "name": "Priya Sharma",
+      "line_one": "456 Brigade Road",
+      "line_two": "Floor 3",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "country": "IN",
+      "postal_code": "560001"
+    },
+    "fulfillment_option_id": "fulfillment_option_789",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 50000
+      },
+      {
+        "type": "items_discount",
+        "display_text": "Discount",
+        "amount": -5000
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 45000
+      },
+      {
+        "type": "tax",
+        "display_text": "GST (18%)",
+        "amount": 8100
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Delivery Charges",
+        "amount": 5000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 58100
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_789",
+        "title": "Standard Delivery",
+        "subtitle": "Arrives in 3-4 days",
+        "carrier": "Delhivery",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 5000,
+        "tax": 0,
+        "total": 5000
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Order successfully placed with UPI payment"
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.swiggy.com/legal/terms-of-use"
+      }
+    ],
+    "order": {
+      "id": "order_razorpay_upi_123",
+      "checkout_session_id": "checkout_session_456",
+      "permalink_url": "https://www.swiggy.com/orders/order_razorpay_upi_123"
+    }
   }
 }

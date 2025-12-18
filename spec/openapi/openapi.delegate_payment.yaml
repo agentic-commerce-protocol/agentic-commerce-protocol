@@ -19,7 +19,7 @@ paths:
       operationId: delegatePayment
       description: |
         Tokenizes a credential for controlled usage by the merchant's PSP per the **Allowance** constraints.
-        Exactly one credential type is currently supported: **card**.
+        Supported credential types: **card**, **upi**.
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -74,6 +74,33 @@ paths:
                       score: 10
                       action: manual_review
                   metadata: { "campaign": "q4" }
+              upi_success:
+                summary: UPI — success
+                value:
+                  payment_method:
+                    type: upi
+                    delegate_id: "c894aa29a7da69"
+                    cryptogram: "a345345dfgdfasdfh45jtyhgjkyutsdasd2"
+                  allowance:
+                    reason: one_time
+                    max_amount: 100000
+                    currency: inr
+                    checkout_session_id: "csn_01HV3P3..."
+                    merchant_id: "acme"
+                    expires_at: "2025-10-09T07:20:50.52Z"
+                  billing_address:
+                    name: "Rajesh Kumar"
+                    line_one: "123 MG Road"
+                    line_two: "Apartment 5B"
+                    city: "Mumbai"
+                    state: "Maharashtra"
+                    country: "IN"
+                    postal_code: "400001"
+                  risk_signals:
+                    - type: card_testing
+                      score: 5
+                      action: authorized
+                  metadata: { "payment_method": "upi" }
       responses:
         "201":
           description: Created
@@ -260,7 +287,9 @@ components:
       additionalProperties: false
       properties:
         payment_method:
-          $ref: "#/components/schemas/PaymentMethodCard"
+          oneOf:
+            - $ref: "#/components/schemas/PaymentMethodCard"
+            - $ref: "#/components/schemas/PaymentMethodUPI"
         allowance:
           $ref: "#/components/schemas/Allowance"
         billing_address:
@@ -325,6 +354,24 @@ components:
           type: object
           additionalProperties: { type: string }
       required: [type, card_number_type, number, display_card_funding_type, metadata]
+
+    PaymentMethodUPI:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [upi]
+        delegate_id:
+          type: string
+          description: "Unique identifier of the delegation set up by the user on an AI Agent"
+        cryptogram:
+          type: string
+          description: "Cryptogram provided for the delegated UPI payment"
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+      required: [type, delegate_id, cryptogram]
 
     Address:
       type: object

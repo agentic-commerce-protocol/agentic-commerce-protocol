@@ -1,7 +1,7 @@
 # RFC: Agentic Checkout — Merchant REST API
 
 **Status:** Draft  
-**Version:** 2025-09-29  
+**Version:** 2025-10-01  
 **Scope:** Checkout session lifecycle and webhook integration
 
 This RFC defines the **Agentic Checkout Specification (ACS)**, a standardized REST API contract that merchants SHOULD implement to support experiences across agent platforms.
@@ -16,7 +16,7 @@ This specification ensures that:
 
 ## 1. Scope & Goals
 
-- Provide a **stable, versioned** API surface (`API-Version: 2025-09-29`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
+- Provide a **stable, versioned** API surface (`API-Version: 2025-09-29` or `2025-10-01`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
 - Ensure ChatGPT renders an **authoritative cart state** on every response.
 - Keep **payments on merchant rails**; optional delegated payments are covered separately.
 - Support **safe retries** via idempotency and **strong security** via authentication and request signing.
@@ -33,9 +33,9 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 ### 2.1 Initialization
 
-- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-09-29`).
+- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-09-29`, `2025-10-01`).
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
-- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
+- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`, `upi`) and fulfillment types (`shipping`, `digital`).
 
 ### 2.2 Session Lifecycle
 
@@ -120,7 +120,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 **Response body (authoritative cart):**
 
 - `id` (string)
-- `payment_provider` (e.g., `stripe`, `supported_payment_methods: ["card"]`)
+- `payment_provider` (e.g., `stripe` or `razorpay`, `supported_payment_methods: ["card"]` or `["card", "upi"]`)
 - `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
@@ -147,6 +147,8 @@ Returns the full authoritative session state.
 Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`.  
 Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
 
+**Note on UPI Payments:** When using Razorpay with UPI payment method, the `payment_data.token` will contain a vault token returned from the Delegate Payment API after tokenizing the UPI credential (which includes `delegate_id` and `cryptogram`). The merchant's payment provider (Razorpay) validates and processes the UPI payment using the delegated credentials.
+
 ### 4.5 Cancel Session
 
 `POST /checkout_sessions/{checkout_session_id}/cancel` → **200 OK** when canceled, **405** if already `completed` or `canceled`.
@@ -160,8 +162,8 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
-- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
-- **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
+- **PaymentProvider**: `provider` (`stripe` | `razorpay`), `supported_payment_methods` (`["card"]` | `["card", "upi"]`)
+- **PaymentData**: `token`, `provider` (`stripe` | `razorpay`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
@@ -559,4 +561,5 @@ All money fields are **integers (minor units)**.
 
 ## 11. Change Log
 
+- **2025-10-01**: Added support for **Razorpay** as a payment provider and **UPI** as a payment method. Updated `PaymentProvider` to accept `razorpay` as a provider value and `upi` in `supported_payment_methods` array. Updated `PaymentData` to support Razorpay tokens.
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.
