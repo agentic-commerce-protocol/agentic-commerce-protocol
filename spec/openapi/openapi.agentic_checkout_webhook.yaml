@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout Webhooks API
-  version: "2025-09-29"
+  version: "2025-10-24"
   description: |
     Webhook receiver hosted by OpenAI to accept merchant order lifecycle events.
 servers:
@@ -51,6 +51,16 @@ paths:
                     checkout_session_id: "checkout_session_123"
                     permalink_url: "https://example.com/orders/123"
                     status: created
+                    payment_data:
+                      type: account_to_account
+                      confirmation:
+                        status: pending
+                      bank_instructions:
+                        account_address: "DE89370400440532013000"
+                        bank_identifier: "37040044"
+                        bank_name: "Example Bank"
+                        reference: "ORDER123456"
+                        expires_at: "2025-10-24T00:00:00Z"
                     refunds: []
               order_updated:
                 value:
@@ -60,6 +70,18 @@ paths:
                     checkout_session_id: "checkout_session_123"
                     permalink_url: "https://example.com/orders/123"
                     status: shipped
+                    payment_data:
+                      type: account_to_account
+                      confirmation:
+                        status: received
+                        received_at: "2025-10-23T12:01:00Z"
+                        reference: "ORDER123456"
+                      bank_instructions:
+                        account_address: "DE89370400440532013000"
+                        bank_identifier: "37040044"
+                        bank_name: "Example Bank"
+                        reference: "ORDER123456"
+                        expires_at: "2025-10-24T00:00:00Z"
                     refunds:
                       - type: original_payment
                         amount: "1.00"
@@ -116,10 +138,47 @@ components:
           type: string
           enum:
             [created, manual_review, confirmed, canceled, shipped, fulfilled]
+        payment_data:
+          $ref: "#/components/schemas/OrderPaymentData"
         refunds:
           type: array
           items: { $ref: "#/components/schemas/Refund" }
       required: [type, checkout_session_id, permalink_url, status, refunds]
+
+    OrderPaymentData:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [card, account_to_account]
+        confirmation:
+          type: object
+          additionalProperties: false
+          properties:
+            status:
+              type: string
+              enum: [pending, received]
+            received_at: { type: string, format: date-time }
+            reference: { type: string }
+          required: [status]
+        bank_instructions:
+          type: object
+          additionalProperties:
+            type: string
+            description: "Additional implementation-defined hints (e.g., bic, branch codes)."
+          properties:
+            account_address:
+              type: string
+              description: "Destination account identifier (e.g., IBAN or local account number)"
+            bank_identifier:
+              type: string
+              description: "Domestic clearing code (e.g., ABA, sort code); optional"
+            bank_name: { type: string }
+            reference: { type: string }
+            expires_at: { type: string, format: date-time }
+          required: [account_address, bank_name, reference]
+      required: [type]
 
     WebhookEvent:
       type: object
