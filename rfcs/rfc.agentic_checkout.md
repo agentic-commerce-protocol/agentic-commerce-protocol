@@ -57,7 +57,7 @@ Order lifecycle updates (`order_create`, `order_update`) **MUST** be emitted to 
 
 All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers in minor units.
 
-**Request Headers (sent by ChatGPT unless noted):**
+- **Buyer Information:** The client **MUST** provide buyer information (such as name and email) **at least once** prior to, or as part of, invoking the `POST /checkout_sessions/{id}/complete` endpoint. Attempts to complete a checkout session **without** first supplying required buyer fields **MUST** be rejected by the server with an appropriate error response.
 
 - `Authorization: Bearer <token>` (**REQUIRED**)
 - `Content-Type: application/json` (**REQUIRED** on requests with body)
@@ -101,8 +101,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 {
   "items": [{ "id": "item_123", "quantity": 1 }],
   "buyer": {
-    "first_name": "John",
-    "last_name": "Smith",
+    "name": "John Smith",
     "email": "john@example.com"
   },
   "fulfillment_address": {
@@ -157,10 +156,10 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 
 - **Item**: `id` (string), `quantity` (int ≥ 1)
 - **LineItem**: `id`, `item`, `base_amount`, `discount`, `subtotal`, `tax`, `total` (**int**)
-- **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**)
+- **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | tip | total`), `display_text`, `amount` (**int**)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
-- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
+- **PaymentProvider**: `merchant_id` (`1234`), `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
@@ -390,8 +389,7 @@ All money fields are **integers (minor units)**.
 ```json
 {
   "buyer": {
-    "first_name": "John",
-    "last_name": "Smith",
+    "name": "John Smith",
     "email": "johnsmith@mail.com",
     "phone_number": "15552003434"
   },
@@ -417,8 +415,7 @@ All money fields are **integers (minor units)**.
 {
   "id": "checkout_session_123",
   "buyer": {
-    "first_name": "John",
-    "last_name": "Smith",
+    "name": "John Smith",
     "email": "johnsmith@mail.com",
     "phone_number": "15552003434"
   },

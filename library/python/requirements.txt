@@ -1,0 +1,6 @@
+pytest==8.2.1
+aiohttp==3.11.12
+PyYAML==6.0.2
+python-dotenv==1.0.1
+cryptography==43.0.3
+pydantic==2.10.6

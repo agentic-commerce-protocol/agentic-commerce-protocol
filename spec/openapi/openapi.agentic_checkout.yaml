@@ -298,17 +298,17 @@ components:
         state: { type: string }
         country: { type: string }
         postal_code: { type: string }
+        phone_number: { type: string }
       required: [name, line_one, city, state, country, postal_code]
 
     Buyer:
       type: object
       additionalProperties: false
       properties:
-        first_name: { type: string }
-        last_name: { type: string }
+        name: { type: string }
         email: { type: string, format: email }
         phone_number: { type: string }
-      required: [first_name, last_name, email]
+      required: [name, email]
 
     Item:
       type: object
@@ -322,6 +322,7 @@ components:
       type: object
       additionalProperties: false
       properties:
+        merchant_id: { type: string }
         provider:
           type: string
           enum: [stripe]
@@ -360,6 +361,7 @@ components:
               fulfillment,
               tax,
               fee,
+              tip,
               total,
             ]
         display_text: { type: string }
@@ -377,9 +379,9 @@ components:
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
         latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     FulfillmentOptionDigital:
@@ -390,9 +392,9 @@ components:
         id: { type: string }
         title: { type: string }
         subtitle: { type: string }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     MessageInfo:

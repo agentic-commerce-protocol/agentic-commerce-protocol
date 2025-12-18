@@ -65,6 +65,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 100
@@ -157,6 +162,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 500
@@ -203,8 +213,7 @@
   },
   "complete_checkout_session_request": {
     "buyer": {
-      "first_name": "John",
-      "last_name": "Smith",
+      "name": "John Smith",
       "email": "johnsmith@mail.com",
       "phone_number": "15552003434"
     },
@@ -225,8 +234,7 @@
   "complete_checkout_session_response": {
     "id": "checkout_session_123",
     "buyer": {
-      "first_name": "John",
-      "last_name": "Smith",
+      "name": "John Smith",
       "email": "johnsmith@mail.com",
       "phone_number": "15552003434"
     },
@@ -271,6 +279,11 @@
         "type": "tax",
         "display_text": "Tax",
         "amount": 30
+      },
+      {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
       },
       {
         "type": "fulfillment",
@@ -362,6 +375,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 100
@@ -451,6 +469,11 @@
         "amount": 30
       },
       {
+        "type": "tip",
+        "display_text": "Tip",
+        "amount": 24
+      },
+      {
         "type": "fulfillment",
         "display_text": "Fulfillment",
         "amount": 100
@@ -473,6 +496,18 @@
         "subtotal": 100,
         "tax": 0,
         "total": 100
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_456",
+        "title": "Express",
+        "subtitle": "Arrives in 1-2 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "subtotal": 500,
+        "tax": 0,
+        "total": 500
       }
     ],
     "messages": [

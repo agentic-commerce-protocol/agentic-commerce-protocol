@@ -93,7 +93,7 @@
         },
         "iin": {
           "type": "string",
-          "maxLength": 6
+          "maxLength": 8
         },
         "display_card_funding_type": {
           "type": "string",
@@ -107,7 +107,9 @@
         },
         "display_last4": {
           "type": "string",
-          "maxLength": 4
+          "minLength": 4,
+          "maxLength": 4,
+          "pattern": "^[0-9]{4}$"
         },
         "metadata": {
           "type": "object",
@@ -217,7 +219,7 @@
           "type": "string",
           "description": "Vault token id, e.g., vt_..."
         },
-        "created": {
+        "created_at": {
           "type": "string",
           "format": "date-time"
         },
@@ -228,7 +230,7 @@
           }
         }
       },
-      "required": ["id", "created", "metadata"]
+      "required": ["id", "created_at", "metadata"]
     },
     "Error": {
       "type": "object",
@@ -236,12 +238,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "invalid_request",
-            "rate_limit_exceeded",
-            "processing_error",
-            "service_unavailable"
-          ]
+          "enum": ["invalid_request", "processing_error", "service_unavailable"]
         },
         "code": {
           "type": "string",

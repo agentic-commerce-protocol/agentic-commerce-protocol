@@ -27,6 +27,9 @@
         },
         "postal_code": {
           "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
         }
       },
       "required": [
@@ -42,10 +45,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
+        "name": {
           "type": "string"
         },
         "email": {
@@ -56,7 +56,7 @@
           "type": "string"
         }
       },
-      "required": ["first_name", "last_name", "email"]
+      "required": ["name", "email"]
     },
     "Item": {
       "type": "object",
@@ -76,6 +76,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "merchant_id": {
+          "type": "string"
+        },
         "provider": {
           "type": "string",
           "enum": ["stripe"]
@@ -140,6 +143,7 @@
             "fulfillment",
             "tax",
             "fee",
+            "tip",
             "total"
           ]
         },
