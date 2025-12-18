@@ -20,8 +20,11 @@ paths:
       summary: Create a checkout session
       operationId: createCheckoutSession
       description: |
-        Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
+        Initializes a new checkout session from items and (optionally) buyer, fulfillment info, and affiliate attribution.
         MUST return 201 with a rich, authoritative cart state.
+
+        Agents MAY include `affiliate_attribution` to credit third-party publishers. Attribution is write-only
+        and will not be returned in responses. See RFC: Affiliate Attribution for details.
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -59,6 +62,20 @@ paths:
                     state: "CA"
                     country: "US"
                     postal_code: "94102"
+              with_affiliate_attribution:
+                summary: Single item with affiliate attribution
+                value:
+                  items:
+                    - id: "item_789"
+                      quantity: 1
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    campaign_id: "cmp_456"
+                    metadata:
+                      content_type: "article"
+                      model: "last_touch"
       responses:
         "201":
           description: Created
@@ -104,6 +121,9 @@ paths:
       operationId: updateCheckoutSession
       description: |
         Applies changes (items, fulfillment address, fulfillment option) and returns an updated authoritative cart state.
+
+        Agents MAY include `affiliate_attribution` if attribution becomes known after session creation or to add
+        non-conflicting fields. Attribution is write-once; conflicting claims are silently ignored.
       requestBody:
         required: true
         content:
@@ -112,8 +132,17 @@ paths:
               $ref: "#/components/schemas/CheckoutSessionUpdateRequest"
             examples:
               set_fulfillment_option:
+                summary: Select a fulfillment option
                 value:
                   fulfillment_option_id: "fulfillment_option_456"
+              with_affiliate_attribution:
+                summary: Add affiliate attribution after session creation
+                value:
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    sub_id: "utm_source=newsletter"
       responses:
         "200":
           description: Updated session
@@ -171,12 +200,40 @@ paths:
       operationId: completeCheckoutSession
       description: |
         Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+
+        Agents MAY include `affiliate_attribution` to ensure the merchant receives final attribution context.
+        Attribution is stored alongside the resulting order but not returned in the response.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+            examples:
+              basic:
+                summary: Complete with payment data
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+              with_affiliate_attribution:
+                summary: Complete with affiliate attribution
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
       responses:
         "200":
           description: Completed session with order
@@ -299,6 +356,76 @@ components:
         country: { type: string }
         postal_code: { type: string }
       required: [name, line_one, city, state, country, postal_code]
+
+    AffiliateAttributionSource:
+      type: object
+      additionalProperties: false
+      description: Context about where the attribution originated.
+      properties:
+        type:
+          type: string
+          enum: [url, platform, unknown]
+          description: The type of attribution source.
+        url:
+          type: string
+          format: uri
+          description: Canonical content URL when type is 'url'.
+      required: [type]
+
+    AffiliateAttributionMetadata:
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+      description: |
+        Flat key/value map for additional non-sensitive context.
+        Keys must be strings; values must be strings, numbers, or booleans.
+        Arrays and nested objects are NOT permitted.
+
+    AffiliateAttribution:
+      type: object
+      description: |
+        Optional affiliate attribution data for crediting third-party publishers.
+        Write-only: not returned in responses. See RFC: Affiliate Attribution.
+
+        Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).
+      properties:
+        provider:
+          type: string
+          description: Identifier for the attribution provider / affiliate network namespace (e.g., 'impact.com').
+        token:
+          type: string
+          description: Opaque provider-issued token for fraud-resistant validation. Treat as secret.
+        publisher_id:
+          type: string
+          description: Provider-scoped affiliate/publisher identifier. Required if token is omitted.
+        campaign_id:
+          type: string
+          description: Provider-scoped campaign identifier.
+        creative_id:
+          type: string
+          description: Provider-scoped creative identifier.
+        sub_id:
+          type: string
+          description: Provider-scoped sub-tracking identifier.
+        source:
+          $ref: "#/components/schemas/AffiliateAttributionSource"
+        issued_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token was issued.
+        expires_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token expires.
+        metadata:
+          $ref: "#/components/schemas/AffiliateAttributionMetadata"
+      required: [provider]
+      anyOf:
+        - required: [token]
+        - required: [publisher_id]
 
     Buyer:
       type: object
@@ -536,6 +663,8 @@ components:
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
         fulfillment_address: { $ref: "#/components/schemas/Address" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
       required: [items]
 
     CheckoutSessionUpdateRequest:
@@ -548,6 +677,8 @@ components:
           items: { $ref: "#/components/schemas/Item" }
         fulfillment_address: { $ref: "#/components/schemas/Address" }
         fulfillment_option_id: { type: string }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
 
     CheckoutSessionCompleteRequest:
       type: object
@@ -555,6 +686,8 @@ components:
       properties:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
       required: [payment_data]
 
     Error:
