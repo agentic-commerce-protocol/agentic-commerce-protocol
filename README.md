@@ -79,6 +79,17 @@ To start building with ACP:
 
 ---
 
+## 🌱 Community Implementations
+
+- Trustless agents via zkML authorization (community demo) — This external reference shows how a cryptographic authorization layer can be composed with ACP to keep the protocol and payment flows unchanged while enabling use with untrusted, third‑party agents. The demo generates a zkML proof of the agent’s authorization decision and verifies it on‑chain before completing payment.
+  - Repo: https://github.com/hshadab/agentkit/tree/main/acp
+  - Status: external example; does not change ACP spec
+
+Note: This project is community‑maintained and is not part of the ACP standard. It illustrates one approach to add verifiable authorization for agent marketplaces without modifying ACP.
+This demo is complementary to ACP and intended for environments where the agent runtime is not trusted or is third‑party.
+
+---
+
 ## 📝 Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
