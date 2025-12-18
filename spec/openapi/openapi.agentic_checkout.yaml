@@ -44,13 +44,13 @@ paths:
                 value:
                   items:
                     - id: "item_123"
-                      quantity: 1
+                      quantity: 2.5
               with_address:
                 summary: Single item with shipping address
                 value:
                   items:
                     - id: "item_456"
-                      quantity: 1
+                      quantity: 2.5
                   fulfillment_address:
                     name: "test"
                     line_one: "555 Golden Gate Avenue"
@@ -315,7 +315,7 @@ components:
       additionalProperties: false
       properties:
         id: { type: string }
-        quantity: { type: integer, minimum: 1 }
+        quantity: { type: number, minimum: 0, exclusiveMinimum: true }
       required: [id, quantity]
 
     PaymentProvider:
