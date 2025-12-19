@@ -320,7 +320,9 @@ components:
           type: string
         display_last4:
           type: string
+          minLength: 4
           maxLength: 4
+          pattern: "^[0-9]{4}$"
         metadata:
           type: object
           additionalProperties: { type: string }
