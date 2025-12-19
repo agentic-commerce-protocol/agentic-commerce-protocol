@@ -70,9 +70,15 @@
         "amount": 100
       },
       {
+        "type": "fee",
+        "display_text": "Service Fee",
+        "amount": 50,
+        "description": "Processing and handling fee"
+      },
+      {
         "type": "total",
         "display_text": "Total",
-        "amount": 430
+        "amount": 480
       }
     ],
     "fulfillment_options": [

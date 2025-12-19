@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "2025-09-30"
+  version: "2025-12-11"
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -284,7 +284,7 @@ components:
       name: API-Version
       in: header
       required: true
-      schema: { type: string, example: "2025-09-30" }
+      schema: { type: string, example: "2025-12-11" }
 
   schemas:
     BillingAddress:
@@ -377,6 +377,7 @@ components:
             ]
         display_text: { type: string }
         amount: { type: integer }
+        description: { type: string }
       required: [type, display_text, amount]
 
     FulfillmentOptionShipping:
@@ -390,9 +391,9 @@ components:
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
         latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     FulfillmentOptionDigital:
@@ -403,9 +404,9 @@ components:
         id: { type: string }
         title: { type: string }
         subtitle: { type: string }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     MessageInfo:
