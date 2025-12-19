@@ -30,9 +30,13 @@ If any implementation was incorrectly sending/receiving these values as quoted s
 
 - Added optional `description` field to the `Total` type to provide additional context for line items, especially fees
 - The `description` field is optional and can be used to explain charges (e.g., "Processing and handling fee")
+
+## Link Type: return_policy
+
+- Added `return_policy` as a new link type option alongside `terms_of_use` and `privacy_policy`
+- Removed `seller_shop_policies` link type (redundant; item/seller-specific policies should be attached to line items in marketplace scenarios)
 - Updated specification files:
   - `spec/json-schema/schema.agentic_checkout.json`
   - `spec/openapi/openapi.agentic_checkout.yaml`
   - `rfcs/rfc.agentic_checkout.md`
   - `examples/examples.agentic_checkout.json`
-
