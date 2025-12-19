@@ -1,0 +1,201 @@
+openapi: 3.0.1
+info:
+  title: Sabre ACP Hotel Catalog Feed
+  version: 1.0.0
+servers:
+  - url: https://api.sabre.com
+# security:
+#   - oauth2_authentication: []
+paths:
+  /catalogFeed:
+    get:
+      summary: Sabre Hotel Catalog Feed
+      description: The “Sabre Hotel Catalog Feed” will provide structured hotel and room metadata.
+      operationId: getCatalogFeed
+      responses:
+        '200':
+          description: Successful response. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogFeed'
+components:
+  schemas:
+    CatalogFeed:
+      type: object
+      required:
+      - generated_at
+      - products
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+          description: "Timestamp when the feed was generated (freshness signal)"
+        products:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Product'
+    Product:
+      type: object
+      description: Hotel-level metadata mapped to ACP Product object
+      properties:
+        id:
+          type: string
+          description: Unique, persistent hotel identifier (maps to property_id)
+        title:
+          type: string
+          description: Display name of the property
+        description:
+          type: string
+          description: Long-form property description
+        link:
+          type: string
+          format: uri
+          description: Landing page URL for the hotel
+        image_link:
+          type: string
+          format: uri
+          description: Primary hotel image
+        availability:
+          type: string
+          description: High-level availability required by ACP
+        brand:
+          type: string
+          description: Hotel chain/brand
+        enable_search:
+          type: boolean
+          description: Controls whether hotel is indexed/displayed by ChatGPT
+        enable_checkout:
+          type: boolean
+          description: Allows ChatGPT to initiate checkout (future use)
+        seller_tos:
+          type: string
+          format: uri
+          description: Terms of service URL
+        seller_privacy_policy:
+          type: string
+          format: uri
+          description: Merchant privacy policy
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        location:
+          $ref: '#/components/schemas/Location'
+        amenities:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+        persona_tags:
+          type: array
+          items:
+            type: string
+        sustainability_flags:
+          type: array
+          items:
+            type: string
+        data_freshness:
+          type: string
+          format: date-time
+          description: Last metadata update timestamp
+        star_rating:
+          type: number
+          description: Hotel quality score
+        review_score:
+          type: number
+          description: User rating
+        review_count:
+          type: number
+          description: Review volume
+        price_info:
+          $ref: '#/components/schemas/BasePriceInfo'
+      required:
+        - id
+        - title
+        - description
+        - location
+    Variant:
+      type: object
+      description: Represents a room type mapped to ACP Variant object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        product_image_primary:
+          type: string
+          format: uri
+          description: Primary image for the room  
+        availability:
+          type: string
+        features:
+          type: array
+          items:
+            type: string
+        price_info:
+          $ref: '#/components/schemas/BasePriceInfo'
+        live_pricing_endpoint:
+          type: string
+          format: uri-template
+        view_type:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        bed_type:
+          type: string
+        max_occupancy:
+          type: number
+        room_size_sqft:
+          type: number
+      required:
+        - id
+        - title
+        - description
+        - availability
+        - live_pricing_endpoint
+    Location:
+      type: object
+      properties:
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - address
+        - city
+        - country
+        - latitude
+        - longitude
+        - price_info
+        - variants
+    BasePriceInfo:
+      type: object
+      description: Base price range for ranking before hydration
+      properties:
+        price_range:
+          type: object
+          properties:
+            low:
+              type: number
+            high:
+              type: number
+            currency:
+              type: string
+          required:
+            - low
+            - high
+            - currency
