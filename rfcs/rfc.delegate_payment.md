@@ -1,7 +1,7 @@
 # RFC: Agentic Commerce — Delegate Payment API
 
 **Status:** Draft  
-**Version:** 2025-09-29
+**Version:** 2025-09-30
 **Scope:** Delegate payment credential tokenization and controlled usage via allowance constraints
 
 This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **delegated vault token** for a payment credential. The token may then be used by the merchant’s existing PSP **only** within explicit _Allowance_ constraints. Payments, settlement, and compliance remain on the merchant’s rails.
@@ -12,7 +12,7 @@ This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **dele
 
 - Enable merchants to **safely delegate** a payment credential for use in ChatGPT-initiated checkouts.
 - Preserve merchant PSP flows, idempotency, auditability, and risk controls.
-- Provide a **stable, versioned** surface (API-Version = `2025-09-29`).
+- Provide a **stable, versioned** surface (API-Version = `2025-09-30`).
 
 **Out of scope:** PSP-specific authorization/capture, multi-use tokens beyond allowance, refund semantics.
 
@@ -51,7 +51,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
   - `Request-Id: <string>` (RECOMMENDED)
   - `Signature: <base64url>` (RECOMMENDED; identity verification over canonical request)
   - `Timestamp: <RFC3339>` (RECOMMENDED)
-  - `API-Version: 2025-09-29` (**REQUIRED**)
+  - `API-Version: 2025-09-30` (**REQUIRED**)
 
 ### 2.4 Token Creation & Response
 
@@ -90,7 +90,7 @@ Exactly **one** credential type is supported today: **card**.
 | ----------------- | -------------------- | :-: | -------------------------------------------------- |
 | `payment_method`  | PaymentMethodCard    | ✅  | The credential to tokenize. (type MUST be `card`.) |
 | `allowance`       | Allowance            | ✅  | Constraints on how the token may be used.          |
-| `billing_address` | Address              | ❌  | Address associated with the payment method.        |
+| `billing_address` | BillingAddress       | ❌  | Billing address (postal_code + country required).  |
 | `risk_signals`    | RiskSignal[]         | ✅  | One or more risk signals.                          |
 | `metadata`        | object (map<string>) | ✅  | Arbitrary key/values for correlation.              |
 
@@ -112,10 +112,15 @@ Exactly **one** credential type is supported today: **card**.
 - `display_last4`: string (max 4)
 - `metadata`: map<string,string> (**REQUIRED**)
 
-### 3.4 Address (OPTIONAL)
+### 3.4 BillingAddress (OPTIONAL)
 
-- `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),  
-  `state` (ISO-3166-2 where applicable), `country` (ISO-3166-1 alpha-2), `postal_code` (≤20)
+- `postal_code` (≤20) (**REQUIRED**)
+- `country` (ISO-3166-1 alpha-2) (**REQUIRED**)
+- `name` (≤256) (optional)
+- `line_one` (≤60) (optional)
+- `line_two` (≤60) (optional)
+- `city` (≤60) (optional)
+- `state` (ISO-3166-2 where applicable) (optional)
 
 ### 3.5 Allowance (REQUIRED)
 
@@ -329,4 +334,5 @@ Exactly **one** credential type is supported today: **card**.
 
 ## 10. Change Log
 
+- **2025-09-30**: Split `Address` into `BillingAddress` and `FulfillmentAddress` schemas. Breaking change: `BillingAddress` requires only `postal_code` and `country`.
 - **2025-09-29**: Initial draft. Errors changed to **flat object** (no envelope). Tightened allowance and card display requirements.

@@ -160,6 +160,8 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
+- **FulfillmentAddress**: `name`, `line_one`, `city`, `state`, `country`, `postal_code` (all required); `line_two` (optional)
+- **BillingAddress**: `postal_code`, `country` (required); `name`, `line_one`, `line_two`, `city`, `state` (optional)
 - **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
@@ -559,4 +561,5 @@ All money fields are **integers (minor units)**.
 
 ## 11. Change Log
 
+- **2025-09-30**: Split `Address` into `BillingAddress` and `FulfillmentAddress` schemas. Breaking change: address types now context-specific.
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.

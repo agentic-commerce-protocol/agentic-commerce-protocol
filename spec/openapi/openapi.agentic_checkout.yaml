@@ -287,7 +287,20 @@ components:
       schema: { type: string, example: "2025-12-11" }
 
   schemas:
-    Address:
+    BillingAddress:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        line_one: { type: string }
+        line_two: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+      required: [postal_code, country]
+
+    FulfillmentAddress:
       type: object
       additionalProperties: false
       properties:
@@ -448,7 +461,7 @@ components:
       properties:
         token: { type: string }
         provider: { type: string, enum: [stripe] }
-        billing_address: { $ref: "#/components/schemas/Address" }
+        billing_address: { $ref: "#/components/schemas/BillingAddress" }
       required: [token, provider]
 
     Order:
@@ -483,7 +496,7 @@ components:
         line_items:
           type: array
           items: { $ref: "#/components/schemas/LineItem" }
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_address: { $ref: "#/components/schemas/FulfillmentAddress" }
         fulfillment_options:
           type: array
           items:
@@ -536,7 +549,7 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_address: { $ref: "#/components/schemas/FulfillmentAddress" }
       required: [items]
 
     CheckoutSessionUpdateRequest:
@@ -547,7 +560,7 @@ components:
         items:
           type: array
           items: { $ref: "#/components/schemas/Item" }
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_address: { $ref: "#/components/schemas/FulfillmentAddress" }
         fulfillment_option_id: { type: string }
 
     CheckoutSessionCompleteRequest:

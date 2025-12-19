@@ -1,38 +1,24 @@
 # Unreleased Changes
 
-## Version 2025-12-11
+## Breaking Changes
 
-### Bug Fixes
+### Address Schema Split
 
-#### Fix Fulfillment Amount Types in OpenAPI Specification
+- **Replaced `Address` with two distinct types:**
+  - **`BillingAddress`**: Used for payment billing addresses. Only `postal_code` and `country` are required. All other fields (`name`, `line_one`, `line_two`, `city`, `state`) are optional.
+  - **`FulfillmentAddress`**: Used for shipping/delivery addresses. All fields are required: `name`, `line_one`, `city`, `state`, `country`, `postal_code`. Only `line_two` is optional.
 
-**Fixed inconsistency in OpenAPI spec where fulfillment option amounts were incorrectly typed as strings instead of integers.**
+- **Motivation**: The previous `Address` schema required all fields regardless of context, making it impossible to provide only billing information (e.g., postal code for AVS/tax) without a full address. Providing fewer address fields can help with purchase conversion.
 
-**Version Note:** Per CONTRIBUTING.md guidelines, the specification version has been incremented from `2025-09-29` to `2025-12-11` to reflect this schema change. While this is technically a bug fix/clarification (not a breaking change), we increment the version conservatively for any OpenAPI schema modifications to ensure proper tracking and avoid confusion.
+- **Migration Guide**:
+  - **Billing addresses** (in `PaymentData.billing_address` and `DelegatePaymentRequest.billing_address`): Update to `BillingAddress` type. Minimum required fields are now `postal_code` and `country`.
+  - **Fulfillment addresses** (in checkout session requests): Update to `FulfillmentAddress` type. All fields except `line_two` remain required as before.
+  - **Existing full addresses remain valid** - this change is backward compatible for implementations that already provide complete address information.
 
-In the OpenAPI specification (`spec/openapi/openapi.agentic_checkout.yaml`), the `subtotal`, `tax`, and `total` fields in both `FulfillmentOptionShipping` and `FulfillmentOptionDigital` schemas were defined as `type: string`. This was inconsistent with:
-
-- The JSON Schema (`spec/json-schema/schema.agentic_checkout.json`) which defines them as `type: integer`
-- The RFC documentation which explicitly states: "Amounts **MUST** be integers in minor units"
-- The example files which show these values as numeric (unquoted) integers
-- The `Total` schema which correctly defines the `amount` field as `type: integer`
-
-**Changes:**
-- Changed `subtotal`, `tax`, and `total` from `type: string` to `type: integer` in `FulfillmentOptionShipping`
-- Changed `subtotal`, `tax`, and `total` from `type: string` to `type: integer` in `FulfillmentOptionDigital`
-
-**Impact:**
-This is a **clarification/bug fix**, not a breaking change. The specification has always required integer amounts in minor units (per the RFC), and all examples demonstrate integer usage. Implementations following the RFC and examples should already be using integers, so this change aligns the OpenAPI schema with the actual specification behavior.
-
-If any implementation was incorrectly sending/receiving these values as quoted strings (e.g., `"100"` instead of `100`), they should update to use numeric integers to comply with the specification.
-
-## Total Description Field
-
-- Added optional `description` field to the `Total` type to provide additional context for line items, especially fees
-- The `description` field is optional and can be used to explain charges (e.g., "Processing and handling fee")
-- Updated specification files:
-  - `spec/json-schema/schema.agentic_checkout.json`
+- **Files Updated**:
   - `spec/openapi/openapi.agentic_checkout.yaml`
+  - `spec/openapi/openapi.delegate_payment.yaml`
+  - `spec/json-schema/schema.agentic_checkout.json`
+  - `spec/json-schema/schema.delegate_payment_schema.json`
   - `rfcs/rfc.agentic_checkout.md`
-  - `examples/examples.agentic_checkout.json`
-
+  - `rfcs/rfc.delegate_payment.md`
