@@ -404,7 +404,36 @@ components:
         metadata:
           type: object
           additionalProperties: { type: string }
+        authentication:
+          $ref: "#/components/schemas/DelegatePaymentAuthentication"
       required: [id, created, metadata]
+
+    DelegatePaymentAuthentication:
+      type: object
+      additionalProperties: false
+      description: >
+        Authentication metadata. When authentication.status == "required", the
+        returned token is provisional and must not be used for authorizations until
+        authentication.status == "completed".
+      properties:
+        status:
+          type: string
+          description: >
+            High-level authentication status. Values:
+              - "required": interactive cardholder authentication is outstanding and blocks token use.
+              - "completed": authentication completed successfully; token may be used.
+              - "not_required": no authentication needed; token may be used.
+              - "failed": authentication completed but failed; token is not usable.
+          enum: [required, completed, not_required, failed]
+        method:
+          type: string
+          description: Authentication mechanism (e.g., "3ds")
+        redirect_url:
+          type: string
+          format: uri
+          description: >
+            Optional URL to present to the consumer to complete interactive authentication.
+      required: [status]
 
     Error:
       type: object
