@@ -102,11 +102,10 @@ paths:
               examples:
                 invalid_request_missing_field:
                   value:
-                    error:
-                      type: invalid_request
-                      code: invalid_card
-                      message: "card field is required when payment_method.type=card"
-                      param: "payment_method.number"
+                    type: invalid_request
+                    code: invalid_card
+                    message: "card field is required when payment_method.type=card"
+                    param: "payment_method.number"
         "401":
           description: Unauthorized
           content:
@@ -115,10 +114,9 @@ paths:
               examples:
                 unauthorized:
                   value:
-                    error:
-                      type: unauthorized
-                      code: unauthorized
-                      message: "Unauthorized"
+                    type: invalid_request
+                    code: unauthorized
+                    message: "Unauthorized"
         "409":
           description: Idempotency conflict
           content:
@@ -127,10 +125,9 @@ paths:
               examples:
                 idem_conflict:
                   value:
-                    error:
-                      type: invalid_request
-                      code: idempotency_conflict
-                      message: "Same Idempotency-Key used with different parameters"
+                    type: invalid_request
+                    code: idempotency_conflict
+                    message: "Same Idempotency-Key used with different parameters"
         "422":
           description: Semantic validation error
           content:
@@ -139,11 +136,10 @@ paths:
               examples:
                 invalid_request:
                   value:
-                    error:
-                      type: invalid_request
-                      code: invalid_card
-                      message: "Invalid card expiration month"
-                      param: "payment_method.exp_month"
+                    type: invalid_request
+                    code: invalid_card
+                    message: "Invalid card expiration month"
+                    param: "payment_method.exp_month"
         "429":
           description: Rate limit exceeded
           content:
@@ -152,10 +148,9 @@ paths:
               examples:
                 rate_limit_exceeded:
                   value:
-                    error:
-                      type: rate_limit_exceeded
-                      code: rate_limit_exceeded
-                      message: "Rate limit exceeded"
+                    type: rate_limit_exceeded
+                    code: rate_limit_exceeded
+                    message: "Rate limit exceeded"
         "500":
           description: Processing error
           content:
@@ -164,10 +159,9 @@ paths:
               examples:
                 internal_server_error:
                   value:
-                    error:
-                      type: internal_server_error
-                      code: internal_server_error
-                      message: "Internal server error"
+                    type: processing_error
+                    code: internal_server_error
+                    message: "Internal server error"
         "503":
           description: Service unavailable
           content:
@@ -176,10 +170,9 @@ paths:
               examples:
                 service_unavailable:
                   value:
-                    error:
-                      type: service_unavailable
-                      code: service_unavailable
-                      message: "Service unavailable"
+                    type: service_unavailable
+                    code: service_unavailable
+                    message: "Service unavailable"
 
 components:
   securitySchemes:
