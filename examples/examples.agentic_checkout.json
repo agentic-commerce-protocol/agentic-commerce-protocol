@@ -333,7 +333,12 @@
         "type": "return_policy",
         "url": "https://www.testshop.com/legal/return-policy"
       }
-    ]
+    ],
+    "order": {
+      "id": "ord_abc123",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/ord_abc123"
+    }
   },
   "get_checkout_session_response": {
     "id": "checkout_session_123",
@@ -540,7 +545,8 @@
       ]
     }
   },
-  "complete_checkout_session_requires_3ds_response": {
+  "complete_checkout_session_requires_3ds_method_response": {
+    "_comment": "Response when 3DS Method (device fingerprinting) is required before authentication",
     "id": "checkout_session_123",
     "buyer": {
       "first_name": "John",
@@ -615,21 +621,17 @@
         "total": 100
       }
     ],
-    "messages": [
-      {
-        "type": "error",
-        "code": "requires_3ds",
-        "content_type": "plain",
-        "content": "Payment requires 3D Secure authentication. Please complete the authentication challenge.",
-        "authentication_data": {
-          "version": "2.1.0",
-          "acs_url": "https://acs.issuerbank.com/3ds2/challenge",
-          "creq": "eyJhY3NUcmFuc0lEIjoiM2FjNzk0YjgtZGI1Zi00ZjczLWExYTYtNDU3ODkxMjM0NTY3IiwibWVzc2FnZVZlcnNpb24iOiIyLjEuMCIsInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjoiOGY5MTZmOGUtN2U3YS00ZjczLWExYTYtNDU3ODkxMjM0NTY3In0=",
-          "session_data": "cs_3ds_01HV3P3ABC123XYZ",
-          "three_ds_server_trans_id": "8f916f8e-7e7a-4f73-a1a6-457891234567"
-        }
+    "pending_action": {
+      "type": "3ds_method",
+      "data": {
+        "three_ds_method_url": "https://acs.issuerbank.com/3ds2/method",
+        "three_ds_server_trans_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+        "session_data": "cs_3ds_01HV3P3ABC123XYZ",
+        "version": "2.1.0",
+        "ds_identifier": "A000000003"
       }
-    ],
+    },
+    "messages": [],
     "links": [
       {
         "type": "terms_of_use",
@@ -637,13 +639,18 @@
       }
     ]
   },
-  "authenticate_checkout_session_request": {
-    "authentication_result": {
-      "session_data": "cs_3ds_01HV3P3ABC123XYZ",
-      "cres": "eyJ0cmFuc1N0YXR1cyI6IlkiLCJhdXRoZW50aWNhdGlvblZhbHVlIjoiQWdBQUFBQUFBQUFBQUFBQUFBQUFBQUE9IiwiZWNpIjoiMDUifQ=="
-    }
+  "complete_checkout_session_after_3ds_method_request": {
+    "_comment": "Request after completing 3DS Method (device fingerprinting)",
+    "session_data": "cs_3ds_01HV3P3ABC123XYZ",
+    "method_completion_indicator": "completed"
   },
-  "authenticate_checkout_session_success_response": {
+  "complete_checkout_session_after_3ds_method_timeout_request": {
+    "_comment": "Request after 3DS Method times out",
+    "session_data": "cs_3ds_01HV3P3ABC123XYZ",
+    "method_completion_indicator": "timeout"
+  },
+  "complete_checkout_session_requires_3ds_challenge_response": {
+    "_comment": "Response when 3DS challenge is required (after 3DS Method or directly)",
     "id": "checkout_session_123",
     "buyer": {
       "first_name": "John",
@@ -651,7 +658,106 @@
       "email": "johnsmith@mail.com",
       "phone_number": "15552003434"
     },
-    "status": "ready_for_payment",
+    "status": "in_progress",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      }
+    ],
+    "pending_action": {
+      "type": "3ds_challenge",
+      "data": {
+        "version": "2.1.0",
+        "acs_url": "https://acs.issuerbank.com/3ds2/challenge",
+        "creq": "eyJhY3NUcmFuc0lEIjoiM2FjNzk0YjgtZGI1Zi00ZjczLWExYTYtNDU3ODkxMjM0NTY3IiwibWVzc2FnZVZlcnNpb24iOiIyLjEuMCIsInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjoiOGY5MTZmOGUtN2U3YS00ZjczLWExYTYtNDU3ODkxMjM0NTY3In0=",
+        "session_data": "cs_3ds_01HV3P3ABC123XYZ",
+        "three_ds_server_trans_id": "8f916f8e-7e7a-4f73-a1a6-457891234567"
+      }
+    },
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "complete_checkout_session_after_3ds_challenge_request": {
+    "_comment": "Request after user completes 3DS challenge",
+    "session_data": "cs_3ds_01HV3P3ABC123XYZ",
+    "cres": "eyJ0cmFuc1N0YXR1cyI6IlkiLCJhdXRoZW50aWNhdGlvblZhbHVlIjoiQWdBQUFBQUFBQUFBQUFBQUFBQUFBQUE9IiwiZWNpIjoiMDUifQ=="
+  },
+  "complete_checkout_session_after_3ds_challenge_success_response": {
+    "_comment": "Response after successful 3DS challenge - order created with three_ds_result",
+    "id": "checkout_session_123",
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "status": "completed",
     "currency": "usd",
     "line_items": [
       {
@@ -732,117 +838,6 @@
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
-    ]
-  },
-  "complete_checkout_session_with_3ds_proof_request": {
-    "buyer": {
-      "first_name": "John",
-      "last_name": "Smith",
-      "email": "johnsmith@mail.com",
-      "phone_number": "15552003434"
-    },
-    "payment_data": {
-      "token": "spt_123",
-      "provider": "stripe",
-      "billing_address": {
-        "name": "John Smith",
-        "line_one": "1234 Chat Road,",
-        "line_two": "",
-        "city": "San Francisco",
-        "state": "CA",
-        "country": "US",
-        "postal_code": "94131"
-      }
-    },
-    "three_ds_proof": {
-      "eci": "05",
-      "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
-      "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
-      "trans_status": "Y",
-      "version": "2.1.0"
-    }
-  },
-  "complete_checkout_session_with_3ds_proof_response": {
-    "id": "checkout_session_123",
-    "buyer": {
-      "first_name": "John",
-      "last_name": "Smith",
-      "email": "johnsmith@mail.com",
-      "phone_number": "15552003434"
-    },
-    "status": "completed",
-    "currency": "usd",
-    "line_items": [
-      {
-        "id": "line_item_123",
-        "item": {
-          "id": "item_123",
-          "quantity": 1
-        },
-        "base_amount": 300,
-        "discount": 0,
-        "subtotal": 300,
-        "tax": 30,
-        "total": 330
-      }
-    ],
-    "fulfillment_address": {
-      "name": "John Doe",
-      "line_one": "1234 Chat Road,",
-      "line_two": "",
-      "city": "San Francisco",
-      "state": "CA",
-      "country": "US",
-      "postal_code": "94131"
-    },
-    "fulfillment_option_id": "fulfillment_option_123",
-    "totals": [
-      {
-        "type": "items_base_amount",
-        "display_text": "Item(s) total",
-        "amount": 300
-      },
-      {
-        "type": "subtotal",
-        "display_text": "Subtotal",
-        "amount": 300
-      },
-      {
-        "type": "tax",
-        "display_text": "Tax",
-        "amount": 30
-      },
-      {
-        "type": "fulfillment",
-        "display_text": "Fulfillment",
-        "amount": 100
-      },
-      {
-        "type": "total",
-        "display_text": "Total",
-        "amount": 430
-      }
-    ],
-    "fulfillment_options": [
-      {
-        "type": "shipping",
-        "id": "fulfillment_option_123",
-        "title": "Standard",
-        "subtitle": "Arrives in 4-5 days",
-        "carrier": "USPS",
-        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
-        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-        "subtotal": 100,
-        "tax": 0,
-        "total": 100
-      }
-    ],
-    "messages": [],
-    "links": [
-      {
-        "type": "terms_of_use",
-        "url": "https://www.testshop.com/legal/terms-of-use"
-      }
     ],
     "order": {
       "id": "ord_abc123",
@@ -850,7 +845,8 @@
       "permalink_url": "https://www.testshop.com/orders/ord_abc123"
     }
   },
-  "authenticate_checkout_session_failure_response": {
+  "complete_checkout_session_after_3ds_challenge_failure_response": {
+    "_comment": "Response after failed 3DS challenge - session returns to ready_for_payment",
     "id": "checkout_session_123",
     "buyer": {
       "first_name": "John",
@@ -940,7 +936,104 @@
       }
     ]
   },
-  "authenticate_checkout_session_expired_error": {
+  "complete_checkout_session_frictionless_success_response": {
+    "_comment": "Response after frictionless 3DS (no challenge required) - order created directly",
+    "id": "checkout_session_123",
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "status": "completed",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      }
+    ],
+    "three_ds_result": {
+      "eci": "05",
+      "cavv": "AAABBJkZUQAAAABjRWWZEEFgFz8=",
+      "ds_transaction_id": "8f916f8e-7e7a-4f73-a1a6-457891234567",
+      "version": "2.1.0",
+      "authentication_status": "Y"
+    },
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ],
+    "order": {
+      "id": "ord_abc123",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/ord_abc123"
+    }
+  },
+  "complete_checkout_session_3ds_session_expired_error": {
+    "_comment": "Error when 3DS session has expired",
     "type": "invalid_request",
     "code": "session_expired",
     "message": "3DS authentication session has expired. Please restart the checkout flow."
