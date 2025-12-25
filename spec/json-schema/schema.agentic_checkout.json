@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/agentic-checkout/bundle.schema.json",
-  "title": "Agentic Checkout \u2014 Schema Bundle",
+  "title": "Agentic Checkout — Schema Bundle",
   "$defs": {
     "Address": {
       "type": "object",
@@ -261,8 +261,7 @@
             "invalid",
             "out_of_stock",
             "payment_declined",
-            "requires_sign_in",
-            "requires_3ds"
+            "requires_sign_in"
           ]
         },
         "param": {
@@ -275,10 +274,6 @@
         },
         "content": {
           "type": "string"
-        },
-        "authentication_data": {
-          "$ref": "#/$defs/ThreeDsAuthenticationData",
-          "description": "Present when code is requires_3ds"
         }
       },
       "required": ["type", "code", "content_type", "content"]
@@ -405,7 +400,11 @@
         },
         "three_ds_result": {
           "$ref": "#/$defs/ThreeDsResult",
-          "description": "Present after successful /authenticate call"
+          "description": "Present after successful 3DS authentication (with completed status)"
+        },
+        "pending_action": {
+          "$ref": "#/$defs/PendingAction",
+          "description": "Action required from the agent to continue checkout flow (e.g., 3DS authentication)"
         },
         "messages": {
           "type": "array",
@@ -505,24 +504,102 @@
     "CheckoutSessionCompleteRequest": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Request body for completing a checkout session. The fields used depend on the current step: Initial payment (payment_data required), After 3DS Method (session_data + method_completion_indicator), After 3DS Challenge (session_data + cres)",
       "properties": {
         "buyer": {
-          "$ref": "#/$defs/Buyer"
+          "$ref": "#/$defs/Buyer",
+          "description": "Buyer information (optional, can be provided on initial payment attempt)"
         },
         "payment_data": {
-          "$ref": "#/$defs/PaymentData"
+          "$ref": "#/$defs/PaymentData",
+          "description": "Payment token and provider (required for initial payment attempt)"
         },
-        "three_ds_proof": {
-          "$ref": "#/$defs/ThreeDsProof",
-          "description": "3DS authentication proof from /authenticate response"
+        "session_data": {
+          "type": "string",
+          "description": "Opaque session identifier from pending_action (required for 3DS steps)"
+        },
+        "method_completion_indicator": {
+          "type": "string",
+          "enum": ["completed", "timeout"],
+          "description": "3DS Method completion status (send after rendering 3DS Method iframe)"
+        },
+        "cres": {
+          "type": "string",
+          "description": "Base64-encoded Challenge Response from ACS (send after user completes challenge)"
         }
-      },
-      "required": ["payment_data"]
+      }
     },
-    "ThreeDsAuthenticationData": {
+    "PendingAction": {
+      "oneOf": [
+        { "$ref": "#/$defs/PendingAction3dsMethod" },
+        { "$ref": "#/$defs/PendingAction3dsChallenge" }
+      ],
+      "description": "Action required from the agent to continue checkout flow"
+    },
+    "PendingAction3dsMethod": {
       "type": "object",
       "additionalProperties": false,
-      "description": "3DS challenge parameters returned when authentication is required",
+      "description": "3DS Method (device fingerprinting) action required before authentication",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "3ds_method"
+        },
+        "data": {
+          "$ref": "#/$defs/PendingAction3dsMethodData"
+        }
+      },
+      "required": ["type", "data"]
+    },
+    "PendingAction3dsMethodData": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Data for 3DS Method pending action",
+      "properties": {
+        "three_ds_method_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "ACS URL for device fingerprinting"
+        },
+        "three_ds_server_trans_id": {
+          "type": "string",
+          "description": "3DS Server Transaction ID (UUID format)"
+        },
+        "session_data": {
+          "type": "string",
+          "description": "Opaque session identifier for continuation"
+        },
+        "version": {
+          "type": "string",
+          "enum": ["2.1.0", "2.2.0", "2.3.0"],
+          "description": "3DS protocol version"
+        },
+        "ds_identifier": {
+          "type": "string",
+          "description": "Directory Server Identifier"
+        }
+      },
+      "required": ["three_ds_method_url", "three_ds_server_trans_id", "session_data", "version", "ds_identifier"]
+    },
+    "PendingAction3dsChallenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "3DS challenge action required for user authentication",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "3ds_challenge"
+        },
+        "data": {
+          "$ref": "#/$defs/PendingAction3dsChallengeData"
+        }
+      },
+      "required": ["type", "data"]
+    },
+    "PendingAction3dsChallengeData": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Data for 3DS Challenge pending action",
       "properties": {
         "version": {
           "type": "string",
@@ -548,22 +625,6 @@
         }
       },
       "required": ["version", "acs_url", "creq", "session_data"]
-    },
-    "ThreeDsAuthenticationResult": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "3DS authentication result submitted after challenge completion",
-      "properties": {
-        "session_data": {
-          "type": "string",
-          "description": "Opaque session identifier from authentication_data"
-        },
-        "cres": {
-          "type": "string",
-          "description": "Base64-encoded Challenge Response from ACS"
-        }
-      },
-      "required": ["session_data", "cres"]
     },
     "ThreeDsResult": {
       "type": "object",
@@ -598,47 +659,6 @@
         }
       },
       "required": ["eci", "cavv", "ds_transaction_id", "version", "authentication_status"]
-    },
-    "ThreeDsProof": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "3DS proof submitted with /complete to authorize payment",
-      "properties": {
-        "eci": {
-          "type": "string",
-          "description": "Electronic Commerce Indicator"
-        },
-        "cavv": {
-          "type": "string",
-          "description": "Cardholder Authentication Verification Value"
-        },
-        "ds_transaction_id": {
-          "type": "string",
-          "description": "Directory Server Transaction ID"
-        },
-        "trans_status": {
-          "type": "string",
-          "enum": ["Y", "A", "N", "U", "R", "C"],
-          "description": "Transaction status from 3DS authentication (Y=Authenticated, A=Attempted, N=Failed, U=Unavailable, R=Rejected, C=Challenge required)"
-        },
-        "version": {
-          "type": "string",
-          "enum": ["2.1.0", "2.2.0", "2.3.0"],
-          "description": "3DS protocol version"
-        }
-      },
-      "required": ["eci", "cavv", "ds_transaction_id"]
-    },
-    "CheckoutSessionAuthenticateRequest": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Request body for submitting 3DS authentication result",
-      "properties": {
-        "authentication_result": {
-          "$ref": "#/$defs/ThreeDsAuthenticationResult"
-        }
-      },
-      "required": ["authentication_result"]
     },
     "Error": {
       "type": "object",
