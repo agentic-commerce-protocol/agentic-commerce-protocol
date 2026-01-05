@@ -204,7 +204,7 @@ Exactly **one** credential type is supported today: **card**.
 - **Integrity:** `Signature` over canonical JSON **SHOULD** be verified (algorithm policy advertised out-of-band).
 - **Freshness:** `Timestamp` **SHOULD** be required and checked within an acceptable clock-skew window.
 - **PII/PCI:** Card data handling **MUST** follow applicable PCI DSS requirements; logs **MUST NOT** contain full PAN or CVC.
-- **Transport:** All requests **MUST** use HTTPS/TLS 1.2+.
+- **Transport:** All requests **MUST** use HTTPS/TLS 1.3.
 
 ---
 

@@ -191,7 +191,7 @@ All money fields are **integers (minor units)**.
 
 - **Authentication:** `Authorization: Bearer <token>` **REQUIRED**.
 - **Integrity & Freshness:** `Signature` over canonical JSON and `Timestamp` **SHOULD** be verified with a bounded clock‑skew window.
-- **PCI/PII:** Do not log full PAN/CVC; redact addresses as required by policy. TLS 1.2+ **MUST** be used.
+- **PCI/PII:** Do not log full PAN/CVC; redact addresses as required by policy. TLS 1.3 **MUST** be used.
 - **Webhooks:** Verify HMAC (`Merchant-Signature`) on webhook calls (see separate Webhooks RFC/OAS).
 
 ---
