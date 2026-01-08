@@ -40,3 +40,7 @@ If any implementation was incorrectly sending/receiving these values as quoted s
   - `spec/openapi/openapi.agentic_checkout.yaml`
   - `rfcs/rfc.agentic_checkout.md`
   - `examples/examples.agentic_checkout.json`
+
+## Examples
+
+- Added error response examples for invalid item ID, out-of-stock, and payment failure to `examples/examples.agentic_checkout.json`.

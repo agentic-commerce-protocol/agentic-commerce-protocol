@@ -539,5 +539,22 @@
         }
       ]
     }
+  },
+  "create_checkout_session_error_invalid_item_id": {
+    "type": "invalid_request",
+    "code": "invalid_item_id",
+    "message": "The item ID 'invalid_item' is not valid.",
+    "param": "$.items[0].id"
+  },
+  "create_checkout_session_error_out_of_stock": {
+    "type": "processing_error",
+    "code": "item_out_of_stock",
+    "message": "Item 'item_123' is out of stock.",
+    "param": "$.items[0].id"
+  },
+  "complete_checkout_session_error_payment_failed": {
+    "type": "processing_error",
+    "code": "payment_failed",
+    "message": "Payment processing failed due to insufficient funds."
   }
 }
