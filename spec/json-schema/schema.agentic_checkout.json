@@ -170,7 +170,8 @@
           }
         },
         "unit_amount": {
-          "type": "integer"
+          "type": "integer",
+          "description": "The unit price of the line item in the smallest currency unit (e.g., cents for USD)"
         },
         "disclosures": {
           "type": "array",
