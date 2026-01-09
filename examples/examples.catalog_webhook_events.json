@@ -1,0 +1,61 @@
+{
+  "catalog_webhook_price_updated": {
+    "_comment": "Webhook event when product price changes",
+    "type": "product_price_updated",
+    "id": "PRODUCT_123",
+    "currency": "USD",
+    "price": 129.99,
+    "sale_price": 99.99,
+    "sale_price_effective": {
+      "start": "2025-11-28T00:00:00Z",
+      "end": "2025-11-29T08:00:00Z"
+    }
+  },
+  "catalog_webhook_price_updated_no_sale": {
+    "_comment": "Webhook event for regular price change without sale",
+    "type": "product_price_updated",
+    "id": "PRODUCT_456",
+    "currency": "USD",
+    "price": 79.99
+  },
+  "catalog_webhook_availability_in_stock": {
+    "_comment": "Webhook event when product comes back in stock",
+    "type": "product_availability_updated",
+    "id": "PRODUCT_123",
+    "availability": "in_stock"
+  },
+  "catalog_webhook_availability_out_of_stock": {
+    "_comment": "Webhook event when product goes out of stock",
+    "type": "product_availability_updated",
+    "id": "PRODUCT_789",
+    "availability": "out_of_stock"
+  },
+  "catalog_webhook_availability_preorder": {
+    "_comment": "Webhook event for preorder availability with date",
+    "type": "product_availability_updated",
+    "id": "PRODUCT_101",
+    "availability": "preorder",
+    "availability_date": "2025-12-01T00:00:00Z"
+  },
+  "catalog_webhook_inventory_updated": {
+    "_comment": "Webhook event when inventory quantity changes",
+    "type": "product_inventory_updated",
+    "id": "PRODUCT_123",
+    "inventory_quantity": 25,
+    "is_estimated": false
+  },
+  "catalog_webhook_inventory_low_stock": {
+    "_comment": "Webhook event for low inventory warning",
+    "type": "product_inventory_updated",
+    "id": "PRODUCT_456",
+    "inventory_quantity": 3,
+    "is_estimated": false
+  },
+  "catalog_webhook_inventory_estimated": {
+    "_comment": "Webhook event with estimated inventory quantity",
+    "type": "product_inventory_updated",
+    "id": "PRODUCT_789",
+    "inventory_quantity": 50,
+    "is_estimated": true
+  }
+}

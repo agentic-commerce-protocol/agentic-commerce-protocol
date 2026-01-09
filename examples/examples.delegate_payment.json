@@ -72,5 +72,72 @@
     "type": "rate_limit_exceeded",
     "code": "too_many_requests",
     "message": "Too many requests, please retry later"
+  },
+  "webhook_payment_succeeded": {
+    "_comment": "Webhook event when delegated payment token is successfully used",
+    "type": "payment.succeeded",
+    "data": {
+      "id": "vt_01J8Z3WXYZ9ABC",
+      "amount": 1999,
+      "currency": "usd",
+      "status": "succeeded",
+      "merchant_id": "acme_store",
+      "checkout_session_id": "csn_01HV3P3XYZ9ABC",
+      "payment_method": {
+        "type": "card",
+        "display_brand": "visa",
+        "display_last4": "4242"
+      },
+      "billing_address": {
+        "name": "Ada Lovelace",
+        "city": "San Francisco",
+        "country": "US"
+      },
+      "metadata": {
+        "campaign": "q4",
+        "source": "chatgpt_checkout"
+      },
+      "created": "2025-09-29T11:00:00Z",
+      "processed_at": "2025-09-29T11:00:05Z"
+    }
+  },
+  "webhook_payment_failed": {
+    "_comment": "Webhook event when delegated payment fails",
+    "type": "payment.failed",
+    "data": {
+      "id": "vt_01J8Z3WXYZ9ABC",
+      "amount": 1999,
+      "currency": "usd",
+      "status": "failed",
+      "failure_code": "card_declined",
+      "failure_message": "Your card was declined",
+      "merchant_id": "acme_store",
+      "checkout_session_id": "csn_01HV3P3XYZ9ABC",
+      "payment_method": {
+        "type": "card",
+        "display_brand": "visa",
+        "display_last4": "4242"
+      },
+      "metadata": {
+        "campaign": "q4",
+        "source": "chatgpt_checkout"
+      },
+      "created": "2025-09-29T11:00:00Z",
+      "failed_at": "2025-09-29T11:00:02Z"
+    }
+  },
+  "webhook_payment_expired": {
+    "_comment": "Webhook event when delegated payment token expires",
+    "type": "payment.expired",
+    "data": {
+      "id": "vt_01J8Z3WXYZ9ABC",
+      "merchant_id": "acme_store",
+      "checkout_session_id": "csn_01HV3P3XYZ9ABC",
+      "expired_at": "2025-10-09T07:20:50.52Z",
+      "metadata": {
+        "campaign": "q4",
+        "source": "chatgpt_checkout"
+      }
+    }
   }
 }
