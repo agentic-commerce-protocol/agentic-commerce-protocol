@@ -95,6 +95,7 @@ To start building with ACP:
 | Area                  | Resource                                                                                 |
 | --------------------- | ---------------------------------------------------------------------------------------- |
 | Checkout API Spec     | [spec/openapi/openapi.agentic_checkout.yaml](spec/openapi/openapi.agentic_checkout.yaml) |
+| Checkout Webhook Spec | [spec/openapi/openapi.agentic_checkout_webhook.yaml](spec/openapi/openapi.agentic_checkout_webhook.yaml) |
 | Delegate Payment Spec | [spec/openapi/openapi.delegate_payment.yaml](spec/openapi/openapi.delegate_payment.yaml) |
 | Governance            | [docs/governance.md](docs/governance.md)                                                 |
 | Project Principles    | [docs/principles-mission.md](docs/principles-mission.md)                                 |
