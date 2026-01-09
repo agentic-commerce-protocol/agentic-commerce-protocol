@@ -20,11 +20,8 @@ paths:
       summary: Create a checkout session
       operationId: createCheckoutSession
       description: |
-        Initializes a new checkout session from items and (optionally) buyer, fulfillment info, and affiliate attribution.
+        Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
         MUST return 201 with a rich, authoritative cart state.
-
-        Agents MAY include `affiliate_attribution` to credit third-party publishers. Attribution is write-only
-        and will not be returned in responses. See RFC: Affiliate Attribution for details.
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -62,20 +59,6 @@ paths:
                     state: "CA"
                     country: "US"
                     postal_code: "94102"
-              with_affiliate_attribution:
-                summary: Single item with affiliate attribution
-                value:
-                  items:
-                    - id: "item_789"
-                      quantity: 1
-                  affiliate_attribution:
-                    provider: "impact.com"
-                    token: "atp_01J8Z3WXYZ9ABC"
-                    publisher_id: "pub_123"
-                    campaign_id: "cmp_456"
-                    metadata:
-                      content_type: "article"
-                      model: "last_touch"
       responses:
         "201":
           description: Created
@@ -121,9 +104,6 @@ paths:
       operationId: updateCheckoutSession
       description: |
         Applies changes (items, fulfillment address, fulfillment option) and returns an updated authoritative cart state.
-
-        Agents MAY include `affiliate_attribution` if attribution becomes known after session creation or to add
-        non-conflicting fields. Attribution is write-once; conflicting claims are silently ignored.
       requestBody:
         required: true
         content:
@@ -135,14 +115,6 @@ paths:
                 summary: Select a fulfillment option
                 value:
                   fulfillment_option_id: "fulfillment_option_456"
-              with_affiliate_attribution:
-                summary: Add affiliate attribution after session creation
-                value:
-                  affiliate_attribution:
-                    provider: "impact.com"
-                    token: "atp_01J8Z3WXYZ9ABC"
-                    publisher_id: "pub_123"
-                    sub_id: "utm_source=newsletter"
       responses:
         "200":
           description: Updated session
@@ -663,8 +635,6 @@ components:
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
         fulfillment_address: { $ref: "#/components/schemas/Address" }
-        affiliate_attribution:
-          { $ref: "#/components/schemas/AffiliateAttribution" }
       required: [items]
 
     CheckoutSessionUpdateRequest:
@@ -677,8 +647,6 @@ components:
           items: { $ref: "#/components/schemas/Item" }
         fulfillment_address: { $ref: "#/components/schemas/Address" }
         fulfillment_option_id: { type: string }
-        affiliate_attribution:
-          { $ref: "#/components/schemas/AffiliateAttribution" }
 
     CheckoutSessionCompleteRequest:
       type: object

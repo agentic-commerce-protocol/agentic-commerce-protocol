@@ -10,7 +10,7 @@ Added support for the **Affiliate Attribution** extension, enabling agents to cr
 - Added `AffiliateAttribution` object to JSON Schema and OpenAPI specifications
 - Added `AffiliateAttributionSource` for attribution source context
 - Added `AffiliateAttributionMetadata` for flat key/value additional context
-- Extended `CheckoutSessionCreateRequest`, `CheckoutSessionUpdateRequest`, and `CheckoutSessionCompleteRequest` to accept optional `affiliate_attribution`
+- Extended `CheckoutSessionCompleteRequest` to accept optional `affiliate_attribution`
 
 **Key Features:**
 - **Write-only:** Attribution data is accepted but never returned in responses (GET, list, webhooks)
@@ -20,8 +20,6 @@ Added support for the **Affiliate Attribution** extension, enabling agents to cr
 - **Forward-compatible:** Schema allows unknown fields to support future extensions (per RFC §8.2)
 
 **Endpoints Updated:**
-- `POST /checkout_sessions` — Create Session
-- `POST /checkout_sessions/{id}` — Update Session
 - `POST /checkout_sessions/{id}/complete` — Complete Session
 
 See [RFC: Affiliate Attribution](../rfcs/rfc.affiliate_attribution.md) for full specification details.

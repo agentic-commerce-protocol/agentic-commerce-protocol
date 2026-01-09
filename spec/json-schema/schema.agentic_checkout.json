@@ -543,9 +543,6 @@
         },
         "fulfillment_address": {
           "$ref": "#/$defs/Address"
-        },
-        "affiliate_attribution": {
-          "$ref": "#/$defs/AffiliateAttribution"
         }
       },
       "required": ["items"]
@@ -568,9 +565,6 @@
         },
         "fulfillment_option_id": {
           "type": "string"
-        },
-        "affiliate_attribution": {
-          "$ref": "#/$defs/AffiliateAttribution"
         }
       }
     },

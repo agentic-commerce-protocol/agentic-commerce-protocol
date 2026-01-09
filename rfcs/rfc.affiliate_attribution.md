@@ -69,13 +69,11 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 
 ### 4.2 New Object: `affiliate_attribution`
 
-This RFC extends the following ACS request body schemas (per ACS Sections 4.1, 4.2, and 4.4):
+This RFC extends the following ACS request body schema:
 
-- `POST /checkout_sessions` — Create Session Request
-- `POST /checkout_sessions/{id}` — Update Session Request
 - `POST /checkout_sessions/{id}/complete` — Complete Session Request
 
-Agents MAY include a top-level `affiliate_attribution` object in any of these request bodies.
+Agents MAY include a top-level `affiliate_attribution` object in this request body.
 
 #### 4.2.1 Schema (conceptual)
 
@@ -151,44 +149,13 @@ Agents MAY include a top-level `affiliate_attribution` object in any of these re
 
 ## 4.3 Endpoint Semantics
 
-### 4.3.1 Create Session: `POST /checkout_sessions`
-
-**New behavior:**
-
-- Request Body MAY include `affiliate_attribution`.
-- The server SHOULD record the attribution claim for downstream settlement/analytics.
-- The checkout session creation MUST succeed regardless of whether attribution is supported; unsupported servers SHOULD ignore the field.
-
-**Write-once guidance (REQUIRED behavior):**
-
-Once the server has recorded an attribution claim for a given `checkout_session_id`, subsequent requests containing `affiliate_attribution` MUST be handled as follows:
-
-| Scenario | Server Behavior |
-|----------|-----------------|
-| **Same `Idempotency-Key`, identical payload** | Return success (idempotent replay). Do NOT create duplicate record. |
-| **Same `Idempotency-Key`, different payload** | Return **409 Conflict** per ACS idempotency rules. |
-| **Different/missing `Idempotency-Key`, conflicting `provider` or `publisher_id`** | Servers SHOULD keep the first valid claim and silently ignore the conflicting update. Servers MUST NOT return an error that would block checkout. |
-| **Different/missing `Idempotency-Key`, non-conflicting fields only** (e.g., adding `sub_id` to existing claim) | Servers MAY merge the additional fields into the existing record. |
-
-- Servers MUST NOT surface attribution conflicts via user-visible error messaging.
-- Servers MAY log conflicts internally for fraud analysis.
-
-### 4.3.2 Update Session: `POST /checkout_sessions/{id}`
-
-Agents MAY attach `affiliate_attribution` when:
-
-- The attribution becomes known after session creation, or
-- Additional non-conflicting fields (e.g., `sub_id`) become available.
-
-Servers SHOULD apply the write-once guidance above.
-
-### 4.3.3 Complete Session: `POST /checkout_sessions/{id}/complete`
+### 4.3.1 Complete Session: `POST /checkout_sessions/{id}/complete`
 
 Agents MAY attach `affiliate_attribution` on completion to ensure the merchant receives the final attribution context.
 
 Servers SHOULD store attribution alongside the resulting order.
 
-### 4.3.4 Visibility (Write-Only)
+### 4.3.2 Visibility (Write-Only)
 
 The `affiliate_attribution` object is **write-only**. Servers MUST NOT return attribution data in any read endpoint, including but not limited to:
 
@@ -204,36 +171,7 @@ Merchants MAY expose attribution data through separate, authenticated audit or a
 
 ## 5. Example Interactions
 
-### 5.1 Create Session with Attribution (Request)
-
-`POST /checkout_sessions`
-
-```json
-{
-  "items": [{ "id": "item_123", "quantity": 1 }],
-  "fulfillment_address": {
-    "name": "John Doe",
-    "line_one": "1234 Chat Road",
-    "line_two": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "country": "US",
-    "postal_code": "94131"
-  },
-  "affiliate_attribution": {
-    "provider": "impact.com",
-    "token": "atp_01J8Z3WXYZ9ABC",
-    "publisher_id": "pub_123",
-    "campaign_id": "cmp_456",
-    "metadata": {
-      "content_type": "video",
-      "model": "last_touch"
-    }
-  }
-}
-```
-
-### 5.2 Complete Session with Attribution (Request)
+### 5.1 Complete Session with Attribution (Request)
 
 `POST /checkout_sessions/{id}/complete`
 
@@ -266,7 +204,7 @@ Merchants MAY expose attribution data through separate, authenticated audit or a
 }
 ```
 
-### 5.3 Response (201 Created / 200 OK)
+### 5.2 Response (200 OK)
 
 The server returns the checkout session per ACS schema. `affiliate_attribution` is write-only and MUST NOT be echoed in responses.
 
@@ -373,7 +311,7 @@ Agents MUST NOT treat `affiliate_attribution` as a ranking boost mechanism. The 
 
 Attribution requests MUST be idempotent. Clients SHOULD include an `Idempotency-Key` header per ACS Section 2.3 when submitting attribution.
 
-The complete conflict-handling matrix is defined in Section 4.3.1. Key guarantees:
+Key guarantees:
 
 - **Identical replay:** Same `Idempotency-Key` + same payload → success, no duplicate record.
 - **Payload mismatch:** Same `Idempotency-Key` + different payload → **409 Conflict**.
@@ -420,7 +358,7 @@ Attribution submissions are subject to the same rate limits as standard ACS endp
 
 To implement this RFC, maintainers SHOULD:
 
-- Extend ACS JSON Schemas to include `affiliate_attribution` on create/update/complete request objects.
+- Extend ACS JSON Schemas to include `affiliate_attribution` on the complete request object.
 - Extend OpenAPI schemas correspondingly.
 - Add examples demonstrating usage.
 - Add an entry to `changelog/unreleased.md`.
@@ -435,14 +373,14 @@ An implementation claiming support for **Affiliate Attribution**:
 
 **MUST requirements:**
 
-- [ ] MUST accept `affiliate_attribution` in `POST /checkout_sessions`, `POST /checkout_sessions/{id}`, and `POST /checkout_sessions/{id}/complete`.
+- [ ] MUST accept `affiliate_attribution` in `POST /checkout_sessions/{id}/complete`.
 - [ ] MUST require `affiliate_attribution.provider` when the object is present.
 - [ ] MUST require at least one of `{ token, publisher_id }` when the object is present.
 - [ ] MUST enforce `metadata` as a flat map of primitive values (no arrays, no nested objects).
-- [ ] MUST NOT return `affiliate_attribution` in any read endpoint, including `GET /checkout_sessions/{id}`, list endpoints, and webhook payloads (write-only per Section 4.3.4).
+- [ ] MUST NOT return `affiliate_attribution` in any read endpoint, including `GET /checkout_sessions/{id}`, list endpoints, and webhook payloads (write-only per Section 4.3.2).
 - [ ] MUST ensure idempotency: Replaying a request with the same `Idempotency-Key` and attribution data MUST NOT duplicate the attribution record.
 - [ ] MUST return **409 Conflict** when the same `Idempotency-Key` is reused with a different `affiliate_attribution` payload.
-- [ ] MUST NOT block checkout due to attribution conflicts; conflicting claims with different/missing `Idempotency-Key` MUST be handled silently per Section 4.3.1.
+- [ ] MUST NOT block checkout due to attribution conflicts; conflicting claims with different/missing `Idempotency-Key` MUST be handled silently.
 
 **SHOULD requirements:**
 
