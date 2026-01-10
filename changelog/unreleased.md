@@ -52,3 +52,7 @@ If any implementation was incorrectly sending/receiving these values as quoted s
 ## Catalog Webhook Event Examples
 
 - Added catalog webhook event examples for price updates, availability changes, and inventory updates to `examples/examples.catalog_webhook_events.json` (addresses Issue #29)
+
+## Delegate Payment Error Examples
+
+- Added additional error examples for delegate payment (card declined, expired card, unauthorized) to `examples/examples.delegate_payment.json`

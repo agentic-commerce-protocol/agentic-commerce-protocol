@@ -72,5 +72,21 @@
     "type": "rate_limit_exceeded",
     "code": "too_many_requests",
     "message": "Too many requests, please retry later"
+  },
+  "delegate_payment_error_card_declined": {
+    "type": "processing_error",
+    "code": "card_declined",
+    "message": "Your card was declined due to insufficient funds."
+  },
+  "delegate_payment_error_expired_card": {
+    "type": "invalid_request",
+    "code": "expired_card",
+    "message": "The card has expired.",
+    "param": "payment_method.exp_year"
+  },
+  "delegate_payment_error_unauthorized": {
+    "type": "unauthorized",
+    "code": "unauthorized",
+    "message": "Authentication failed."
   }
 }
