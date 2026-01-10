@@ -1,0 +1,126 @@
+{
+  "multi_item_checkout_session_request": {
+    "items": [
+      {
+        "id": "item_123",
+        "quantity": 2
+      },
+      {
+        "id": "item_456",
+        "quantity": 1
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    }
+  },
+  "multi_item_checkout_session_response": {
+    "id": "checkout_session_multi",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 2
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 600,
+        "tax": 60,
+        "total": 660
+      },
+      {
+        "id": "line_item_456",
+        "item": {
+          "id": "item_456",
+          "quantity": 1
+        },
+        "base_amount": 500,
+        "discount": 50,
+        "subtotal": 450,
+        "tax": 45,
+        "total": 495
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 800
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 1050
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 105
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "fee",
+        "display_text": "Service Fee",
+        "amount": 50,
+        "description": "Processing and handling fee"
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 1305
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
+      }
+    ]
+  }
+}
