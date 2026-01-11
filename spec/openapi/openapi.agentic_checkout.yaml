@@ -807,4 +807,3 @@ components:
         message: { type: string }
         param: { type: string, description: "RFC 9535 JSONPath (optional)" }
       required: [type, code, message]
-      
