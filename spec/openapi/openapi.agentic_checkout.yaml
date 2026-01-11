@@ -566,8 +566,7 @@ components:
       type: object
       additionalProperties: true
       description: >
-        Seller-provided authentication metadata for 3DS flows. Contains only the
-        keys documented here: channel, acquirer_details, directory_server, rci.
+        Seller-provided authentication metadata for 3DS flows.
       properties:
         channel:
           type: object
@@ -656,9 +655,49 @@ components:
           type: string
           enum: [american_express, mastercard, visa]
           description: The 3DS directory server used for this Authentication. Required when `acquirer_details` is present.
-        rci:
-          type: string
-          description: The RCI (Requestor Challenge Indicator) indicating whether a challenge is requested for this transaction.
+        flow_preference:
+          type: object
+          additionalProperties: false
+          description: >
+            Contains additional details on the seller's preference for the 3DS
+            authentication flow. Sellers MAY request a preference, but issuers
+            ultimately decide the actual flow.
+          properties:
+            type:
+              type: string
+              enum: [challenge, frictionless]
+              description: >
+                Type of flow requested for this 3DS Authentication. "challenge"
+                requests a challenge flow; "frictionless" requests a frictionless flow.
+            challenge:
+              type: object
+              additionalProperties: false
+              description: >
+                Details about the requested challenge flow.
+              properties:
+                type:
+                  type: string
+                  enum: [mandated, preferred]
+                  description: >
+                    Subtype of challenge preference. "mandated" requests a challenge
+                    because it is mandated for this transaction; "preferred" requests
+                    a challenge when not mandated.
+              required: [type]
+            frictionless:
+              type: object
+              additionalProperties: false
+              description: >
+                Details about the requested frictionless flow.
+              properties:
+                type:
+                  type: string
+                  enum: [low_risk]
+                  description: >
+                    Subtype of frictionless preference. "low_risk" requests a frictionless
+                    flow based on low transaction risk; the seller is responsible for
+                    ensuring the transaction meets any required criteria.
+              required: [type]
+          required: [type]
       required: []
       allOf:
         - if:
@@ -768,3 +807,4 @@ components:
         message: { type: string }
         param: { type: string, description: "RFC 9535 JSONPath (optional)" }
       required: [type, code, message]
+      
