@@ -1,7 +1,7 @@
 # RFC: Agentic Checkout — Merchant REST API
 
 **Status:** Draft  
-**Version:** 2025-12-11  
+**Version:** 2026-01-11  
 **Scope:** Checkout session lifecycle and webhook integration
 
 This RFC defines the **Agentic Checkout Specification (ACS)**, a standardized REST API contract that merchants SHOULD implement to support experiences across agent platforms.
@@ -16,7 +16,7 @@ This specification ensures that:
 
 ## 1. Scope & Goals
 
-- Provide a **stable, versioned** API surface (`API-Version: 2025-12-11`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
+- Provide a **stable, versioned** API surface (`API-Version: 2026-01-11`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
 - Ensure ChatGPT renders an **authoritative cart state** on every response.
 - Keep **payments on merchant rails**; optional delegated payments are covered separately.
 - Support **safe retries** via idempotency and **strong security** via authentication and request signing.
@@ -33,7 +33,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 ### 2.1 Initialization
 
-- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-12-11`).
+- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-11`).
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
 
@@ -67,7 +67,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
-- `API-Version: 2025-12-11` (**REQUIRED**)
+- `API-Version: 2026-01-11` (**REQUIRED**)
 
 **Response Headers:**
 
@@ -130,6 +130,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 - `totals[]` each with integer `amount`
 - `messages[]` (`info` / `error` entries)
 - `links[]` policy URLs
+- `authentication_metadata` (optional seller-provided metadata required for 3D Secure flows)
 
 ### 4.2 Update Session
 
@@ -146,6 +147,15 @@ Returns the full authoritative session state.
 `POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success  
 Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`.  
 Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
+
+Authentication flows and additional fields:
+
+- A seller MAY set session.status to authentication_required to indicate the transaction requires issuer authentication (3D Secure).
+- When session.status == "authentication_required", a client MUST NOT consider the session ready to finalize without performing the required authentication flow.
+
+If a client calls POST /checkout_sessions/{id}/complete while session.status == "authentication_required":
+- If the request includes a valid authentication_result (see Data Model) appropriate to the session's authentication_metadata, the server MAY proceed to attempt payment authorization and return success or a payment-related error.
+- If the request does not include authentication_result, the server MUST return a 4XX error using the existing Error schema. The server SHOULD set type to an appropriate error type (for example invalid_request), code to requires_3ds, param to $.authentication_result.
 
 ### 4.5 Cancel Session
 
@@ -169,6 +179,16 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
+
+3D Secure / Authentication-specific types:
+- authentication_metadata: Seller-provided metadata required to perform 3D Secure authentication flows. 
+- AuthenticationResult: Agent-provided authentication results returned to the seller for card-based 3D Secure. Fields:
+
+outcome (enum: abandoned | attempt_acknowledged | authenticated | canceled | denied | informational | internal_error | not_supported | processing_error | rejected)
+three_ds_cryptogram (28-char base64 string; 20 bytes encoded)
+electronic_commerce_indicator (string)
+transaction_id (string)
+version (string like "2.2.0")
 
 All money fields are **integers (minor units)**.
 
@@ -207,6 +227,7 @@ All money fields are **integers (minor units)**.
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
 - `fulfillment_option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
+- When `authentication_metadata` is provided, servers MUST include required acquirer and channel fields per the metadata schema rules; when `channel.browser.javascript_enabled` is true, additional browser fields are required.
 
 ---
 
@@ -415,6 +436,8 @@ All money fields are **integers (minor units)**.
 }
 ```
 
+If the session is in `authentication_required` state, a client MUST include `authentication_result` appropriate to the session's `authentication_metadata` (see Data Model). If not included, servers MUST respond with a 4XX error as described below.
+
 ### 9.6 Complete — Response (200)
 
 ```json
@@ -501,7 +524,21 @@ All money fields are **integers (minor units)**.
 }
 ```
 
-### 9.7 Cancel — Response (200)
+### 9.7 Complete — 400 Example (requires authentication_result)
+
+If a client calls `POST /checkout_sessions/{id}/complete` while `session.status == "authentication_required"` and does not provide `authentication_result`, servers MUST return a 4XX response using the Error schema. Example:
+
+```json
+Copy code
+{
+  "type": "invalid_request",
+  "code": "requires_3ds",
+  "message": "This checkout session requires issuer authentication. The request must include 'authentication_result'.",
+  "param": "$.authentication_result"
+}
+```
+
+### 9.8 Cancel — Response (200)
 
 ```json
 {
@@ -564,3 +601,4 @@ All money fields are **integers (minor units)**.
 ## 11. Change Log
 
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.
+- **2026-01-11**: Added 3D Secure/authentication flow support: authentication_required session status, authentication_metadata, AuthenticationResult type, and required 4XX error behavior when authentication_result is missing on complete.
