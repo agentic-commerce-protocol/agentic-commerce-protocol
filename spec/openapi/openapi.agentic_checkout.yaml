@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "2025-12-11"
+  version: "2025-12-25"
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -170,22 +170,80 @@ paths:
       summary: Complete a checkout session
       operationId: completeCheckoutSession
       description: |
-        Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+        Handles all checkout completion scenarios including 3DS authentication steps.
+
+        The request body varies depending on the current step:
+        1. **Initial payment attempt**: Send `payment_data` with token
+        2. **After 3DS Method**: Send `session_data` + `method_completion_indicator`
+        3. **After 3DS Challenge**: Send `session_data` + `cres`
+
+        The response indicates the next step:
+        - `status: completed` with `order` - checkout finished
+        - `status: in_progress` with `pending_action.type: "3ds_method"` - render 3DS Method iframe
+        - `status: in_progress` with `pending_action.type: "3ds_challenge"` - render 3DS challenge iframe
+        - `status: ready_for_payment` with `payment_declined` error - authentication failed
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+            examples:
+              initial_payment:
+                summary: Initial payment attempt
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "john@example.com"
+                  payment_data:
+                    token: "vt_01J8Z3WXYZ9ABC"
+                    provider: "stripe"
+              after_3ds_method:
+                summary: After 3DS Method completion
+                value:
+                  session_data: "cs_3ds_01HV3P3ABC123XYZ"
+                  method_completion_indicator: "completed"
+              after_3ds_method_timeout:
+                summary: After 3DS Method timeout
+                value:
+                  session_data: "cs_3ds_01HV3P3ABC123XYZ"
+                  method_completion_indicator: "timeout"
+              after_3ds_challenge:
+                summary: After 3DS Challenge completion
+                value:
+                  session_data: "cs_3ds_01HV3P3ABC123XYZ"
+                  cres: "eyJ0cmFuc1N0YXR1cyI6IlkiLCJhdXRoZW50aWNhdGlvblZhbHVlIjoiQWdBQUFBQT0ifQ=="
       responses:
         "200":
-          description: Completed session with order
+          description: |
+            Response varies based on checkout state:
+            - Completed session with order (frictionless or after challenge)
+            - In-progress session with pending_action for 3DS
+            - Ready for payment with error if authentication failed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CheckoutSessionWithOrder"
-        "4XX":
-          description: Client error
+                oneOf:
+                  - $ref: "#/components/schemas/CheckoutSession"
+                  - $ref: "#/components/schemas/CheckoutSessionWithOrder"
+        "400":
+          description: Invalid or malformed request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Session not found or session_data invalid
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Idempotency conflict
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "410":
+          description: 3DS session expired
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -292,7 +350,7 @@ components:
       name: API-Version
       in: header
       required: true
-      schema: { type: string, example: "2025-12-11" }
+      schema: { type: string, example: "2025-12-25" }
 
   schemas:
     Address:
@@ -467,7 +525,6 @@ components:
                 out_of_stock,
                 payment_declined,
                 requires_sign_in,
-                requires_3ds,
               ],
           }
         param:
@@ -540,6 +597,12 @@ components:
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+        three_ds_result:
+          $ref: "#/components/schemas/ThreeDsResult"
+          description: Present after successful 3DS authentication (with completed status)
+        pending_action:
+          $ref: "#/components/schemas/PendingAction"
+          description: Action required from the agent to continue checkout flow (e.g., 3DS authentication)
         messages:
           type: array
           items:
@@ -599,10 +662,138 @@ components:
     CheckoutSessionCompleteRequest:
       type: object
       additionalProperties: false
+      description: |
+        Request body for completing a checkout session. The fields used depend on the current step:
+        - Initial payment: `payment_data` (required), `buyer` (optional)
+        - After 3DS Method: `session_data` + `method_completion_indicator`
+        - After 3DS Challenge: `session_data` + `cres`
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
-        payment_data: { $ref: "#/components/schemas/PaymentData" }
-      required: [payment_data]
+        buyer:
+          $ref: "#/components/schemas/Buyer"
+          description: Buyer information (optional, can be provided on initial payment attempt)
+        payment_data:
+          $ref: "#/components/schemas/PaymentData"
+          description: Payment token and provider (required for initial payment attempt)
+        session_data:
+          type: string
+          description: Opaque session identifier from pending_action (required for 3DS steps)
+        method_completion_indicator:
+          type: string
+          enum: [completed, timeout]
+          description: 3DS Method completion status (send after rendering 3DS Method iframe)
+        cres:
+          type: string
+          description: Base64-encoded Challenge Response from ACS (send after user completes challenge)
+
+    PendingAction:
+      oneOf:
+        - $ref: "#/components/schemas/PendingAction3dsMethod"
+        - $ref: "#/components/schemas/PendingAction3dsChallenge"
+      discriminator:
+        propertyName: type
+        mapping:
+          3ds_method: "#/components/schemas/PendingAction3dsMethod"
+          3ds_challenge: "#/components/schemas/PendingAction3dsChallenge"
+      description: Action required from the agent to continue checkout flow
+
+    PendingAction3dsMethod:
+      type: object
+      additionalProperties: false
+      description: 3DS Method (device fingerprinting) action required before authentication
+      properties:
+        type:
+          type: string
+          const: 3ds_method
+        data:
+          $ref: "#/components/schemas/PendingAction3dsMethodData"
+      required: [type, data]
+
+    PendingAction3dsMethodData:
+      type: object
+      additionalProperties: false
+      description: Data for 3DS Method pending action
+      properties:
+        three_ds_method_url:
+          type: string
+          format: uri
+          description: ACS URL for device fingerprinting
+        three_ds_server_trans_id:
+          type: string
+          description: 3DS Server Transaction ID (UUID format)
+        session_data:
+          type: string
+          description: Opaque session identifier for continuation
+        version:
+          type: string
+          enum: ["2.1.0", "2.2.0", "2.3.0"]
+          description: 3DS protocol version
+        ds_identifier:
+          type: string
+          description: Directory Server Identifier
+      required: [three_ds_method_url, three_ds_server_trans_id, session_data, version, ds_identifier]
+
+    PendingAction3dsChallenge:
+      type: object
+      additionalProperties: false
+      description: 3DS challenge action required for user authentication
+      properties:
+        type:
+          type: string
+          const: 3ds_challenge
+        data:
+          $ref: "#/components/schemas/PendingAction3dsChallengeData"
+      required: [type, data]
+
+    PendingAction3dsChallengeData:
+      type: object
+      additionalProperties: false
+      description: Data for 3DS Challenge pending action
+      properties:
+        version:
+          type: string
+          enum: ["2.1.0", "2.2.0", "2.3.0"]
+          description: 3DS protocol version
+        acs_url:
+          type: string
+          format: uri
+          description: Access Control Server URL for challenge
+        creq:
+          type: string
+          description: Base64-encoded Challenge Request
+        session_data:
+          type: string
+          description: Opaque session identifier for continuation
+        three_ds_server_trans_id:
+          type: string
+          description: 3DS Server Transaction ID
+      required: [version, acs_url, creq, session_data]
+
+    ThreeDsResult:
+      type: object
+      additionalProperties: false
+      description: 3DS authentication proof returned after successful authentication
+      properties:
+        eci:
+          type: string
+          description: Electronic Commerce Indicator (e.g., "05", "02")
+        cavv:
+          type: string
+          description: Cardholder Authentication Verification Value (base64)
+        ds_transaction_id:
+          type: string
+          description: Directory Server Transaction ID
+        acs_transaction_id:
+          type: string
+          description: ACS Transaction ID
+        version:
+          type: string
+          enum: ["2.1.0", "2.2.0", "2.3.0"]
+          description: 3DS protocol version used
+        authentication_status:
+          type: string
+          enum: ["Y", "A", "N", "U", "R"]
+          description: "Authentication status: Y=Success, A=Attempted, N=Failed, U=Unavailable, R=Rejected"
+      required: [eci, cavv, ds_transaction_id, version, authentication_status]
 
     IntentTrace:
       type: object

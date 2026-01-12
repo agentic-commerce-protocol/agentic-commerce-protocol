@@ -143,13 +143,20 @@ Returns the full authoritative session state.
 
 ### 4.4 Complete Session
 
-`POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success  
-Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`.  
+`POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success
+Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`.
 Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
+
+**3DS Authentication:** If the payment requires 3D Secure authentication, the response returns `status: in_progress` with a `requires_3ds` error message containing `authentication_data`. See the [3DS Authentication RFC](rfc.3ds_authentication.md) for the complete flow.
 
 ### 4.5 Cancel Session
 
 `POST /checkout_sessions/{checkout_session_id}/cancel` → **200 OK** when canceled, **405** if already `completed` or `canceled`.
+
+### 4.6 Authenticate Session (3DS)
+
+`POST /checkout_sessions/{checkout_session_id}/authenticate` → **200 OK** on success
+Submits the 3DS authentication result after the user completes a challenge. See the [3DS Authentication RFC](rfc.3ds_authentication.md) for details.
 
 ---
 
@@ -167,7 +174,9 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
-- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
+- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`, `authentication_data?`
+- **ThreeDsAuthenticationData**: `version`, `acs_url`, `creq`, `session_data`, `three_ds_server_trans_id?` (see [3DS RFC](rfc.3ds_authentication.md))
+- **ThreeDsAuthenticationResult**: `session_data`, `cres`
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 
 All money fields are **integers (minor units)**.
@@ -554,8 +563,10 @@ All money fields are **integers (minor units)**.
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
+- [ ] Implements authenticate endpoint for 3DS flows (see [3DS RFC](rfc.3ds_authentication.md))
 - [ ] Implements idempotency semantics and conflict detection
 - [ ] Emits flat error objects with `type/code/message/param?`
+- [ ] Returns `requires_3ds` error with `authentication_data` when 3DS challenge is required
 - [ ] Verifies auth; signs/verifies requests where applicable
 - [ ] Emits order webhooks per the Webhooks RFC (separate spec)
 
@@ -563,4 +574,5 @@ All money fields are **integers (minor units)**.
 
 ## 11. Change Log
 
+- **2025-12-16**: Added 3DS authentication flow support; new `/authenticate` endpoint; extended `MessageError` with `authentication_data`.
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.
