@@ -20,7 +20,9 @@
     "id": "checkout_session_123",
     "payment_provider": {
       "provider": "stripe",
-      "supported_payment_methods": ["card"]
+      "supported_payment_methods": [
+        "card"
+      ]
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -592,5 +594,168 @@
         }
       ]
     }
+  },
+  "checkout_session_authentication_required": {
+    "id": "checkout_session_3ds_001",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": [
+        "card"
+      ]
+    },
+    "status": "authentication_required",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_3ds_001",
+        "item": {
+          "id": "item_3ds_001",
+          "quantity": 1
+        },
+        "base_amount": 5000,
+        "discount": 0,
+        "subtotal": 5000,
+        "tax": 375,
+        "total": 5375,
+        "name": "Premium Leather Boots",
+        "unit_amount": 5000
+      }
+    ],
+    "fulfillment_address": {
+      "name": "Alice Example",
+      "line_one": "1 Example St",
+      "line_two": "Unit 2",
+      "city": "Oakland",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94607"
+    },
+    "fulfillment_option_id": "ful_overnight_01",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 5000
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 5000
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 375
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 2500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 7875
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "ful_overnight_01",
+        "title": "Overnight",
+        "subtitle": "Next-business-day delivery",
+        "carrier": "UPS",
+        "earliest_delivery_time": "2026-01-13T08:00:00Z",
+        "latest_delivery_time": "2026-01-13T20:00:00Z",
+        "subtotal": 2500,
+        "tax": 0,
+        "total": 2500
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "param": "$.payment_provider",
+        "content_type": "plain",
+        "content": "Card issuer has requested 3D Secure authentication for this payment."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ],
+    "authentication_metadata": {
+      "channel": {
+        "type": "browser",
+        "browser": {
+          "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "ip_address": "203.0.113.42",
+          "javascript_enabled": true,
+          "language": "en-US",
+          "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+          "color_depth": 24,
+          "java_enabled": false,
+          "screen_height": 1440,
+          "screen_width": 900,
+          "timezone_offset": -480
+        }
+      },
+      "acquirer_details": {
+        "acquirer_bin": "123456",
+        "acquirer_country": "US",
+        "acquirer_merchant_id": "merchant_789",
+        "merchant_name": "Test Merchant",
+        "requestor_id": "requestor_42"
+      },
+      "directory_server": "visa",
+      "flow_preference": {
+        "type": "challenge",
+        "challenge": {
+          "type": "preferred"
+        }
+      }
+    }
+  },
+  "complete_session_with_authentication_result_request": {
+    "buyer": {
+      "first_name": "Alice",
+      "last_name": "Example",
+      "email": "alice@example.com"
+    },
+    "payment_data": {
+      "token": "spt_3ds_token_001",
+      "provider": "stripe",
+      "billing_address": {
+        "name": "Alice Example",
+        "line_one": "1 Example St",
+        "line_two": "Unit 2",
+        "city": "Oakland",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94607"
+      }
+    },
+    "authentication_result": {
+      "outcome": "authenticated",
+      "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
+      "electronic_commerce_indicator": "05",
+      "transaction_id": "dsTransId_12345",
+      "version": "2.2.0"
+    }
+  },
+  "authentication_result_example": {
+    "outcome": "authenticated",
+    "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
+    "electronic_commerce_indicator": "05",
+    "transaction_id": "dsTransId_12345",
+    "version": "2.2.0"
+  },
+  "error_400_requires_3ds": {
+    "type": "invalid_request",
+    "code": "requires_3ds",
+    "message": "This checkout session requires issuer authentication. The request must include 'authentication_result' as provided by the issuer authentication flow.",
+    "param": "$.authentication_result"
   }
 }
