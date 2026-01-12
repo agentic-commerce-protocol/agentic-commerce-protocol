@@ -182,13 +182,7 @@ If a client calls POST /checkout_sessions/{id}/complete while session.status == 
 
 3D Secure / Authentication-specific types:
 - authentication_metadata: Seller-provided metadata required to perform 3D Secure authentication flows. 
-- AuthenticationResult: Agent-provided authentication results returned to the seller for card-based 3D Secure. Fields:
-
-outcome (enum: abandoned | attempt_acknowledged | authenticated | canceled | denied | informational | internal_error | not_supported | processing_error | rejected)
-three_ds_cryptogram (28-char base64 string; 20 bytes encoded)
-electronic_commerce_indicator (string)
-transaction_id (string)
-version (string like "2.2.0")
+- AuthenticationResult: Agent-provided authentication results returned to the seller for card-based 3D Secure.
 
 All money fields are **integers (minor units)**.
 
@@ -529,7 +523,6 @@ If the session is in `authentication_required` state, a client MUST include `aut
 If a client calls `POST /checkout_sessions/{id}/complete` while `session.status == "authentication_required"` and does not provide `authentication_result`, servers MUST return a 4XX response using the Error schema. Example:
 
 ```json
-Copy code
 {
   "type": "invalid_request",
   "code": "requires_3ds",
