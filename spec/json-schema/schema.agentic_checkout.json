@@ -56,7 +56,11 @@
           "type": "string"
         }
       },
-      "required": ["first_name", "last_name", "email"]
+      "required": [
+        "first_name",
+        "last_name",
+        "email"
+      ]
     },
     "Item": {
       "type": "object",
@@ -70,7 +74,10 @@
           "minimum": 1
         }
       },
-      "required": ["id", "quantity"]
+      "required": [
+        "id",
+        "quantity"
+      ]
     },
     "Disclosure": {
       "type": "object",
@@ -78,17 +85,26 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["disclaimer"]
+          "enum": [
+            "disclaimer"
+          ]
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": [
+            "plain",
+            "markdown"
+          ]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": ["type", "content_type", "content"]
+      "required": [
+        "type",
+        "content_type",
+        "content"
+      ]
     },
     "CustomAttribute": {
       "type": "object",
@@ -101,7 +117,10 @@
           "type": "string"
         }
       },
-      "required": ["display_name", "value"]
+      "required": [
+        "display_name",
+        "value"
+      ]
     },
     "MarketplaceSellerDetails": {
       "type": "object",
@@ -111,7 +130,9 @@
           "type": "string"
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ]
     },
     "PaymentProvider": {
       "type": "object",
@@ -119,17 +140,24 @@
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
+          "enum": [
+            "stripe"
+          ]
         },
         "supported_payment_methods": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["card"]
+            "enum": [
+              "card"
+            ]
           }
         }
       },
-      "required": ["provider", "supported_payment_methods"]
+      "required": [
+        "provider",
+        "supported_payment_methods"
+      ]
     },
     "LineItem": {
       "type": "object",
@@ -226,7 +254,11 @@
           "type": "string"
         }
       },
-      "required": ["type", "display_text", "amount"]
+      "required": [
+        "type",
+        "display_text",
+        "amount"
+      ]
     },
     "FulfillmentOptionShipping": {
       "type": "object",
@@ -266,7 +298,14 @@
           "type": "integer"
         }
       },
-      "required": ["type", "id", "title", "subtotal", "tax", "total"]
+      "required": [
+        "type",
+        "id",
+        "title",
+        "subtotal",
+        "tax",
+        "total"
+      ]
     },
     "FulfillmentOptionDigital": {
       "type": "object",
@@ -295,7 +334,14 @@
           "type": "integer"
         }
       },
-      "required": ["type", "id", "title", "subtotal", "tax", "total"]
+      "required": [
+        "type",
+        "id",
+        "title",
+        "subtotal",
+        "tax",
+        "total"
+      ]
     },
     "MessageInfo": {
       "type": "object",
@@ -311,13 +357,20 @@
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": [
+            "plain",
+            "markdown"
+          ]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": ["type", "content_type", "content"]
+      "required": [
+        "type",
+        "content_type",
+        "content"
+      ]
     },
     "MessageError": {
       "type": "object",
@@ -344,13 +397,21 @@
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": [
+            "plain",
+            "markdown"
+          ]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": ["type", "code", "content_type", "content"]
+      "required": [
+        "type",
+        "code",
+        "content_type",
+        "content"
+      ]
     },
     "Link": {
       "type": "object",
@@ -358,14 +419,21 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["terms_of_use", "privacy_policy", "return_policy"]
+          "enum": [
+            "terms_of_use",
+            "privacy_policy",
+            "return_policy"
+          ]
         },
         "url": {
           "type": "string",
           "format": "uri"
         }
       },
-      "required": ["type", "url"]
+      "required": [
+        "type",
+        "url"
+      ]
     },
     "PaymentData": {
       "type": "object",
@@ -376,13 +444,18 @@
         },
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
+          "enum": [
+            "stripe"
+          ]
         },
         "billing_address": {
           "$ref": "#/$defs/Address"
         }
       },
-      "required": ["token", "provider"]
+      "required": [
+        "token",
+        "provider"
+      ]
     },
     "Order": {
       "type": "object",
@@ -399,7 +472,11 @@
           "format": "uri"
         }
       },
-      "required": ["id", "checkout_session_id", "permalink_url"]
+      "required": [
+        "id",
+        "checkout_session_id",
+        "permalink_url"
+      ]
     },
     "Refund": {
       "type": "object",
@@ -407,13 +484,339 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["store_credit", "original_payment"]
+          "enum": [
+            "store_credit",
+            "original_payment"
+          ]
         },
         "amount": {
           "type": "integer"
         }
       },
-      "required": ["type", "amount"]
+      "required": [
+        "type",
+        "amount"
+      ]
+    },
+    "AuthenticationMetadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Seller-provided authentication metadata for 3DS flows.",
+      "properties": {
+        "channel": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Details about the channel used for this 3DS Authentication.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "browser"
+              ],
+              "description": "Use 'browser' to indicate the transaction originated from a browser."
+            },
+            "browser": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Browser details collected server- or client-side.",
+              "properties": {
+                "accept_header": {
+                  "type": "string",
+                  "description": "The HTTP Accept header from the cardholder\u2019s browser."
+                },
+                "ip_address": {
+                  "type": "string",
+                  "maxLength": 45,
+                  "description": "The IP address of the browser."
+                },
+                "javascript_enabled": {
+                  "type": "boolean",
+                  "description": "Whether the cardholder browser can execute JavaScript."
+                },
+                "language": {
+                  "type": "string",
+                  "maxLength": 35,
+                  "description": "An IETF BCP 47 language tag representing the browser language."
+                },
+                "user_agent": {
+                  "type": "string",
+                  "description": "The browser user agent string."
+                },
+                "color_depth": {
+                  "type": "integer",
+                  "description": "The screen color depth. Required if javascript_enabled is true."
+                },
+                "java_enabled": {
+                  "type": "boolean",
+                  "description": "Browser Java support. Required if javascript_enabled is true."
+                },
+                "screen_height": {
+                  "type": "integer",
+                  "description": "Screen height in pixels. Required if javascript_enabled is true."
+                },
+                "screen_width": {
+                  "type": "integer",
+                  "description": "Screen width in pixels. Required if javascript_enabled is true."
+                },
+                "timezone_offset": {
+                  "type": "integer",
+                  "description": "Time difference in minutes between UTC and the browser local time. Required if javascript_enabled is true."
+                }
+              },
+              "required": [
+                "accept_header",
+                "ip_address",
+                "javascript_enabled",
+                "language",
+                "user_agent"
+              ]
+            }
+          }
+        },
+        "acquirer_details": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Details about the acquirer used for this 3DS Authentication. This object MUST be present when authentication_metadata is provided.",
+          "properties": {
+            "acquirer_bin": {
+              "type": "string",
+              "maxLength": 11,
+              "description": "The Acquirer BIN (directory-server specific)."
+            },
+            "acquirer_country": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "Two-letter ISO 3166-1 alpha-2 country code."
+            },
+            "acquirer_merchant_id": {
+              "type": "string",
+              "maxLength": 35,
+              "description": "The Merchant ID assigned by the acquirer."
+            },
+            "merchant_name": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Merchant name assigned by the acquirer."
+            },
+            "requestor_id": {
+              "type": "string",
+              "maxLength": 35,
+              "description": "Requestor ID (if required by the directory server)."
+            }
+          },
+          "required": [
+            "acquirer_bin",
+            "acquirer_country",
+            "acquirer_merchant_id",
+            "merchant_name"
+          ]
+        },
+        "directory_server": {
+          "type": "string",
+          "enum": [
+            "american_express",
+            "mastercard",
+            "visa"
+          ],
+          "description": "The 3DS directory server used for this Authentication. Required when `acquirer_details` is present."
+        },
+        "flow_preference": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Contains additional details on the seller's preference for the 3DS authentication flow. Sellers MAY request a preference, but issuers ultimately decide the actual flow.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "challenge",
+                "frictionless"
+              ],
+              "description": "Type of flow requested for this 3DS Authentication. 'challenge' requests a challenge flow; 'frictionless' requests a frictionless flow."
+            },
+            "challenge": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Details about the requested challenge flow.",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "mandated",
+                    "preferred"
+                  ],
+                  "description": "Subtype of challenge preference. 'mandated' requests a challenge because it is mandated for this transaction; 'preferred' requests a challenge when not mandated."
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "frictionless": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Details about the requested frictionless flow.",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "low_risk"
+                  ],
+                  "description": "Subtype of frictionless preference. 'low_risk' requests a frictionless flow based on low transaction risk; the seller is responsible for ensuring the transaction meets any required criteria."
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "channel": {
+                "properties": {
+                  "type": {
+                    "const": "browser"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "channel"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "channel": {
+                "properties": {
+                  "type": {
+                    "const": "browser"
+                  }
+                },
+                "required": [
+                  "type",
+                  "browser"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "channel": {
+                "required": [
+                  "type",
+                  "browser"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "channel": {
+                "properties": {
+                  "browser": {
+                    "properties": {
+                      "javascript_enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "channel": {
+                "properties": {
+                  "browser": {
+                    "required": [
+                      "color_depth",
+                      "java_enabled",
+                      "screen_height",
+                      "screen_width",
+                      "timezone_offset"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "acquirer_details": {
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "acquirer_details",
+              "directory_server"
+            ]
+          }
+        }
+      ]
+    },
+    "AuthenticationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Agent-provided authentication results returned to the seller for card-based 3D Secure.",
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "description": "The outcome of this 3DS Authentication.",
+          "enum": [
+            "abandoned",
+            "attempt_acknowledged",
+            "authenticated",
+            "canceled",
+            "denied",
+            "informational",
+            "internal_error",
+            "not_supported",
+            "processing_error",
+            "rejected"
+          ]
+        },
+        "three_ds_cryptogram": {
+          "type": "string",
+          "description": "The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is 20 bytes, base64-encoded into a 28-character string."
+        },
+        "electronic_commerce_indicator": {
+          "type": "string",
+          "description": "Electronic Commerce Indicator (ECI) returned by the 3D Secure provider."
+        },
+        "transaction_id": {
+          "type": "string",
+          "description": "Transaction identifier returned by the 3DS system (XID for 3DS1 or dsTransID for 3DS2)."
+        },
+        "version": {
+          "type": "string",
+          "description": "The 3D Secure version used for this authentication (for example '2.2.0')."
+        }
+      },
+      "required": [
+        "outcome",
+        "three_ds_cryptogram",
+        "electronic_commerce_indicator",
+        "transaction_id",
+        "version"
+      ]
     },
     "CheckoutSessionBase": {
       "type": "object",
@@ -432,6 +835,7 @@
           "type": "string",
           "enum": [
             "not_ready_for_payment",
+            "authentication_required",
             "ready_for_payment",
             "completed",
             "canceled",
@@ -490,6 +894,9 @@
           "items": {
             "$ref": "#/$defs/Link"
           }
+        },
+        "authentication_metadata": {
+          "$ref": "#/$defs/AuthenticationMetadata"
         }
       },
       "required": [
@@ -522,7 +929,9 @@
               "$ref": "#/$defs/Order"
             }
           },
-          "required": ["order"]
+          "required": [
+            "order"
+          ]
         }
       ]
     },
@@ -544,7 +953,9 @@
           "$ref": "#/$defs/Address"
         }
       },
-      "required": ["items"]
+      "required": [
+        "items"
+      ]
     },
     "CheckoutSessionUpdateRequest": {
       "type": "object",
@@ -576,9 +987,14 @@
         },
         "payment_data": {
           "$ref": "#/$defs/PaymentData"
+        },
+        "authentication_result": {
+          "$ref": "#/$defs/AuthenticationResult"
         }
       },
-      "required": ["payment_data"]
+      "required": [
+        "payment_data"
+      ]
     },
     "IntentTrace": {
       "type": "object",
@@ -607,11 +1023,17 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "type": ["string", "number", "boolean"]
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
           }
         }
       },
-      "required": ["reason_code"]
+      "required": [
+        "reason_code"
+      ]
     },
     "CancelSessionRequest": {
       "type": "object",
@@ -646,7 +1068,11 @@
           "description": "RFC 9535 JSONPath (optional)"
         }
       },
-      "required": ["type", "code", "message"]
+      "required": [
+        "type",
+        "code",
+        "message"
+      ]
     }
   }
 }
