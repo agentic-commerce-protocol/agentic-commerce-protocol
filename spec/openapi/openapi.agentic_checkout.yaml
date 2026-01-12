@@ -551,7 +551,7 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Link" }
         authentication_metadata:
-          $ref: "#/components/schemas/authentication_metadata"
+          $ref: "#/components/schemas/AuthenticationMetadata"
       required:
         [
           id,
@@ -609,7 +609,7 @@ components:
           $ref: "#/components/schemas/AuthenticationResult"
       required: [payment_data]
 
-    authentication_metadata:
+    AuthenticationMetadata:
       type: object
       additionalProperties: true
       description: >

@@ -181,7 +181,7 @@ If a client calls POST /checkout_sessions/{id}/complete while session.status == 
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 
 3D Secure / Authentication-specific types:
-- authentication_metadata: Seller-provided metadata required to perform 3D Secure authentication flows. 
+- AuthenticationMetadata: Seller-provided metadata required to perform 3D Secure authentication flows. 
 - AuthenticationResult: Agent-provided authentication results returned to the seller for card-based 3D Secure.
 
 All money fields are **integers (minor units)**.
