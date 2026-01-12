@@ -35,7 +35,31 @@
         "discount": 0,
         "subtotal": 300,
         "tax": 30,
-        "total": 330
+        "total": 330,
+        "name": "Vintage Denim Jacket",
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg",
+          "https://www.testshop.com/products/item_123/image2.jpg"
+        ],
+        "unit_amount": 300,
+        "custom_attributes": [
+          {
+            "display_name": "Size",
+            "value": "Medium"
+          },
+          {
+            "display_name": "Color",
+            "value": "Blue"
+          }
+        ],
+        "disclosures": [
+          {
+            "type": "disclaimer",
+            "content_type": "plain",
+            "content": "This item is vintage and may show signs of previous wear."
+          }
+        ]
       }
     ],
     "fulfillment_address": {
@@ -70,9 +94,15 @@
         "amount": 100
       },
       {
+        "type": "fee",
+        "display_text": "Service Fee",
+        "amount": 50,
+        "description": "Processing and handling fee"
+      },
+      {
         "type": "total",
         "display_text": "Total",
-        "amount": 430
+        "amount": 480
       }
     ],
     "fulfillment_options": [
@@ -106,6 +136,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -198,6 +232,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -243,7 +281,16 @@
         "discount": 0,
         "subtotal": 300,
         "tax": 30,
-        "total": 330
+        "total": 330,
+        "name": "Vintage Denim Jacket",
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg"
+        ],
+        "unit_amount": 300,
+        "marketplace_seller_details": {
+          "name": "VintageClothingCo"
+        }
       }
     ],
     "fulfillment_address": {
@@ -314,6 +361,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
@@ -403,8 +454,32 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
+  },
+  "cancel_checkout_session_request": {
+    "intent_trace": {
+      "reason_code": "shipping_cost",
+      "trace_summary": "User loves the item but isn't willing to pay $10 for standard shipping.",
+      "metadata": {
+        "target_shipping_cost": 0,
+        "competitor_reference": "amazon_prime"
+      }
+    }
+  },
+  "cancel_checkout_session_request_timing_deferred": {
+    "intent_trace": {
+      "reason_code": "timing_deferred",
+      "trace_summary": "User confirmed product fit and price but plans to purchase after next paycheck.",
+      "metadata": {
+        "anticipated_timeframe": "2_weeks",
+        "deferral_trigger": "budget_cycle"
+      }
+    }
   },
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
@@ -486,6 +561,10 @@
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
