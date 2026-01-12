@@ -40,3 +40,15 @@ If any implementation was incorrectly sending/receiving these values as quoted s
   - `spec/openapi/openapi.agentic_checkout.yaml`
   - `rfcs/rfc.agentic_checkout.md`
   - `examples/examples.agentic_checkout.json`
+
+## Error Response Examples
+
+- Added error response examples for invalid item ID, out-of-stock item, and payment failure to `examples/examples.agentic_checkout.json`
+
+## Validation Tooling
+
+- Added `validate:examples` npm script to `package.json` for automated validation of example files against JSON schemas
+
+## Catalog Webhook Event Examples
+
+- Added catalog webhook event examples for price updates, availability changes, and inventory updates to `examples/examples.catalog_webhook_events.json` (addresses Issue #29)

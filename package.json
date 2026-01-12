@@ -2,7 +2,8 @@
   "name": "@agentic-commerce-protocol/specification",
   "version": "0.1.0",
   "scripts": {
-    "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s spec/json-schema/**/*.json"
+    "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s spec/json-schema/**/*.json",
+    "validate:examples": "ajv validate --spec=draft2020 -c ajv-formats -s spec/json-schema/schema.agentic_checkout.json -d examples/examples.agentic_checkout.json && ajv validate --spec=draft2020 -c ajv-formats -s spec/json-schema/schema.agentic_checkout.json -d examples/examples.multi_item_checkout.json && ajv validate --spec=draft2020 -c ajv-formats -s spec/json-schema/schema.delegate_payment_schema.json -d examples/examples.delegate_payment.json && echo 'Note: Catalog webhook examples validation requires webhook schema (not yet implemented)'"
   },
   "devDependencies": {
     "ajv": "^8.17.1",
