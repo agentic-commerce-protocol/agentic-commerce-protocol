@@ -148,6 +148,10 @@
   },
   "update_checkout_session_response": {
     "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
     "status": "ready_for_payment",
     "currency": "usd",
     "line_items": [
@@ -366,10 +370,19 @@
         "type": "return_policy",
         "url": "https://www.testshop.com/legal/return-policy"
       }
-    ]
+    ],
+    "order": {
+      "id": "ord_123",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/ord_123"
+    }
   },
   "get_checkout_session_response": {
     "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
     "status": "ready_for_payment",
     "currency": "usd",
     "line_items": [
@@ -483,6 +496,10 @@
   },
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
     "status": "canceled",
     "currency": "usd",
     "line_items": [
