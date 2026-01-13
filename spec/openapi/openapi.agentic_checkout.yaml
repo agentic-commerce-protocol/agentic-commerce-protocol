@@ -22,6 +22,9 @@ paths:
       description: |
         Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
         MUST return 201 with a rich, authoritative cart state.
+
+        Agents MAY include `affiliate_attribution` with `touchpoint: "first"` to record first-touch attribution.
+        This enables multi-touch attribution models where networks can capture both first and last touch.
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -59,6 +62,17 @@ paths:
                     state: "CA"
                     country: "US"
                     postal_code: "94102"
+              with_first_touch_attribution:
+                summary: With first-touch affiliate attribution
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "first"
       responses:
         "201":
           description: Created
@@ -193,7 +207,7 @@ paths:
                     token: "spt_123"
                     provider: "stripe"
               with_affiliate_attribution:
-                summary: Complete with affiliate attribution
+                summary: Complete with last-touch affiliate attribution
                 value:
                   buyer:
                     first_name: "John"
@@ -206,6 +220,7 @@ paths:
                     provider: "impact.com"
                     token: "atp_01J8Z3WXYZ9ABC"
                     publisher_id: "pub_123"
+                    touchpoint: "last"
       responses:
         "200":
           description: Completed session with order
@@ -394,6 +409,12 @@ components:
           description: RFC3339 timestamp when the attribution token expires.
         metadata:
           $ref: "#/components/schemas/AffiliateAttributionMetadata"
+        touchpoint:
+          type: string
+          enum: [first, last]
+          description: |
+            Attribution touchpoint type. Use 'first' when capturing at session creation,
+            'last' when capturing at completion. Enables multi-touch attribution models.
       required: [provider]
       anyOf:
         - required: [token]
@@ -635,6 +656,8 @@ components:
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
         fulfillment_address: { $ref: "#/components/schemas/Address" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
       required: [items]
 
     CheckoutSessionUpdateRequest:

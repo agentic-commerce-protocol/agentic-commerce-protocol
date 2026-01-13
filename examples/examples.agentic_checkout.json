@@ -16,6 +16,20 @@
       "postal_code": "94131"
     }
   },
+  "create_checkout_session_request_with_first_touch_attribution": {
+    "items": [
+      {
+        "id": "item_123",
+        "quantity": 1
+      }
+    ],
+    "affiliate_attribution": {
+      "provider": "impact.com",
+      "token": "atp_01J8Z3WXYZ9ABC",
+      "publisher_id": "pub_123",
+      "touchpoint": "first"
+    }
+  },
   "create_checkout_session_response": {
     "id": "checkout_session_123",
     "payment_provider": {
@@ -222,7 +236,7 @@
       }
     }
   },
-  "complete_checkout_session_request_with_affiliate_attribution": {
+  "complete_checkout_session_request_with_last_touch_attribution": {
     "buyer": {
       "first_name": "John",
       "last_name": "Smith",
@@ -245,7 +259,8 @@
     "affiliate_attribution": {
       "provider": "impact.com",
       "token": "atp_01J8Z3WXYZ9ABC",
-      "publisher_id": "pub_123"
+      "publisher_id": "pub_123",
+      "touchpoint": "last"
     }
   },
   "complete_checkout_session_response": {

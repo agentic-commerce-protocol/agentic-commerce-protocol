@@ -37,7 +37,7 @@ This RFC proposes a minimal, privacy-preserving mechanism: the agent conveys a *
 - Defining commission rates, payout schedules, or settlement rails.
 - Standardizing affiliate network verification APIs (token verification is out-of-band).
 - Creating ranking incentives (“pay to win”) for agent recommendations.
-- Capturing multi-touch marketing attribution comprehensively (kept minimal; future RFCs may expand).
+- Defining how networks weight or combine first-touch and last-touch data (network-specific logic).
 
 ---
 
@@ -69,11 +69,12 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 
 ### 4.2 New Object: `affiliate_attribution`
 
-This RFC extends the following ACS request body schema:
+This RFC extends the following ACS request body schemas:
 
-- `POST /checkout_sessions/{id}/complete` — Complete Session Request
+- `POST /checkout_sessions` — Create Session Request (first-touch attribution)
+- `POST /checkout_sessions/{id}/complete` — Complete Session Request (last-touch attribution)
 
-Agents MAY include a top-level `affiliate_attribution` object in this request body.
+Agents MAY include a top-level `affiliate_attribution` object in either or both request bodies to support multi-touch attribution models.
 
 #### 4.2.1 Schema (conceptual)
 
@@ -86,6 +87,7 @@ Agents MAY include a top-level `affiliate_attribution` object in this request bo
     "campaign_id": "cmp_456",
     "creative_id": "cr_789",
     "sub_id": "u1=abc&u2=def",
+    "touchpoint": "first",
     "source": {
       "type": "url",
       "url": "https://publisher.example/reviews/best-espresso-machines"
@@ -94,8 +96,7 @@ Agents MAY include a top-level `affiliate_attribution` object in this request bo
     "expires_at": "2025-12-24T10:30:00Z",
     "metadata": {
       "content_type": "article",
-      "placement": "top_pick",
-      "model": "last_touch"
+      "placement": "top_pick"
     }
   }
 }
@@ -119,6 +120,12 @@ Agents MAY include a top-level `affiliate_attribution` object in this request bo
 - `campaign_id` / `creative_id` / `sub_id` (string, OPTIONAL)
   Provider-scoped tracking fields (e.g., campaign, creative, sub-IDs).
   These fields MUST NOT contain user PII.
+
+- `touchpoint` (enum string, OPTIONAL)
+  Attribution touchpoint type: `first` or `last`.
+  - Use `first` when capturing attribution at session creation (first-touch).
+  - Use `last` when capturing attribution at session completion (last-touch).
+  Enables multi-touch attribution models where networks can capture and weight both touchpoints.
 
 - `source` (object, OPTIONAL)
   Context about where the attribution originated.
@@ -149,13 +156,41 @@ Agents MAY include a top-level `affiliate_attribution` object in this request bo
 
 ## 4.3 Endpoint Semantics
 
-### 4.3.1 Complete Session: `POST /checkout_sessions/{id}/complete`
+### 4.3.1 Create Session: `POST /checkout_sessions` (First-Touch)
 
-Agents MAY attach `affiliate_attribution` on completion to ensure the merchant receives the final attribution context.
+Agents MAY attach `affiliate_attribution` with `touchpoint: "first"` at session creation to record the initial attribution claim.
 
-Servers SHOULD store attribution alongside the resulting order.
+**Use cases:**
+- Protecting first-touch attribution from hijacking by later agents.
+- Capturing the publisher who initiated the shopping journey.
 
-### 4.3.2 Visibility (Write-Only)
+Servers SHOULD store first-touch attribution claims alongside the session for later reconciliation with last-touch data.
+
+### 4.3.2 Complete Session: `POST /checkout_sessions/{id}/complete` (Last-Touch)
+
+Agents MAY attach `affiliate_attribution` with `touchpoint: "last"` on completion to record the final attribution context.
+
+**Use cases:**
+- Last-touch attribution (industry default).
+- Ensuring attribution is recorded only on successful conversions.
+
+Servers SHOULD store last-touch attribution alongside the resulting order.
+
+### 4.3.3 Multi-Touch Attribution
+
+When attribution is provided at both create and complete:
+
+| Scenario | Server Behavior |
+|----------|-----------------|
+| First-touch only (create) | Store and use for first-touch attribution models |
+| Last-touch only (complete) | Store and use for last-touch attribution models (default) |
+| Both touchpoints | Store both; network determines weighting |
+| Same provider at both touchpoints | Keep both records for multi-touch analysis |
+| Different providers at touchpoints | Keep both; each provider settles independently |
+
+Servers MUST NOT block checkout due to attribution conflicts between touchpoints.
+
+### 4.3.4 Visibility (Write-Only)
 
 The `affiliate_attribution` object is **write-only**. Servers MUST NOT return attribution data in any read endpoint, including but not limited to:
 
@@ -171,7 +206,23 @@ Merchants MAY expose attribution data through separate, authenticated audit or a
 
 ## 5. Example Interactions
 
-### 5.1 Complete Session with Attribution (Request)
+### 5.1 Create Session with First-Touch Attribution (Request)
+
+`POST /checkout_sessions`
+
+```json
+{
+  "items": [{ "id": "item_123", "quantity": 1 }],
+  "affiliate_attribution": {
+    "provider": "impact.com",
+    "token": "atp_01J8Z3WXYZ9ABC",
+    "publisher_id": "pub_123",
+    "touchpoint": "first"
+  }
+}
+```
+
+### 5.2 Complete Session with Last-Touch Attribution (Request)
 
 `POST /checkout_sessions/{id}/complete`
 
@@ -199,12 +250,13 @@ Merchants MAY expose attribution data through separate, authenticated audit or a
   "affiliate_attribution": {
     "provider": "impact.com",
     "token": "atp_01J8Z3WXYZ9ABC",
-    "publisher_id": "pub_123"
+    "publisher_id": "pub_123",
+    "touchpoint": "last"
   }
 }
 ```
 
-### 5.2 Response (200 OK)
+### 5.3 Response (200 OK)
 
 The server returns the checkout session per ACS schema. `affiliate_attribution` is write-only and MUST NOT be echoed in responses.
 
@@ -358,7 +410,7 @@ Attribution submissions are subject to the same rate limits as standard ACS endp
 
 To implement this RFC, maintainers SHOULD:
 
-- Extend ACS JSON Schemas to include `affiliate_attribution` on the complete request object.
+- Extend ACS JSON Schemas to include `affiliate_attribution` on the create and complete request objects.
 - Extend OpenAPI schemas correspondingly.
 - Add examples demonstrating usage.
 - Add an entry to `changelog/unreleased.md`.
@@ -373,14 +425,15 @@ An implementation claiming support for **Affiliate Attribution**:
 
 **MUST requirements:**
 
-- [ ] MUST accept `affiliate_attribution` in `POST /checkout_sessions/{id}/complete`.
+- [ ] MUST accept `affiliate_attribution` in `POST /checkout_sessions` (first-touch) and `POST /checkout_sessions/{id}/complete` (last-touch).
 - [ ] MUST require `affiliate_attribution.provider` when the object is present.
 - [ ] MUST require at least one of `{ token, publisher_id }` when the object is present.
 - [ ] MUST enforce `metadata` as a flat map of primitive values (no arrays, no nested objects).
-- [ ] MUST NOT return `affiliate_attribution` in any read endpoint, including `GET /checkout_sessions/{id}`, list endpoints, and webhook payloads (write-only per Section 4.3.2).
+- [ ] MUST NOT return `affiliate_attribution` in any read endpoint, including `GET /checkout_sessions/{id}`, list endpoints, and webhook payloads (write-only per Section 4.3.4).
 - [ ] MUST ensure idempotency: Replaying a request with the same `Idempotency-Key` and attribution data MUST NOT duplicate the attribution record.
 - [ ] MUST return **409 Conflict** when the same `Idempotency-Key` is reused with a different `affiliate_attribution` payload.
 - [ ] MUST NOT block checkout due to attribution conflicts; conflicting claims with different/missing `Idempotency-Key` MUST be handled silently.
+- [ ] MUST store both first-touch and last-touch attribution when provided at both endpoints.
 
 **SHOULD requirements:**
 

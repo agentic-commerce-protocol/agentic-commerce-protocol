@@ -110,6 +110,11 @@
         },
         "metadata": {
           "$ref": "#/$defs/AffiliateAttributionMetadata"
+        },
+        "touchpoint": {
+          "type": "string",
+          "enum": ["first", "last"],
+          "description": "Attribution touchpoint type. Use 'first' when capturing at session creation, 'last' when capturing at completion. Enables multi-touch attribution models."
         }
       },
       "required": ["provider"],
@@ -543,6 +548,9 @@
         },
         "fulfillment_address": {
           "$ref": "#/$defs/Address"
+        },
+        "affiliate_attribution": {
+          "$ref": "#/$defs/AffiliateAttribution"
         }
       },
       "required": ["items"]
