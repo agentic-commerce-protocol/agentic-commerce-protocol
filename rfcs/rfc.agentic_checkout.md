@@ -161,7 +161,7 @@ Response **MUST** include `status: completed` and an `order` with `id`, `checkou
 
 ## 5. Data Model (authoritative extract)
 
-- **Item**: `id` (string), `quantity` (int ≥ 1)
+- **Item**: `id` (string), `quantity` (int ≥ 1), `custom_attributes?` (array of **CustomAttribute**)
 - **LineItem**: `id`, `item`, `base_amount`, `discount`, `subtotal`, `tax`, `total` (**int**), `name?` (string), `description?` (string), `images?` (array of URI strings), `unit_amount?` (**int**), `disclosures?` (array of **Disclosure**), `custom_attributes?` (array of **CustomAttribute**), `marketplace_seller_details?` (**MarketplaceSellerDetails**)
 - **Disclosure**: `type` (`disclaimer`), `content_type` (`plain | markdown`), `content` (string)
 - **CustomAttribute**: `display_name` (string), `value` (string)

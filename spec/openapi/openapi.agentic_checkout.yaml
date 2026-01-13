@@ -345,6 +345,9 @@ components:
       properties:
         id: { type: string }
         quantity: { type: integer, minimum: 1 }
+        custom_attributes:
+          type: array
+          items: { $ref: "#/components/schemas/CustomAttribute" }
       required: [id, quantity]
 
     Disclosure:

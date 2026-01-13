@@ -1,5 +1,86 @@
 # Unreleased Changes
 
+## Custom Attributes for Items
+
+### New Feature: Flexible Item Metadata
+
+**Added `custom_attributes` field to the `Item` model to support service payments and bespoke product customization.**
+
+This enhancement enables AI agents to pass structured metadata when creating or updating checkout sessions, unlocking two major use cases:
+
+1. **Service Payments**: Payment of non-product services such as parking tickets, utility bills, government fees, and permits
+2. **Bespoke Product Customization**: Personalization of physical products like engraving, monograms, made-to-measure items, and custom configurations
+
+**Schema Changes:**
+
+The `Item` model now accepts an optional `custom_attributes` array:
+
+```json
+{
+  "id": "item_123",
+  "quantity": 1,
+  "custom_attributes": [
+    {
+      "display_name": "Ticket Number",
+      "value": "PKT-2026-001234"
+    },
+    {
+      "display_name": "License Plate",
+      "value": "ABC-123"
+    }
+  ]
+}
+```
+
+**Impact:**
+- **Backward Compatible**: The `custom_attributes` field is optional; existing implementations continue to work unchanged
+- **Reuses Existing Schema**: Leverages the existing `CustomAttribute` type (`display_name`, `value`)
+- **Request Models Affected**: `CheckoutSessionCreateRequest` and `CheckoutSessionUpdateRequest`
+
+**Files Updated:**
+- `spec/json-schema/schema.agentic_checkout.json` - Added `custom_attributes` to Item schema
+- `spec/openapi/openapi.agentic_checkout.yaml` - Added `custom_attributes` to Item schema
+- `rfcs/rfc.agentic_checkout.md` - Updated Item model documentation
+- `examples/examples.agentic_checkout.json` - Added parking ticket and custom product examples
+- `proposal.md` - Comprehensive proposal with use cases and product feed requirements
+
+**Example Use Cases:**
+
+*Parking Ticket Payment:*
+```json
+{
+  "items": [{
+    "id": "parking_ticket",
+    "quantity": 1,
+    "custom_attributes": [
+      {"display_name": "Ticket Number", "value": "PKT-2026-001234"},
+      {"display_name": "License Plate", "value": "ABC-123"},
+      {"display_name": "Violation Date", "value": "2026-01-10"}
+    ]
+  }]
+}
+```
+
+*Custom Engraved Product:*
+```json
+{
+  "items": [{
+    "id": "watch_silver_42mm",
+    "quantity": 1,
+    "custom_attributes": [
+      {"display_name": "Engraving Text", "value": "To Sarah, Love Always - M"},
+      {"display_name": "Engraving Position", "value": "case_back"},
+      {"display_name": "Font Style", "value": "script"}
+    ]
+  }]
+}
+```
+
+**Implementation Notes:**
+- Merchants should validate custom attributes server-side and return clear error messages via `MessageError` when attributes are missing or invalid
+- Product feeds should define expected custom fields with validation rules (see `proposal.md` for detailed product feed specification)
+- Custom attributes may affect pricing; merchants reflect this in the `LineItem` response
+
 ## Version 2025-12-11
 
 ### Bug Fixes

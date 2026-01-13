@@ -87,6 +87,12 @@
         "quantity": {
           "type": "integer",
           "minimum": 1
+        },
+        "custom_attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CustomAttribute"
+          }
         }
       },
       "required": ["id", "quantity"]

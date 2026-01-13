@@ -675,5 +675,287 @@
         }
       ]
     }
+  },
+  "create_parking_ticket_payment_request": {
+    "items": [
+      {
+        "id": "parking_ticket",
+        "quantity": 1,
+        "custom_attributes": [
+          {
+            "display_name": "Ticket Number",
+            "value": "PKT-2026-001234"
+          },
+          {
+            "display_name": "License Plate",
+            "value": "ABC-123"
+          },
+          {
+            "display_name": "Violation Date",
+            "value": "2026-01-10"
+          }
+        ]
+      }
+    ]
+  },
+  "create_parking_ticket_payment_response": {
+    "id": "checkout_session_456",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_789",
+        "item": {
+          "id": "parking_ticket",
+          "quantity": 1,
+          "custom_attributes": [
+            {
+              "display_name": "Ticket Number",
+              "value": "PKT-2026-001234"
+            },
+            {
+              "display_name": "License Plate",
+              "value": "ABC-123"
+            },
+            {
+              "display_name": "Violation Date",
+              "value": "2026-01-10"
+            }
+          ]
+        },
+        "base_amount": 7500,
+        "discount": 0,
+        "subtotal": 7500,
+        "tax": 0,
+        "total": 7500,
+        "name": "Parking Ticket Payment",
+        "description": "Payment for parking citation PKT-2026-001234"
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "digital",
+        "id": "digital_fulfillment",
+        "title": "Digital Receipt",
+        "subtitle": "Instant confirmation",
+        "total": 0
+      }
+    ],
+    "selected_fulfillment_options": [
+      {
+        "type": "digital",
+        "digital": {
+          "option_id": "digital_fulfillment",
+          "item_ids": ["parking_ticket"]
+        }
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Ticket Amount",
+        "amount": 7500
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 7500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 7500
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.cityparking.gov/terms"
+      }
+    ]
+  },
+  "create_custom_product_request": {
+    "items": [
+      {
+        "id": "watch_silver_42mm",
+        "quantity": 1,
+        "custom_attributes": [
+          {
+            "display_name": "Engraving Text",
+            "value": "To Sarah, Love Always - M"
+          },
+          {
+            "display_name": "Engraving Position",
+            "value": "case_back"
+          },
+          {
+            "display_name": "Font Style",
+            "value": "script"
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "Sarah Johnson",
+      "phone_number": "15559876543",
+      "email": "sarah@example.com",
+      "address": {
+        "name": "Sarah Johnson",
+        "line_one": "456 Oak Avenue",
+        "line_two": "Apt 12B",
+        "city": "Portland",
+        "state": "OR",
+        "country": "US",
+        "postal_code": "97201"
+      }
+    }
+  },
+  "create_custom_product_response": {
+    "id": "checkout_session_789",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_101",
+        "item": {
+          "id": "watch_silver_42mm",
+          "quantity": 1,
+          "custom_attributes": [
+            {
+              "display_name": "Engraving Text",
+              "value": "To Sarah, Love Always - M"
+            },
+            {
+              "display_name": "Engraving Position",
+              "value": "case_back"
+            },
+            {
+              "display_name": "Font Style",
+              "value": "script"
+            }
+          ]
+        },
+        "base_amount": 29900,
+        "discount": 0,
+        "subtotal": 29900,
+        "tax": 2990,
+        "total": 32890,
+        "name": "Silver Watch 42mm",
+        "description": "Elegant timepiece with custom engraving",
+        "images": [
+          "https://www.watchstore.com/products/watch_silver_42mm/image1.jpg"
+        ],
+        "unit_amount": 29900,
+        "disclosures": [
+          {
+            "type": "disclaimer",
+            "content_type": "plain",
+            "content": "Custom engraved items are non-returnable. Please verify your personalization details carefully."
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "Sarah Johnson",
+      "phone_number": "15559876543",
+      "email": "sarah@example.com",
+      "address": {
+        "name": "Sarah Johnson",
+        "line_one": "456 Oak Avenue",
+        "line_two": "Apt 12B",
+        "city": "Portland",
+        "state": "OR",
+        "country": "US",
+        "postal_code": "97201"
+      }
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "custom_standard",
+        "title": "Standard Shipping",
+        "subtitle": "Custom items ship in 7-10 business days",
+        "carrier": "FedEx",
+        "earliest_delivery_time": "2026-01-22T00:00:00Z",
+        "latest_delivery_time": "2026-01-27T00:00:00Z",
+        "subtotal": 1000,
+        "tax": 0,
+        "total": 1000
+      },
+      {
+        "type": "shipping",
+        "id": "custom_express",
+        "title": "Express Shipping",
+        "subtitle": "Custom items ship in 5-7 business days",
+        "carrier": "FedEx",
+        "earliest_delivery_time": "2026-01-18T00:00:00Z",
+        "latest_delivery_time": "2026-01-22T00:00:00Z",
+        "subtotal": 2500,
+        "tax": 0,
+        "total": 2500
+      }
+    ],
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "shipping": {
+          "option_id": "custom_standard",
+          "item_ids": ["watch_silver_42mm"]
+        }
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 29900
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 29900
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 2990
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Shipping",
+        "amount": 1000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 33890
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Your custom engraved watch will be crafted and shipped within 7-10 business days."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.watchstore.com/terms"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.watchstore.com/returns"
+      }
+    ]
   }
 }
