@@ -1,7 +1,11 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "2025-09-29"
+<<<<<<< HEAD
+  version: "2025-12-11"
+=======
+  version: "2025-12-12"
+>>>>>>> 18aaf70 (fullfillment details changes)
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -40,7 +44,7 @@ paths:
               $ref: "#/components/schemas/CheckoutSessionCreateRequest"
             examples:
               minimal:
-                summary: Single item; no fulfillment address
+                summary: Single item; no fulfillment details
                 value:
                   items:
                     - id: "item_123"
@@ -51,14 +55,18 @@ paths:
                   items:
                     - id: "item_456"
                       quantity: 1
-                  fulfillment_address:
+                  fulfillment_details:
                     name: "test"
-                    line_one: "555 Golden Gate Avenue"
-                    line_two: "Apt 401"
-                    city: "San Francisco"
-                    state: "CA"
-                    country: "US"
-                    postal_code: "94102"
+                    phone_number: "15551234567"
+                    email: "test@example.com"
+                    address:
+                      name: "test"
+                      line_one: "555 Golden Gate Avenue"
+                      line_two: "Apt 401"
+                      city: "San Francisco"
+                      state: "CA"
+                      country: "US"
+                      postal_code: "94102"
       responses:
         "201":
           description: Created
@@ -113,7 +121,11 @@ paths:
             examples:
               set_fulfillment_option:
                 value:
-                  fulfillment_option_id: "fulfillment_option_456"
+                  selected_fulfillment_options:
+                    - type: "shipping"
+                      shipping:
+                        option_id: "fulfillment_option_456"
+                        item_ids: ["item_123"]
       responses:
         "200":
           description: Updated session
@@ -213,7 +225,15 @@ paths:
       tags: [CheckoutSessions]
       summary: Cancel a checkout session
       operationId: cancelCheckoutSession
-      description: Cancels a session if not already completed or canceled.
+      description: |
+        Cancels a session if not already completed or canceled.
+        Agents MAY include an intent_trace to communicate why the session is being abandoned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelSessionRequest"
       responses:
         "200":
           description: Canceled session
@@ -284,7 +304,7 @@ components:
       name: API-Version
       in: header
       required: true
-      schema: { type: string, example: "2025-09-29" }
+      schema: { type: string, example: "2025-12-12" }
 
   schemas:
     Address:
@@ -299,6 +319,15 @@ components:
         country: { type: string }
         postal_code: { type: string }
       required: [name, line_one, city, state, country, postal_code]
+
+    FulfillmentDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        phone_number: { type: string }
+        email: { type: string, format: email }
+        address: { $ref: "#/components/schemas/Address" }
 
     Buyer:
       type: object
@@ -317,6 +346,30 @@ components:
         id: { type: string }
         quantity: { type: integer, minimum: 1 }
       required: [id, quantity]
+
+    Disclosure:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [disclaimer] }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    CustomAttribute:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name: { type: string }
+        value: { type: string }
+      required: [display_name, value]
+
+    MarketplaceSellerDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+      required: [name]
 
     PaymentProvider:
       type: object
@@ -343,6 +396,20 @@ components:
         subtotal: { type: integer }
         tax: { type: integer }
         total: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        images:
+          type: array
+          items: { type: string, format: uri }
+        unit_amount: { type: integer }
+        disclosures:
+          type: array
+          items: { $ref: "#/components/schemas/Disclosure" }
+        custom_attributes:
+          type: array
+          items: { $ref: "#/components/schemas/CustomAttribute" }
+        marketplace_seller_details:
+          { $ref: "#/components/schemas/MarketplaceSellerDetails" }
       required: [id, item, base_amount, discount, subtotal, tax, total]
 
     Total:
@@ -364,6 +431,7 @@ components:
             ]
         display_text: { type: string }
         amount: { type: integer }
+        description: { type: string }
       required: [type, display_text, amount]
 
     FulfillmentOptionShipping:
@@ -377,9 +445,9 @@ components:
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
         latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
     FulfillmentOptionDigital:
@@ -390,10 +458,46 @@ components:
         id: { type: string }
         title: { type: string }
         subtitle: { type: string }
-        subtotal: { type: string }
-        tax: { type: string }
-        total: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
+
+    SelectedShippingFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [option_id, item_ids]
+
+    SelectedDigitalFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [option_id, item_ids]
+
+    SelectedFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [shipping, digital] }
+        shipping: { $ref: "#/components/schemas/SelectedShippingFulfillmentOption" }
+        digital: { $ref: "#/components/schemas/SelectedDigitalFulfillmentOption" }
+      required: [type]
+      oneOf:
+        - properties:
+            type: { const: shipping }
+          required: [shipping]
+        - properties:
+            type: { const: digital }
+          required: [digital]
 
     MessageInfo:
       type: object
@@ -436,7 +540,7 @@ components:
         type:
           {
             type: string,
-            enum: [terms_of_use, privacy_policy, seller_shop_policies],
+            enum: [terms_of_use, privacy_policy, return_policy],
           }
         url: { type: string, format: uri }
       required: [type, url]
@@ -482,14 +586,16 @@ components:
         line_items:
           type: array
           items: { $ref: "#/components/schemas/LineItem" }
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
         fulfillment_options:
           type: array
           items:
             oneOf:
               - $ref: "#/components/schemas/FulfillmentOptionShipping"
               - $ref: "#/components/schemas/FulfillmentOptionDigital"
-        fulfillment_option_id: { type: string }
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
@@ -535,7 +641,7 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
       required: [items]
 
     CheckoutSessionUpdateRequest:
@@ -546,8 +652,10 @@ components:
         items:
           type: array
           items: { $ref: "#/components/schemas/Item" }
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
-        fulfillment_option_id: { type: string }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
 
     CheckoutSessionCompleteRequest:
       type: object
@@ -556,6 +664,41 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
       required: [payment_data]
+
+    IntentTrace:
+      type: object
+      properties:
+        reason_code:
+          type: string
+          description: |
+            Reason for abandonment. This enum is extensible: servers SHOULD accept
+            unrecognized values and treat them as "other" (see RFC Section 7.2).
+            Validators SHOULD be configured for lenient enum handling.
+          enum:
+            - price_sensitivity
+            - shipping_cost
+            - shipping_speed
+            - product_fit
+            - trust_security
+            - returns_policy
+            - payment_options
+            - comparison
+            - timing_deferred
+            - other
+        trace_summary:
+          type: string
+          maxLength: 500
+          description: A generated summary of the specific objection or negotiation gap.
+        metadata:
+          type: object
+          additionalProperties:
+            type: [string, number, boolean]
+      required: [reason_code]
+
+    CancelSessionRequest:
+      type: object
+      properties:
+        intent_trace: { $ref: "#/components/schemas/IntentTrace" }
 
     Error:
       type: object
