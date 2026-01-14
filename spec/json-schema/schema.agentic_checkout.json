@@ -38,6 +38,88 @@
         "postal_code"
       ]
     },
+    "AffiliateAttributionSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Context about where the attribution originated.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["url", "platform", "unknown"],
+          "description": "The type of attribution source."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical content URL when type is 'url'."
+        }
+      },
+      "required": ["type"]
+    },
+    "AffiliateAttributionMetadata": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" }
+        ]
+      },
+      "description": "Flat key/value map for additional non-sensitive context. Keys must be strings; values must be strings, numbers, or booleans. Arrays and nested objects are NOT permitted."
+    },
+    "AffiliateAttribution": {
+      "type": "object",
+      "description": "Optional affiliate attribution data for crediting third-party publishers. Write-only: not returned in responses. Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "Identifier for the attribution provider / affiliate network namespace (e.g., 'impact.com')."
+        },
+        "token": {
+          "type": "string",
+          "description": "Opaque provider-issued token for fraud-resistant validation. Treat as secret."
+        },
+        "publisher_id": {
+          "type": "string",
+          "description": "Provider-scoped affiliate/publisher identifier. Required if token is omitted."
+        },
+        "campaign_id": {
+          "type": "string",
+          "description": "Provider-scoped campaign identifier."
+        },
+        "creative_id": {
+          "type": "string",
+          "description": "Provider-scoped creative identifier."
+        },
+        "sub_id": {
+          "type": "string",
+          "description": "Provider-scoped sub-tracking identifier."
+        },
+        "source": {
+          "$ref": "#/$defs/AffiliateAttributionSource"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC3339 timestamp when the attribution token was issued."
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC3339 timestamp when the attribution token expires."
+        },
+        "metadata": {
+          "$ref": "#/$defs/AffiliateAttributionMetadata"
+        },
+        "touchpoint": {
+          "type": "string",
+          "enum": ["first", "last"],
+          "description": "Attribution touchpoint type. Use 'first' when capturing at session creation, 'last' when capturing at completion. Enables multi-touch attribution models."
+        }
+      },
+      "required": ["provider"],
+      "anyOf": [{ "required": ["token"] }, { "required": ["publisher_id"] }]
+    },
     "FulfillmentDetails": {
       "type": "object",
       "additionalProperties": false,
@@ -627,6 +709,9 @@
         },
         "fulfillment_details": {
           "$ref": "#/$defs/FulfillmentDetails"
+        },
+        "affiliate_attribution": {
+          "$ref": "#/$defs/AffiliateAttribution"
         }
       },
       "required": ["items"]
@@ -664,6 +749,9 @@
         },
         "payment_data": {
           "$ref": "#/$defs/PaymentData"
+        },
+        "affiliate_attribution": {
+          "$ref": "#/$defs/AffiliateAttribution"
         }
       },
       "required": ["payment_data"]
