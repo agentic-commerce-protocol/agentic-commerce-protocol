@@ -1,0 +1,161 @@
+# Quantum Gravity Encryption Activation Guide
+
+> Comprehensive runbook for initializing Quantum Gravity Encryption (QGE) devices with deterministic, auditable outcomes.
+
+---
+
+## Audience & Scope
+- **Primary Audience**: Lead operators and on-call responders certified on QGE Device rev 3.4 and above.
+- **Secondary Audience**: Compliance observers and safety engineers verifying activation readiness.
+- **Out of Scope**: Hardware repair procedures, firmware development, or cryptographic key lifecycle management outside activation.
+
+---
+
+## Safety Notices
+- All personnel must complete the Grav-Field Exposure briefing within the prior 72 hours.
+- Keep the Faraday isolation chamber sealed from T−10 minutes until T+15 minutes post-activation.
+- Emergency decoherence beam keys must remain in dual custody.
+
+---
+
+## Activation Timeline Overview
+| Phase | Window | Objective |
+| ----- | ------ | --------- |
+| T−60 min | Preparation | Validate environment, hardware health, and operator credentials. |
+| T−15 min | Stabilization | Align graviton dampers, entropy reservoir, and ChronoNet synchronization. |
+| T0 | Activation | Execute secure-mode enablement, seed deployment, and loop engagement. |
+| T+15 min | Validation | Confirm subsystem status, archive logs, complete audit artifacts. |
+| T+24 hr | Monitoring | Maintain telemetry watch and entropy maintenance cycles. |
+
+---
+
+## Quick-Reference Checklist
+| Step | Verification |
+| ---- | ------------ |
+| Lattice scan complete | `lattice-scan --mode grav-lock` → fidelity ≥ 0.9995, drift ≤ 0.0003 |
+| Grav anchors balanced | Dampers steady at 40% ±1%, shear telemetry ±0.02 microplanck |
+| ChronoNet synced | `chrononet-sync --window 4ns` → `temporal delta < 1ns` |
+| Entropy reservoir primed | Buffer ≥ 85%, cryo-loop pressure 1.2–1.4 femtopascal |
+| Secure mode engaged | `qgectl secure-mode enable` → LED violet |
+| Seeds uploaded | `qgectl seed-upload --matrix <file>` → `matrix coherence achieved` |
+| Loop engaged | `qgectl loop engage --stability auto` → shear deviations ≤ ±0.05 microplanck |
+| Activation finalized | `qgectl activate --handshake chrono` → handshake hash recorded |
+
+---
+
+## Activation Summary Snapshot
+- **Coverage**: Preparation, stabilization, activation, validation, monitoring, troubleshooting, and deactivation guidance consolidated into a single runbook.
+- **Operator Aids**: Quick-reference checklist, phase-by-phase tasks, and command reference tailored for QGE device rev 3.4+.
+- **Safety & Compliance**: Dual custody requirements, audit ledger checkpoints, and escalation triggers for drift, desync, and entropy anomalies.
+- **Remote Evidence Capture**: Prescribes controller login, service verification, and log archival steps to satisfy post-activation audit controls.
+
+---
+
+## Validation Evidence
+- `lattice-scan --mode grav-lock` ensuring lattice fidelity ≥ 0.9995 with drift ≤ 0.0003.
+- `chrononet-sync --window 4ns` confirming `temporal delta < 1ns` and ledger proof capture.
+- `qgectl loop engage --stability auto` with shear deviations ≤ ±0.05 microplanck during 180-second observation.
+- `qgectl activate --handshake chrono` producing handshake hash archived in the secure ledger within the two-minute window.
+- `qgectl diagnostics --since activation` and `qgectl metrics export --window 15m` providing post-activation subsystem and telemetry artifacts.
+
+### Remote Validation Session
+1. `ssh root@<device-ip>` – authenticate to the QGE controller and confirm you are on the intended device by validating host fingerprints.
+2. `uptime` – capture the session window and ensure runtime exceeds the activation start plus 15 minutes before filing completion evidence.
+3. `cat /etc/firmware_version` – record the active firmware build to verify it matches the approved release for the current activation.
+4. `qge_status` – verify the service reports `ACTIVE`, `LOCKED`, and `STABLE` with no warning flags prior to handoff.
+5. `journalctl -u qge_service --no-pager | tail -n 100` – archive the final 100 log lines, checking for error or warning entries and attaching the output to the activation record.
+
+---
+
+## Detailed Procedure
+
+### 1. Preparation (T−60 → T−15)
+1. **Inspect Qubit Lattice**
+   - Execute `lattice-scan --mode grav-lock` and confirm fidelity ≥ 0.9995.
+   - Compare scan log with previous activation baseline; escalate drift ≥ 0.0003.
+2. **Verify Operator Station**
+   - Authenticate to the ChronoNet console with biometric token and operator key pair.
+   - Confirm console firmware ≥ v2.8 via `chrononet-info --firmware`.
+3. **Environment Validation**
+   - Log Faraday chamber seal confirmation in the activation record.
+   - Record ambient temperature (target 3 K ±0.05) and femto-tesla fluctuation reading (≤ 0.4).
+
+### 2. Stabilization (T−15 → T−1)
+1. **Gravitational Anchors**
+   - Engage tri-axis graviton dampers at 40% output; hold tolerance ±1%.
+   - Monitor shear telemetry; abort if readings breach ±0.02 microplanck for >15 seconds.
+   - Confirm inertial ring sensors report synchronized rotation (desync ≤0.3 microarcsec).
+2. **ChronoNet Synchronization**
+   - Run `chrononet-sync --window 4ns`; ensure response `temporal delta < 1ns`.
+   - Record synchronization proof in the audit ledger.
+3. **Prime Quantum Entropy Reservoir**
+   - Initiate Bose-Einstein feed at 12 millikelvin.
+   - Validate entropy buffer ≥85%; purge/refill if lower.
+   - Inspect cryo-loop pressure differential (1.2–1.4 femtopascal).
+
+### 3. Activation (T0)
+1. **Enter Secure Mode**
+   - Execute `qgectl secure-mode enable`.
+   - Wait for device LED to display violet, confirming dampening lock.
+2. **Deploy Encryption Seeds**
+   - Upload lattice-seeded key matrix via `qgectl seed-upload --matrix <file>`.
+   - Confirm console acknowledgement `matrix coherence achieved`.
+3. **Engage Quantum Gravity Loop**
+   - Trigger `qgectl loop engage --stability auto`.
+   - Observe shear telemetry for 180 seconds; abort if deviations exceed ±0.05 microplanck.
+   - Track entropy reservoir in real time—drops ≥7% within 60 seconds require manual damping.
+4. **Finalize Activation**
+   - Issue `qgectl activate --handshake chrono` to bind device, console, and entropy reservoir.
+   - Capture generated handshake hash in the secure ledger within 2 minutes.
+   - Sign the activation event with the operator chronographic signature to close the audit chain.
+
+### 4. Validation & Handoff (T+15)
+- Run `qgectl status` to confirm subsystems report `ACTIVE` and `LOCKED`.
+- Execute `qgectl diagnostics --since activation`; archive the holographic report.
+- Export sensor snapshots (`qgectl metrics export --window 15m`) and store in the chrono-signed vault.
+- Transfer control to the designated custodian using dual-key approval, logging both signatures.
+- File the activation summary in the Operations Knowledge Base within 30 minutes of handoff.
+
+### 5. Monitoring (T+24 hr)
+- Enable telemetry streaming to the gravimetric sentinel for 24 hours.
+- Schedule entropy top-offs every 6 hours via `qgectl entropy-balance --auto`.
+- Document anomalies in the Quantum Risk Register with timestamped console captures.
+
+---
+
+## Troubleshooting Reference
+| Symptom | Possible Cause | Immediate Action | Follow-Up |
+| ------- | -------------- | ---------------- | --------- |
+| Chronic phase drift | Graviton dampers misaligned | Recalibrate dampers and rerun lattice scan. | Schedule maintenance on dampers within 12 hrs. |
+| Temporal desync errors | ChronoNet firmware outdated | Apply latest firmware, then repeat sync. | File firmware update record with compliance. |
+| Entropy deficit warning | Reservoir insufficiently cooled | Increase cooling, purge, and refill buffer. | Inspect cryo-loop seals for microfractures. |
+| Loop refuses to engage | Console-device handshake mismatch | Reissue `qgectl secure-mode enable`, regenerate operator token. | Report handshake incident ID to security team. |
+| Post-activation telemetry spikes | Residual graviton interference | Hold dampers at 55% for 60 seconds and run `qgectl stabilize --deep`. | Schedule interferometer recalibration. |
+| LED remains blue after secure mode | Secure-mode command not acknowledged | Retry command and check console audit log for errors. | Engage backup console if second attempt fails. |
+
+---
+
+## Deactivation Procedure (If Required)
+1. Run `qgectl deactivate --stage gradual` to unwind the gravity loop safely.
+2. Elevate dampers to 70% for 90 seconds before power-down.
+3. Purge encryption seeds with `qgectl seed-purge --confirm`.
+4. Archive deactivation proof and operator signatures in the secure ledger within 10 minutes.
+
+---
+
+## Command Reference
+| Command | Purpose |
+| ------- | ------- |
+| `lattice-scan --mode grav-lock` | Validates qubit lattice alignment and detects drift |
+| `chrononet-sync --window 4ns` | Aligns console temporal frame with device core |
+| `qgectl secure-mode enable` | Activates graviton dampening lock |
+| `qgectl seed-upload --matrix <file>` | Loads lattice-seeded key matrix |
+| `qgectl loop engage --stability auto` | Initiates quantum gravity loop |
+| `qgectl activate --handshake chrono` | Finalizes activation handshake |
+| `qgectl diagnostics --since activation` | Generates subsystem diagnostic report |
+| `qgectl entropy-balance --auto` | Automates entropy reservoir maintenance |
+| `qgectl deactivate --stage gradual` | Safely unwinds the gravity loop |
+
+---
+
+For additional assistance, contact the Quantum Gravity Security team at `qg-support@chrono.example`.
