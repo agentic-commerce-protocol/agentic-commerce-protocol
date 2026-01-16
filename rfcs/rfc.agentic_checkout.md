@@ -606,4 +606,4 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 ## 11. Change Log
 
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.
-- **2026-01-16**: Added 3D Secure/authentication flow support: authentication_required session status, authentication_metadata, `AuthenticationResult` structure including `outcome_details` (cryptogram/ECI) for the Complete Request, and required 4XX error behavior when authentication_result is missing on complete.
+- **2026-01-16**: Added 3D Secure/authentication flow support 
