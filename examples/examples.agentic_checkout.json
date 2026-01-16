@@ -39,7 +39,12 @@
     "id": "checkout_session_123",
     "payment_provider": {
       "provider": "stripe",
-      "supported_payment_methods": ["card"]
+      "supported_payment_methods": [
+        {
+          "type": "card",
+          "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+        }
+      ]
     },
     "status": "ready_for_payment",
     "currency": "usd",

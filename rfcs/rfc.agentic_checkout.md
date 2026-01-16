@@ -125,7 +125,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 **Response body (authoritative cart):**
 
 - `id` (string)
-- `payment_provider` (e.g., `stripe`, `supported_payment_methods: ["card"]`)
+- `payment_provider` (e.g., `stripe`, `supported_payment_methods: [{ type: "card", supported_card_networks: ["visa"] }]`)
 - `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
@@ -181,7 +181,8 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal?`, `tax?`, `total` (**int**)
 - **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal?`, `tax?`, `total` (**int**)
 - **SelectedFulfillmentOption**: `type` (`shipping|digital`), and type-specific nested object (e.g., `shipping: {option_id, item_ids[]}`)
-- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
+- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (array of **PaymentMethod**)
+- **PaymentMethod**: `type` (`"card"`), `supported_card_networks` (`amex | discover | mastercard | visa`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
@@ -268,7 +269,12 @@ All money fields are **integers (minor units)**.
   "id": "checkout_session_123",
   "payment_provider": {
     "provider": "stripe",
-    "supported_payment_methods": ["card"]
+    "supported_payment_methods": [
+      {
+        "type": "card",
+        "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+      }
+    ]
   },
   "status": "ready_for_payment",
   "currency": "usd",
@@ -655,7 +661,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 10. Conformance Checklist
 
-- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-12-12`
+- [ ] Enforces HTTPS, JSON, and `API-Version: 2026-01-15`
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel

@@ -214,6 +214,24 @@
       },
       "required": ["name"]
     },
+    "PaymentMethod": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["card"]
+        },
+        "supported_card_networks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["amex", "discover", "mastercard", "visa"]
+          }
+        }
+      },
+      "required": ["type", "supported_card_networks"]
+    },
     "PaymentProvider": {
       "type": "object",
       "additionalProperties": false,
@@ -225,8 +243,7 @@
         "supported_payment_methods": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": ["card"]
+            "$ref": "#/$defs/PaymentMethod"
           }
         }
       },
