@@ -812,46 +812,28 @@ components:
             - not_supported
             - processing_error
             - rejected
-          example: "authenticated"
-        outcome_details:
-          type: object
+        three_ds_cryptogram:
+          type: string
           description: >
-            Detailed authentication data. This field is required when the outcome is
-            'authenticated', 'informational', or 'attempt_acknowledged'.
-          additionalProperties: false
-          properties:
-            three_ds_cryptogram:
-              type: string
-              description: >
-                The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is
-                20 bytes, base64-encoded into a 28-character string.
-              example: "AbCdEfGhIjKlMnOpQrStUvWxY0="
-            electronic_commerce_indicator:
-              type: string
-              description: >
-                Electronic Commerce Indicator (ECI) returned by the 3D Secure provider.
-                Indicates the degree/type of authentication performed.
-              enum: ["01", "02", "05", "06", "07"]
-              example: "05"
-            transaction_id:
-              type: string
-              description: >
-                Transaction identifier returned by the 3DS system:
-                - For 3DS1: the XID
-                - For 3DS2: the Directory Server Transaction ID (dsTransID)
-              example: "dsTransId_abc123"
-            version:
-              type: string
-              description: >
-                The 3D Secure version used for this authentication (for example "1.0.2" or "2.2.0").
-              example: "2.2.0"
-          required:
-            - three_ds_cryptogram
-            - electronic_commerce_indicator
-            - transaction_id
-            - version
+            The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is
+            20 bytes, base64-encoded into a 28-character string.
+        electronic_commerce_indicator:
+          type: string
+          description: >
+            Electronic Commerce Indicator (ECI) returned by the 3D Secure provider.
+        transaction_id:
+          type: string
+          description: >
+            Transaction identifier returned by the 3DS system (XID for 3DS1 or dsTransID for 3DS2).
+        version:
+          type: string
+          description: The 3D Secure version used for this authentication (for example "2.2.0").
       required:
         - outcome
+        - three_ds_cryptogram
+        - electronic_commerce_indicator
+        - transaction_id
+        - version
 
     IntentTrace:
       type: object

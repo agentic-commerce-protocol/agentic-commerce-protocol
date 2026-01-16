@@ -502,11 +502,20 @@
       "type": "object",
       "additionalProperties": true,
       "description": "Seller-provided authentication metadata for 3DS flows.",
+      "required": [
+        "channel",
+        "acquirer_details",
+        "directory_server"
+      ],
       "properties": {
         "channel": {
           "type": "object",
           "additionalProperties": false,
           "description": "Details about the channel used for this 3DS Authentication.",
+          "required": [
+            "type",
+            "browser"
+          ],
           "properties": {
             "type": {
               "type": "string",
@@ -576,7 +585,7 @@
         "acquirer_details": {
           "type": "object",
           "additionalProperties": false,
-          "description": "Details about the acquirer used for this 3DS Authentication. This object MUST be present when authentication_metadata is provided.",
+          "description": "Details about the acquirer used for this 3DS Authentication. This object MUST be present.",
           "properties": {
             "acquirer_bin": {
               "type": "string",
@@ -619,7 +628,7 @@
             "mastercard",
             "visa"
           ],
-          "description": "The 3DS directory server used for this Authentication. Required when `acquirer_details` is present."
+          "description": "The 3DS directory server used for this Authentication."
         },
         "flow_preference": {
           "type": "object",
@@ -645,12 +654,9 @@
                     "mandated",
                     "preferred"
                   ],
-                  "description": "Subtype of challenge preference. 'mandated' requests a challenge because it is mandated for this transaction; 'preferred' requests a challenge when not mandated."
+                  "description": "Subtype of challenge preference."
                 }
-              },
-              "required": [
-                "type"
-              ]
+              }
             },
             "frictionless": {
               "type": "object",
@@ -662,12 +668,9 @@
                   "enum": [
                     "low_risk"
                   ],
-                  "description": "Subtype of frictionless preference. 'low_risk' requests a frictionless flow based on low transaction risk; the seller is responsible for ensuring the transaction meets any required criteria."
+                  "description": "Subtype of frictionless preference."
                 }
-              },
-              "required": [
-                "type"
-              ]
+              }
             }
           },
           "required": [
@@ -676,51 +679,6 @@
         }
       },
       "allOf": [
-        {
-          "if": {
-            "properties": {
-              "channel": {
-                "properties": {
-                  "type": {
-                    "const": "browser"
-                  }
-                }
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "channel"
-            ]
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "channel": {
-                "properties": {
-                  "type": {
-                    "const": "browser"
-                  }
-                },
-                "required": [
-                  "type",
-                  "browser"
-                ]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "channel": {
-                "required": [
-                  "type",
-                  "browser"
-                ]
-              }
-            }
-          }
-        },
         {
           "if": {
             "properties": {
@@ -753,21 +711,6 @@
                 }
               }
             }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "acquirer_details": {
-                "type": "object"
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "acquirer_details",
-              "directory_server"
-            ]
           }
         }
       ]
@@ -837,6 +780,26 @@
       },
       "required": [
         "outcome"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "enum": [
+                  "authenticated",
+                  "informational",
+                  "attempt_acknowledged"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "outcome_details"
+            ]
+          }
+        }
       ]
     },
     "CheckoutSessionBase": {
