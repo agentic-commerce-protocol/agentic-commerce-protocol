@@ -35,11 +35,51 @@
       "touchpoint": "first"
     }
   },
+  "create_checkout_session_request_with_agent_capabilities": {
+    "items": [
+      {
+        "id": "item_789",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": ["3ds_redirect", "3ds_challenge", "otp", "email_verification", "address_verification", "otp_verification"],
+        "redirect_context": "in_app",
+        "max_interaction_depth": 2,
+        "display_context": "webview"
+      },
+      "features": {
+        "async_completion": true,
+        "session_persistence": true
+      }
+    }
+  },
   "create_checkout_session_response": {
     "id": "checkout_session_123",
     "payment_provider": {
-      "provider": "stripe",
-      "supported_payment_methods": ["card"]
+      "provider": "stripe"
+    },
+    "seller_capabilities": {
+      "payment_methods": [
+        {
+          "method": "card",
+          "brands": ["visa", "mastercard", "amex"],
+          "funding_types": ["credit", "debit"]
+        },
+        "card.network_token",
+        "wallet.apple_pay"
+      ],
+      "interventions": {
+        "required": [],
+        "supported": ["3ds", "3ds2", "3ds_redirect", "3ds_challenge", "otp", "email_verification", "otp_verification", "email_verification"],
+        "enforcement": "conditional"
+      },
+      "features": {
+        "network_tokenization": true,
+        "saved_payment_methods": true,
+        "partial_auth": false
+      }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -716,5 +756,137 @@
         }
       ]
     }
+  },
+  "capability_negotiation_incompatible_payment_methods_request": {
+    "items": [
+      {
+        "id": "item_456",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "payment_methods": ["bank_transfer.ach"],
+      "features": {
+        "async_completion": true
+      }
+    }
+  },
+  "capability_negotiation_incompatible_payment_methods_response": {
+    "id": "checkout_session_456",
+    "status": "not_ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card", "card.network_token"],
+      "interventions": {
+        "supported": ["3ds", "3ds_redirect"]
+      }
+    },
+    "line_items": [
+      {
+        "id": "line_item_456",
+        "item": {
+          "id": "item_456",
+          "quantity": 1
+        },
+        "base_amount": 500,
+        "discount": 0,
+        "subtotal": 500,
+        "tax": 50,
+        "total": 550
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 500
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 50
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 550
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "error",
+        "code": "payment_method_unsupported",
+        "content_type": "plain",
+        "content": "Bank transfers are not accepted. Please use a credit or debit card."
+      }
+    ],
+    "links": []
+  },
+  "capability_negotiation_authentication_required_request": {
+    "items": [
+      {
+        "id": "item_789",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": []
+      }
+    }
+  },
+  "capability_negotiation_authentication_required_response": {
+    "id": "checkout_session_789",
+    "status": "ready_for_payment",
+    "currency": "eur",
+    "seller_capabilities": {
+      "payment_methods": ["card"],
+      "interventions": {
+        "required": ["3ds"],
+        "supported": ["3ds", "3ds2", "3ds_redirect"],
+        "enforcement": "always"
+      }
+    },
+    "line_items": [
+      {
+        "id": "line_item_789",
+        "item": {
+          "id": "item_789",
+          "quantity": 1
+        },
+        "base_amount": 25000,
+        "discount": 0,
+        "subtotal": 25000,
+        "tax": 5000,
+        "total": 30000
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 25000
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 5000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 30000
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "This purchase will require 3D Secure authentication at checkout."
+      }
+    ],
+    "links": []
   }
 }
