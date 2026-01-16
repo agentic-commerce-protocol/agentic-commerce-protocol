@@ -1,7 +1,7 @@
 # RFC: Agentic Checkout — Merchant REST API
 
 **Status:** Draft  
-**Version:** 2026-01-11  
+**Version:** 2026-01-16  
 **Scope:** Checkout session lifecycle and webhook integration
 
 This RFC defines the **Agentic Checkout Specification (ACS)**, a standardized REST API contract that merchants SHOULD implement to support experiences across agent platforms.
