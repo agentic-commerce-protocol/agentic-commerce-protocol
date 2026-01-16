@@ -672,14 +672,7 @@
         "total": 2500
       }
     ],
-    "messages": [
-      {
-        "type": "info",
-        "param": "$.payment_provider",
-        "content_type": "plain",
-        "content": "Card issuer has requested 3D Secure authentication for this payment."
-      }
-    ],
+    "messages": [],
     "links": [
       {
         "type": "terms_of_use",
@@ -739,18 +732,22 @@
     },
     "authentication_result": {
       "outcome": "authenticated",
+      "outcome_details": {
+        "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
+        "electronic_commerce_indicator": "05",
+        "transaction_id": "dsTransId_12345",
+        "version": "2.2.0"
+      }
+    }
+  },
+  "authentication_result_example": {
+    "outcome": "authenticated",
+    "outcome_details": {
       "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
       "electronic_commerce_indicator": "05",
       "transaction_id": "dsTransId_12345",
       "version": "2.2.0"
     }
-  },
-  "authentication_result_example": {
-    "outcome": "authenticated",
-    "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
-    "electronic_commerce_indicator": "05",
-    "transaction_id": "dsTransId_12345",
-    "version": "2.2.0"
   },
   "error_400_requires_3ds": {
     "type": "invalid_request",
