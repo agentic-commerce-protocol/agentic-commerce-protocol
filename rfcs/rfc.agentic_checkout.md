@@ -145,17 +145,17 @@ Returns the full authoritative session state.
 ### 4.4 Complete Session
 
 `POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success  
-Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`.  
+Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`, and conditional `authentication_result`. 
 Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
 
 Authentication flows and additional fields:
 
-- A seller MAY set session.status to authentication_required to indicate the transaction requires issuer authentication (3D Secure).
-- When session.status == "authentication_required", a client MUST NOT consider the session ready to finalize without performing the required authentication flow.
+- Set `session.status` to `authentication_required` to indicate the transaction requires authentication (3D Secure).
+- When `session.status` is `authentication_required`, a client MUST NOT consider the session ready to finalize without performing the required authentication flow. The client MUST perform authentication using the provided `authentication_metadata` and MUST return `authentication_result` in the complete request. The client MUST return `authentication_result` regardless of the outcome (succeeded, failed, canceled, etc.).
 
-If a client calls POST /checkout_sessions/{id}/complete while session.status == "authentication_required":
-- If the request includes a valid authentication_result (see Data Model) appropriate to the session's authentication_metadata, the server MAY proceed to attempt payment authorization and return success or a payment-related error.
-- If the request does not include authentication_result, the server MUST return a 4XX error using the existing Error schema. The server SHOULD set type to an appropriate error type (for example invalid_request), code to requires_3ds, param to $.authentication_result.
+If a client calls `POST .../complete` while `session.status` is `authentication_required` and does not include `authentication_result`:
+- Return a 4XX error.
+- Set type to `invalid_request`, code to `requires_3ds`, and param to `$.authentication_result`.
 
 ### 4.5 Cancel Session
 
@@ -181,9 +181,12 @@ If a client calls POST /checkout_sessions/{id}/complete while session.status == 
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 
 3D Secure / Authentication-specific types:
-- **AuthenticationMetadata**: `channel` (object), `acquirer_details?` (object), `directory_server?` (enum), `flow_preference?` (object)
-- **AuthenticationResult**: `outcome` (enum), `outcome_details?` (**OutcomeDetails**)
-- **OutcomeDetails**: `three_ds_cryptogram` (string), `electronic_commerce_indicator` (string), `transaction_id` (string), `version` (string)
+- **AuthenticationMetadata**: 
+  - `channel` (object): `type` ("browser"), `browser` (object containing `accept_header`, `ip_address`, `javascript_enabled` (bool), `language`, `user_agent`; plus conditional fields if JS enabled: `color_depth`, `java_enabled`, `screen_height`, `screen_width`, `timezone_offset`).
+  - `acquirer_details` (object): `acquirer_bin`, `acquirer_country`, `acquirer_merchant_id`, `merchant_name`, `requestor_id?`.
+  - `directory_server`: enum `american_express` | `mastercard` | `visa`.
+  - `flow_preference?` (object): `type` ("challenge" | "frictionless"), `challenge?` (object), `frictionless?` (object).
+- **AuthenticationResult**: `outcome` (enum), `outcome_details?` (object containing `three_ds_cryptogram`, `electronic_commerce_indicator`, `transaction_id`, `version`).
 
 All money fields are **integers (minor units)**.
 
@@ -222,7 +225,6 @@ All money fields are **integers (minor units)**.
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
 - `fulfillment_option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
-- When `authentication_metadata` is provided, servers MUST include required acquirer and channel fields per the metadata schema rules; when `channel.browser.javascript_enabled` is true, additional browser fields are required.
 
 ---
 
