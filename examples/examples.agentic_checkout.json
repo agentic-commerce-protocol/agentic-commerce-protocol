@@ -39,9 +39,7 @@
     "id": "checkout_session_123",
     "payment_provider": {
       "provider": "stripe",
-      "supported_payment_methods": [
-        "card"
-      ]
+      "supported_payment_methods": ["card"]
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -880,4 +878,3 @@
     "param": "$.authentication_result"
   }
 }
-
