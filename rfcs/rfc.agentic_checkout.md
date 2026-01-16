@@ -149,13 +149,12 @@ Body includes `payment_data` (e.g., delegated token + optional billing address) 
 Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
 
 Authentication flows and additional fields:
-
-- Set `session.status` to `authentication_required` to indicate the transaction requires authentication (3D Secure).
-- When `session.status` is `authentication_required`, a client MUST NOT consider the session ready to finalize without performing the required authentication flow. The client MUST perform authentication using the provided `authentication_metadata` and MUST return `authentication_result` in the complete request. The client MUST return `authentication_result` regardless of the outcome (succeeded, failed, canceled, etc.).
+- Server MUST set `session.status` to `authentication_required` when authentication (e.g., 3DS) is required.
+- When status is `authentication_required`, the client MUST attempt authentication using the provided metadata and MUST return the `authentication_result` in the `POST /complete` request body, regardless of the authentication outcome.
 
 If a client calls `POST .../complete` while `session.status` is `authentication_required` and does not include `authentication_result`:
-- Return a 4XX error.
-- Set type to `invalid_request`, code to `requires_3ds`, and param to `$.authentication_result`.
+- Server MUST return a 4XX error.
+- Server MUST set type to `invalid_request`, code to `requires_3ds`, and param to `$.authentication_result`.
 
 ### 4.5 Cancel Session
 
@@ -225,6 +224,7 @@ All money fields are **integers (minor units)**.
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
 - `fulfillment_option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
+- When status is `authentication_required`, the session response MUST include `authentication_metadata`.
 
 ---
 
