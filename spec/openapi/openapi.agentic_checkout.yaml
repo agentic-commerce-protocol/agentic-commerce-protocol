@@ -614,11 +614,18 @@ components:
       additionalProperties: true
       description: >
         Seller-provided authentication metadata for 3DS flows.
+      required:
+        - channel
+        - acquirer_details
+        - directory_server
       properties:
         channel:
           type: object
           additionalProperties: false
           description: Details about the channel used for this 3DS Authentication.
+          required:
+            - type
+            - browser
           properties:
             type:
               type: string
@@ -667,10 +674,11 @@ components:
                 - javascript_enabled
                 - language
                 - user_agent
+
         acquirer_details:
           type: object
           additionalProperties: false
-          description: Details about the acquirer used for this 3DS Authentication. This object MUST be present when authentication_metadata is provided.
+          description: Details about the acquirer used for this 3DS Authentication. This object MUST be present.
           properties:
             acquirer_bin:
               type: string
@@ -698,10 +706,12 @@ components:
             - acquirer_country
             - acquirer_merchant_id
             - merchant_name
+
         directory_server:
           type: string
           enum: [american_express, mastercard, visa]
-          description: The 3DS directory server used for this Authentication. Required when `acquirer_details` is present.
+          description: The 3DS directory server used for this Authentication.
+
         flow_preference:
           type: object
           additionalProperties: false
@@ -726,46 +736,14 @@ components:
                   type: string
                   enum: [mandated, preferred]
                   description: >
-                    Subtype of challenge preference. "mandated" requests a challenge
-                    because it is mandated for this transaction; "preferred" requests
-                    a challenge when not mandated.
-              required: [type]
+                    Subtype of challenge preference.
             frictionless:
               type: object
               additionalProperties: false
               description: >
                 Details about the requested frictionless flow.
-              properties:
-                type:
-                  type: string
-                  enum: [low_risk]
-                  description: >
-                    Subtype of frictionless preference. "low_risk" requests a frictionless
-                    flow based on low transaction risk; the seller is responsible for
-                    ensuring the transaction meets any required criteria.
-              required: [type]
           required: [type]
-      required: []
       allOf:
-        - if:
-            properties:
-              channel:
-                properties:
-                  type:
-                    const: browser
-          then:
-            required: [channel]
-        - if:
-            properties:
-              channel:
-                properties:
-                  type:
-                    const: browser
-                required: [type, browser]
-          then:
-            properties:
-              channel:
-                required: [type, browser]
         - if:
             properties:
               channel:
@@ -785,12 +763,6 @@ components:
                       - screen_height
                       - screen_width
                       - timezone_offset
-        - if:
-            properties:
-              acquirer_details:
-                type: object
-          then:
-            required: [acquirer_details, directory_server]
 
     AuthenticationResult:
       type: object
@@ -812,28 +784,53 @@ components:
             - not_supported
             - processing_error
             - rejected
-        three_ds_cryptogram:
-          type: string
+          example: "authenticated"
+        outcome_details:
+          type: object
           description: >
-            The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is
-            20 bytes, base64-encoded into a 28-character string.
-        electronic_commerce_indicator:
-          type: string
-          description: >
-            Electronic Commerce Indicator (ECI) returned by the 3D Secure provider.
-        transaction_id:
-          type: string
-          description: >
-            Transaction identifier returned by the 3DS system (XID for 3DS1 or dsTransID for 3DS2).
-        version:
-          type: string
-          description: The 3D Secure version used for this authentication (for example "2.2.0").
+            Detailed authentication data. This field is required when the outcome is
+            'authenticated', 'informational', or 'attempt_acknowledged'.
+          additionalProperties: false
+          properties:
+            three_ds_cryptogram:
+              type: string
+              description: >
+                The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is
+                20 bytes, base64-encoded into a 28-character string.
+              example: "AbCdEfGhIjKlMnOpQrStUvWxY0="
+            electronic_commerce_indicator:
+              type: string
+              description: >
+                Electronic Commerce Indicator (ECI) returned by the 3D Secure provider.
+                Indicates the degree/type of authentication performed.
+              enum: ["01", "02", "05", "06", "07"]
+              example: "05"
+            transaction_id:
+              type: string
+              description: >
+                Transaction identifier returned by the 3DS system:
+                - For 3DS1: the XID
+                - For 3DS2: the Directory Server Transaction ID (dsTransID)
+              example: "dsTransId_abc123"
+            version:
+              type: string
+              description: >
+                The 3D Secure version used for this authentication (for example "1.0.2" or "2.2.0").
+              example: "2.2.0"
+          required:
+            - three_ds_cryptogram
+            - electronic_commerce_indicator
+            - transaction_id
+            - version
       required:
         - outcome
-        - three_ds_cryptogram
-        - electronic_commerce_indicator
-        - transaction_id
-        - version
+      allOf:
+        - if:
+            properties:
+              outcome:
+                enum: [authenticated, informational, attempt_acknowledged]
+          then:
+            required: [outcome_details]
 
     IntentTrace:
       type: object
