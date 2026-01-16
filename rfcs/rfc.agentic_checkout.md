@@ -16,7 +16,7 @@ This specification ensures that:
 
 ## 1. Scope & Goals
 
-- Provide a **stable, versioned** API surface (`API-Version: 2026-01-11`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
+- Provide a **stable, versioned** API surface (`API-Version: 2026-01-16`) that ChatGPT calls to create, update, retrieve, complete, and cancel checkout sessions.
 - Ensure ChatGPT renders an **authoritative cart state** on every response.
 - Keep **payments on merchant rails**; optional delegated payments are covered separately.
 - Support **safe retries** via idempotency and **strong security** via authentication and request signing.
@@ -33,7 +33,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 ### 2.1 Initialization
 
-- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-11`).
+- **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-16`).
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
 
@@ -67,7 +67,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
-- `API-Version: 2026-01-11` (**REQUIRED**)
+- `API-Version: 2026-01-16` (**REQUIRED**)
 
 **Response Headers:**
 
@@ -181,8 +181,9 @@ If a client calls POST /checkout_sessions/{id}/complete while session.status == 
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 
 3D Secure / Authentication-specific types:
-- AuthenticationMetadata: Seller-provided metadata required to perform 3D Secure authentication flows. 
-- AuthenticationResult: Agent-provided authentication results returned to the seller for card-based 3D Secure.
+- **AuthenticationMetadata**: `channel` (object), `acquirer_details?` (object), `directory_server?` (enum), `flow_preference?` (object)
+- **AuthenticationResult**: `outcome` (enum), `outcome_details?` (**OutcomeDetails**)
+- **OutcomeDetails**: `three_ds_cryptogram` (string), `electronic_commerce_indicator` (string), `transaction_id` (string), `version` (string)
 
 All money fields are **integers (minor units)**.
 
@@ -426,6 +427,15 @@ All money fields are **integers (minor units)**.
       "country": "US",
       "postal_code": "94131"
     }
+  },
+  "authentication_result": {
+    "outcome": "authenticated",
+    "outcome_details": {
+      "three_ds_cryptogram": "AbCdEfGhIjKlMnOpQrStUvWxY0=",
+      "electronic_commerce_indicator": "05",
+      "transaction_id": "dsTransId_abc123",
+      "version": "2.2.0"
+    }
   }
 }
 ```
@@ -594,4 +604,4 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 ## 11. Change Log
 
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.
-- **2026-01-11**: Added 3D Secure/authentication flow support: authentication_required session status, authentication_metadata, AuthenticationResult type, and required 4XX error behavior when authentication_result is missing on complete.
+- **2026-01-16**: Added 3D Secure/authentication flow support: authentication_required session status, authentication_metadata, `AuthenticationResult` structure including `outcome_details` (cryptogram/ECI) for the Complete Request, and required 4XX error behavior when authentication_result is missing on complete.
