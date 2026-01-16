@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: Agentic Checkout Webhooks API
+  version: "2025-09-29"
+  description: |
+    Webhook receiver hosted by OpenAI to accept merchant order lifecycle events.
+servers:
+  - url: https://openai.example.com
+tags:
+  - name: Webhooks
+    description: Incoming order events
+paths:
+  /agentic_checkout/webhooks/order_events:
+    post:
+      tags: [Webhooks]
+      summary: Receive order lifecycle events
+      operationId: postOrderEvents
+      description: |
+        Merchants POST order events so ChatGPT can stay in sync with fulfillment-grade truth.
+        Requests MUST be signed with an HMAC signature in the `Merchant-Signature` header.
+      parameters:
+        - name: Merchant-Signature
+          in: header
+          required: true
+          description: HMAC signature header (e.g., Merchant_Name-Signature) over the raw request body
+          schema: { type: string }
+        - name: Request-Id
+          in: header
+          required: false
+          schema: { type: string }
+        - name: Timestamp
+          in: header
+          required: false
+          schema: { type: string, format: date-time }
+        - name: Content-Type
+          in: header
+          required: true
+          schema: { type: string, example: "application/json" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookEvent"
+            examples:
+              order_created:
+                value:
+                  type: order_create
+                  data:
+                    type: order
+                    checkout_session_id: "checkout_session_123"
+                    permalink_url: "https://example.com/orders/123"
+                    status: created
+                    refunds: []
+              order_updated:
+                value:
+                  type: order_update
+                  data:
+                    type: order
+                    checkout_session_id: "checkout_session_123"
+                    permalink_url: "https://example.com/orders/123"
+                    status: shipped
+                    refunds:
+                      - type: original_payment
+                        amount: "1.00"
+      responses:
+        "200":
+          description: Event accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received: { type: boolean }
+                  request_id: { type: string }
+                required: [received]
+        "400":
+          description: Bad payload
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: Invalid signature
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          description: Rate limited
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  schemas:
+    Refund:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [store_credit, original_payment] }
+        amount: { type: integer }
+      required: [type, amount]
+
+    EventDataOrder:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: order }
+        checkout_session_id: { type: string }
+        permalink_url: { type: string, format: uri }
+        status:
+          type: string
+          enum:
+            [created, manual_review, confirmed, canceled, shipped, fulfilled]
+        refunds:
+          type: array
+          items: { $ref: "#/components/schemas/Refund" }
+      required: [type, checkout_session_id, permalink_url, status, refunds]
+
+    WebhookEvent:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [order_create, order_update] }
+        data: { $ref: "#/components/schemas/EventDataOrder" }
+      required: [type, data]
+
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum: [invalid_request, processing_error, service_unavailable],
+          }
+        code: { type: string }
+        message: { type: string }
+        param: { type: string }
+      required: [type, code, message]

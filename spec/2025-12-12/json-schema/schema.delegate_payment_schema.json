@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/delegate-payment/bundle.schema.json",
+  "title": "Delegate Payment \u2014 Schema Bundle",
+  "$defs": {
+    "Address": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "line_one": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "line_two": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "state": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2,
+          "description": "ISO-3166-1 alpha-2"
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20
+        }
+      },
+      "required": [
+        "name",
+        "line_one",
+        "city",
+        "state",
+        "country",
+        "postal_code"
+      ]
+    },
+    "PaymentMethodCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "card"
+        },
+        "card_number_type": {
+          "type": "string",
+          "enum": ["fpan", "network_token"]
+        },
+        "number": {
+          "type": "string",
+          "description": "network token or fallback fpan value"
+        },
+        "exp_month": {
+          "type": "string",
+          "maxLength": 2
+        },
+        "exp_year": {
+          "type": "string",
+          "maxLength": 4
+        },
+        "name": {
+          "type": "string"
+        },
+        "cvc": {
+          "type": "string",
+          "maxLength": 4
+        },
+        "cryptogram": {
+          "type": "string"
+        },
+        "eci_value": {
+          "type": "string",
+          "maxLength": 2
+        },
+        "checks_performed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["avs", "cvv", "ani", "auth0"]
+          }
+        },
+        "iin": {
+          "type": "string",
+          "maxLength": 6
+        },
+        "display_card_funding_type": {
+          "type": "string",
+          "enum": ["credit", "debit", "prepaid"]
+        },
+        "display_wallet_type": {
+          "type": "string"
+        },
+        "display_brand": {
+          "type": "string"
+        },
+        "display_last4": {
+          "type": "string",
+          "maxLength": 4
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "card_number_type",
+        "number",
+        "display_card_funding_type",
+        "metadata"
+      ]
+    },
+    "Allowance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": ["one_time"]
+        },
+        "max_amount": {
+          "type": "integer",
+          "description": "Minor units (e.g., $20 -> 2000)"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$",
+          "description": "ISO-4217 lowercase (e.g., usd)"
+        },
+        "checkout_session_id": {
+          "type": "string"
+        },
+        "merchant_id": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "reason",
+        "max_amount",
+        "currency",
+        "checkout_session_id",
+        "merchant_id",
+        "expires_at"
+      ]
+    },
+    "RiskSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["card_testing"]
+        },
+        "score": {
+          "type": "integer"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["blocked", "manual_review", "authorized"]
+        }
+      },
+      "required": ["type", "score", "action"]
+    },
+    "DelegatePaymentRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "payment_method": {
+          "$ref": "#/$defs/PaymentMethodCard"
+        },
+        "allowance": {
+          "$ref": "#/$defs/Allowance"
+        },
+        "billing_address": {
+          "$ref": "#/$defs/Address"
+        },
+        "risk_signals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/RiskSignal"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["payment_method", "allowance", "risk_signals", "metadata"]
+    },
+    "DelegatePaymentResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Vault token id, e.g., vt_..."
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id", "created", "metadata"]
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "invalid_request",
+            "rate_limit_exceeded",
+            "processing_error",
+            "service_unavailable"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict"]
+        },
+        "message": {
+          "type": "string"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath of offending field (optional)"
+        }
+      },
+      "required": ["type", "code", "message"]
+    }
+  }
+}

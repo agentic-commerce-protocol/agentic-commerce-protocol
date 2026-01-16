@@ -1,0 +1,517 @@
+{
+  "create_checkout_session_request": {
+    "items": [
+      {
+        "id": "item_123",
+        "quantity": 1
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    }
+  },
+  "create_checkout_session_response": {
+    "id": "checkout_session_123",
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": ["card"]
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_456",
+        "title": "Express",
+        "subtitle": "Arrives in 1-2 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "subtotal": 500,
+        "tax": 0,
+        "total": 500
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "update_checkout_session_request": {
+    "fulfillment_option_id": "fulfillment_option_456"
+  },
+  "update_checkout_session_response": {
+    "id": "checkout_session_123",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_456",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 830
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_456",
+        "title": "Express",
+        "subtitle": "Arrives in 1-2 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "subtotal": 500,
+        "tax": 0,
+        "total": 500
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "complete_checkout_session_request": {
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "payment_data": {
+      "token": "spt_123",
+      "provider": "stripe",
+      "billing_address": {
+        "name": "John Smith",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    }
+  },
+  "complete_checkout_session_response": {
+    "id": "checkout_session_123",
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "status": "completed",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_456",
+        "title": "Express",
+        "subtitle": "Arrives in 1-2 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "subtotal": 500,
+        "tax": 0,
+        "total": 500
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "get_checkout_session_response": {
+    "id": "checkout_session_123",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_456",
+        "title": "Express",
+        "subtitle": "Arrives in 1-2 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "subtotal": 500,
+        "tax": 0,
+        "total": 500
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "cancel_checkout_session_response": {
+    "id": "checkout_session_123",
+    "status": "canceled",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 300,
+        "discount": 0,
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330
+      }
+    ],
+    "fulfillment_address": {
+      "name": "John Doe",
+      "line_one": "1234 Chat Road,",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "fulfillment_option_id": "fulfillment_option_123",
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "subtitle": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Checkout session has been canceled."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "webhook_order_create_event": {
+    "type": "order_create",
+    "data": {
+      "type": "order",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/checkout_session_123",
+      "status": "created",
+      "refunds": []
+    }
+  },
+  "webhook_order_update_event": {
+    "type": "order_update",
+    "data": {
+      "type": "order",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/checkout_session_123",
+      "status": "shipped",
+      "refunds": [
+        {
+          "type": "original_payment",
+          "amount": 100
+        }
+      ]
+    }
+  }
+}
