@@ -1,42 +1,8 @@
-# Unreleased
-
-## Added
-
-### Affiliate Attribution Extension
-
-Added support for the **Affiliate Attribution** extension, enabling agents to credit third-party publishers (affiliates) without relying on cookies, redirects, or client-side tracking.
-
-**Schema Changes:**
-- Added `AffiliateAttribution` object to JSON Schema and OpenAPI specifications
-- Added `AffiliateAttributionSource` for attribution source context
-- Added `AffiliateAttributionMetadata` for flat key/value additional context
-- Added `touchpoint` field (`first` | `last`) to support multi-touch attribution models
-- Extended `CheckoutSessionCreateRequest` to accept optional `affiliate_attribution` (first-touch)
-- Extended `CheckoutSessionCompleteRequest` to accept optional `affiliate_attribution` (last-touch)
-
-**Key Features:**
-- **Multi-touch support:** Capture attribution at both session creation (first-touch) and completion (last-touch); networks determine weighting
-- **Write-only:** Attribution data is accepted but never returned in responses (GET, list, webhooks)
-- **Write-once with idempotency:** First valid attribution claim wins; conflicting claims with different/missing `Idempotency-Key` are silently ignored, but reusing the same `Idempotency-Key` with a different payload returns **409 Conflict**
-- **Fraud-resistant:** Supports opaque provider-issued tokens for out-of-band validation
-- **Privacy-preserving:** No user PII permitted; fields must not contain emails, phone numbers, or stable user identifiers
-- **Forward-compatible:** Schema allows unknown fields to support future extensions (per RFC §8.2)
-
-**Endpoints Updated:**
-- `POST /checkout_sessions` — Create Session (first-touch attribution)
-- `POST /checkout_sessions/{id}/complete` — Complete Session (last-touch attribution)
-
-See [RFC: Affiliate Attribution](../rfcs/rfc.affiliate_attribution.md) for full specification details.
-
----
-
 # Unreleased Changes
 
 ## Version 2025-12-11
 
-### Bug Fixes
-
-#### Fix Fulfillment Amount Types in OpenAPI Specification
+### 1. Fix Fulfillment Amount Types in OpenAPI Specification
 
 **Fixed inconsistency in OpenAPI spec where fulfillment option amounts were incorrectly typed as strings instead of integers.**
 
@@ -58,12 +24,12 @@ This is a **clarification/bug fix**, not a breaking change. The specification ha
 
 If any implementation was incorrectly sending/receiving these values as quoted strings (e.g., `"100"` instead of `100`), they should update to use numeric integers to comply with the specification.
 
-## Total Description Field
+### 2. Total Description Field
 
 - Added optional `description` field to the `Total` type to provide additional context for line items, especially fees
 - The `description` field is optional and can be used to explain charges (e.g., "Processing and handling fee")
 
-## Link Type: return_policy
+### 3. Link Type: return_policy
 
 - Added `return_policy` as a new link type option alongside `terms_of_use` and `privacy_policy`
 - Removed `seller_shop_policies` link type (redundant; item/seller-specific policies should be attached to line items in marketplace scenarios)
@@ -72,7 +38,8 @@ If any implementation was incorrectly sending/receiving these values as quoted s
   - `spec/openapi/openapi.agentic_checkout.yaml`
   - `rfcs/rfc.agentic_checkout.md`
   - `examples/examples.agentic_checkout.json`
-## Version 2025-12-12 - Breaking Changes
+
+## Version 2025-12-12
 
 This release introduces several breaking changes to the Agentic Commerce Protocol based on learnings from URBN and Etsy adapter implementations.
 
@@ -197,12 +164,72 @@ This release introduces several breaking changes to the Agentic Commerce Protoco
 
 **Migration:** No change needed - this was already in the spec but is now formally required.
 
+### 6. Added Affiliate Attribution Extension
+
+Added support for the **Affiliate Attribution** extension, enabling agents to credit third-party publishers (affiliates) without relying on cookies, redirects, or client-side tracking.
+
+**Schema Changes:**
+- Added `AffiliateAttribution` object to JSON Schema and OpenAPI specifications
+- Added `AffiliateAttributionSource` for attribution source context
+- Added `AffiliateAttributionMetadata` for flat key/value additional context
+- Added `touchpoint` field (`first` | `last`) to support multi-touch attribution models
+- Extended `CheckoutSessionCreateRequest` to accept optional `affiliate_attribution` (first-touch)
+- Extended `CheckoutSessionCompleteRequest` to accept optional `affiliate_attribution` (last-touch)
+
+**Key Features:**
+- **Multi-touch support:** Capture attribution at both session creation (first-touch) and completion (last-touch); networks determine weighting
+- **Write-only:** Attribution data is accepted but never returned in responses (GET, list, webhooks)
+- **Write-once with idempotency:** First valid attribution claim wins; conflicting claims with different/missing `Idempotency-Key` are silently ignored, but reusing the same `Idempotency-Key` with a different payload returns **409 Conflict**
+- **Fraud-resistant:** Supports opaque provider-issued tokens for out-of-band validation
+- **Privacy-preserving:** No user PII permitted; fields must not contain emails, phone numbers, or stable user identifiers
+- **Forward-compatible:** Schema allows unknown fields to support future extensions (per RFC §8.2)
+
+**Endpoints Updated:**
+- `POST /checkout_sessions` — Create Session (first-touch attribution)
+- `POST /checkout_sessions/{id}/complete` — Complete Session (last-touch attribution)
+
+See [RFC: Affiliate Attribution](../rfcs/rfc.affiliate_attribution.md) for full specification details.
+
+## Version 2026-01-15
+
+### Modified shape of `supported_payment_methods`
+
+**Modified shape of `supported_payment_methods` within `payment_provider` to allow merchants to specify supported cart networks.**
+
+**Impact:** schema of `supported_payment_methods` field, and introduction of `PaymentMethod` object.
+
+**Change:**
+- Old: `supported_payment_methods` was an error of enums which specified the supported payment types.
+- New: `supported_payment_methods` is an array of `PaymentMethod`, which allows specification of supported card networks.
+
+**Migration:**
+```json
+// OLD
+{
+  "provider": "stripe",
+  "supported_payment_methods": ["card"]
+}
+
+// NEW
+{
+  "provider": "stripe",
+  "supported_payment_methods": [
+    {
+      "type": "card",
+      "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+    }
+  ]
+}
+```
+
+**Rationale:** Merchants will want to specify the card network they are willing to accept for certain types of transactions.
+
 ---
 
 ## Version Compatibility
 
-- Clients MUST send `API-Version: 2026-01-12` header
-- Previous version `2025-09-29` is deprecated
+- Clients MUST send `API-Version: 2026-01-15` header
+- Previous version `2025-12-12` is deprecated
 - All changes are breaking and require client updates
 
 ## Files Updated
@@ -211,3 +238,4 @@ This release introduces several breaking changes to the Agentic Commerce Protoco
 - `spec/openapi/openapi.agentic_checkout.yaml`
 - `examples/examples.agentic_checkout.json`
 - `rfcs/rfc.agentic_checkout.md`
+
