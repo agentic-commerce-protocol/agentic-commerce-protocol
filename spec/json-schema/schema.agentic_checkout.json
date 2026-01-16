@@ -38,6 +38,424 @@
         "postal_code"
       ]
     },
+    "PaymentMethodSimple": {
+      "type": "string",
+      "description": "Simple hierarchical payment method identifier (e.g., 'card', 'card.network_token', 'wallet.apple_pay')"
+    },
+    "PaymentMethodObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Payment method with additional constraints (e.g., card brands, PSP routing)",
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "The payment method identifier"
+        },
+        "brands": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["visa", "mastercard", "amex", "discover", "diners", "jcb", "unionpay", "eftpos", "interac"]
+          },
+          "description": "For card methods, specific card brands/networks accepted"
+        },
+        "funding_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["credit", "debit", "prepaid"]
+          },
+          "description": "For card methods, funding types accepted"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["stripe"]
+          },
+          "description": "Payment service provider(s) that can process this payment method"
+        }
+      },
+      "required": ["method"]
+    },
+    "PaymentMethod": {
+      "oneOf": [
+        { "$ref": "#/$defs/PaymentMethodSimple" },
+        { "$ref": "#/$defs/PaymentMethodObject" }
+      ]
+    },
+    "ThreeDSCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "3D Secure capability details",
+      "properties": {
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["2.1", "2.2", "2.3"]
+          },
+          "description": "Supported 3DS versions"
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["browser", "mobile", "3ri"]
+          },
+          "description": "Supported 3DS channels (browser, mobile, 3DS-Requestor Initiated)"
+        },
+        "flows": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["challenge", "frictionless"]
+          },
+          "description": "Supported 3DS flow types"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "BiometricCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Biometric authentication capability",
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["fingerprint", "face_id", "face_recognition", "iris", "voice"]
+          },
+          "description": "Types of biometric authentication supported"
+        },
+        "fallback_available": {
+          "type": "boolean",
+          "description": "Whether fallback to non-biometric auth is available"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "OTPCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One-time password capability",
+      "properties": {
+        "delivery_methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["sms", "voice", "authenticator_app"]
+          },
+          "description": "OTP delivery methods supported"
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 10,
+          "description": "OTP code length"
+        },
+        "ttl_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "description": "Time-to-live for OTP in seconds"
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of verification attempts"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "EmailVerificationCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Email verification capability",
+      "properties": {
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["code", "magic_link", "both"]
+          },
+          "description": "Email verification methods supported"
+        },
+        "code_length": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 10,
+          "description": "Verification code length (if code method supported)"
+        },
+        "link_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "description": "Magic link time-to-live in seconds (if link method supported)"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "SMSVerificationCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "SMS verification capability",
+      "properties": {
+        "code_length": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 10,
+          "description": "Verification code length"
+        },
+        "ttl_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "description": "Code time-to-live in seconds"
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of verification attempts"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "AddressVerificationCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Address verification capability",
+      "properties": {
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["avs", "postal_code_confirmation", "full_address_confirmation", "address_correction"]
+          },
+          "description": "Address verification methods supported"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "PaymentMethodUpdateCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Payment method update capability",
+      "properties": {
+        "allowed_updates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["card_expiry", "billing_address", "card_replacement", "cvv_reentry"]
+          },
+          "description": "Types of payment method updates allowed"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional implementation-specific configuration"
+        }
+      }
+    },
+    "SellerInterventionCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Intervention and authentication methods the Seller can handle and may raise to Agent to complete.",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds", "biometric", "otp", "email_verification", "sms_verification"]
+          },
+          "description": "Intervention methods required for this session."
+        },
+        "3ds": {
+          "$ref": "#/$defs/ThreeDSCapability"
+        },
+        "biometric": {
+          "$ref": "#/$defs/BiometricCapability"
+        },
+        "otp": {
+          "$ref": "#/$defs/OTPCapability"
+        },
+        "email_verification": {
+          "$ref": "#/$defs/EmailVerificationCapability"
+        },
+        "sms_verification": {
+          "$ref": "#/$defs/SMSVerificationCapability"
+        },
+        "address_verification": {
+          "$ref": "#/$defs/AddressVerificationCapability"
+        },
+        "payment_method_update": {
+          "$ref": "#/$defs/PaymentMethodUpdateCapability"
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["always", "conditional", "optional"],
+          "description": "When required interventions are enforced."
+        }
+      }
+    },
+    "SellerFeatureCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Additional checkout features supported by the Seller.",
+      "properties": {
+        "partial_auth": {
+          "type": "boolean",
+          "default": false,
+          "description": "Supports partial authorization."
+        },
+        "saved_payment_methods": {
+          "type": "boolean",
+          "default": false,
+          "description": "Can save payment methods for future use."
+        },
+        "network_tokenization": {
+          "type": "boolean",
+          "default": false,
+          "description": "Supports network tokenized cards."
+        },
+        "incremental_auth": {
+          "type": "boolean",
+          "default": false,
+          "description": "Supports incremental authorization."
+        },
+        "async_completion": {
+          "type": "boolean",
+          "default": false,
+          "description": "Supports asynchronous payment completion."
+        }
+      }
+    },
+    "SellerCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Capabilities advertised by the Seller for this checkout session. Enables Agents to determine compatibility and optimize the checkout experience.",
+      "properties": {
+        "payment_methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PaymentMethod"
+          },
+          "description": "Payment methods accepted by the Seller for this session. Can be simple strings or objects with constraints (e.g., card brands)."
+        },
+        "interventions": {
+          "$ref": "#/$defs/SellerInterventionCapabilities"
+        },
+        "features": {
+          "$ref": "#/$defs/SellerFeatureCapabilities"
+        }
+      },
+      "required": ["payment_methods"]
+    },
+    "AgentInterventionCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Intervention and authentication methods the Agent can handle when raised by Seller.",
+      "properties": {
+        "3ds": {
+          "$ref": "#/$defs/ThreeDSCapability"
+        },
+        "biometric": {
+          "$ref": "#/$defs/BiometricCapability"
+        },
+        "otp": {
+          "$ref": "#/$defs/OTPCapability"
+        },
+        "email_verification": {
+          "$ref": "#/$defs/EmailVerificationCapability"
+        },
+        "sms_verification": {
+          "$ref": "#/$defs/SMSVerificationCapability"
+        },
+        "address_verification": {
+          "$ref": "#/$defs/AddressVerificationCapability"
+        },
+        "payment_method_update": {
+          "$ref": "#/$defs/PaymentMethodUpdateCapability"
+        },
+        "max_redirects": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum number of redirects the Agent can handle."
+        },
+        "redirect_context": {
+          "type": "string",
+          "enum": ["in_app", "external_browser", "none"],
+          "description": "How the Agent handles redirects."
+        },
+        "max_interaction_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum depth of nested interactions the Agent can handle."
+        },
+        "display_context": {
+          "type": "string",
+          "enum": ["native", "webview", "modal", "redirect"],
+          "description": "How the Agent presents interventions."
+        }
+      }
+    },
+    "AgentFeatureCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Agent-specific feature support.",
+      "properties": {
+        "async_completion": {
+          "type": "boolean",
+          "default": false,
+          "description": "Agent can poll or receive webhooks for async payment completion."
+        },
+        "session_persistence": {
+          "type": "boolean",
+          "default": false,
+          "description": "Agent can save and resume checkout sessions."
+        },
+        "multi_session": {
+          "type": "boolean",
+          "default": false,
+          "description": "Agent can manage multiple concurrent checkout sessions."
+        }
+      }
+    },
+    "AgentCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Capabilities declared by the Agent for this checkout request. Enables Sellers to determine compatibility and provide appropriate responses. Write-only: not returned in responses.",
+      "properties": {
+        "interventions": {
+          "$ref": "#/$defs/AgentInterventionCapabilities"
+        },
+        "features": {
+          "$ref": "#/$defs/AgentFeatureCapabilities"
+        }
+      }
+    },
     "AffiliateAttributionSource": {
       "type": "object",
       "additionalProperties": false,
@@ -217,20 +635,15 @@
     "PaymentProvider": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Payment service provider integration details.",
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
-        },
-        "supported_payment_methods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["card"]
-          }
+          "enum": ["stripe"],
+          "description": "The payment service provider identifier."
         }
       },
-      "required": ["provider", "supported_payment_methods"]
+      "required": ["provider"]
     },
     "LineItem": {
       "type": "object",
@@ -893,8 +1306,8 @@
         "buyer": {
           "$ref": "#/$defs/Buyer"
         },
-        "payment_provider": {
-          "$ref": "#/$defs/PaymentProvider"
+        "seller_capabilities": {
+          "$ref": "#/$defs/SellerCapabilities"
         },
         "status": {
           "type": "string",
@@ -969,6 +1382,7 @@
       },
       "required": [
         "id",
+        "seller_capabilities",
         "status",
         "currency",
         "line_items",
@@ -1018,11 +1432,14 @@
         "fulfillment_details": {
           "$ref": "#/$defs/FulfillmentDetails"
         },
+        "agent_capabilities": {
+          "$ref": "#/$defs/AgentCapabilities"
+        },
         "affiliate_attribution": {
           "$ref": "#/$defs/AffiliateAttribution"
         }
       },
-      "required": ["items"]
+      "required": ["items", "agent_capabilities"]
     },
     "CheckoutSessionUpdateRequest": {
       "type": "object",
