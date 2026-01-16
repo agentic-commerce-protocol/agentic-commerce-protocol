@@ -157,11 +157,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "first_name",
-        "last_name",
-        "email"
-      ]
+      "required": ["first_name", "last_name", "email"]
     },
     "Item": {
       "type": "object",
@@ -175,10 +171,7 @@
           "minimum": 1
         }
       },
-      "required": [
-        "id",
-        "quantity"
-      ]
+      "required": ["id", "quantity"]
     },
     "Disclosure": {
       "type": "object",
@@ -186,26 +179,17 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "disclaimer"
-          ]
+          "enum": ["disclaimer"]
         },
         "content_type": {
           "type": "string",
-          "enum": [
-            "plain",
-            "markdown"
-          ]
+          "enum": ["plain", "markdown"]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": [
-        "type",
-        "content_type",
-        "content"
-      ]
+      "required": ["type", "content_type", "content"]
     },
     "CustomAttribute": {
       "type": "object",
@@ -218,10 +202,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "display_name",
-        "value"
-      ]
+      "required": ["display_name", "value"]
     },
     "MarketplaceSellerDetails": {
       "type": "object",
@@ -231,9 +212,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name"
-      ]
+      "required": ["name"]
     },
     "PaymentProvider": {
       "type": "object",
@@ -241,24 +220,17 @@
       "properties": {
         "provider": {
           "type": "string",
-          "enum": [
-            "stripe"
-          ]
+          "enum": ["stripe"]
         },
         "supported_payment_methods": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "card"
-            ]
+            "enum": ["card"]
           }
         }
       },
-      "required": [
-        "provider",
-        "supported_payment_methods"
-      ]
+      "required": ["provider", "supported_payment_methods"]
     },
     "LineItem": {
       "type": "object",
@@ -355,11 +327,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "type",
-        "display_text",
-        "amount"
-      ]
+      "required": ["type", "display_text", "amount"]
     },
     "FulfillmentOptionShipping": {
       "type": "object",
@@ -507,20 +475,13 @@
         },
         "content_type": {
           "type": "string",
-          "enum": [
-            "plain",
-            "markdown"
-          ]
+          "enum": ["plain", "markdown"]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": [
-        "type",
-        "content_type",
-        "content"
-      ]
+      "required": ["type", "content_type", "content"]
     },
     "MessageError": {
       "type": "object",
@@ -547,21 +508,13 @@
         },
         "content_type": {
           "type": "string",
-          "enum": [
-            "plain",
-            "markdown"
-          ]
+          "enum": ["plain", "markdown"]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": [
-        "type",
-        "code",
-        "content_type",
-        "content"
-      ]
+      "required": ["type", "code", "content_type", "content"]
     },
     "Link": {
       "type": "object",
@@ -569,21 +522,14 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "terms_of_use",
-            "privacy_policy",
-            "return_policy"
-          ]
+          "enum": ["terms_of_use", "privacy_policy", "return_policy"]
         },
         "url": {
           "type": "string",
           "format": "uri"
         }
       },
-      "required": [
-        "type",
-        "url"
-      ]
+      "required": ["type", "url"]
     },
     "PaymentData": {
       "type": "object",
@@ -594,18 +540,13 @@
         },
         "provider": {
           "type": "string",
-          "enum": [
-            "stripe"
-          ]
+          "enum": ["stripe"]
         },
         "billing_address": {
           "$ref": "#/$defs/Address"
         }
       },
-      "required": [
-        "token",
-        "provider"
-      ]
+      "required": ["token", "provider"]
     },
     "Order": {
       "type": "object",
@@ -622,11 +563,7 @@
           "format": "uri"
         }
       },
-      "required": [
-        "id",
-        "checkout_session_id",
-        "permalink_url"
-      ]
+      "required": ["id", "checkout_session_id", "permalink_url"]
     },
     "Refund": {
       "type": "object",
@@ -634,19 +571,13 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "store_credit",
-            "original_payment"
-          ]
+          "enum": ["store_credit", "original_payment"]
         },
         "amount": {
           "type": "integer"
         }
       },
-      "required": [
-        "type",
-        "amount"
-      ]
+      "required": ["type", "amount"]
     },
     "AuthenticationMetadata": {
       "type": "object",
@@ -1066,9 +997,7 @@
               "$ref": "#/$defs/Order"
             }
           },
-          "required": [
-            "order"
-          ]
+          "required": ["order"]
         }
       ]
     },
@@ -1093,9 +1022,7 @@
           "$ref": "#/$defs/AffiliateAttribution"
         }
       },
-      "required": [
-        "items"
-      ]
+      "required": ["items"]
     },
     "CheckoutSessionUpdateRequest": {
       "type": "object",
@@ -1138,9 +1065,7 @@
           "$ref": "#/$defs/AffiliateAttribution"
         }
       },
-      "required": [
-        "payment_data"
-      ]
+      "required": ["payment_data"]
     },
     "IntentTrace": {
       "type": "object",
@@ -1169,17 +1094,11 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "type": [
-              "string",
-              "number",
-              "boolean"
-            ]
+            "type": ["string", "number", "boolean"]
           }
         }
       },
-      "required": [
-        "reason_code"
-      ]
+      "required": ["reason_code"]
     },
     "CancelSessionRequest": {
       "type": "object",
@@ -1214,11 +1133,7 @@
           "description": "RFC 9535 JSONPath (optional)"
         }
       },
-      "required": [
-        "type",
-        "code",
-        "message"
-      ]
+      "required": ["type", "code", "message"]
     }
   }
 }
