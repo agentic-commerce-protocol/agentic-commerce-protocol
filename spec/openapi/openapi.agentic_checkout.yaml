@@ -22,6 +22,9 @@ paths:
       description: |
         Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
         MUST return 201 with a rich, authoritative cart state.
+
+        Agents MAY include `affiliate_attribution` with `touchpoint: "first"` to record first-touch attribution.
+        This enables multi-touch attribution models where networks can capture both first and last touch.
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -40,7 +43,7 @@ paths:
               $ref: "#/components/schemas/CheckoutSessionCreateRequest"
             examples:
               minimal:
-                summary: Single item; no fulfillment address
+                summary: Single item; no fulfillment details
                 value:
                   items:
                     - id: "item_123"
@@ -51,14 +54,29 @@ paths:
                   items:
                     - id: "item_456"
                       quantity: 1
-                  fulfillment_address:
+                  fulfillment_details:
                     name: "test"
-                    line_one: "555 Golden Gate Avenue"
-                    line_two: "Apt 401"
-                    city: "San Francisco"
-                    state: "CA"
-                    country: "US"
-                    postal_code: "94102"
+                    phone_number: "15551234567"
+                    email: "test@example.com"
+                    address:
+                      name: "test"
+                      line_one: "555 Golden Gate Avenue"
+                      line_two: "Apt 401"
+                      city: "San Francisco"
+                      state: "CA"
+                      country: "US"
+                      postal_code: "94102"
+              with_first_touch_attribution:
+                summary: With first-touch affiliate attribution
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "first"
       responses:
         "201":
           description: Created
@@ -112,8 +130,13 @@ paths:
               $ref: "#/components/schemas/CheckoutSessionUpdateRequest"
             examples:
               set_fulfillment_option:
+                summary: Select a fulfillment option
                 value:
-                  fulfillment_option_id: "fulfillment_option_456"
+                  selected_fulfillment_options:
+                    - type: "shipping"
+                      shipping:
+                        option_id: "fulfillment_option_456"
+                        item_ids: ["item_123"]
       responses:
         "200":
           description: Updated session
@@ -171,12 +194,41 @@ paths:
       operationId: completeCheckoutSession
       description: |
         Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+
+        Agents MAY include `affiliate_attribution` to ensure the merchant receives final attribution context.
+        Attribution is stored alongside the resulting order but not returned in the response.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+            examples:
+              basic:
+                summary: Complete with payment data
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+              with_affiliate_attribution:
+                summary: Complete with last-touch affiliate attribution
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "last"
       responses:
         "200":
           description: Completed session with order
@@ -307,6 +359,91 @@ components:
         country: { type: string }
         postal_code: { type: string }
       required: [name, line_one, city, state, country, postal_code]
+
+    AffiliateAttributionSource:
+      type: object
+      additionalProperties: false
+      description: Context about where the attribution originated.
+      properties:
+        type:
+          type: string
+          enum: [url, platform, unknown]
+          description: The type of attribution source.
+        url:
+          type: string
+          format: uri
+          description: Canonical content URL when type is 'url'.
+      required: [type]
+
+    AffiliateAttributionMetadata:
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+      description: |
+        Flat key/value map for additional non-sensitive context.
+        Keys must be strings; values must be strings, numbers, or booleans.
+        Arrays and nested objects are NOT permitted.
+
+    AffiliateAttribution:
+      type: object
+      description: |
+        Optional affiliate attribution data for crediting third-party publishers.
+        Write-only: not returned in responses. See RFC: Affiliate Attribution.
+
+        Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).
+      properties:
+        provider:
+          type: string
+          description: Identifier for the attribution provider / affiliate network namespace (e.g., 'impact.com').
+        token:
+          type: string
+          description: Opaque provider-issued token for fraud-resistant validation. Treat as secret.
+        publisher_id:
+          type: string
+          description: Provider-scoped affiliate/publisher identifier. Required if token is omitted.
+        campaign_id:
+          type: string
+          description: Provider-scoped campaign identifier.
+        creative_id:
+          type: string
+          description: Provider-scoped creative identifier.
+        sub_id:
+          type: string
+          description: Provider-scoped sub-tracking identifier.
+        source:
+          $ref: "#/components/schemas/AffiliateAttributionSource"
+        issued_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token was issued.
+        expires_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token expires.
+        metadata:
+          $ref: "#/components/schemas/AffiliateAttributionMetadata"
+        touchpoint:
+          type: string
+          enum: [first, last]
+          description: |
+            Attribution touchpoint type. Use 'first' when capturing at session creation,
+            'last' when capturing at completion. Enables multi-touch attribution models.
+      required: [provider]
+      anyOf:
+        - required: [token]
+        - required: [publisher_id]
+
+    FulfillmentDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        phone_number: { type: string }
+        email: { type: string, format: email }
+        address: { $ref: "#/components/schemas/Address" }
 
     Buyer:
       type: object
@@ -442,6 +579,42 @@ components:
         total: { type: integer }
       required: [type, id, title, subtotal, tax, total]
 
+    SelectedShippingFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [option_id, item_ids]
+
+    SelectedDigitalFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [option_id, item_ids]
+
+    SelectedFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [shipping, digital] }
+        shipping: { $ref: "#/components/schemas/SelectedShippingFulfillmentOption" }
+        digital: { $ref: "#/components/schemas/SelectedDigitalFulfillmentOption" }
+      required: [type]
+      oneOf:
+        - properties:
+            type: { const: shipping }
+          required: [shipping]
+        - properties:
+            type: { const: digital }
+          required: [digital]
+
     MessageInfo:
       type: object
       additionalProperties: false
@@ -530,14 +703,16 @@ components:
         line_items:
           type: array
           items: { $ref: "#/components/schemas/LineItem" }
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
         fulfillment_options:
           type: array
           items:
             oneOf:
               - $ref: "#/components/schemas/FulfillmentOptionShipping"
               - $ref: "#/components/schemas/FulfillmentOptionDigital"
-        fulfillment_option_id: { type: string }
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
@@ -585,7 +760,9 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
       required: [items]
 
     CheckoutSessionUpdateRequest:
@@ -596,8 +773,10 @@ components:
         items:
           type: array
           items: { $ref: "#/components/schemas/Item" }
-        fulfillment_address: { $ref: "#/components/schemas/Address" }
-        fulfillment_option_id: { type: string }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
 
     CheckoutSessionCompleteRequest:
       type: object
@@ -606,7 +785,9 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_data: { $ref: "#/components/schemas/PaymentData" }
         authentication_result:
-          $ref: "#/components/schemas/AuthenticationResult"
+          { $ref: "#/components/schemas/AuthenticationResult" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
       required: [payment_data]
 
     AuthenticationMetadata:

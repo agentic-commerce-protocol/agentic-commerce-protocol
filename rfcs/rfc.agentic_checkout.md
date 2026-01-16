@@ -105,14 +105,19 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
     "last_name": "Smith",
     "email": "john@example.com"
   },
-  "fulfillment_address": {
+  "fulfillment_details": {
     "name": "John Smith",
-    "line_one": "1234 Chat Road",
-    "line_two": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "country": "US",
-    "postal_code": "94102"
+    "phone_number": "15551234567",
+    "email": "john@example.com",
+    "address": {
+      "name": "John Smith",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94102"
+    }
   }
 }
 ```
@@ -124,18 +129,19 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 - `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
-- `fulfillment_address` (if known)
+- `fulfillment_details` (with `name`, `phone`, `email`, and nested `address`)
 - `fulfillment_options[]` (shipping/digital) with integer costs and optional delivery windows
-- `fulfillment_option_id` (selected option)
+- `selected_fulfillment_options[]` (array of selected options with type and item mappings)
 - `totals[]` each with integer `amount`
 - `messages[]` (`info` / `error` entries)
 - `links[]` policy URLs
 - `authentication_metadata` (optional seller-provided metadata required for 3D Secure flows)
+- `order` (on complete, with `id`, `checkout_session_id`, `permalink_url`)
 
 ### 4.2 Update Session
 
 `POST /checkout_sessions/{checkout_session_id}` → **200 OK**  
-Body may include `items`, `fulfillment_address`, or `fulfillment_option_id`. Response returns full authoritative state as in **Create**.
+Body may include `items`, `fulfillment_details`, or `selected_fulfillment_options`. Response returns full authoritative state as in **Create**.
 
 ### 4.3 Retrieve Session
 
@@ -170,8 +176,11 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **CustomAttribute**: `display_name` (string), `value` (string)
 - **MarketplaceSellerDetails**: `name` (string)
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
-- **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal`, `tax`, `total` (**int**)
-- **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal`, `tax`, `total` (**int**)
+- **Address**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
+- **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested Address object)
+- **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal?`, `tax?`, `total` (**int**)
+- **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal?`, `tax?`, `total` (**int**)
+- **SelectedFulfillmentOption**: `type` (`shipping|digital`), and type-specific nested object (e.g., `shipping: {option_id, item_ids[]}`)
 - **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
 - **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
@@ -222,7 +231,7 @@ All money fields are **integers (minor units)**.
 - All monetary amounts are **integers** (minor units).
 - `status` ∈ `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`.
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
-- `fulfillment_option_id` **MUST** match an element of `fulfillment_options` when set.
+- `selected_fulfillment_options[].shipping.option_id` or `digital.option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
 - When status is `authentication_required`, the session response MUST include `authentication_metadata`.
 
@@ -235,14 +244,19 @@ All money fields are **integers (minor units)**.
 ```json
 {
   "items": [{ "id": "item_456", "quantity": 1 }],
-  "fulfillment_address": {
+  "fulfillment_details": {
     "name": "test",
-    "line_one": "1234 Chat Road",
-    "line_two": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "country": "US",
-    "postal_code": "94131"
+    "phone_number": "15551234567",
+    "email": "test@example.com",
+    "address": {
+      "name": "test",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    }
   }
 }
 ```
@@ -269,16 +283,29 @@ All money fields are **integers (minor units)**.
       "total": 330
     }
   ],
-  "fulfillment_address": {
+  "fulfillment_details": {
     "name": "test",
-    "line_one": "1234 Chat Road",
-    "line_two": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "country": "US",
-    "postal_code": "94131"
+    "phone_number": "15551234567",
+    "email": "test@example.com",
+    "address": {
+      "name": "test",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    }
   },
-  "fulfillment_option_id": "fulfillment_option_123",
+  "selected_fulfillment_options": [
+    {
+      "type": "shipping",
+      "shipping": {
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_456"]
+      }
+    }
+  ],
   "totals": [
     {
       "type": "items_base_amount",
@@ -329,7 +356,17 @@ All money fields are **integers (minor units)**.
 ### 9.3 Update — Request
 
 ```json
-{ "fulfillment_option_id": "fulfillment_option_456" }
+{
+  "selected_fulfillment_options": [
+    {
+      "type": "shipping",
+      "shipping": {
+        "option_id": "fulfillment_option_456",
+        "item_ids": ["item_456"]
+      }
+    }
+  ]
+}
 ```
 
 ### 9.4 Update — Response (200)
@@ -350,16 +387,29 @@ All money fields are **integers (minor units)**.
       "total": 330
     }
   ],
-  "fulfillment_address": {
+  "fulfillment_details": {
     "name": "test",
-    "line_one": "1234 Chat Road",
-    "line_two": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "country": "US",
-    "postal_code": "94131"
+    "phone_number": "15551234567",
+    "email": "test@example.com",
+    "address": {
+      "name": "test",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    }
   },
-  "fulfillment_option_id": "fulfillment_option_456",
+  "selected_fulfillment_options": [
+    {
+      "type": "shipping",
+      "shipping": {
+        "option_id": "fulfillment_option_456",
+        "item_ids": ["item_456"]
+      }
+    }
+  ],
   "totals": [
     {
       "type": "items_base_amount",
@@ -468,16 +518,29 @@ If the session is in `authentication_required` state, a client MUST include `aut
       "total": 330
     }
   ],
-  "fulfillment_address": {
+  "fulfillment_details": {
     "name": "test",
-    "line_one": "1234 Chat Road",
-    "line_two": "",
-    "city": "San Francisco",
-    "state": "CA",
-    "country": "US",
-    "postal_code": "94131"
+    "phone_number": "15551234567",
+    "email": "test@example.com",
+    "address": {
+      "name": "test",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    }
   },
-  "fulfillment_option_id": "fulfillment_option_123",
+  "selected_fulfillment_options": [
+    {
+      "type": "shipping",
+      "shipping": {
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_456"]
+      }
+    }
+  ],
   "totals": [
     {
       "type": "items_base_amount",
@@ -592,7 +655,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 10. Conformance Checklist
 
-- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-12-11`
+- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-12-12`
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
@@ -600,10 +663,19 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 - [ ] Emits flat error objects with `type/code/message/param?`
 - [ ] Verifies auth; signs/verifies requests where applicable
 - [ ] Emits order webhooks per the Webhooks RFC (separate spec)
+- [ ] Uses `fulfillment_details` with nested structure (not flat `fulfillment_address`)
+- [ ] Uses `selected_fulfillment_options[]` array (not singular `fulfillment_option_id`)
+- [ ] Makes `subtotal` and `tax` optional in `FulfillmentOption` schemas
 
 ---
 
 ## 11. Change Log
 
+- **2026-01-12**: Breaking changes for v2:
+  - Renamed `fulfillment_address` to `fulfillment_details` with nested structure (`name`, `phone_number`, `email`, `address`)
+  - Replaced `fulfillment_option_id` with `selected_fulfillment_options[]` array supporting multiple selections and item mappings
+  - Made `subtotal` and `tax` optional in `FulfillmentOption` (both shipping and digital)
+  - Added `selected_fulfillment_options` to `UpdateCheckoutRequest`
+  - Added `order` details to complete response (already present but now explicitly documented)
 - **2025-09-12**: Initial draft; clarified **integer amount** requirement; separated webhooks into dedicated spec.
 - **2026-01-16**: Added 3D Secure/authentication flow support 
