@@ -25,17 +25,29 @@ Learn more at [agenticcommerce.dev](https://agenticcommerce.dev).
 │   └── rfc.*.md
 │
 ├── spec/
-│   ├── openapi/
-│   │   └── openapi.*.yaml
-│   │
-│   └── json-schema/
-│       └── schema.*.json
+│   ├── 2025-09-29/              # Initial release
+│   │   ├── openapi/
+│   │   │   └── openapi.*.yaml
+│   │   └── json-schema/
+│   │       └── schema.*.json
+│   ├── 2025-12-12/              # Breaking fulfillment changes
+│   │   ├── openapi/
+│   │   └── json-schema/
+│   ├── unreleased/              # Current development
+│   │   ├── openapi/
+│   │   └── json-schema/
+│   └── draft/                   # Draft specifications
 │
 ├── examples/
-│   └── examples.*.json
+│   ├── 2025-09-29/              # Examples for initial release
+│   ├── 2025-12-12/              # Examples for 2025-12-12
+│   ├── unreleased/              # Examples for unreleased features
+│   └── draft/
 │
 ├── changelog/
-│   └──  *.md
+│   ├── 2025-09-29.md
+│   ├── 2025-12-12.md
+│   └── unreleased.md
 │
 ├── docs/
 │   ├── governance.md
@@ -62,13 +74,35 @@ Learn more at [agenticcommerce.dev](https://agenticcommerce.dev).
 
 ## 🔗 Quick Links
 
-| Spec Type          | Latest Version                         | Description                                                        |
-| ------------------ | -------------------------------------- | ------------------------------------------------------------------ |
-| **RFC (Markdown)** | [rfcs/](rfcs/)                         | Human-readable design doc with rationale, flows, and rollout plan. |
-| **OpenAPI (YAML)** | [spec/openapi/](spec/openapi/)         | Machine-readable HTTP API spec for integrating checkout endpoints. |
-| **JSON Schema**    | [spec/json-schema/](spec/json-schema/) | Data models for payloads, events, and reusable objects.            |
-| **Examples**       | [examples/](examples/)                 | Sample requests, responses.                                        |
-| **Changelog**      | [changelog/](changelog/)               | API version history and breaking changes.                          |
+| Spec Type          | Latest Stable                                        | Description                                                        |
+| ------------------ | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| **RFC (Markdown)** | [rfcs/](rfcs/)                                       | Human-readable design doc with rationale, flows, and rollout plan. |
+| **OpenAPI (YAML)** | [spec/2025-12-12/openapi/](spec/2025-12-12/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
+| **JSON Schema**    | [spec/2025-12-12/json-schema/](spec/2025-12-12/json-schema/) | Data models for payloads, events, and reusable objects.    |
+| **Examples**       | [examples/2025-12-12/](examples/2025-12-12/)         | Sample requests, responses.                                        |
+| **Changelog**      | [changelog/](changelog/)                             | API version history and breaking changes.                          |
+
+---
+
+## 📅 Versioning
+
+ACP uses **date-based versioning** in `YYYY-MM-DD` format. Each version represents a complete snapshot of the specification at that point in time.
+
+### Version Structure
+
+| Directory | Purpose |
+| --------- | ------- |
+| `spec/<version>/` | Complete spec snapshot for a released version |
+| `spec/unreleased/` | Current development (not yet released) |
+| `spec/draft/` | Experimental specifications under review |
+| `examples/<version>/` | Examples matching each spec version |
+| `changelog/<version>.md` | Release notes for each version |
+
+### Version Lifecycle
+
+1. **unreleased/** - New features and changes are developed here
+2. **Released** - When ready, `unreleased/` is snapshotted to a dated version (e.g., `2025-12-12/`)
+3. **Deprecated** - Older versions remain available but are marked deprecated in the changelog
 
 ---
 
@@ -81,24 +115,24 @@ ACP has been **first implemented by both OpenAI and Stripe**, providing producti
 
 To start building with ACP:
 
-1. Review this repo's [OpenAPI specs](spec/openapi/) and [JSON Schemas](spec/json-schema/).
+1. Review this repo's [OpenAPI specs](spec/2025-12-12/openapi/) and [JSON Schemas](spec/2025-12-12/json-schema/) for the latest stable version.
 2. Choose a reference implementation:
    - Use OpenAI's implementation to integrate with ChatGPT and other AI agent surfaces.
    - Use Stripe's implementation to leverage its payment and merchant tooling.
 3. Follow the guides provided in the linked documentation.
-4. Test using the [examples](examples/) provided in this repo.
+4. Test using the [examples](examples/2025-12-12/) provided in this repo.
 
 ---
 
 ## 📚 Documentation
 
-| Area                  | Resource                                                                                 |
-| --------------------- | ---------------------------------------------------------------------------------------- |
-| Checkout API Spec     | [spec/openapi/openapi.agentic_checkout.yaml](spec/openapi/openapi.agentic_checkout.yaml) |
-| Delegate Payment Spec | [spec/openapi/openapi.delegate_payment.yaml](spec/openapi/openapi.delegate_payment.yaml) |
-| Governance            | [docs/governance.md](docs/governance.md)                                                 |
-| Project Principles    | [docs/principles-mission.md](docs/principles-mission.md)                                 |
-| SEP Guidelines        | [docs/sep-guidelines.md](docs/sep-guidelines.md)                                         |
+| Area                  | Resource                                                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Checkout API Spec     | [spec/2025-12-12/openapi/openapi.agentic_checkout.yaml](spec/2025-12-12/openapi/openapi.agentic_checkout.yaml)         |
+| Delegate Payment Spec | [spec/2025-12-12/openapi/openapi.delegate_payment.yaml](spec/2025-12-12/openapi/openapi.delegate_payment.yaml)         |
+| Governance            | [docs/governance.md](docs/governance.md)                                                                               |
+| Project Principles    | [docs/principles-mission.md](docs/principles-mission.md)                                                               |
+| SEP Guidelines        | [docs/sep-guidelines.md](docs/sep-guidelines.md)                                                                       |
 
 ---
 

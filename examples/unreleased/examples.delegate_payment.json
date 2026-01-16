@@ -1,0 +1,76 @@
+{
+  "delegate_payment_request": {
+    "payment_method": {
+      "type": "card",
+      "card_number_type": "fpan",
+      "virtual": false,
+      "number": "4242424242424242",
+      "exp_month": "11",
+      "exp_year": "2026",
+      "name": "Jane Doe",
+      "cvc": "223",
+      "checks_performed": ["avs", "cvv"],
+      "iin": "424242",
+      "display_card_funding_type": "credit",
+      "display_wallet_type": "apple_pay",
+      "display_brand": "visa",
+      "display_last4": "4242",
+      "metadata": {
+        "issuing_bank": "temp"
+      }
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 2000,
+      "currency": "usd",
+      "checkout_session_id": "csn_01HV3P3XYZ9ABC",
+      "merchant_id": "acme_store",
+      "expires_at": "2025-10-09T07:20:50.52Z"
+    },
+    "billing_address": {
+      "name": "Ada Lovelace",
+      "line_one": "1234 Chat Road",
+      "line_two": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94131"
+    },
+    "risk_signals": [
+      {
+        "type": "card_testing",
+        "score": 10,
+        "action": "manual_review"
+      }
+    ],
+    "metadata": {
+      "campaign": "q4",
+      "source": "chatgpt_checkout"
+    }
+  },
+  "delegate_payment_success_response": {
+    "id": "vt_01J8Z3WXYZ9ABC",
+    "created": "2025-09-29T11:00:00Z",
+    "metadata": {
+      "source": "agent_checkout",
+      "merchant_id": "acme_store",
+      "idempotency_key": "idem_abc123"
+    }
+  },
+  "delegate_payment_error_invalid_card": {
+    "type": "invalid_request",
+    "code": "invalid_card",
+    "message": "Invalid card number provided",
+    "param": "payment_method.number"
+  },
+  "delegate_payment_error_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Same Idempotency-Key used with different parameters"
+  },
+  "delegate_payment_error_rate_limit": {
+    "type": "rate_limit_exceeded",
+    "code": "too_many_requests",
+    "message": "Too many requests, please retry later"
+  }
+}
