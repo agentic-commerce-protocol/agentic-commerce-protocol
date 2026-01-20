@@ -39,7 +39,13 @@
     "id": "checkout_session_123",
     "payment_provider": {
       "provider": "stripe",
+      "merchant_id": "acct_1234567890",
       "supported_payment_methods": ["card"]
+    },
+    "authentication_provider": {
+      "provider": "stripe",
+      "merchant_id": "acct_1234567890",
+      "supported_authentication_methods": ["3ds"]
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -721,9 +727,13 @@
     "id": "checkout_session_3ds_001",
     "payment_provider": {
       "provider": "stripe",
-      "supported_payment_methods": [
-        "card"
-      ]
+      "merchant_id": "acct_1234567890",
+      "supported_payment_methods": ["card"]
+    },
+    "authentication_provider": {
+      "provider": "stripe",
+      "merchant_id": "acct_1234567890",
+      "supported_authentication_methods": ["3ds"]
     },
     "status": "authentication_required",
     "currency": "usd",

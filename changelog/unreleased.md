@@ -211,3 +211,27 @@ This release introduces several breaking changes to the Agentic Commerce Protoco
 - `spec/openapi/openapi.agentic_checkout.yaml`
 - `examples/examples.agentic_checkout.json`
 - `rfcs/rfc.agentic_checkout.md`
+
+---
+
+## Version 2026-01-20
+
+### Added AuthenticationProvider and merchant_id fields
+
+Added initial support for an **open authentication provider model**, allowing merchants to specify their preferred 3DS 
+provider.
+
+**Schema Changes:**
+- Added `AuthenticationProvider` schema with `provider`, `merchant_id`, and `supported_authentication_methods` fields
+- Added `authentication_provider` field to `CheckoutSessionBase`
+- Added `merchant_id` field to `PaymentProvider` (now required)
+- Added `adyen` to the provider enum for both `PaymentProvider` and `AuthenticationProvider`
+
+**Breaking Changes:**
+- `merchant_id` is now required in `PaymentProvider`
+
+**Files Updated:**
+- `spec/json-schema/schema.agentic_checkout.json`
+- `spec/openapi/openapi.agentic_checkout.yaml`
+- `examples/examples.agentic_checkout.json`
+- `rfcs/rfc.agentic_checkout.md`
