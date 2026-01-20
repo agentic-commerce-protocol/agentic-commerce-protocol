@@ -8,7 +8,27 @@
     ],
     "agent_capabilities": {
       "interventions": {
-        "supported": ["3ds_redirect", "3ds_challenge", "address_verification"],
+        "3ds": {
+          "versions": ["2.1", "2.2"],
+          "channels": ["browser", "mobile"],
+          "flows": ["challenge"]
+        },
+        "biometric": {
+          "types": ["fingerprint", "face_id"],
+          "fallback_available": true,
+          "metadata": {
+            "timeout_seconds": 30
+          }
+        },
+        "otp": {
+          "delivery_methods": ["sms"],
+          "length": 6,
+          "max_attempts": 3,
+          "metadata": {
+            "carrier_support": "all_major"
+          }
+        },
+        "address_verification": {},
         "max_redirects": 1,
         "redirect_context": "in_app",
         "max_interaction_depth": 2,
@@ -28,7 +48,19 @@
       "payment_methods": ["card", "card.network_token", "wallet.apple_pay"],
       "interventions": {
         "required": [],
-        "supported": ["3ds", "3ds2", "3ds_redirect", "3ds_challenge"],
+        "3ds": {
+          "versions": ["2.1", "2.2", "2.3"],
+          "channels": ["browser", "mobile", "3ri"],
+          "flows": ["challenge"]
+        },
+        "email_verification": {
+          "methods": ["code", "magic_link"],
+          "code_length": 6,
+          "link_ttl_seconds": 600,
+          "metadata": {
+            "supports_custom_domain": true
+          }
+        },
         "enforcement": "conditional"
       },
       "features": {
@@ -36,9 +68,6 @@
         "partial_auth": false,
         "saved_payment_methods": true
       }
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {
@@ -95,11 +124,12 @@
     "seller_capabilities": {
       "payment_methods": ["card", "card.network_token"],
       "interventions": {
-        "supported": ["3ds", "3ds_redirect"]
+        "3ds": {
+          "versions": ["2.1", "2.2"],
+          "channels": ["browser"],
+          "flows": ["challenge"]
+        }
       }
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {
@@ -151,9 +181,7 @@
       }
     ],
     "agent_capabilities": {
-      "interventions": {
-        "supported": []
-      }
+      "interventions": {}
     }
   },
   "authentication_requirement_response": {
@@ -164,12 +192,13 @@
       "payment_methods": ["card"],
       "interventions": {
         "required": ["3ds"],
-        "supported": ["3ds", "3ds2", "3ds_redirect"],
+        "3ds": {
+          "versions": ["2.1", "2.2", "2.3"],
+          "channels": ["browser"],
+          "flows": ["challenge"]
+        },
         "enforcement": "always"
       }
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {
@@ -221,7 +250,11 @@
     ],
     "agent_capabilities": {
       "interventions": {
-        "supported": ["3ds_redirect"],
+        "3ds": {
+          "versions": ["2.1", "2.2"],
+          "channels": ["browser"],
+          "flows": ["challenge"]
+        },
         "redirect_context": "external_browser",
         "max_interaction_depth": 1,
         "display_context": "redirect"
@@ -235,15 +268,16 @@
     "seller_capabilities": {
       "payment_methods": ["card", "bnpl.klarna", "bnpl.affirm"],
       "interventions": {
-        "supported": ["3ds", "3ds_redirect"],
+        "3ds": {
+          "versions": ["2.1", "2.2"],
+          "channels": ["browser"],
+          "flows": ["challenge"]
+        },
         "enforcement": "conditional"
       },
       "features": {
         "async_completion": true
       }
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {
@@ -295,7 +329,11 @@
     ],
     "agent_capabilities": {
       "interventions": {
-        "supported": ["3ds_frictionless"],
+        "3ds": {
+          "versions": ["2.2", "2.3"],
+          "channels": ["mobile", "3ri"],
+          "flows": ["frictionless"]
+        },
         "redirect_context": "none"
       },
       "features": {
@@ -310,16 +348,17 @@
     "seller_capabilities": {
       "payment_methods": ["card", "card.network_token"],
       "interventions": {
-        "supported": ["3ds", "3ds2", "3ds_frictionless", "3ds_challenge"],
+        "3ds": {
+          "versions": ["2.1", "2.2", "2.3"],
+          "channels": ["browser", "mobile", "3ri"],
+          "flows": ["frictionless", "challenge"]
+        },
         "enforcement": "conditional"
       },
       "features": {
         "network_tokenization": true,
         "saved_payment_methods": true
       }
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {
@@ -375,7 +414,7 @@
     ],
     "agent_capabilities": {
       "interventions": {
-        "supported": ["biometric"],
+        "biometric": {},
         "redirect_context": "none",
         "display_context": "native"
       }
@@ -388,15 +427,17 @@
     "seller_capabilities": {
       "payment_methods": ["card", "card.digital_wallet", "wallet.apple_pay", "wallet.google_pay"],
       "interventions": {
-        "supported": ["biometric", "3ds", "3ds_frictionless"],
+        "biometric": {},
+        "3ds": {
+          "versions": ["2.2", "2.3"],
+          "channels": ["mobile"],
+          "flows": ["frictionless"]
+        },
         "enforcement": "conditional"
       },
       "features": {
         "network_tokenization": true
       }
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {
@@ -450,9 +491,6 @@
     "currency": "usd",
     "seller_capabilities": {
       "payment_methods": ["card"]
-    },
-    "payment_provider": {
-      "provider": "stripe"
     },
     "line_items": [
       {

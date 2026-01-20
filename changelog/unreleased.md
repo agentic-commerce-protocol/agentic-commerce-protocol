@@ -2,6 +2,79 @@
 
 ## Added
 
+### Capability Negotiation Extension
+
+Added support for **Capability Negotiation** to enable bidirectional capability exchange between Agents and Sellers during checkout session creation and management.
+
+**Schema Changes:**
+- Added `SellerCapabilities` object with nested `SellerInterventionCapabilities` and `SellerFeatureCapabilities`
+- Added `AgentCapabilities` object with nested `AgentInterventionCapabilities` and `AgentFeatureCapabilities`
+- Extended `CheckoutSessionBase` response to include **REQUIRED** `seller_capabilities` field
+- Extended `CheckoutSessionCreateRequest` to accept **REQUIRED** `agent_capabilities` field
+- **REMOVED** `PaymentProvider.supported_payment_methods` field (redundant with `seller_capabilities.payment_methods`)
+- **REMOVED** `payment_provider` top-level field from checkout sessions
+- **ADDED** optional `providers` array to `PaymentMethodObject` for PSP routing information
+
+**Key Features:**
+- **Required fields**: Both `agent_capabilities` and `seller_capabilities` are REQUIRED when implementing this extension, ensuring predictable behavior and eliminating ambiguity
+- **Seller capability advertisement:** Sellers declare supported payment methods (with optional card brand constraints), intervention requirements (including authentication methods), and features in checkout session responses
+- **Agent capability declaration:** Agents declare their interaction capabilities (authentication and intervention handling combined) in checkout session requests to help Sellers optimize the experience
+- **Early incompatibility detection:** Both parties can detect capability mismatches before payment authorization
+- **Hierarchical payment method matching:** Supports hierarchical identifiers (e.g., `card`, `card.network_token`, `wallet.apple_pay`) with optional card brand/funding type constraints
+- **Extensibility:** Forward-compatible design allows new capabilities to be added without breaking changes
+
+**Capabilities Supported:**
+
+*Payment Methods (Seller only):*
+- Hierarchical identifiers: `card`, `card.network_token`, `card.digital_wallet`, `bnpl.{provider}`, `wallet.{provider}`, `bank_transfer.{type}`
+- Object format with constraints for card methods:
+  - `brands`: Specific card networks (visa, mastercard, amex, discover, diners, jcb, unionpay, eftpos, interac)
+  - `funding_types`: Credit, debit, or prepaid cards
+
+*Interventions (structured by type):*
+- **3D Secure**: Structured object with:
+  - `versions`: 3DS protocol versions (`2.1`, `2.2`, `2.3`)
+  - `channels`: Integration channels (`browser`, `mobile`, `3ri` for 3DS-Requestor Initiated)
+  - `flows`: Flow types (`challenge`, `frictionless`)
+  - `metadata`: Implementation-specific configuration
+- **Biometric**: Structured object with `types` (fingerprint, face_id, face_recognition, iris, voice), `fallback_available`, and `metadata`
+- **OTP**: Structured object with `delivery_methods` (sms, voice, authenticator_app), `length`, `ttl_seconds`, `max_attempts`, and `metadata`
+- **Email Verification**: Structured object with `methods` (code, magic_link, both), `code_length`, `link_ttl_seconds`, and `metadata`
+- **SMS Verification**: Structured object with `code_length`, `ttl_seconds`, `max_attempts`, and `metadata`
+- **Address Verification**: Structured object with `methods` (avs, postal_code_confirmation, full_address_confirmation, address_correction) and `metadata`
+- **Payment Method Update**: Structured object with `allowed_updates` (card_expiry, billing_address, card_replacement, cvv_reentry) and `metadata`
+- All intervention types support optional `metadata` field for implementation-specific extensions
+- Enforcement modes (Seller): `always`, `conditional`, `optional`
+- Agent redirect handling: `in_app`, `external_browser`, `none`
+- Agent display contexts: `native`, `webview`, `modal`, `redirect`
+- Interaction depth limits for complex flows
+
+*Features:*
+- Seller features: `partial_auth`, `saved_payment_methods`, `network_tokenization`, `incremental_auth`, `async_completion`
+- Agent features: `async_completion`, `session_persistence`, `multi_session`
+
+**Endpoints Updated:**
+- `POST /checkout_sessions` — Create Session (includes `agent_capabilities` in request, returns `seller_capabilities` in response)
+- `POST /checkout_sessions/{id}` — Update Session (returns `seller_capabilities` in response)
+- `GET /checkout_sessions/{id}` — Retrieve Session (returns `seller_capabilities` in response)
+- `POST /checkout_sessions/{id}/complete` — Complete Session (returns `seller_capabilities` in response)
+
+**Error Handling:**
+- New error code: `payment_method_unsupported` for incompatible payment methods
+- New error code: `intervention_required` for intervention/authentication requirement mismatches
+- Implementations MUST gracefully ignore unknown capability values for forward compatibility
+
+**Adoption Model:**
+- Extension is opt-in: Implementations MAY choose to implement capability negotiation
+- Implementation is all-in: If implemented, both `agent_capabilities` and `seller_capabilities` MUST be present
+- No partial implementations: Ensures predictable behavior and eliminates ambiguity
+- Existing implementations without this extension continue to work unchanged
+- `seller_capabilities.payment_methods` is now the single source of truth for payment method support
+
+See [RFC: Capability Negotiation](../rfcs/rfc.capability_negotiation.md) for full specification details.
+
+---
+
 ### Affiliate Attribution Extension
 
 Added support for the **Affiliate Attribution** extension, enabling agents to credit third-party publishers (affiliates) without relying on cookies, redirects, or client-side tracking.

@@ -106,7 +106,13 @@ Agents include this object in checkout session creation requests to declare thei
 {
   "agent_capabilities": {
     "interventions": {
-      "supported": ["3ds_redirect", "3ds_challenge", "otp", "email_verification"],
+      "3ds": {
+        "versions": ["2.1", "2.2"],
+        "channels": ["browser", "mobile"],
+        "flows": ["challenge"]
+      },
+      "otp": {},
+      "email_verification": {},
       "max_redirects": 1,
       "redirect_context": "in_app",
       "max_interaction_depth": 1,
@@ -136,7 +142,8 @@ Sellers include this object in checkout session responses to advertise their cap
       {
         "method": "card",
         "brands": ["visa", "mastercard"],
-        "funding_types": ["credit", "debit"]
+        "funding_types": ["credit", "debit"],
+        "providers": ["stripe"]
       },
       "card.network_token",
       "bnpl.klarna",
@@ -144,7 +151,15 @@ Sellers include this object in checkout session responses to advertise their cap
     ],
     "interventions": {
       "required": ["3ds"],
-      "supported": ["3ds", "3ds2", "3ds_redirect", "3ds_challenge", "3ds_frictionless", "biometric", "otp", "email_verification", "address_verification", "otp_verification", "email_verification"],
+      "3ds": {
+        "versions": ["2.1", "2.2", "2.3"],
+        "channels": ["browser", "mobile", "3ri"],
+        "flows": ["challenge", "frictionless"]
+      },
+      "biometric": {},
+      "otp": {},
+      "email_verification": {},
+      "address_verification": {},
       "enforcement": "conditional"
     },
     "features": {
@@ -164,27 +179,71 @@ Sellers include this object in checkout session responses to advertise their cap
 
 ##### `interventions` (object, OPTIONAL)
 
-User intervention capabilities of the Agent.
+Intervention and authentication methods the Agent can handle when raised by Seller.
 
-- **`supported`** (array of strings, REQUIRED if `interventions` is present): Intervention types the Agent can handle, including authentication methods.
-  - Values: `3ds`, `3ds2`, `3ds_redirect`, `3ds_challenge`, `3ds_frictionless`, `biometric`, `3ri`, `otp`, `email_verification`, `sms_verification`, `address_verification`, `payment_method_update`, `otp_verification`, `email_verification`
+**Intervention-specific capabilities:**
+
+**Intervention-specific capabilities:**
+
+- **`3ds`** (object, OPTIONAL): 3D Secure capabilities
+  - **`versions`** (array of strings): Supported 3DS versions
+    - Values: `2.1`, `2.2`, `2.3`
+  - **`channels`** (array of strings): Supported 3DS channels
+    - Values: `browser` — Browser-based flows, `mobile` — Mobile SDK flows, `3ri` — 3DS Requestor Initiated
+  - **`flows`** (array of strings): Supported 3DS flow types
+    - Values: `challenge` — In-context challenge frame, `frictionless` — No user interaction
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+- **`biometric`** (object, OPTIONAL): Biometric authentication (fingerprint, Face ID, etc.)
+  - **`types`** (array of strings, OPTIONAL): Types of biometric authentication supported
+    - Values: `fingerprint`, `face_id`, `face_recognition`, `iris`, `voice`
+  - **`fallback_available`** (boolean, OPTIONAL): Whether fallback to non-biometric auth is available
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+- **`otp`** (object, OPTIONAL): One-time password capability
+  - **`delivery_methods`** (array of strings, OPTIONAL): OTP delivery methods supported
+    - Values: `sms`, `voice`, `authenticator_app`
+  - **`length`** (integer, OPTIONAL): OTP code length (4-10 digits)
+  - **`ttl_seconds`** (integer, OPTIONAL): Time-to-live for OTP in seconds (minimum 30)
+  - **`max_attempts`** (integer, OPTIONAL): Maximum number of verification attempts (minimum 1)
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+- **`email_verification`** (object, OPTIONAL): Email verification capability
+  - **`methods`** (array of strings, OPTIONAL): Email verification methods supported
+    - Values: `code`, `magic_link`, `both`
+  - **`code_length`** (integer, OPTIONAL): Verification code length (4-10 digits, if code method supported)
+  - **`link_ttl_seconds`** (integer, OPTIONAL): Magic link time-to-live in seconds (minimum 60, if link method supported)
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+- **`sms_verification`** (object, OPTIONAL): SMS verification capability
+  - **`code_length`** (integer, OPTIONAL): Verification code length (4-10 digits)
+  - **`ttl_seconds`** (integer, OPTIONAL): Code time-to-live in seconds (minimum 30)
+  - **`max_attempts`** (integer, OPTIONAL): Maximum number of verification attempts (minimum 1)
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+- **`address_verification`** (object, OPTIONAL): Address confirmation capability
+  - **`methods`** (array of strings, OPTIONAL): Address verification methods supported
+    - Values: `avs` — Automatic address verification system, `postal_code_confirmation` — Simple ZIP/postal code confirmation dialog, `full_address_confirmation` — Full address confirmation dialog, `address_correction` — Address correction/suggestion dialog (e.g., "You entered X, we suggest Y")
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+- **`payment_method_update`** (object, OPTIONAL): Payment method update capability
+  - **`allowed_updates`** (array of strings, OPTIONAL): Types of payment method updates allowed
+    - Values: `card_expiry`, `billing_address`, `card_replacement`, `cvv_reentry`
+  - **`metadata`** (object, OPTIONAL): Additional implementation-specific configuration (key-value pairs)
+
+**Note on structured fields:** All intervention types now have prescriptive structured fields for common configuration options, while maintaining a `metadata` field for implementation-specific extensions. This balances standardization with flexibility.
+
+**General capabilities:**
 
 - **`max_redirects`** (integer, OPTIONAL): Maximum number of redirects the Agent can handle in a single flow (default: 0).
 
 - **`redirect_context`** (enum string, OPTIONAL): How the Agent handles redirects.
-  - Values:
-    - `in_app` — Can display redirect targets in embedded webview
-    - `external_browser` — Opens system browser for redirects
-    - `none` — Cannot handle redirects
+  - Values: `in_app`, `external_browser`, `none`
 
 - **`max_interaction_depth`** (integer, OPTIONAL): Maximum depth of nested interactions the Agent can handle (default: 1).
 
 - **`display_context`** (enum string, OPTIONAL): How the Agent presents interventions.
-  - Values:
-    - `native` — Native UI components
-    - `webview` — Embedded web content
-    - `modal` — Modal dialogs
-    - `redirect` — External page navigation
+  - Values: `native`, `webview`, `modal`, `redirect`
 
 ##### `features` (object, OPTIONAL)
 
@@ -226,32 +285,44 @@ List of payment methods the Seller accepts for this checkout session. Values can
   - Values: `visa`, `mastercard`, `amex`, `discover`, `diners`, `jcb`, `unionpay`, `eftpos`, `interac`
 - **`funding_types`** (array of strings, OPTIONAL): For card methods, funding types accepted
   - Values: `credit`, `debit`, `prepaid`
+- **`providers`** (array of strings, OPTIONAL): Payment service provider(s) that can process this payment method
+  - Values: `stripe` (extensible)
 
 **Extensibility**: Implementations MAY define custom payment method identifiers. Agents SHOULD ignore unknown values.
 
 ##### `interventions` (object, OPTIONAL)
 
-Types of user interventions the Seller may require during checkout, including authentication methods.
+Intervention and authentication methods the Seller can handle and may raise to Agent to complete.
 
 - **`required`** (array of strings, OPTIONAL): Intervention methods required for this session. If empty or absent, no specific interventions are required.
-  - Values: `3ds`, `3ds2`, `biometric`, `3ri`, `otp`, `email_verification`, `sms_verification`
+  - Values: `3ds`, `biometric`, `otp`, `email_verification`, `sms_verification`
 
-- **`supported`** (array of strings, REQUIRED if `interventions` is present): Intervention types the Seller can handle.
-  - Values:
-    - Authentication methods: `3ds`, `3ds2`, `biometric`, `3ri`, `otp`, `email_verification`, `sms_verification`
-    - Interaction types: `3ds_redirect` — Full-page redirect for 3DS authentication
-    - `3ds_challenge` — In-context 3DS challenge frame
-    - `3ds_frictionless` — 3DS without user interaction
-    - `address_verification` — Address confirmation prompt
-    - `payment_method_update` — Request to update payment details
-    - `otp_verification` — One-time password entry
-    - `email_verification` — Email verification prompt
+**Intervention-specific capabilities:**
+
+- **`3ds`** (object, OPTIONAL): 3D Secure capabilities
+  - **`versions`** (array of strings): Supported 3DS versions
+    - Values: `2.1`, `2.2`, `2.3`
+  - **`channels`** (array of strings): Supported 3DS channels
+    - Values: `browser` — Browser-based flows, `mobile` — Mobile SDK flows, `3ri` — 3DS Requestor Initiated (MIT/CIT)
+  - **`flows`** (array of strings): Supported 3DS flow types
+    - Values: `challenge` — In-context challenge frame, `frictionless` — No user interaction
+
+- **`biometric`** (object, OPTIONAL): Biometric authentication (fingerprint, Face ID, etc.)
+
+- **`otp`** (object, OPTIONAL): One-time password capability
+
+- **`email_verification`** (object, OPTIONAL): Email verification capability
+
+- **`sms_verification`** (object, OPTIONAL): SMS verification capability
+
+- **`address_verification`** (object, OPTIONAL): Address confirmation capability
+
+- **`payment_method_update`** (object, OPTIONAL): Payment method update capability
+
+**General settings:**
 
 - **`enforcement`** (enum string, OPTIONAL): When required interventions are enforced.
-  - Values:
-    - `always` — Required interventions enforced for all transactions
-    - `conditional` — Required interventions enforced based on risk signals (default)
-    - `optional` — Interventions optional, may be requested by issuer
+  - Values: `always`, `conditional` (default), `optional`
 
 ##### `features` (object, OPTIONAL)
 
@@ -306,9 +377,6 @@ Additional checkout features supported by the Seller.
       "network_tokenization": true,
       "saved_payment_methods": true
     }
-  },
-  "payment_provider": {
-    "provider": "stripe"
   },
   ...
 }
@@ -560,16 +628,91 @@ Implementations MAY adopt this extension in phases:
 - Capability matching uses prefix-based hierarchies to support new subtypes
 - Validators SHOULD be lenient for unknown optional fields
 
-### 7.4 Relationship to Existing Fields
+#### 7.3.1 Metadata Extensibility
 
-**`payment_provider` object:**
-- The `payment_provider.provider` field remains and identifies the PSP integration (e.g., "stripe")
-- The previous `payment_provider.supported_payment_methods` field has been removed as it was redundant with `seller_capabilities.payment_methods`
-- `seller_capabilities.payment_methods` is now the single source of truth for payment method support
+All intervention types support an optional `metadata` field alongside their prescriptive structured fields. This enables implementation-specific configuration while maintaining a standardized core.
+
+**Key Characteristics:**
+- **Prescriptive core fields**: Each intervention type defines standard fields for common configuration
+- **Extensible via metadata**: Implementations can add custom configuration without protocol changes
+- **Implementation-specific**: Each Agent or Seller can share additional context beyond standard fields
+- **Forward compatible**: Unknown metadata keys MUST be ignored
+- **Consistent pattern**: All intervention types follow the same structure (standard fields + metadata)
+
+**Example use cases:**
+```json
+{
+  "otp": {
+    "delivery_methods": ["sms", "voice"],
+    "length": 6,
+    "ttl_seconds": 300,
+    "max_attempts": 3,
+    "metadata": {
+      "regional_restrictions": ["US", "CA", "MX"],
+      "carrier_support": "all_major",
+      "fallback_delivery_delay": 60
+    }
+  },
+  "biometric": {
+    "types": ["fingerprint", "face_id"],
+    "fallback_available": true,
+    "metadata": {
+      "timeout_seconds": 30,
+      "retry_delay_seconds": 5,
+      "device_security_level": "strong"
+    }
+  },
+  "email_verification": {
+    "methods": ["code", "magic_link"],
+    "code_length": 6,
+    "link_ttl_seconds": 600,
+    "metadata": {
+      "supports_magic_link": true,
+      "custom_domain_support": true,
+      "rate_limit_per_hour": 5
+    }
+  },
+  "3ds": {
+    "versions": ["2.1", "2.2"],
+    "channels": ["browser", "mobile"],
+    "flows": ["challenge"],
+    "metadata": {
+      "preferred_challenge_window": "500x600",
+      "acquirer_bin": "123456"
+    }
+  }
+}
+```
+
+**Implementation Requirements:**
+- Both Agents and Sellers MUST gracefully ignore unknown metadata keys
+- Metadata MUST NOT be required for basic functionality
+- Implementations SHOULD document their metadata conventions
+- Metadata values SHOULD use simple JSON types (string, number, boolean, array)
+- Standard fields take precedence over conflicting metadata
+
+### 7.4 Payment Service Provider Routing
+
+Payment service provider information is now specified at the payment method level via the optional `providers` array field in `PaymentMethodObject`:
+
+```json
+{
+  "method": "card",
+  "brands": ["visa", "mastercard"],
+  "providers": ["stripe"]
+}
+```
+
+This enables:
+- **Multi-PSP routing**: Sellers can indicate multiple PSPs can process a given payment method
+- **Method-specific routing**: Different payment methods can use different PSPs
+- **Future flexibility**: Reserved for future multi-PSP negotiation without breaking changes
+
+**Current implementation**: The `providers` field is optional. Most implementations will specify a single provider per payment method. Multi-PSP capability negotiation may be addressed in a future extension.
 
 **Future consideration - Multi-PSP routing:**
-- This extension does not currently support multi-PSP capability negotiation
-- Sellers with multiple PSP integrations should select one provider per session based on their internal routing logic
+- This extension does not currently support Agent preferences for specific PSPs
+- Sellers with multiple PSP integrations should select one provider per session based on their internal routing logic  
 - Agent preferences for specific PSPs and dynamic provider selection may be addressed in a future extension if the use case becomes common
 
 ---
