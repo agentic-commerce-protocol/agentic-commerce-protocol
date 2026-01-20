@@ -220,7 +220,10 @@
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
+          "enum": ["stripe", "adyen"]
+        },
+        "merchant_id": {
+          "type": "string"
         },
         "supported_payment_methods": {
           "type": "array",
@@ -230,7 +233,28 @@
           }
         }
       },
-      "required": ["provider", "supported_payment_methods"]
+      "required": ["provider", "merchant_id", "supported_payment_methods"]
+    },
+    "AuthenticationProvider": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["stripe", "adyen"]
+        },
+        "merchant_id": {
+          "type": "string"
+        },
+        "supported_authentication_methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds"]
+          }
+        }
+      },
+      "required": ["provider", "merchant_id", "supported_authentication_methods"]
     },
     "LineItem": {
       "type": "object",
@@ -895,6 +919,9 @@
         },
         "payment_provider": {
           "$ref": "#/$defs/PaymentProvider"
+        },
+        "authentication_provider": {
+          "$ref": "#/$defs/AuthenticationProvider"
         },
         "status": {
           "type": "string",
