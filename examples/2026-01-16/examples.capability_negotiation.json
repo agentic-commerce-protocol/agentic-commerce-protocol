@@ -1,0 +1,493 @@
+{
+  "successful_negotiation_request": {
+    "items": [
+      {
+        "id": "item_123",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": ["3ds_redirect", "3ds_challenge", "address_verification"],
+        "max_redirects": 1,
+        "redirect_context": "in_app",
+        "max_interaction_depth": 2,
+        "display_context": "webview"
+      },
+      "features": {
+        "async_completion": true,
+        "session_persistence": true
+      }
+    }
+  },
+  "successful_negotiation_response": {
+    "id": "cs_abc123",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card", "card.network_token", "wallet.apple_pay"],
+      "interventions": {
+        "required": [],
+        "supported": ["3ds", "3ds2", "3ds_redirect", "3ds_challenge"],
+        "enforcement": "conditional"
+      },
+      "features": {
+        "network_tokenization": true,
+        "partial_auth": false,
+        "saved_payment_methods": true
+      }
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_abc",
+        "item": {
+          "id": "item_123",
+          "quantity": 1
+        },
+        "base_amount": 2999,
+        "discount": 0,
+        "subtotal": 2999,
+        "tax": 247,
+        "total": 3246
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 2999
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 247
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 3246
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [],
+    "links": []
+  },
+  "incompatible_payment_method_request": {
+    "items": [
+      {
+        "id": "item_456",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "features": {
+        "async_completion": true
+      }
+    }
+  },
+  "incompatible_payment_method_response": {
+    "id": "cs_def456",
+    "status": "not_ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card", "card.network_token"],
+      "interventions": {
+        "supported": ["3ds", "3ds_redirect"]
+      }
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_def",
+        "item": {
+          "id": "item_456",
+          "quantity": 1
+        },
+        "base_amount": 5000,
+        "discount": 0,
+        "subtotal": 5000,
+        "tax": 500,
+        "total": 5500
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 5000
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 5500
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "error",
+        "code": "payment_method_unsupported",
+        "content_type": "plain",
+        "content": "Bank transfers are not accepted. Please use a credit or debit card."
+      }
+    ],
+    "links": []
+  },
+  "authentication_requirement_request": {
+    "items": [
+      {
+        "id": "item_789",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": []
+      }
+    }
+  },
+  "authentication_requirement_response": {
+    "id": "cs_ghi789",
+    "status": "ready_for_payment",
+    "currency": "eur",
+    "seller_capabilities": {
+      "payment_methods": ["card"],
+      "interventions": {
+        "required": ["3ds"],
+        "supported": ["3ds", "3ds2", "3ds_redirect"],
+        "enforcement": "always"
+      }
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_ghi",
+        "item": {
+          "id": "item_789",
+          "quantity": 1
+        },
+        "base_amount": 25000,
+        "discount": 0,
+        "subtotal": 25000,
+        "tax": 5000,
+        "total": 30000
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 25000
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 5000
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 30000
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "This purchase will require 3D Secure authentication at checkout."
+      }
+    ],
+    "links": []
+  },
+  "bnpl_capable_request": {
+    "items": [
+      {
+        "id": "item_101",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": ["3ds_redirect"],
+        "redirect_context": "external_browser",
+        "max_interaction_depth": 1,
+        "display_context": "redirect"
+      }
+    }
+  },
+  "bnpl_capable_response": {
+    "id": "cs_jkl101",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card", "bnpl.klarna", "bnpl.affirm"],
+      "interventions": {
+        "supported": ["3ds", "3ds_redirect"],
+        "enforcement": "conditional"
+      },
+      "features": {
+        "async_completion": true
+      }
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_jkl",
+        "item": {
+          "id": "item_101",
+          "quantity": 1
+        },
+        "base_amount": 89900,
+        "discount": 0,
+        "subtotal": 89900,
+        "tax": 7400,
+        "total": 97300
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 89900
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 7400
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 97300
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Pay in 4 interest-free installments with Klarna."
+      }
+    ],
+    "links": []
+  },
+  "network_tokenization_request": {
+    "items": [
+      {
+        "id": "item_202",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": ["3ds_frictionless"],
+        "redirect_context": "none"
+      },
+      "features": {
+        "session_persistence": true
+      }
+    }
+  },
+  "network_tokenization_response": {
+    "id": "cs_mno202",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card", "card.network_token"],
+      "interventions": {
+        "supported": ["3ds", "3ds2", "3ds_frictionless", "3ds_challenge"],
+        "enforcement": "conditional"
+      },
+      "features": {
+        "network_tokenization": true,
+        "saved_payment_methods": true
+      }
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_mno",
+        "item": {
+          "id": "item_202",
+          "quantity": 1
+        },
+        "base_amount": 14999,
+        "discount": 1500,
+        "subtotal": 13499,
+        "tax": 1111,
+        "total": 14610
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 14999
+      },
+      {
+        "type": "items_discount",
+        "display_text": "Discount",
+        "amount": -1500
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 13499
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 1111
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 14610
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [],
+    "links": []
+  },
+  "digital_wallet_request": {
+    "items": [
+      {
+        "id": "item_303",
+        "quantity": 2
+      }
+    ],
+    "agent_capabilities": {
+      "interventions": {
+        "supported": ["biometric"],
+        "redirect_context": "none",
+        "display_context": "native"
+      }
+    }
+  },
+  "digital_wallet_response": {
+    "id": "cs_pqr303",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card", "card.digital_wallet", "wallet.apple_pay", "wallet.google_pay"],
+      "interventions": {
+        "supported": ["biometric", "3ds", "3ds_frictionless"],
+        "enforcement": "conditional"
+      },
+      "features": {
+        "network_tokenization": true
+      }
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_pqr",
+        "item": {
+          "id": "item_303",
+          "quantity": 2
+        },
+        "base_amount": 7998,
+        "discount": 0,
+        "subtotal": 7998,
+        "tax": 659,
+        "total": 8657
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 7998
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 659
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 8657
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [],
+    "links": []
+  },
+  "minimal_agent_capabilities_request": {
+    "items": [
+      {
+        "id": "item_404",
+        "quantity": 1
+      }
+    ],
+    "agent_capabilities": {
+      "payment_methods": ["card"]
+    }
+  },
+  "minimal_seller_capabilities_response": {
+    "id": "cs_stu404",
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "seller_capabilities": {
+      "payment_methods": ["card"]
+    },
+    "payment_provider": {
+      "provider": "stripe"
+    },
+    "line_items": [
+      {
+        "id": "line_item_stu",
+        "item": {
+          "id": "item_404",
+          "quantity": 1
+        },
+        "base_amount": 1999,
+        "discount": 0,
+        "subtotal": 1999,
+        "tax": 164,
+        "total": 2163
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 1999
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 164
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 2163
+      }
+    ],
+    "fulfillment_options": [],
+    "messages": [],
+    "links": []
+  }
+}
+

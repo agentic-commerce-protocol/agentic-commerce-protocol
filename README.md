@@ -77,9 +77,9 @@ Learn more at [agenticcommerce.dev](https://agenticcommerce.dev).
 | Spec Type          | Latest Stable                                        | Description                                                        |
 | ------------------ | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | **RFC (Markdown)** | [rfcs/](rfcs/)                                       | Human-readable design doc with rationale, flows, and rollout plan. |
-| **OpenAPI (YAML)** | [spec/2025-12-12/openapi/](spec/2025-12-12/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
-| **JSON Schema**    | [spec/2025-12-12/json-schema/](spec/2025-12-12/json-schema/) | Data models for payloads, events, and reusable objects.    |
-| **Examples**       | [examples/2025-12-12/](examples/2025-12-12/)         | Sample requests, responses.                                        |
+| **OpenAPI (YAML)** | [spec/2026-01-16/openapi/](spec/2026-01-16/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
+| **JSON Schema**    | [spec/2026-01-16/json-schema/](spec/2026-01-16/json-schema/) | Data models for payloads, events, and reusable objects.    |
+| **Examples**       | [examples/2026-01-16/](examples/2026-01-16/)         | Sample requests, responses.                                        |
 | **Changelog**      | [changelog/](changelog/)                             | API version history and breaking changes.                          |
 
 ---
@@ -101,7 +101,7 @@ ACP uses **date-based versioning** in `YYYY-MM-DD` format. Each version represen
 ### Version Lifecycle
 
 1. **unreleased/** - New features and changes are developed here
-2. **Released** - When ready, `unreleased/` is snapshotted to a dated version (e.g., `2025-12-12/`)
+2. **Released** - When ready, `unreleased/` is snapshotted to a dated version (e.g., `2026-01-16/`)
 3. **Deprecated** - Older versions remain available but are marked deprecated in the changelog
 
 ---
@@ -115,12 +115,12 @@ ACP has been **first implemented by both OpenAI and Stripe**, providing producti
 
 To start building with ACP:
 
-1. Review this repo's [OpenAPI specs](spec/2025-12-12/openapi/) and [JSON Schemas](spec/2025-12-12/json-schema/) for the latest stable version.
+1. Review this repo's [OpenAPI specs](spec/2026-01-16/openapi/) and [JSON Schemas](spec/2026-01-16/json-schema/) for the latest stable version.
 2. Choose a reference implementation:
    - Use OpenAI's implementation to integrate with ChatGPT and other AI agent surfaces.
    - Use Stripe's implementation to leverage its payment and merchant tooling.
 3. Follow the guides provided in the linked documentation.
-4. Test using the [examples](examples/2025-12-12/) provided in this repo.
+4. Test using the [examples](examples/2026-01-16/) provided in this repo.
 
 ---
 
@@ -128,8 +128,8 @@ To start building with ACP:
 
 | Area                  | Resource                                                                                                               |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Checkout API Spec     | [spec/2025-12-12/openapi/openapi.agentic_checkout.yaml](spec/2025-12-12/openapi/openapi.agentic_checkout.yaml)         |
-| Delegate Payment Spec | [spec/2025-12-12/openapi/openapi.delegate_payment.yaml](spec/2025-12-12/openapi/openapi.delegate_payment.yaml)         |
+| Checkout API Spec     | [spec/2026-01-16/openapi/openapi.agentic_checkout.yaml](spec/2026-01-16/openapi/openapi.agentic_checkout.yaml)         |
+| Delegate Payment Spec | [spec/2026-01-16/openapi/openapi.delegate_payment.yaml](spec/2026-01-16/openapi/openapi.delegate_payment.yaml)         |
 | Governance            | [docs/governance.md](docs/governance.md)                                                                               |
 | Project Principles    | [docs/principles-mission.md](docs/principles-mission.md)                                                               |
 | SEP Guidelines        | [docs/sep-guidelines.md](docs/sep-guidelines.md)                                                                       |
