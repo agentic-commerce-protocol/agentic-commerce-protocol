@@ -1,5 +1,19 @@
 # Unreleased Changes
 
+## Version 2026-01-16
+
+### Capability Negotiation
+
+Added support for capability negotiation, enabling agents and merchants to dynamically discover and agree on supported protocol features.
+
+See [RFC: Capability Negotiation](../rfcs/rfc.capability_negotiation.md) for full specification details.
+
+### Supported Card Networks
+
+Added `supported_card_networks` field to advertise which card networks a merchant accepts.
+
+---
+
 ## Version 2025-12-11
 
 ### 1. Fix Fulfillment Amount Types in OpenAPI Specification
@@ -228,8 +242,8 @@ See [RFC: Affiliate Attribution](../rfcs/rfc.affiliate_attribution.md) for full 
 
 ## Version Compatibility
 
-- Clients MUST send `API-Version: 2026-01-15` header
-- Previous version `2025-12-12` is deprecated
+- Clients MUST send `API-Version: 2026-01-16` header
+- Previous version `2026-01-15` is deprecated
 - All changes are breaking and require client updates
 
 ## Files Updated
@@ -238,4 +252,3 @@ See [RFC: Affiliate Attribution](../rfcs/rfc.affiliate_attribution.md) for full 
 - `spec/openapi/openapi.agentic_checkout.yaml`
 - `examples/examples.agentic_checkout.json`
 - `rfcs/rfc.agentic_checkout.md`
-
