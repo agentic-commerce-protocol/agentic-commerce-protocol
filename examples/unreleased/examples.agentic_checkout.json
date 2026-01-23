@@ -52,7 +52,12 @@
       "supported_payment_methods": [
         {
           "type": "card",
-          "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+          "supported_card_networks": [
+            "amex",
+            "discover",
+            "mastercard",
+            "visa"
+          ]
         }
       ]
     },
@@ -65,11 +70,6 @@
           "id": "item_123"
         },
         "quantity": 1,
-        "base_amount": 300,
-        "discount": 0,
-        "subtotal": 300,
-        "tax": 30,
-        "total": 330,
         "name": "Vintage Denim Jacket",
         "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
         "images": [
@@ -93,6 +93,33 @@
             "content_type": "plain",
             "content": "This item is vintage and may show signs of previous wear."
           }
+        ],
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
         ]
       }
     ],
@@ -115,7 +142,9 @@
         "type": "shipping",
         "shipping": {
           "option_id": "fulfillment_option_123",
-          "item_ids": ["item_123"]
+          "item_ids": [
+            "item_123"
+          ]
         }
       }
     ],
@@ -196,7 +225,9 @@
         "type": "shipping",
         "shipping": {
           "option_id": "fulfillment_option_456",
-          "item_ids": ["item_123"]
+          "item_ids": [
+            "item_123"
+          ]
         }
       }
     ]
@@ -216,11 +247,33 @@
           "id": "item_123"
         },
         "quantity": 1,
-        "base_amount": 300,
-        "discount": 0,
-        "subtotal": 300,
-        "tax": 30,
-        "total": 330
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
       }
     ],
     "fulfillment_details": {
@@ -242,7 +295,9 @@
         "type": "shipping",
         "shipping": {
           "option_id": "fulfillment_option_456",
-          "item_ids": ["item_123"]
+          "item_ids": [
+            "item_123"
+          ]
         }
       }
     ],
@@ -380,11 +435,6 @@
           "id": "item_123"
         },
         "quantity": 1,
-        "base_amount": 300,
-        "discount": 0,
-        "subtotal": 300,
-        "tax": 30,
-        "total": 330,
         "name": "Vintage Denim Jacket",
         "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
         "images": [
@@ -393,7 +443,34 @@
         "unit_amount": 300,
         "marketplace_seller_details": {
           "name": "VintageClothingCo"
-        }
+        },
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
       }
     ],
     "fulfillment_details": {
@@ -415,7 +492,9 @@
         "type": "shipping",
         "shipping": {
           "option_id": "fulfillment_option_123",
-          "item_ids": ["item_123"]
+          "item_ids": [
+            "item_123"
+          ]
         }
       }
     ],
@@ -504,11 +583,33 @@
           "id": "item_123"
         },
         "quantity": 1,
-        "base_amount": 300,
-        "discount": 0,
-        "subtotal": 300,
-        "tax": 30,
-        "total": 330
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
       }
     ],
     "fulfillment_details": {
@@ -530,7 +631,9 @@
         "type": "shipping",
         "shipping": {
           "option_id": "fulfillment_option_123",
-          "item_ids": ["item_123"]
+          "item_ids": [
+            "item_123"
+          ]
         }
       }
     ],
@@ -634,11 +737,33 @@
           "id": "item_123"
         },
         "quantity": 1,
-        "base_amount": 300,
-        "discount": 0,
-        "subtotal": 300,
-        "tax": 30,
-        "total": 330
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
       }
     ],
     "fulfillment_details": {
@@ -660,7 +785,9 @@
         "type": "shipping",
         "shipping": {
           "option_id": "fulfillment_option_123",
-          "item_ids": ["item_123"]
+          "item_ids": [
+            "item_123"
+          ]
         }
       }
     ],
@@ -769,13 +896,35 @@
           "id": "item_3ds_001"
         },
         "quantity": 1,
-        "base_amount": 5000,
-        "discount": 0,
-        "subtotal": 5000,
-        "tax": 375,
-        "total": 5375,
         "name": "Premium Leather Boots",
-        "unit_amount": 5000
+        "unit_amount": 5000,
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 5000
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 5000
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 375
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 5375
+          }
+        ]
       }
     ],
     "fulfillment_address": {

@@ -32,18 +32,6 @@
       },
       "required": ["length", "width", "height", "unit"]
     },
-    "SubscriptionInfo": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "is_subscription": { "type": "boolean" },
-        "interval": { "type": "string", "enum": ["daily", "weekly", "monthly", "yearly"] },
-        "interval_count": { "type": "integer", "minimum": 1 },
-        "trial_period_days": { "type": "integer", "minimum": 0 },
-        "billing_cycles": { "type": ["integer", "null"] }
-      },
-      "required": ["is_subscription"]
-    },
     "DiscountDetail": {
       "type": "object",
       "additionalProperties": false,
@@ -261,6 +249,12 @@
       "properties": {
         "id": {
           "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "unit_amount": {
+          "type": "integer"
         }
       },
       "required": ["id"]
@@ -355,21 +349,6 @@
           "type": "integer",
           "minimum": 1
         },
-        "base_amount": {
-          "type": "integer"
-        },
-        "discount": {
-          "type": "integer"
-        },
-        "subtotal": {
-          "type": "integer"
-        },
-        "tax": {
-          "type": "integer"
-        },
-        "total": {
-          "type": "integer"
-        },
         "name": {
           "type": "string"
         },
@@ -423,7 +402,6 @@
           "type": "array",
           "items": { "$ref": "#/$defs/VariantOption" }
         },
-        "subscription": { "$ref": "#/$defs/SubscriptionInfo" },
         "discount_details": {
           "type": "array",
           "items": { "$ref": "#/$defs/DiscountDetail" }
@@ -434,14 +412,14 @@
         "totals": {
           "type": "array",
           "items": { "$ref": "#/$defs/Total" },
-          "description": "Line-item level totals breakdown"
+          "description": "Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total"
         }
       },
       "required": [
         "id",
         "item",
         "quantity",
-        "total"
+        "totals"
       ]
     },
     "TaxBreakdownItem": {
@@ -498,7 +476,6 @@
         "type": { "type": "string", "const": "pickup" },
         "id": { "type": "string" },
         "title": { "type": "string" },
-        "subtitle": { "type": "string" },
         "description": { "type": "string" },
         "location": {
           "type": "object",
@@ -526,7 +503,6 @@
         "type": { "type": "string", "const": "local_delivery" },
         "id": { "type": "string" },
         "title": { "type": "string" },
-        "subtitle": { "type": "string" },
         "description": { "type": "string" },
         "delivery_window": {
           "type": "object",
@@ -563,7 +539,7 @@
         "title": {
           "type": "string"
         },
-        "subtitle": {
+        "description": {
           "type": "string"
         },
         "carrier": {
@@ -603,7 +579,7 @@
         "title": {
           "type": "string"
         },
-        "subtitle": {
+        "description": {
           "type": "string"
         },
         "subtotal": {
@@ -774,25 +750,6 @@
       },
       "required": ["enabled"]
     },
-    "GiftOptions": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "is_gift": { "type": "boolean" },
-        "gift_message": { "type": "string", "maxLength": 500 },
-        "gift_wrap": { "$ref": "#/$defs/GiftWrap" },
-        "hide_prices": { "type": "boolean" }
-      },
-      "required": ["is_gift"]
-    },
-    "SpecialInstructions": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "delivery": { "type": "string" },
-        "personalization": { "type": "string" }
-      }
-    },
     "SplitPayment": {
       "type": "object",
       "additionalProperties": false,
@@ -800,20 +757,6 @@
         "amount": { "type": "integer" }
       },
       "required": ["amount"]
-    },
-    "SubscriptionDetails": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": { "type": "string" },
-        "status": { "type": "string", "enum": ["trial", "active", "paused", "canceled"] },
-        "current_period_start": { "type": "string", "format": "date-time" },
-        "current_period_end": { "type": "string", "format": "date-time" },
-        "trial_end": { "type": "string", "format": "date-time" },
-        "cancel_at_period_end": { "type": "boolean" },
-        "next_billing_date": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "status"]
     },
     "FulfillmentGroup": {
       "type": "object",
@@ -1510,10 +1453,6 @@
           "type": "array",
           "items": { "$ref": "#/$defs/AvailablePromotion" }
         },
-        "gift_options": { "$ref": "#/$defs/GiftOptions" },
-        "order_notes": { "type": "string" },
-        "special_instructions": { "$ref": "#/$defs/SpecialInstructions" },
-        "subscription_details": { "$ref": "#/$defs/SubscriptionDetails" },
         "approval_details": { "$ref": "#/$defs/ApprovalDetails" },
         "created_at": { "type": "string", "format": "date-time" },
         "updated_at": { "type": "string", "format": "date-time" },
@@ -1589,9 +1528,6 @@
           "type": "array",
           "items": { "type": "string" }
         },
-        "gift_options": { "$ref": "#/$defs/GiftOptions" },
-        "order_notes": { "type": "string" },
-        "special_instructions": { "$ref": "#/$defs/SpecialInstructions" },
         "locale": { "type": "string" },
         "timezone": { "type": "string" },
         "quote_id": { "type": "string" },
@@ -1631,10 +1567,7 @@
         "coupons": {
           "type": "array",
           "items": { "type": "string" }
-        },
-        "gift_options": { "$ref": "#/$defs/GiftOptions" },
-        "order_notes": { "type": "string" },
-        "special_instructions": { "$ref": "#/$defs/SpecialInstructions" }
+        }
       }
     },
     "CheckoutSessionCompleteRequest": {

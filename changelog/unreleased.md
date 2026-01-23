@@ -123,7 +123,7 @@ Added `protocol` object to all checkout session responses:
 
 ```json
 {
-  "acp": {
+  "protocol": {
     "version": "2026-01-22",
     "capabilities": []
   }
@@ -163,11 +163,9 @@ Added presentment currency for display purposes with `presentment_currency`, `ex
 
 #### 8. Additional Features
 
-- Subscription & recurring billing metadata
 - B2B commerce features (purchase orders, approval workflows)
 - Promotional campaigns (coupons, automatic discounts)
 - Enhanced product metadata (SKU, variant ID, weight, dimensions)
-- Gift services & special instructions
 - Expanded link types (`shipping_policy`, `contact_us`, `about_us`, `faq`, `support`)
 - Order confirmation details in complete responses
 - Payment response object with provider and instruments
@@ -183,10 +181,7 @@ Added presentment currency for display purposes with `presentment_currency`, `ex
 - `MessageWarning`
 - `AppliedCoupon`
 - `AutomaticDiscount`
-- `SubscriptionDetails`
 - `ApprovalDetails`
-- `GiftOptions`
-- `SpecialInstructions`
 
 **Modified Schemas:**
 - `CheckoutSessionBase` - Added many new optional fields

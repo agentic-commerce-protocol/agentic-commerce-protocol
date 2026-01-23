@@ -499,6 +499,8 @@ components:
       additionalProperties: false
       properties:
         id: { type: string }
+        name: { type: string }
+        unit_amount: { type: integer }
       required: [id]
 
     Disclosure:
@@ -578,17 +580,6 @@ components:
         unit: { type: string, enum: [cm, in] }
       required: [length, width, height, unit]
 
-    SubscriptionInfo:
-      type: object
-      additionalProperties: false
-      properties:
-        is_subscription: { type: boolean }
-        interval: { type: string, enum: [daily, weekly, monthly, yearly] }
-        interval_count: { type: integer, minimum: 1 }
-        trial_period_days: { type: integer, minimum: 0 }
-        billing_cycles: { type: integer, nullable: true }
-      required: [is_subscription]
-
     DiscountDetail:
       type: object
       additionalProperties: false
@@ -607,11 +598,6 @@ components:
         id: { type: string }
         item: { $ref: "#/components/schemas/Item" }
         quantity: { type: integer, minimum: 1 }
-        base_amount: { type: integer }
-        discount: { type: integer }
-        subtotal: { type: integer }
-        tax: { type: integer }
-        total: { type: integer }
         name: { type: string }
         description: { type: string }
         images:
@@ -646,7 +632,6 @@ components:
         variant_options:
           type: array
           items: { $ref: "#/components/schemas/VariantOption" }
-        subscription: { $ref: "#/components/schemas/SubscriptionInfo" }
         discount_details:
           type: array
           items: { $ref: "#/components/schemas/DiscountDetail" }
@@ -656,8 +641,8 @@ components:
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
-          description: "Line-item level totals breakdown"
-      required: [id, item, quantity, total]
+          description: "Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total"
+      required: [id, item, quantity, totals]
 
     TaxBreakdownItem:
       type: object
@@ -704,7 +689,6 @@ components:
         type: { type: string, const: pickup }
         id: { type: string }
         title: { type: string }
-        subtitle: { type: string }
         description: { type: string }
         location:
           type: object
@@ -729,7 +713,6 @@ components:
         type: { type: string, const: local_delivery }
         id: { type: string }
         title: { type: string }
-        subtitle: { type: string }
         description: { type: string }
         delivery_window:
           type: object
@@ -754,7 +737,6 @@ components:
         type: { type: string, const: shipping }
         id: { type: string }
         title: { type: string }
-        subtitle: { type: string }
         description: { type: string }
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
@@ -771,7 +753,6 @@ components:
         type: { type: string, const: digital }
         id: { type: string }
         title: { type: string }
-        subtitle: { type: string }
         description: { type: string }
         subtotal: { type: integer }
         tax: { type: integer }
@@ -962,23 +943,6 @@ components:
         charge: { type: integer }
       required: [enabled]
 
-    GiftOptions:
-      type: object
-      additionalProperties: false
-      properties:
-        is_gift: { type: boolean }
-        gift_message: { type: string, maxLength: 500 }
-        gift_wrap: { $ref: "#/components/schemas/GiftWrap" }
-        hide_prices: { type: boolean }
-      required: [is_gift]
-
-    SpecialInstructions:
-      type: object
-      additionalProperties: false
-      properties:
-        delivery: { type: string }
-        personalization: { type: string }
-
     Link:
       type: object
       additionalProperties: false
@@ -1024,19 +988,6 @@ components:
       anyOf:
         - required: [token, provider]
         - required: [purchase_order_number]
-
-    SubscriptionDetails:
-      type: object
-      additionalProperties: false
-      properties:
-        id: { type: string }
-        status: { type: string, enum: [trial, active, paused, canceled] }
-        current_period_start: { type: string, format: date-time }
-        current_period_end: { type: string, format: date-time }
-        trial_end: { type: string, format: date-time }
-        cancel_at_period_end: { type: boolean }
-        next_billing_date: { type: string, format: date-time }
-      required: [id, status]
 
     FulfillmentGroup:
       type: object
@@ -1208,10 +1159,6 @@ components:
         available_promotions:
           type: array
           items: { $ref: "#/components/schemas/AvailablePromotion" }
-        gift_options: { $ref: "#/components/schemas/GiftOptions" }
-        order_notes: { type: string }
-        special_instructions: { $ref: "#/components/schemas/SpecialInstructions" }
-        subscription_details: { $ref: "#/components/schemas/SubscriptionDetails" }
         approval_details: { $ref: "#/components/schemas/ApprovalDetails" }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
@@ -1265,9 +1212,6 @@ components:
         coupons:
           type: array
           items: { type: string }
-        gift_options: { $ref: "#/components/schemas/GiftOptions" }
-        order_notes: { type: string }
-        special_instructions: { $ref: "#/components/schemas/SpecialInstructions" }
         locale: { type: string }
         timezone: { type: string }
         quote_id: { type: string }
@@ -1294,9 +1238,6 @@ components:
         coupons:
           type: array
           items: { type: string }
-        gift_options: { $ref: "#/components/schemas/GiftOptions" }
-        order_notes: { type: string }
-        special_instructions: { $ref: "#/components/schemas/SpecialInstructions" }
 
     RiskSignals:
       type: object
