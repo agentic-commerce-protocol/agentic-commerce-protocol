@@ -1,0 +1,430 @@
+openapi: 3.1.0
+info:
+  title: Agentic Commerce — Delegate Payment API
+  version: "2025-09-29"
+  description: |
+    Delegate a payment using a provided payment method and allowance.
+servers:
+  - url: https://merchant.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: DelegatePayment
+    description: Create delegated payment tokens
+paths:
+  /agentic_commerce/delegate_payment:
+    post:
+      tags: [DelegatePayment]
+      summary: Create a delegated payment token
+      operationId: delegatePayment
+      description: |
+        Tokenizes a credential for controlled usage by the merchant's PSP per the **Allowance** constraints.
+        Exactly one credential type is currently supported: **card**.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/Signature"
+        - $ref: "#/components/parameters/Timestamp"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DelegatePaymentRequest"
+            examples:
+              card_success:
+                summary: Card (FPAN) — success
+                value:
+                  payment_method:
+                    type: card
+                    card_number_type: fpan
+                    number: "4242424242424242"
+                    exp_month: "11"
+                    exp_year: "2026"
+                    name: "Jane Doe"
+                    cvc: "223"
+                    checks_performed: ["avs", "cvv"]
+                    iin: "424242"
+                    display_card_funding_type: credit
+                    display_brand: "visa"
+                    display_last4: "4242"
+                    metadata: { "issuing_bank": "temp" }
+                  allowance:
+                    reason: one_time
+                    max_amount: 2000
+                    currency: usd
+                    checkout_session_id: "csn_01HV3P3..."
+                    merchant_id: "acme"
+                    expires_at: "2025-10-09T07:20:50.52Z"
+                  billing_address:
+                    name: "John Doe"
+                    line_one: "123 Fake St."
+                    line_two: "Unit 1"
+                    city: "San Francisco"
+                    state: "CA"
+                    country: "US"
+                    postal_code: "12345"
+                  risk_signals:
+                    - type: card_testing
+                      score: 10
+                      action: manual_review
+                  metadata: { "campaign": "q4" }
+      responses:
+        "201":
+          description: Created
+          headers:
+            Request-Id:
+              description: Echo of the request correlation ID
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DelegatePaymentResponse"
+              examples:
+                created:
+                  value:
+                    id: "vt_01J8Z3WXYZ9ABC"
+                    created: "2025-09-29T11:00:00Z"
+                    metadata:
+                      source: "agent_checkout"
+                      merchant_id: "acme"
+                      idempotency_key: "idem_abc123"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                invalid_request_missing_field:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: invalid_card
+                      message: "card field is required when payment_method.type=card"
+                      param: "payment_method.number"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  value:
+                    error:
+                      type: unauthorized
+                      code: unauthorized
+                      message: "Unauthorized"
+        "409":
+          description: Idempotency conflict
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                idem_conflict:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: idempotency_conflict
+                      message: "Same Idempotency-Key used with different parameters"
+        "422":
+          description: Semantic validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: invalid_card
+                      message: "Invalid card expiration month"
+                      param: "payment_method.exp_month"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                rate_limit_exceeded:
+                  value:
+                    error:
+                      type: rate_limit_exceeded
+                      code: rate_limit_exceeded
+                      message: "Rate limit exceeded"
+        "500":
+          description: Processing error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                internal_server_error:
+                  value:
+                    error:
+                      type: internal_server_error
+                      code: internal_server_error
+                      message: "Internal server error"
+        "503":
+          description: Service unavailable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                service_unavailable:
+                  value:
+                    error:
+                      type: service_unavailable
+                      code: service_unavailable
+                      message: "Service unavailable"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      schema:
+        type: string
+        example: "Bearer api_key_123"
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      schema:
+        type: string
+        example: "application/json"
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+        example: "en-us"
+    UserAgent:
+      name: User-Agent
+      in: header
+      required: false
+      schema:
+        type: string
+        example: "ChatGPT/2.0"
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        example: "idem_abc123"
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        example: "req_123"
+    Signature:
+      name: Signature
+      in: header
+      required: false
+      schema:
+        type: string
+        example: "ZXltZX..." # detached signature over canonical JSON
+    Timestamp:
+      name: Timestamp
+      in: header
+      required: false
+      schema:
+        type: string
+        format: date-time
+        example: "2025-09-29T10:30:00Z"
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      schema:
+        type: string
+        example: "2025-09-29"
+
+  schemas:
+    DelegatePaymentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        payment_method:
+          $ref: "#/components/schemas/PaymentMethodCard"
+        allowance:
+          $ref: "#/components/schemas/Allowance"
+        billing_address:
+          $ref: "#/components/schemas/Address"
+        risk_signals:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/RiskSignal" }
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+      required: [payment_method, allowance, risk_signals, metadata]
+
+    PaymentMethodCard:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [card]
+        card_number_type:
+          type: string
+          enum: [fpan, network_token]
+        number:
+          type: string
+          description: "network token or fallback fpan value"
+        exp_month:
+          type: string
+          maxLength: 2
+        exp_year:
+          type: string
+          maxLength: 4
+        name:
+          type: string
+        cvc:
+          type: string
+          maxLength: 4
+        cryptogram:
+          type: string
+        eci_value:
+          type: string
+          maxLength: 2
+        checks_performed:
+          type: array
+          items:
+            type: string
+            enum: [avs, cvv, ani, auth0]
+        iin:
+          type: string
+          maxLength: 6
+        display_card_funding_type:
+          type: string
+          enum: [credit, debit, prepaid]
+        display_wallet_type:
+          type: string
+        display_brand:
+          type: string
+        display_last4:
+          type: string
+          maxLength: 4
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+      required: [type, card_number_type, number, display_card_funding_type, metadata]
+
+    Address:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, maxLength: 256 }
+        line_one: { type: string, maxLength: 60 }
+        line_two: { type: string, maxLength: 60 }
+        city: { type: string, maxLength: 60 }
+        state: { type: string }
+        country:
+          {
+            type: string,
+            minLength: 2,
+            maxLength: 2,
+            description: "ISO-3166-1 alpha-2",
+          }
+        postal_code: { type: string, maxLength: 20 }
+      required: [name, line_one, city, state, country, postal_code]
+
+    Allowance:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          enum: [one_time]
+        max_amount:
+          type: integer
+          description: "Minor units (e.g., $20 → 2000)"
+        currency:
+          type: string
+          pattern: "^[a-z]{3}$"
+          description: "ISO-4217 lowercase (e.g., usd)"
+        checkout_session_id:
+          type: string
+        merchant_id:
+          type: string
+          maxLength: 256
+        expires_at:
+          type: string
+          format: date-time
+      required:
+        [
+          reason,
+          max_amount,
+          currency,
+          checkout_session_id,
+          merchant_id,
+          expires_at,
+        ]
+
+    RiskSignal:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [card_testing]
+        score:
+          type: integer
+        action:
+          type: string
+          enum: [blocked, manual_review, authorized]
+      required: [type, score, action]
+
+    DelegatePaymentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          description: "Unique vault token identifier (vt_...)"
+        created:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+      required: [id, created, metadata]
+
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            [
+              invalid_request,
+              rate_limit_exceeded,
+              processing_error,
+              service_unavailable,
+            ]
+        code:
+          type: string
+          enum: [invalid_card, duplicate_request, idempotency_conflict]
+        message:
+          type: string
+        param:
+          type: string
+          description: "JSONPath of offending field"
+      required: [type, code, message]

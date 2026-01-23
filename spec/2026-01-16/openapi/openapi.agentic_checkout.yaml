@@ -1,0 +1,841 @@
+openapi: 3.1.0
+info:
+  title: Agentic Checkout API
+  version: "2026-01-16"
+  description: |
+    Merchant-implemented REST API for ChatGPT-driven checkout.
+    Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
+servers:
+  - url: https://merchant.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: CheckoutSessions
+    description: Create and manage checkout sessions
+
+paths:
+  /checkout_sessions:
+    post:
+      tags: [CheckoutSessions]
+      summary: Create a checkout session
+      operationId: createCheckoutSession
+      description: |
+        Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
+        MUST return 201 with a rich, authoritative cart state.
+
+        Agents MAY include `affiliate_attribution` with `touchpoint: "first"` to record first-touch attribution.
+        This enables multi-touch attribution models where networks can capture both first and last touch.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/Signature"
+        - $ref: "#/components/parameters/Timestamp"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionCreateRequest"
+            examples:
+              minimal:
+                summary: Single item; no fulfillment details
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+              with_address:
+                summary: Single item with shipping address
+                value:
+                  items:
+                    - id: "item_456"
+                      quantity: 1
+                  fulfillment_details:
+                    name: "test"
+                    phone_number: "15551234567"
+                    email: "test@example.com"
+                    address:
+                      name: "test"
+                      line_one: "555 Golden Gate Avenue"
+                      line_two: "Apt 401"
+                      city: "San Francisco"
+                      state: "CA"
+                      country: "US"
+                      postal_code: "94102"
+              with_first_touch_attribution:
+                summary: With first-touch affiliate attribution
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "first"
+      responses:
+        "201":
+          description: Created
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema: { type: string }
+            Request-Id:
+              description: Echo of the request correlation id
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Update a checkout session
+      operationId: updateCheckoutSession
+      description: |
+        Applies changes (items, fulfillment address, fulfillment option) and returns an updated authoritative cart state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionUpdateRequest"
+            examples:
+              set_fulfillment_option:
+                summary: Select a fulfillment option
+                value:
+                  selected_fulfillment_options:
+                    - type: "shipping"
+                      shipping:
+                        option_id: "fulfillment_option_456"
+                        item_ids: ["item_123"]
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+    get:
+      tags: [CheckoutSessions]
+      summary: Retrieve a checkout session
+      operationId: getCheckoutSession
+      description: Returns the latest authoritative state for the checkout session.
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}/complete:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/ContentType"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Complete a checkout session
+      operationId: completeCheckoutSession
+      description: |
+        Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+
+        Agents MAY include `affiliate_attribution` to ensure the merchant receives final attribution context.
+        Attribution is stored alongside the resulting order but not returned in the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+            examples:
+              basic:
+                summary: Complete with payment data
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+              with_affiliate_attribution:
+                summary: Complete with last-touch affiliate attribution
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "last"
+      responses:
+        "200":
+          description: Completed session with order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSessionWithOrder"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}/cancel:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Cancel a checkout session
+      operationId: cancelCheckoutSession
+      description: |
+        Cancels a session if not already completed or canceled.
+        Agents MAY include an intent_trace to communicate why the session is being abandoned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelSessionRequest"
+      responses:
+        "200":
+          description: Canceled session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "405":
+          description: Not cancelable (already completed/canceled)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      schema: { type: string, example: "Bearer api_key_123" }
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      schema: { type: string, example: "application/json" }
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: { type: string, example: "en-US" }
+    UserAgent:
+      name: User-Agent
+      in: header
+      required: false
+      schema:
+        {
+          type: string,
+          example: "ChatGPT/2.0 (Mac OS X 15.0.1; arm64; build 0)",
+        }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, example: "idempotency_key_123" }
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      schema: { type: string, example: "request_id_123" }
+    Signature:
+      name: Signature
+      in: header
+      required: false
+      schema: { type: string, example: "ZXltZX..." }
+    Timestamp:
+      name: Timestamp
+      in: header
+      required: false
+      schema:
+        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      schema: { type: string, example: "2025-12-12" }
+
+  schemas:
+    Address:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        line_one: { type: string }
+        line_two: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+      required: [name, line_one, city, state, country, postal_code]
+
+    AffiliateAttributionSource:
+      type: object
+      additionalProperties: false
+      description: Context about where the attribution originated.
+      properties:
+        type:
+          type: string
+          enum: [url, platform, unknown]
+          description: The type of attribution source.
+        url:
+          type: string
+          format: uri
+          description: Canonical content URL when type is 'url'.
+      required: [type]
+
+    AffiliateAttributionMetadata:
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+      description: |
+        Flat key/value map for additional non-sensitive context.
+        Keys must be strings; values must be strings, numbers, or booleans.
+        Arrays and nested objects are NOT permitted.
+
+    AffiliateAttribution:
+      type: object
+      description: |
+        Optional affiliate attribution data for crediting third-party publishers.
+        Write-only: not returned in responses. See RFC: Affiliate Attribution.
+
+        Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).
+      properties:
+        provider:
+          type: string
+          description: Identifier for the attribution provider / affiliate network namespace (e.g., 'impact.com').
+        token:
+          type: string
+          description: Opaque provider-issued token for fraud-resistant validation. Treat as secret.
+        publisher_id:
+          type: string
+          description: Provider-scoped affiliate/publisher identifier. Required if token is omitted.
+        campaign_id:
+          type: string
+          description: Provider-scoped campaign identifier.
+        creative_id:
+          type: string
+          description: Provider-scoped creative identifier.
+        sub_id:
+          type: string
+          description: Provider-scoped sub-tracking identifier.
+        source:
+          $ref: "#/components/schemas/AffiliateAttributionSource"
+        issued_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token was issued.
+        expires_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token expires.
+        metadata:
+          $ref: "#/components/schemas/AffiliateAttributionMetadata"
+        touchpoint:
+          type: string
+          enum: [first, last]
+          description: |
+            Attribution touchpoint type. Use 'first' when capturing at session creation,
+            'last' when capturing at completion. Enables multi-touch attribution models.
+      required: [provider]
+      anyOf:
+        - required: [token]
+        - required: [publisher_id]
+
+    FulfillmentDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        phone_number: { type: string }
+        email: { type: string, format: email }
+        address: { $ref: "#/components/schemas/Address" }
+
+    Buyer:
+      type: object
+      additionalProperties: false
+      properties:
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string, format: email }
+        phone_number: { type: string }
+      required: [first_name, last_name, email]
+
+    Item:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        quantity: { type: integer, minimum: 1 }
+      required: [id, quantity]
+
+    Disclosure:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [disclaimer] }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    CustomAttribute:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name: { type: string }
+        value: { type: string }
+      required: [display_name, value]
+
+    MarketplaceSellerDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+      required: [name]
+
+    PaymentProvider:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          enum: [stripe]
+        supported_payment_methods:
+          type: array
+          items:
+            type: string
+            enum: [card]
+      required: [provider, supported_payment_methods]
+
+    LineItem:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        item: { $ref: "#/components/schemas/Item" }
+        base_amount: { type: integer }
+        discount: { type: integer }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        images:
+          type: array
+          items: { type: string, format: uri }
+        unit_amount: { type: integer }
+        disclosures:
+          type: array
+          items: { $ref: "#/components/schemas/Disclosure" }
+        custom_attributes:
+          type: array
+          items: { $ref: "#/components/schemas/CustomAttribute" }
+        marketplace_seller_details:
+          { $ref: "#/components/schemas/MarketplaceSellerDetails" }
+      required: [id, item, base_amount, discount, subtotal, tax, total]
+
+    Total:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            [
+              items_base_amount,
+              items_discount,
+              subtotal,
+              discount,
+              fulfillment,
+              tax,
+              fee,
+              total,
+            ]
+        display_text: { type: string }
+        amount: { type: integer }
+        description: { type: string }
+      required: [type, display_text, amount]
+
+    FulfillmentOptionShipping:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: shipping }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        carrier: { type: string }
+        earliest_delivery_time: { type: string, format: date-time }
+        latest_delivery_time: { type: string, format: date-time }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
+      required: [type, id, title, subtotal, tax, total]
+
+    FulfillmentOptionDigital:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: digital }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
+      required: [type, id, title, subtotal, tax, total]
+
+    SelectedShippingFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [option_id, item_ids]
+
+    SelectedDigitalFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [option_id, item_ids]
+
+    SelectedFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [shipping, digital] }
+        shipping: { $ref: "#/components/schemas/SelectedShippingFulfillmentOption" }
+        digital: { $ref: "#/components/schemas/SelectedDigitalFulfillmentOption" }
+      required: [type]
+      oneOf:
+        - properties:
+            type: { const: shipping }
+          required: [shipping]
+        - properties:
+            type: { const: digital }
+          required: [digital]
+
+    MessageInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: info }
+        param: { type: string, description: "RFC 9535 JSONPath" }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    MessageError:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: error }
+        code:
+          {
+            type: string,
+            enum:
+              [
+                missing,
+                invalid,
+                out_of_stock,
+                payment_declined,
+                requires_sign_in,
+                requires_3ds,
+              ],
+          }
+        param:
+          { type: string, description: "RFC 9535 JSONPath", nullable: true }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, code, content_type, content]
+
+    Link:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum: [terms_of_use, privacy_policy, return_policy],
+          }
+        url: { type: string, format: uri }
+      required: [type, url]
+
+    PaymentData:
+      type: object
+      additionalProperties: false
+      properties:
+        token: { type: string }
+        provider: { type: string, enum: [stripe] }
+        billing_address: { $ref: "#/components/schemas/Address" }
+      required: [token, provider]
+
+    Order:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        checkout_session_id: { type: string }
+        permalink_url: { type: string, format: uri }
+      required: [id, checkout_session_id, permalink_url]
+
+    CheckoutSessionBase:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        payment_provider: { $ref: "#/components/schemas/PaymentProvider" }
+        status:
+          {
+            type: string,
+            enum:
+              [
+                not_ready_for_payment,
+                ready_for_payment,
+                completed,
+                canceled,
+                in_progress,
+              ],
+          }
+        currency: { type: string }
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/LineItem" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        fulfillment_options:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/FulfillmentOptionShipping"
+              - $ref: "#/components/schemas/FulfillmentOptionDigital"
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+        messages:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MessageInfo"
+              - $ref: "#/components/schemas/MessageError"
+        links:
+          type: array
+          items: { $ref: "#/components/schemas/Link" }
+      required:
+        [
+          id,
+          status,
+          currency,
+          line_items,
+          totals,
+          fulfillment_options,
+          messages,
+          links,
+        ]
+
+    CheckoutSession:
+      allOf:
+        - $ref: "#/components/schemas/CheckoutSessionBase"
+
+    CheckoutSessionWithOrder:
+      allOf:
+        - $ref: "#/components/schemas/CheckoutSessionBase"
+        - type: object
+          properties:
+            order: { $ref: "#/components/schemas/Order" }
+          required: [order]
+
+    CheckoutSessionCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Item" }
+          minItems: 1
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
+      required: [items]
+
+    CheckoutSessionUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Item" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+
+    CheckoutSessionCompleteRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        payment_data: { $ref: "#/components/schemas/PaymentData" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
+      required: [payment_data]
+
+    IntentTrace:
+      type: object
+      properties:
+        reason_code:
+          type: string
+          description: |
+            Reason for abandonment. This enum is extensible: servers SHOULD accept
+            unrecognized values and treat them as "other" (see RFC Section 7.2).
+            Validators SHOULD be configured for lenient enum handling.
+          enum:
+            - price_sensitivity
+            - shipping_cost
+            - shipping_speed
+            - product_fit
+            - trust_security
+            - returns_policy
+            - payment_options
+            - comparison
+            - timing_deferred
+            - other
+        trace_summary:
+          type: string
+          maxLength: 500
+          description: A generated summary of the specific objection or negotiation gap.
+        metadata:
+          type: object
+          additionalProperties:
+            type: [string, number, boolean]
+      required: [reason_code]
+
+    CancelSessionRequest:
+      type: object
+      properties:
+        intent_trace: { $ref: "#/components/schemas/IntentTrace" }
+
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum:
+              [
+                invalid_request,
+                request_not_idempotent,
+                processing_error,
+                service_unavailable,
+              ],
+          }
+        code: { type: string, description: "Implementation-defined error code" }
+        message: { type: string }
+        param: { type: string, description: "RFC 9535 JSONPath (optional)" }
+      required: [type, code, message]

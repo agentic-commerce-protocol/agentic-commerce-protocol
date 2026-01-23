@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce — Delegate Payment API
-  version: "2025-09-29"
+  version: "unreleased"
   description: |
     Delegate a payment using a provided payment method and allowance.
 servers:

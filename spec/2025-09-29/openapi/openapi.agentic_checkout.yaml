@@ -1,0 +1,578 @@
+openapi: 3.1.0
+info:
+  title: Agentic Checkout API
+  version: "2025-09-29"
+  description: |
+    Merchant-implemented REST API for ChatGPT-driven checkout.
+    Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
+servers:
+  - url: https://merchant.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: CheckoutSessions
+    description: Create and manage checkout sessions
+
+paths:
+  /checkout_sessions:
+    post:
+      tags: [CheckoutSessions]
+      summary: Create a checkout session
+      operationId: createCheckoutSession
+      description: |
+        Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
+        MUST return 201 with a rich, authoritative cart state.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/Signature"
+        - $ref: "#/components/parameters/Timestamp"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionCreateRequest"
+            examples:
+              minimal:
+                summary: Single item; no fulfillment address
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+              with_address:
+                summary: Single item with shipping address
+                value:
+                  items:
+                    - id: "item_456"
+                      quantity: 1
+                  fulfillment_address:
+                    name: "test"
+                    line_one: "555 Golden Gate Avenue"
+                    line_two: "Apt 401"
+                    city: "San Francisco"
+                    state: "CA"
+                    country: "US"
+                    postal_code: "94102"
+      responses:
+        "201":
+          description: Created
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema: { type: string }
+            Request-Id:
+              description: Echo of the request correlation id
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Update a checkout session
+      operationId: updateCheckoutSession
+      description: |
+        Applies changes (items, fulfillment address, fulfillment option) and returns an updated authoritative cart state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionUpdateRequest"
+            examples:
+              set_fulfillment_option:
+                value:
+                  fulfillment_option_id: "fulfillment_option_456"
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+    get:
+      tags: [CheckoutSessions]
+      summary: Retrieve a checkout session
+      operationId: getCheckoutSession
+      description: Returns the latest authoritative state for the checkout session.
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}/complete:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/ContentType"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Complete a checkout session
+      operationId: completeCheckoutSession
+      description: |
+        Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+      responses:
+        "200":
+          description: Completed session with order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSessionWithOrder"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}/cancel:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Cancel a checkout session
+      operationId: cancelCheckoutSession
+      description: Cancels a session if not already completed or canceled.
+      responses:
+        "200":
+          description: Canceled session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "405":
+          description: Not cancelable (already completed/canceled)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      schema: { type: string, example: "Bearer api_key_123" }
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      schema: { type: string, example: "application/json" }
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: { type: string, example: "en-US" }
+    UserAgent:
+      name: User-Agent
+      in: header
+      required: false
+      schema:
+        {
+          type: string,
+          example: "ChatGPT/2.0 (Mac OS X 15.0.1; arm64; build 0)",
+        }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, example: "idempotency_key_123" }
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      schema: { type: string, example: "request_id_123" }
+    Signature:
+      name: Signature
+      in: header
+      required: false
+      schema: { type: string, example: "ZXltZX..." }
+    Timestamp:
+      name: Timestamp
+      in: header
+      required: false
+      schema:
+        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      schema: { type: string, example: "2025-09-29" }
+
+  schemas:
+    Address:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        line_one: { type: string }
+        line_two: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+      required: [name, line_one, city, state, country, postal_code]
+
+    Buyer:
+      type: object
+      additionalProperties: false
+      properties:
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string, format: email }
+        phone_number: { type: string }
+      required: [first_name, last_name, email]
+
+    Item:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        quantity: { type: integer, minimum: 1 }
+      required: [id, quantity]
+
+    PaymentProvider:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          enum: [stripe]
+        supported_payment_methods:
+          type: array
+          items:
+            type: string
+            enum: [card]
+      required: [provider, supported_payment_methods]
+
+    LineItem:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        item: { $ref: "#/components/schemas/Item" }
+        base_amount: { type: integer }
+        discount: { type: integer }
+        subtotal: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
+      required: [id, item, base_amount, discount, subtotal, tax, total]
+
+    Total:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            [
+              items_base_amount,
+              items_discount,
+              subtotal,
+              discount,
+              fulfillment,
+              tax,
+              fee,
+              total,
+            ]
+        display_text: { type: string }
+        amount: { type: integer }
+      required: [type, display_text, amount]
+
+    FulfillmentOptionShipping:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: shipping }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        carrier: { type: string }
+        earliest_delivery_time: { type: string, format: date-time }
+        latest_delivery_time: { type: string, format: date-time }
+        subtotal: { type: string }
+        tax: { type: string }
+        total: { type: string }
+      required: [type, id, title, subtotal, tax, total]
+
+    FulfillmentOptionDigital:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: digital }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        subtotal: { type: string }
+        tax: { type: string }
+        total: { type: string }
+      required: [type, id, title, subtotal, tax, total]
+
+    MessageInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: info }
+        param: { type: string, description: "RFC 9535 JSONPath" }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    MessageError:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: error }
+        code:
+          {
+            type: string,
+            enum:
+              [
+                missing,
+                invalid,
+                out_of_stock,
+                payment_declined,
+                requires_sign_in,
+                requires_3ds,
+              ],
+          }
+        param:
+          { type: string, description: "RFC 9535 JSONPath", nullable: true }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, code, content_type, content]
+
+    Link:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum: [terms_of_use, privacy_policy, seller_shop_policies],
+          }
+        url: { type: string, format: uri }
+      required: [type, url]
+
+    PaymentData:
+      type: object
+      additionalProperties: false
+      properties:
+        token: { type: string }
+        provider: { type: string, enum: [stripe] }
+        billing_address: { $ref: "#/components/schemas/Address" }
+      required: [token, provider]
+
+    Order:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        checkout_session_id: { type: string }
+        permalink_url: { type: string, format: uri }
+      required: [id, checkout_session_id, permalink_url]
+
+    CheckoutSessionBase:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        payment_provider: { $ref: "#/components/schemas/PaymentProvider" }
+        status:
+          {
+            type: string,
+            enum:
+              [
+                not_ready_for_payment,
+                ready_for_payment,
+                completed,
+                canceled,
+                in_progress,
+              ],
+          }
+        currency: { type: string }
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/LineItem" }
+        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_options:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/FulfillmentOptionShipping"
+              - $ref: "#/components/schemas/FulfillmentOptionDigital"
+        fulfillment_option_id: { type: string }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+        messages:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MessageInfo"
+              - $ref: "#/components/schemas/MessageError"
+        links:
+          type: array
+          items: { $ref: "#/components/schemas/Link" }
+      required:
+        [
+          id,
+          status,
+          currency,
+          line_items,
+          totals,
+          fulfillment_options,
+          messages,
+          links,
+        ]
+
+    CheckoutSession:
+      allOf:
+        - $ref: "#/components/schemas/CheckoutSessionBase"
+
+    CheckoutSessionWithOrder:
+      allOf:
+        - $ref: "#/components/schemas/CheckoutSessionBase"
+        - type: object
+          properties:
+            order: { $ref: "#/components/schemas/Order" }
+          required: [order]
+
+    CheckoutSessionCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Item" }
+          minItems: 1
+        fulfillment_address: { $ref: "#/components/schemas/Address" }
+      required: [items]
+
+    CheckoutSessionUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Item" }
+        fulfillment_address: { $ref: "#/components/schemas/Address" }
+        fulfillment_option_id: { type: string }
+
+    CheckoutSessionCompleteRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        payment_data: { $ref: "#/components/schemas/PaymentData" }
+      required: [payment_data]
+
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum:
+              [
+                invalid_request,
+                request_not_idempotent,
+                processing_error,
+                service_unavailable,
+              ],
+          }
+        code: { type: string, description: "Implementation-defined error code" }
+        message: { type: string }
+        param: { type: string, description: "RFC 9535 JSONPath (optional)" }
+      required: [type, code, message]
