@@ -910,6 +910,14 @@ components:
                 price_change,
                 expiring_promotion,
                 limited_availability,
+                discount_code_expired,
+                discount_code_invalid,
+                discount_code_already_applied,
+                discount_code_combination_disallowed,
+                discount_code_minimum_not_met,
+                discount_code_user_not_logged_in,
+                discount_code_user_ineligible,
+                discount_code_usage_limit_reached,
               ],
           }
         severity: { type: string, enum: [info, low, medium, high, critical] }
@@ -1093,13 +1101,150 @@ components:
     ProtocolVersion:
       type: object
       additionalProperties: false
+      description: Protocol metadata included in checkout responses. Indicates the ACP version and active extensions.
       properties:
-        version: { type: string, example: "2026-01-22" }
+        version:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          example: "2026-01-27"
+          description: ACP protocol version in YYYY-MM-DD format.
         capabilities:
           type: array
           items: { type: string }
-          description: "List of supported capabilities"
+          description: "List of supported capabilities (deprecated, use extensions instead)"
+        extensions:
+          type: array
+          items: { type: string }
+          uniqueItems: true
+          description: "List of active extension identifiers for this session. Core extensions use simple names (e.g., 'discount'). Third-party extensions use reverse-domain naming (e.g., 'com.example.custom')."
       required: [version]
+
+    DiscountAllocation:
+      type: object
+      additionalProperties: false
+      description: Breakdown of how a discount amount was allocated to a specific target.
+      required: [path, amount]
+      properties:
+        path:
+          type: string
+          description: "JSONPath to the allocation target (e.g., '$.line_items[0]', '$.totals.shipping')."
+        amount:
+          type: integer
+          minimum: 0
+          description: Amount allocated to this target in minor (cents) currency units.
+
+    Coupon:
+      type: object
+      additionalProperties: false
+      description: Coupon details describing the discount terms.
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the coupon.
+        name:
+          type: string
+          description: "Human-readable coupon name (e.g., 'Summer Sale 20% Off')."
+        percent_off:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage discount (0-100). Mutually exclusive with amount_off.
+        amount_off:
+          type: integer
+          minimum: 0
+          description: Fixed discount amount in minor currency units. Mutually exclusive with percent_off.
+        currency:
+          type: string
+          pattern: '^[a-z]{3}$'
+          description: ISO 4217 currency code for amount_off. Required if amount_off is set.
+        duration:
+          type: string
+          enum: [once, repeating, forever]
+          description: "How long the discount applies. 'once' = single use, 'repeating' = multiple billing periods, 'forever' = indefinitely."
+        duration_in_months:
+          type: integer
+          minimum: 1
+          description: "Number of months the coupon applies if duration is 'repeating'."
+        max_redemptions:
+          type: integer
+          minimum: 1
+          description: Maximum number of times this coupon can be redeemed across all customers.
+        times_redeemed:
+          type: integer
+          minimum: 0
+          description: Number of times this coupon has been redeemed.
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+          description: Arbitrary key-value metadata attached to the coupon.
+
+    AppliedDiscount:
+      type: object
+      additionalProperties: false
+      description: A discount that was successfully applied to the checkout session.
+      required: [id, coupon, amount]
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this applied discount instance.
+        code:
+          type: string
+          description: The discount code entered by the user. Omitted for automatic discounts.
+        coupon:
+          $ref: "#/components/schemas/Coupon"
+        amount:
+          type: integer
+          minimum: 0
+          description: Total discount amount in minor (cents) currency units.
+        automatic:
+          type: boolean
+          default: false
+          description: True if applied automatically by merchant rules (no code required).
+        start:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the discount became active.
+        end:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the discount expires.
+        method:
+          type: string
+          enum: [each, across]
+          description: "Allocation method. 'each' = applied independently per item. 'across' = split proportionally by value."
+        priority:
+          type: integer
+          minimum: 1
+          description: Stacking order for discount calculation. Lower numbers applied first (1 = first).
+        allocations:
+          type: array
+          items: { $ref: "#/components/schemas/DiscountAllocation" }
+          description: Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount.
+
+    DiscountsRequest:
+      type: object
+      additionalProperties: false
+      description: Discount codes input for checkout create/update requests.
+      properties:
+        codes:
+          type: array
+          items: { type: string }
+          description: Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear.
+
+    DiscountsResponse:
+      type: object
+      additionalProperties: false
+      description: Discount codes input and applied discounts output in checkout responses.
+      properties:
+        codes:
+          type: array
+          items: { type: string }
+          description: Echo of submitted discount codes.
+        applied:
+          type: array
+          items: { $ref: "#/components/schemas/AppliedDiscount" }
+          description: Discounts successfully applied (code-based and automatic).
 
     PaymentResponse:
       type: object
@@ -1191,6 +1336,9 @@ components:
           additionalProperties: true
         quote_id: { type: string }
         quote_expires_at: { type: string, format: date-time }
+        discounts:
+          $ref: "#/components/schemas/DiscountsResponse"
+          description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
       required:
         [
           id,
@@ -1236,6 +1384,10 @@ components:
         coupons:
           type: array
           items: { type: string }
+          description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
+        discounts:
+          $ref: "#/components/schemas/DiscountsRequest"
+          description: Discount codes to apply to the checkout session.
         locale: { type: string }
         timezone: { type: string }
         quote_id: { type: string }
@@ -1262,6 +1414,10 @@ components:
         coupons:
           type: array
           items: { type: string }
+          description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
+        discounts:
+          $ref: "#/components/schemas/DiscountsRequest"
+          description: Discount codes to apply. Replaces previously submitted codes.
 
     RiskSignals:
       type: object
