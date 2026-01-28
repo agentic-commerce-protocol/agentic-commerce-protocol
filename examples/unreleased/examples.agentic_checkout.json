@@ -1038,5 +1038,161 @@
     "code": "requires_3ds",
     "message": "This checkout session requires issuer authentication. The request must include 'authentication_result' as provided by the issuer authentication flow.",
     "param": "$.authentication_result"
+  },
+  "checkout_session_with_three_ds_method": {
+    "id": "checkout_session_3ds_method_001",
+    "protocol": {
+      "version": "2026-01-22",
+      "capabilities": []
+    },
+    "payment_provider": {
+      "provider": "stripe",
+      "supported_payment_methods": [
+        "card"
+      ]
+    },
+    "status": "authentication_required",
+    "currency": "eur",
+    "line_items": [
+      {
+        "id": "line_item_3ds_method_001",
+        "item": {
+          "id": "item_3ds_method_001"
+        },
+        "quantity": 1,
+        "name": "Designer Handbag",
+        "unit_amount": 45000,
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 45000
+          },
+          {
+            "type": "tax",
+            "display_text": "VAT",
+            "amount": 8550
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 53550
+          }
+        ]
+      }
+    ],
+    "fulfillment_address": {
+      "name": "Marie Dupont",
+      "line_one": "12 Rue de la Paix",
+      "city": "Paris",
+      "country": "FR",
+      "postal_code": "75002"
+    },
+    "fulfillment_option_id": "ful_express_01",
+    "totals": [
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 45000
+      },
+      {
+        "type": "tax",
+        "display_text": "VAT",
+        "amount": 8550
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Shipping",
+        "amount": 1500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 55050
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "ful_express_01",
+        "title": "Express",
+        "description": "2-3 business days",
+        "carrier": "DHL",
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 1500 }
+        ]
+      }
+    ],
+    "messages": [],
+    "links": [],
+    "authentication_metadata": {
+      "channel": {
+        "type": "browser",
+        "browser": {
+          "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "ip_address": "185.12.34.56",
+          "javascript_enabled": true,
+          "language": "fr-FR",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "color_depth": 24,
+          "java_enabled": false,
+          "screen_height": 1080,
+          "screen_width": 1920,
+          "timezone_offset": -60
+        }
+      },
+      "acquirer_details": {
+        "acquirer_bin": "789012",
+        "acquirer_country": "FR",
+        "acquirer_merchant_id": "merchant_fr_456",
+        "merchant_name": "Boutique Luxe Paris"
+      },
+      "directory_server": "mastercard",
+      "three_ds_method": {
+        "url": "https://issuer.example.com/3ds/method",
+        "notification_url": "https://merchant.example.com/3ds/method-complete/checkout_session_3ds_method_001"
+      }
+    }
+  },
+  "authentication_result_denied_example": {
+    "outcome": "denied",
+    "outcome_details": {
+      "transaction_id": "dsTransId_denied_789",
+      "version": "2.2.0"
+    }
+  },
+  "authentication_result_frictionless_example": {
+    "outcome": "attempt_acknowledged",
+    "outcome_details": {
+      "three_ds_cryptogram": "XYZ123FRICTIONLESS456789==",
+      "electronic_commerce_indicator": "06",
+      "transaction_id": "dsTransId_frictionless_456",
+      "version": "2.2.0"
+    }
+  },
+  "complete_session_with_denied_authentication_request": {
+    "buyer": {
+      "first_name": "Marie",
+      "last_name": "Dupont",
+      "email": "marie.dupont@example.fr"
+    },
+    "payment_data": {
+      "token": "spt_3ds_denied_001",
+      "provider": "stripe",
+      "billing_address": {
+        "name": "Marie Dupont",
+        "line_one": "12 Rue de la Paix",
+        "city": "Paris",
+        "country": "FR",
+        "postal_code": "75002"
+      }
+    },
+    "authentication_result": {
+      "outcome": "denied",
+      "outcome_details": {
+        "transaction_id": "dsTransId_denied_789",
+        "version": "2.2.0"
+      }
+    }
   }
 }
