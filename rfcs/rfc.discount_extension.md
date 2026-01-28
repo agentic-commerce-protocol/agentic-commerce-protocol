@@ -29,21 +29,21 @@ loyalty point redemption.
 
 ## 2. Motivation
 
-### 2.1 Current State
+### 2.1 Building on the Foundation
 
-ACP currently has limited discount support:
+ACP provides basic discount support via the `coupons` array in requests and
+`DiscountDetail` type in line items. This extension enhances these capabilities
+with a richer feature set.
 
-- `coupons` array in create/update requests (string codes only)
-- `DiscountDetail` type in line items (basic fields)
-- Error codes `coupon_invalid`, `coupon_expired` in messages
+### 2.2 What This Extension Adds
 
-### 2.2 Gaps
+This extension introduces:
 
-- No rich response structure for applied discounts
-- No allocation details showing where discounts were applied
-- No distinction between automatic and code-based discounts
-- No stacking order for multiple discounts
-- No rich coupon/promotion model for discount metadata
+- **Rich applied discount responses** with full discount metadata
+- **Allocation details** showing exactly where discounts were applied
+- **Automatic discount support** for merchant-initiated promotions
+- **Stacking order** for predictable multi-discount calculations
+- **Coupon/promotion model** with comprehensive discount metadata
 
 ---
 

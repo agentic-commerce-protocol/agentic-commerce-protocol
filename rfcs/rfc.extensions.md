@@ -19,8 +19,8 @@ framework is the **Discount Extension**.
   merchant supports.
 - Adopt **industry-standard patterns** for capability discovery and schema
   composition.
-- Define a **Discount Extension** as the first implementation, addressing a
-  high-priority gap identified in the checkout parity analysis.
+- Define a **Discount Extension** as the first implementation, delivering
+  rich discount and promotion support.
 
 **Out of scope:** Extension registration/discovery services, extension
 marketplaces, dynamic extension loading at runtime.
@@ -33,24 +33,23 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 
 ## 2. Motivation
 
-### 2.1 Current Limitations
+### 2.1 Enabling Optional Capabilities
 
-ACP currently lacks a formal extension mechanism. While the specification
-supports optional fields, there is no standardized way for:
+This framework introduces a formal extension mechanism for ACP. It provides
+standardized patterns for:
 
-- Merchants to advertise which optional capabilities they support
-- Platforms to discover and negotiate capabilities
-- New capabilities to be added without modifying the core specification
+- Merchants to **advertise** which optional capabilities they support
+- Platforms to **discover and negotiate** capabilities
+- New capabilities to be **added composably** without modifying the core specification
 
-### 2.3 Discount Gap
+### 2.3 Discount Extension
 
-The checkout parity analysis identifies "Advanced Discounts & Promotions" as a
-**HIGH PRIORITY** gap. The current `coupons` array is input-only with:
+The Discount Extension enhances the existing `coupons` array with:
 
-- No rich response structure for applied discounts
-- No allocation details showing where discounts were applied
-- No distinction between automatic and code-based discounts
-- Limited error codes for rejection reasons
+- **Rich response structure** for applied discounts
+- **Allocation details** showing where discounts were applied
+- **Automatic discount support** for merchant-initiated promotions
+- **Comprehensive error codes** for rejection reasons
 
 ---
 

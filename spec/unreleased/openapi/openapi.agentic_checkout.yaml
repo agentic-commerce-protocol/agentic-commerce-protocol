@@ -978,7 +978,7 @@ components:
         capabilities:
           type: array
           items: { type: string }
-          description: "List of supported capabilities (deprecated, use extensions instead)"
+          description: "List of supported capabilities."
         extensions:
           type: array
           items: { type: string }
