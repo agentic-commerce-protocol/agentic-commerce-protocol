@@ -1,0 +1,399 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/agentic-commerce-protocol/specification/blob/main/spec/json-schema/schema.cross_chain_transaction_coordination.json",
+  "title": "Cross-Chain Transaction Coordination Schema",
+  "description": "Schema for coordinating transactions across multiple blockchain networks in the Agentic Commerce Protocol",
+  "type": "object",
+  "properties": {
+    "multi_chain_transaction": {
+      "$ref": "#/$defs/MultiChainTransaction"
+    },
+    "chain_coordination": {
+      "$ref": "#/$defs/ChainCoordination"
+    },
+    "state_synchronization": {
+      "$ref": "#/$defs/StateSynchronization"
+    }
+  },
+  "required": ["multi_chain_transaction"],
+  "$defs": {
+    "MultiChainTransaction": {
+      "type": "object",
+      "description": "Transaction coordinated across multiple blockchain networks",
+      "properties": {
+        "transaction_id": {
+          "type": "string",
+          "description": "Unique identifier for the multi-chain transaction"
+        },
+        "coordinator_chain": {
+          "type": "string",
+          "description": "Primary chain coordinating the transaction"
+        },
+        "participating_chains": {
+          "type": "array",
+          "description": "Chains participating in the transaction",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "sub_transactions": {
+          "type": "object",
+          "description": "Sub-transactions on each participating chain",
+          "additionalProperties": {
+            "$ref": "#/$defs/ChainTransaction"
+          }
+        },
+        "state_synchronization": {
+          "$ref": "#/$defs/StateSynchronization"
+        },
+        "atomic_guarantee": {
+          "$ref": "#/$defs/AtomicTransactionPolicy"
+        },
+        "coordination_metadata": {
+          "$ref": "#/$defs/CoordinationMetadata"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["transaction_id", "coordinator_chain", "participating_chains", "created_at"]
+    },
+    "ChainTransaction": {
+      "type": "object",
+      "description": "Transaction on a specific blockchain",
+      "properties": {
+        "chain_id": {
+          "type": "string",
+          "description": "Identifier for the blockchain network"
+        },
+        "transaction_hash": {
+          "type": "string",
+          "description": "Hash of the transaction on this chain"
+        },
+        "execution_environment": {
+          "$ref": "#/$defs/ExecutionEnvironment"
+        },
+        "state_commitments": {
+          "type": "array",
+          "description": "State commitments for cross-chain verification",
+          "items": {
+            "$ref": "#/$defs/StateCommitment"
+          }
+        },
+        "cross_chain_references": {
+          "type": "array",
+          "description": "References to related transactions on other chains",
+          "items": {
+            "$ref": "#/$defs/CrossChainReference"
+          }
+        },
+        "execution_status": {
+          "type": "string",
+          "enum": ["pending", "executing", "completed", "failed", "rolled_back"]
+        },
+        "execution_result": {
+          "type": "object",
+          "description": "Result of transaction execution",
+          "additionalProperties": true
+        }
+      },
+      "required": ["chain_id", "execution_status"]
+    },
+    "StateSynchronization": {
+      "type": "object",
+      "description": "State synchronization across chains",
+      "properties": {
+        "sync_mechanism": {
+          "type": "string",
+          "enum": ["bridge", "oracle", "state_channel", "consensus"]
+        },
+        "sync_frequency": {
+          "type": "string",
+          "description": "How often state is synchronized"
+        },
+        "sync_delay": {
+          "type": "integer",
+          "description": "Delay in milliseconds for state synchronization"
+        },
+        "state_proofs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StateProof"
+          }
+        },
+        "last_sync": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "next_sync_due": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["sync_mechanism"]
+    },
+    "AtomicTransactionPolicy": {
+      "type": "object",
+      "description": "Policy for atomic transaction guarantees",
+      "properties": {
+        "atomicity_level": {
+          "type": "string",
+          "enum": ["all_or_nothing", "best_effort", "compensating"]
+        },
+        "rollback_mechanism": {
+          "type": "string",
+          "enum": ["automatic", "manual", "compensating_transactions"]
+        },
+        "timeout_duration": {
+          "type": "integer",
+          "description": "Timeout in seconds for atomic operations"
+        },
+        "failure_handling": {
+          "type": "string",
+          "enum": ["fail_fast", "retry", "partial_success"]
+        }
+      },
+      "required": ["atomicity_level"]
+    },
+    "ExecutionEnvironment": {
+      "type": "object",
+      "description": "Execution environment for chain transactions",
+      "properties": {
+        "environment_type": {
+          "type": "string",
+          "enum": ["evm", "wasm", "native", "container"]
+        },
+        "runtime_version": {
+          "type": "string",
+          "description": "Version of the execution runtime"
+        },
+        "resource_limits": {
+          "$ref": "#/$defs/ResourceLimits"
+        },
+        "security_context": {
+          "$ref": "#/$defs/SecurityContext"
+        }
+      },
+      "required": ["environment_type"]
+    },
+    "StateCommitment": {
+      "type": "object",
+      "description": "Commitment to state for cross-chain verification",
+      "properties": {
+        "commitment_type": {
+          "type": "string",
+          "enum": ["merkle_root", "hash_commitment", "zk_commitment"]
+        },
+        "commitment_data": {
+          "type": "string",
+          "description": "The commitment data"
+        },
+        "commitment_proof": {
+          "$ref": "#/$defs/CryptographicProof"
+        },
+        "block_height": {
+          "type": "integer",
+          "description": "Block height when commitment was made"
+        }
+      },
+      "required": ["commitment_type", "commitment_data"]
+    },
+    "CrossChainReference": {
+      "type": "object",
+      "description": "Reference to a transaction on another chain",
+      "properties": {
+        "referenced_chain": {
+          "type": "string",
+          "description": "Chain being referenced"
+        },
+        "referenced_transaction": {
+          "type": "string",
+          "description": "Transaction hash on the referenced chain"
+        },
+        "reference_type": {
+          "type": "string",
+          "enum": ["dependency", "result", "continuation"]
+        },
+        "reference_proof": {
+          "$ref": "#/$defs/CryptographicProof"
+        }
+      },
+      "required": ["referenced_chain", "referenced_transaction", "reference_type"]
+    },
+    "StateProof": {
+      "type": "object",
+      "description": "Proof of state for synchronization",
+      "properties": {
+        "proof_type": {
+          "type": "string",
+          "enum": ["inclusion", "non_inclusion", "transition"]
+        },
+        "source_chain": {
+          "type": "string"
+        },
+        "target_chain": {
+          "type": "string"
+        },
+        "proof_data": {
+          "type": "string"
+        },
+        "verification_key": {
+          "type": "string"
+        }
+      },
+      "required": ["proof_type", "source_chain", "target_chain"]
+    },
+    "ChainCoordination": {
+      "type": "object",
+      "description": "Coordination mechanisms across chains",
+      "properties": {
+        "coordination_protocol": {
+          "type": "string",
+          "enum": ["two_phase_commit", "saga", "compensating_transactions"]
+        },
+        "coordination_participants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CoordinationParticipant"
+          }
+        },
+        "coordination_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CoordinationRule"
+          }
+        },
+        "failure_recovery": {
+          "$ref": "#/$defs/FailureRecovery"
+        }
+      },
+      "required": ["coordination_protocol"]
+    },
+    "CoordinationParticipant": {
+      "type": "object",
+      "description": "Participant in chain coordination",
+      "properties": {
+        "chain_id": {
+          "type": "string"
+        },
+        "participant_role": {
+          "type": "string",
+          "enum": ["coordinator", "participant", "observer"]
+        },
+        "coordination_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["chain_id", "participant_role"]
+    },
+    "CoordinationRule": {
+      "type": "object",
+      "description": "Rule for coordination behavior",
+      "properties": {
+        "rule_type": {
+          "type": "string",
+          "enum": ["timeout", "retry", "escalation"]
+        },
+        "rule_conditions": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "rule_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["rule_type"]
+    },
+    "FailureRecovery": {
+      "type": "object",
+      "description": "Failure recovery mechanisms",
+      "properties": {
+        "recovery_strategy": {
+          "type": "string",
+          "enum": ["automatic_retry", "manual_intervention", "compensating_actions"]
+        },
+        "recovery_timeout": {
+          "type": "integer",
+          "description": "Timeout for recovery attempts"
+        },
+        "escalation_path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["recovery_strategy"]
+    },
+    "CoordinationMetadata": {
+      "type": "object",
+      "description": "Metadata for coordination",
+      "properties": {
+        "coordination_version": {
+          "type": "string"
+        },
+        "supported_chains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coordination_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["coordination_version"]
+    },
+    "ResourceLimits": {
+      "type": "object",
+      "description": "Resource limits for execution",
+      "properties": {
+        "gas_limit": {
+          "type": "integer"
+        },
+        "memory_limit": {
+          "type": "integer"
+        },
+        "cpu_limit": {
+          "type": "integer"
+        },
+        "storage_limit": {
+          "type": "integer"
+        }
+      }
+    },
+    "SecurityContext": {
+      "type": "object",
+      "description": "Security context for execution",
+      "properties": {
+        "security_level": {
+          "type": "string",
+          "enum": ["standard", "enhanced", "maximum"]
+        },
+        "authentication_required": {
+          "type": "boolean",
+          "default": true
+        },
+        "authorization_required": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  }
+}
