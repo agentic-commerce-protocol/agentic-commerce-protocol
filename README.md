@@ -141,9 +141,18 @@ To start building with ACP:
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 - Branching model
-- Pull request guidelines
+- Pull request templates and guidelines
 - Spec versioning and review process
 - Community guidelines
+
+### Pull Request Templates
+
+When creating a PR, choose the appropriate template:
+
+- **[SEP Proposal](.github/PULL_REQUEST_TEMPLATE/sep-proposal.md)** - For major protocol changes, breaking changes, or process changes
+- **[Minor Improvement](.github/PULL_REQUEST_TEMPLATE/minor-improvement.md)** - For documentation fixes, bug fixes, or tooling improvements
+
+See [docs/governance.md](docs/governance.md) for guidance on what requires a SEP.
 
 ### Contributor License Agreement (CLA)
 

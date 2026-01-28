@@ -64,13 +64,38 @@ If you're contributing on behalf of your employer:
 
 ## Pull Request Guidelines
 
-- **Scope**: Keep PRs focused and minimal. Separate unrelated changes.
-- **Description**: Clearly describe the problem, solution, and any context.
+### 💡 Using PR Templates (Highly Recommended!)
+
+We've created PR templates to help make your contribution process smoother and get your changes reviewed faster! When you create a pull request, GitHub will offer you a choice of templates - **we highly recommend using them** as they guide you through what reviewers need to know.
+
+**Choose the template that matches your contribution:**
+
+1. **[sep-proposal.md](.github/PULL_REQUEST_TEMPLATE/sep-proposal.md)** - Great for:
+   - Major protocol changes (new features, breaking changes)
+   - Process changes (governance, contribution guidelines)
+   - Complex or controversial changes requiring community discussion
+   - Any change that requires a SEP (see [SEP Guidelines](docs/sep-guidelines.md))
+
+2. **[minor-improvement.md](.github/PULL_REQUEST_TEMPLATE/minor-improvement.md)** - Perfect for:
+   - Documentation fixes or editorial clarifications
+   - Simple bug fixes
+   - Minor enum or data changes
+   - Tooling improvements
+   - Example updates
+
+**Not sure which template fits?** No worries! Check out [docs/governance.md](docs/governance.md) for guidance, or just pick the one that feels closest and we'll help you from there.
+
+**Why use templates?** They help ensure you include all the info we need (like changelog entries, examples, and CLA status), which means faster reviews and merges for you! Think of them as a friendly checklist that helps both of us. 🚀
+
+### General PR Guidelines
+
+- **Scope**: Keep PRs focused and minimal. Separate unrelated changes (makes review easier for everyone!).
+- **Description**: If using a template (recommended!), fill it out as completely as you can. Clear descriptions help us understand and review faster.
 - **Tests**: If applicable, include or update tests/examples.
-- **Review**: At least one maintainer must review and approve before merging.
+- **Review**: At least one maintainer will review and approve before merging.
 - **Status Checks**: Ensure all CI checks pass before requesting review.
 - **Linked Issues**: Reference any related issues or RFCs in the PR description.
-- **CLA**: Ensure your CLA is signed (the bot will check automatically).
+- **CLA**: Ensure your CLA is signed (the bot will check automatically and guide you through it).
 
 ---
 
@@ -121,6 +146,8 @@ Full Code of Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - **Features:** Create an issue using the Feature Request template
 - **SEPs:** See [docs/sep-guidelines.md](docs/sep-guidelines.md)
 - **Urgent matters:** Contact a lead maintainer (see [MAINTAINERS.md](MAINTAINERS.md))
+
+We're here to help make your contribution experience great! Don't hesitate to reach out if you're unsure about anything.
 
 ---
 
