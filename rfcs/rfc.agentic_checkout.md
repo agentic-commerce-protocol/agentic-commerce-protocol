@@ -193,8 +193,7 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **Total**: `type`, `display_text`, `amount` (**int**), `description?`
 
 3D Secure / Authentication-specific types:
-- **AuthenticationMetadata**: 
-  - `channel` (object): `type` ("browser"), `browser` (object containing `accept_header`, `ip_address`, `javascript_enabled` (bool), `language`, `user_agent`; plus conditional fields if JS enabled: `color_depth`, `java_enabled`, `screen_height`, `screen_width`, `timezone_offset`).
+- **AuthenticationMetadata**:
   - `acquirer_details` (object): `acquirer_bin`, `acquirer_country`, `acquirer_merchant_id`, `merchant_name`, `requestor_id?`.
   - `directory_server`: enum `american_express` | `mastercard` | `visa`.
   - `flow_preference?` (object): `type` ("challenge" | "frictionless"), `challenge?` (object), `frictionless?` (object).
