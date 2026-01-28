@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-commerce-protocol.com/schemas/extension.json",
+  "title": "ACP Extension Schema",
+  "description": "Schema definitions for the ACP Extensions Framework. Extensions are optional, composable capabilities that augment the core checkout specification.",
+
+  "$defs": {
+    "extension_identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$|^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9_-]*)+$",
+      "description": "Extension identifier. Core extensions use simple names (e.g., 'discount'). Third-party extensions use reverse-domain naming (e.g., 'com.example.custom')."
+    },
+
+    "extension_version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Extension version in YYYY-MM-DD format."
+    },
+
+    "versioned_extension": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*(@\\d{4}-\\d{2}-\\d{2})?$|^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9_-]*)+(@\\d{4}-\\d{2}-\\d{2})?$",
+      "description": "Extension identifier with optional version suffix (e.g., 'discount@2026-01-27')."
+    },
+
+    "protocol": {
+      "type": "object",
+      "description": "Protocol metadata included in checkout responses. Indicates the ACP version and active extensions.",
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "$ref": "#/$defs/extension_version",
+          "description": "ACP protocol version in YYYY-MM-DD format."
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/versioned_extension"
+          },
+          "uniqueItems": true,
+          "description": "List of active extension identifiers for this session. May include version suffix."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "extension_metadata": {
+      "type": "object",
+      "description": "Metadata about an extension for discovery and documentation.",
+      "required": ["id", "version", "name"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/extension_identifier",
+          "description": "Unique identifier for the extension."
+        },
+        "version": {
+          "$ref": "#/$defs/extension_version",
+          "description": "Current version of the extension."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for the extension."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of what the extension provides."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension specification document."
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension JSON Schema."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "experimental", "stable", "deprecated", "retired"],
+          "description": "Lifecycle status of the extension."
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/extension_identifier"
+          },
+          "description": "Extensions that this extension depends on."
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "core_extensions": {
+      "type": "object",
+      "description": "Registry of core ACP extensions.",
+      "properties": {
+        "discount": {
+          "allOf": [
+            { "$ref": "#/$defs/extension_metadata" },
+            {
+              "type": "object",
+              "properties": {
+                "id": { "const": "discount" },
+                "name": { "const": "Discount Extension" },
+                "description": { "const": "Discount code support with rich applied discounts, allocation details, and rejection messaging." }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
