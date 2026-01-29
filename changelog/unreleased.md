@@ -7,8 +7,8 @@
 Added support for **Capability Negotiation** to enable bidirectional capability exchange between Agents and Sellers during checkout session creation and management.
 
 **Schema Changes:**
-- Added `SellerCapabilities` object with nested `SellerInterventionCapabilities` and `SellerFeatureCapabilities`
-- Added `AgentCapabilities` object with nested `AgentInterventionCapabilities` and `AgentFeatureCapabilities`
+- Added `SellerCapabilities` object with nested `SellerInterventionCapabilities`
+- Added `AgentCapabilities` object with nested `AgentInterventionCapabilities`
 - Extended `CheckoutSessionBase` response to include **REQUIRED** `seller_capabilities` field
 - Extended `CheckoutSessionCreateRequest` to accept **REQUIRED** `agent_capabilities` field
 - **REMOVED** `PaymentProvider.supported_payment_methods` field (redundant with `seller_capabilities.payment_methods`)
@@ -17,8 +17,8 @@ Added support for **Capability Negotiation** to enable bidirectional capability 
 
 **Key Features:**
 - **Required fields**: Both `agent_capabilities` and `seller_capabilities` are REQUIRED when implementing this extension, ensuring predictable behavior and eliminating ambiguity
-- **Seller capability advertisement:** Sellers declare supported payment methods (with optional card brand constraints), intervention requirements (including authentication methods), and features in checkout session responses
-- **Agent capability declaration:** Agents declare their interaction capabilities (authentication and intervention handling combined) in checkout session requests to help Sellers optimize the experience
+- **Seller capability advertisement:** Sellers declare supported payment methods (with optional card brand constraints) and intervention requirements in checkout session responses
+- **Agent capability declaration:** Agents declare their interaction capabilities (supported interventions, display context, redirect handling) in checkout session requests to help Sellers optimize the experience
 - **Early incompatibility detection:** Both parties can detect capability mismatches before payment authorization
 - **Hierarchical payment method matching:** Supports hierarchical identifiers (e.g., `card`, `card.network_token`, `wallet.apple_pay`) with optional card brand/funding type constraints
 - **Extensibility:** Forward-compatible design allows new capabilities to be added without breaking changes
@@ -31,27 +31,12 @@ Added support for **Capability Negotiation** to enable bidirectional capability 
   - `brands`: Specific card networks (visa, mastercard, amex, discover, diners, jcb, unionpay, eftpos, interac)
   - `funding_types`: Credit, debit, or prepaid cards
 
-*Interventions (structured by type):*
-- **3D Secure**: Structured object with:
-  - `versions`: 3DS protocol versions (`2.1`, `2.2`, `2.3`)
-  - `channels`: Integration channels (`browser`, `mobile`, `3ri` for 3DS-Requestor Initiated)
-  - `flows`: Flow types (`challenge`, `frictionless`)
-  - `metadata`: Implementation-specific configuration
-- **Biometric**: Structured object with `types` (fingerprint, face_id, face_recognition, iris, voice), `fallback_available`, and `metadata`
-- **OTP**: Structured object with `delivery_methods` (sms, voice, authenticator_app), `length`, `ttl_seconds`, `max_attempts`, and `metadata`
-- **Email Verification**: Structured object with `methods` (code, magic_link, both), `code_length`, `link_ttl_seconds`, and `metadata`
-- **SMS Verification**: Structured object with `code_length`, `ttl_seconds`, `max_attempts`, and `metadata`
-- **Address Verification**: Structured object with `methods` (avs, postal_code_confirmation, full_address_confirmation, address_correction) and `metadata`
-- **Payment Method Update**: Structured object with `allowed_updates` (card_expiry, billing_address, card_replacement, cvv_reentry) and `metadata`
-- All intervention types support optional `metadata` field for implementation-specific extensions
-- Enforcement modes (Seller): `always`, `conditional`, `optional`
-- Agent redirect handling: `in_app`, `external_browser`, `none`
-- Agent display contexts: `native`, `webview`, `modal`, `redirect`
-- Interaction depth limits for complex flows
+*Interventions (simplified string arrays):*
+- **Intervention types**: `3ds`, `biometric`, `address_verification`
+- Agent settings: `max_redirects`, `redirect_context` (in_app, external_browser, none), `max_interaction_depth`, `display_context` (native, webview, modal, redirect)
+- Seller settings: `required` array, `supported` array, `enforcement` (always, conditional, optional)
 
-*Features:*
-- Seller features: `partial_auth`, `saved_payment_methods`, `network_tokenization`, `incremental_auth`, `async_completion`
-- Agent features: `async_completion`, `session_persistence`, `multi_session`
+**Note on 3DS**: Modern 3DS (2.x) supports both challenge and frictionless flows automatically. 3DS1 is deprecated. Version selection is PSP configuration, not protocol-level negotiation.
 
 **Endpoints Updated:**
 - `POST /checkout_sessions` — Create Session (includes `agent_capabilities` in request, returns `seller_capabilities` in response)

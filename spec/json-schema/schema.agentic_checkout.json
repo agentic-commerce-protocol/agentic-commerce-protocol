@@ -55,7 +55,17 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["visa", "mastercard", "amex", "discover", "diners", "jcb", "unionpay", "eftpos", "interac"]
+            "enum": [
+              "visa",
+              "mastercard",
+              "amex",
+              "discover",
+              "diners",
+              "jcb",
+              "unionpay",
+              "eftpos",
+              "interac"
+            ]
           },
           "description": "For card methods, specific card brands/networks accepted"
         },
@@ -63,7 +73,11 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["credit", "debit", "prepaid"]
+            "enum": [
+              "credit",
+              "debit",
+              "prepaid"
+            ]
           },
           "description": "For card methods, funding types accepted"
         },
@@ -71,213 +85,26 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["stripe"]
+            "enum": [
+              "stripe"
+            ]
           },
           "description": "Payment service provider(s) that can process this payment method"
         }
       },
-      "required": ["method"]
+      "required": [
+        "method"
+      ]
     },
     "PaymentMethod": {
       "oneOf": [
-        { "$ref": "#/$defs/PaymentMethodSimple" },
-        { "$ref": "#/$defs/PaymentMethodObject" }
+        {
+          "$ref": "#/$defs/PaymentMethodSimple"
+        },
+        {
+          "$ref": "#/$defs/PaymentMethodObject"
+        }
       ]
-    },
-    "ThreeDSCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "3D Secure capability details",
-      "properties": {
-        "versions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["2.1", "2.2", "2.3"]
-          },
-          "description": "Supported 3DS versions"
-        },
-        "channels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["browser", "mobile", "3ri"]
-          },
-          "description": "Supported 3DS channels (browser, mobile, 3DS-Requestor Initiated)"
-        },
-        "flows": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["challenge", "frictionless"]
-          },
-          "description": "Supported 3DS flow types"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
-    },
-    "BiometricCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Biometric authentication capability",
-      "properties": {
-        "types": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["fingerprint", "face_id", "face_recognition", "iris", "voice"]
-          },
-          "description": "Types of biometric authentication supported"
-        },
-        "fallback_available": {
-          "type": "boolean",
-          "description": "Whether fallback to non-biometric auth is available"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
-    },
-    "OTPCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One-time password capability",
-      "properties": {
-        "delivery_methods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["sms", "voice", "authenticator_app"]
-          },
-          "description": "OTP delivery methods supported"
-        },
-        "length": {
-          "type": "integer",
-          "minimum": 4,
-          "maximum": 10,
-          "description": "OTP code length"
-        },
-        "ttl_seconds": {
-          "type": "integer",
-          "minimum": 30,
-          "description": "Time-to-live for OTP in seconds"
-        },
-        "max_attempts": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Maximum number of verification attempts"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
-    },
-    "EmailVerificationCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Email verification capability",
-      "properties": {
-        "methods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["code", "magic_link", "both"]
-          },
-          "description": "Email verification methods supported"
-        },
-        "code_length": {
-          "type": "integer",
-          "minimum": 4,
-          "maximum": 10,
-          "description": "Verification code length (if code method supported)"
-        },
-        "link_ttl_seconds": {
-          "type": "integer",
-          "minimum": 60,
-          "description": "Magic link time-to-live in seconds (if link method supported)"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
-    },
-    "SMSVerificationCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "SMS verification capability",
-      "properties": {
-        "code_length": {
-          "type": "integer",
-          "minimum": 4,
-          "maximum": 10,
-          "description": "Verification code length"
-        },
-        "ttl_seconds": {
-          "type": "integer",
-          "minimum": 30,
-          "description": "Code time-to-live in seconds"
-        },
-        "max_attempts": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Maximum number of verification attempts"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
-    },
-    "AddressVerificationCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Address verification capability",
-      "properties": {
-        "methods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["avs", "postal_code_confirmation", "full_address_confirmation", "address_correction"]
-          },
-          "description": "Address verification methods supported"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
-    },
-    "PaymentMethodUpdateCapability": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Payment method update capability",
-      "properties": {
-        "allowed_updates": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["card_expiry", "billing_address", "card_replacement", "cvv_reentry"]
-          },
-          "description": "Types of payment method updates allowed"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Additional implementation-specific configuration"
-        }
-      }
     },
     "SellerInterventionCapabilities": {
       "type": "object",
@@ -288,67 +115,34 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["3ds", "biometric", "otp", "email_verification", "sms_verification"]
+            "enum": [
+              "3ds",
+              "biometric",
+              "address_verification"
+            ]
           },
           "description": "Intervention methods required for this session."
         },
-        "3ds": {
-          "$ref": "#/$defs/ThreeDSCapability"
-        },
-        "biometric": {
-          "$ref": "#/$defs/BiometricCapability"
-        },
-        "otp": {
-          "$ref": "#/$defs/OTPCapability"
-        },
-        "email_verification": {
-          "$ref": "#/$defs/EmailVerificationCapability"
-        },
-        "sms_verification": {
-          "$ref": "#/$defs/SMSVerificationCapability"
-        },
-        "address_verification": {
-          "$ref": "#/$defs/AddressVerificationCapability"
-        },
-        "payment_method_update": {
-          "$ref": "#/$defs/PaymentMethodUpdateCapability"
+        "supported": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "3ds",
+              "biometric",
+              "address_verification"
+            ]
+          },
+          "description": "Intervention types the Seller can handle."
         },
         "enforcement": {
           "type": "string",
-          "enum": ["always", "conditional", "optional"],
+          "enum": [
+            "always",
+            "conditional",
+            "optional"
+          ],
           "description": "When required interventions are enforced."
-        }
-      }
-    },
-    "SellerFeatureCapabilities": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Additional checkout features supported by the Seller.",
-      "properties": {
-        "partial_auth": {
-          "type": "boolean",
-          "default": false,
-          "description": "Supports partial authorization."
-        },
-        "saved_payment_methods": {
-          "type": "boolean",
-          "default": false,
-          "description": "Can save payment methods for future use."
-        },
-        "network_tokenization": {
-          "type": "boolean",
-          "default": false,
-          "description": "Supports network tokenized cards."
-        },
-        "incremental_auth": {
-          "type": "boolean",
-          "default": false,
-          "description": "Supports incremental authorization."
-        },
-        "async_completion": {
-          "type": "boolean",
-          "default": false,
-          "description": "Supports asynchronous payment completion."
         }
       }
     },
@@ -366,38 +160,28 @@
         },
         "interventions": {
           "$ref": "#/$defs/SellerInterventionCapabilities"
-        },
-        "features": {
-          "$ref": "#/$defs/SellerFeatureCapabilities"
         }
       },
-      "required": ["payment_methods"]
+      "required": [
+        "payment_methods"
+      ]
     },
     "AgentInterventionCapabilities": {
       "type": "object",
       "additionalProperties": false,
       "description": "Intervention and authentication methods the Agent can handle when raised by Seller.",
       "properties": {
-        "3ds": {
-          "$ref": "#/$defs/ThreeDSCapability"
-        },
-        "biometric": {
-          "$ref": "#/$defs/BiometricCapability"
-        },
-        "otp": {
-          "$ref": "#/$defs/OTPCapability"
-        },
-        "email_verification": {
-          "$ref": "#/$defs/EmailVerificationCapability"
-        },
-        "sms_verification": {
-          "$ref": "#/$defs/SMSVerificationCapability"
-        },
-        "address_verification": {
-          "$ref": "#/$defs/AddressVerificationCapability"
-        },
-        "payment_method_update": {
-          "$ref": "#/$defs/PaymentMethodUpdateCapability"
+        "supported": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "3ds",
+              "biometric",
+              "address_verification"
+            ]
+          },
+          "description": "Intervention types the Agent can handle."
         },
         "max_redirects": {
           "type": "integer",
@@ -406,7 +190,11 @@
         },
         "redirect_context": {
           "type": "string",
-          "enum": ["in_app", "external_browser", "none"],
+          "enum": [
+            "in_app",
+            "external_browser",
+            "none"
+          ],
           "description": "How the Agent handles redirects."
         },
         "max_interaction_depth": {
@@ -416,30 +204,13 @@
         },
         "display_context": {
           "type": "string",
-          "enum": ["native", "webview", "modal", "redirect"],
+          "enum": [
+            "native",
+            "webview",
+            "modal",
+            "redirect"
+          ],
           "description": "How the Agent presents interventions."
-        }
-      }
-    },
-    "AgentFeatureCapabilities": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Agent-specific feature support.",
-      "properties": {
-        "async_completion": {
-          "type": "boolean",
-          "default": false,
-          "description": "Agent can poll or receive webhooks for async payment completion."
-        },
-        "session_persistence": {
-          "type": "boolean",
-          "default": false,
-          "description": "Agent can save and resume checkout sessions."
-        },
-        "multi_session": {
-          "type": "boolean",
-          "default": false,
-          "description": "Agent can manage multiple concurrent checkout sessions."
         }
       }
     },
@@ -450,9 +221,6 @@
       "properties": {
         "interventions": {
           "$ref": "#/$defs/AgentInterventionCapabilities"
-        },
-        "features": {
-          "$ref": "#/$defs/AgentFeatureCapabilities"
         }
       }
     },
@@ -463,7 +231,11 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["url", "platform", "unknown"],
+          "enum": [
+            "url",
+            "platform",
+            "unknown"
+          ],
           "description": "The type of attribution source."
         },
         "url": {
@@ -472,22 +244,30 @@
           "description": "Canonical content URL when type is 'url'."
         }
       },
-      "required": ["type"]
+      "required": [
+        "type"
+      ]
     },
     "AffiliateAttributionMetadata": {
       "type": "object",
       "additionalProperties": {
         "oneOf": [
-          { "type": "string" },
-          { "type": "number" },
-          { "type": "boolean" }
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
         ]
       },
       "description": "Flat key/value map for additional non-sensitive context. Keys must be strings; values must be strings, numbers, or booleans. Arrays and nested objects are NOT permitted."
     },
     "AffiliateAttribution": {
       "type": "object",
-      "description": "Optional affiliate attribution data for crediting third-party publishers. Write-only: not returned in responses. Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).",
+      "description": "Optional affiliate attribution data for crediting third-party publishers. Write-only: not returned in responses. Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC \u00a78.2).",
       "properties": {
         "provider": {
           "type": "string",
@@ -531,12 +311,28 @@
         },
         "touchpoint": {
           "type": "string",
-          "enum": ["first", "last"],
+          "enum": [
+            "first",
+            "last"
+          ],
           "description": "Attribution touchpoint type. Use 'first' when capturing at session creation, 'last' when capturing at completion. Enables multi-touch attribution models."
         }
       },
-      "required": ["provider"],
-      "anyOf": [{ "required": ["token"] }, { "required": ["publisher_id"] }]
+      "required": [
+        "provider"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "token"
+          ]
+        },
+        {
+          "required": [
+            "publisher_id"
+          ]
+        }
+      ]
     },
     "FulfillmentDetails": {
       "type": "object",
@@ -575,7 +371,11 @@
           "type": "string"
         }
       },
-      "required": ["first_name", "last_name", "email"]
+      "required": [
+        "first_name",
+        "last_name",
+        "email"
+      ]
     },
     "Item": {
       "type": "object",
@@ -589,7 +389,10 @@
           "minimum": 1
         }
       },
-      "required": ["id", "quantity"]
+      "required": [
+        "id",
+        "quantity"
+      ]
     },
     "Disclosure": {
       "type": "object",
@@ -597,17 +400,26 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["disclaimer"]
+          "enum": [
+            "disclaimer"
+          ]
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": [
+            "plain",
+            "markdown"
+          ]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": ["type", "content_type", "content"]
+      "required": [
+        "type",
+        "content_type",
+        "content"
+      ]
     },
     "CustomAttribute": {
       "type": "object",
@@ -620,7 +432,10 @@
           "type": "string"
         }
       },
-      "required": ["display_name", "value"]
+      "required": [
+        "display_name",
+        "value"
+      ]
     },
     "MarketplaceSellerDetails": {
       "type": "object",
@@ -630,7 +445,9 @@
           "type": "string"
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ]
     },
     "PaymentProvider": {
       "type": "object",
@@ -639,11 +456,15 @@
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["stripe"],
+          "enum": [
+            "stripe"
+          ],
           "description": "The payment service provider identifier."
         }
       },
-      "required": ["provider"]
+      "required": [
+        "provider"
+      ]
     },
     "LineItem": {
       "type": "object",
@@ -740,7 +561,11 @@
           "type": "string"
         }
       },
-      "required": ["type", "display_text", "amount"]
+      "required": [
+        "type",
+        "display_text",
+        "amount"
+      ]
     },
     "FulfillmentOptionShipping": {
       "type": "object",
@@ -780,7 +605,12 @@
           "type": "integer"
         }
       },
-      "required": ["type", "id", "title", "total"]
+      "required": [
+        "type",
+        "id",
+        "title",
+        "total"
+      ]
     },
     "FulfillmentOptionDigital": {
       "type": "object",
@@ -809,7 +639,12 @@
           "type": "integer"
         }
       },
-      "required": ["type", "id", "title", "total"]
+      "required": [
+        "type",
+        "id",
+        "title",
+        "total"
+      ]
     },
     "SelectedShippingFulfillmentOption": {
       "type": "object",
@@ -825,7 +660,10 @@
           }
         }
       },
-      "required": ["option_id", "item_ids"]
+      "required": [
+        "option_id",
+        "item_ids"
+      ]
     },
     "SelectedDigitalFulfillmentOption": {
       "type": "object",
@@ -841,7 +679,10 @@
           }
         }
       },
-      "required": ["option_id", "item_ids"]
+      "required": [
+        "option_id",
+        "item_ids"
+      ]
     },
     "SelectedFulfillmentOption": {
       "type": "object",
@@ -849,7 +690,10 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["shipping", "digital"]
+          "enum": [
+            "shipping",
+            "digital"
+          ]
         },
         "shipping": {
           "$ref": "#/$defs/SelectedShippingFulfillmentOption"
@@ -858,19 +702,29 @@
           "$ref": "#/$defs/SelectedDigitalFulfillmentOption"
         }
       },
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "oneOf": [
         {
           "properties": {
-            "type": { "const": "shipping" }
+            "type": {
+              "const": "shipping"
+            }
           },
-          "required": ["shipping"]
+          "required": [
+            "shipping"
+          ]
         },
         {
           "properties": {
-            "type": { "const": "digital" }
+            "type": {
+              "const": "digital"
+            }
           },
-          "required": ["digital"]
+          "required": [
+            "digital"
+          ]
         }
       ]
     },
@@ -888,13 +742,20 @@
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": [
+            "plain",
+            "markdown"
+          ]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": ["type", "content_type", "content"]
+      "required": [
+        "type",
+        "content_type",
+        "content"
+      ]
     },
     "MessageError": {
       "type": "object",
@@ -921,13 +782,21 @@
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": [
+            "plain",
+            "markdown"
+          ]
         },
         "content": {
           "type": "string"
         }
       },
-      "required": ["type", "code", "content_type", "content"]
+      "required": [
+        "type",
+        "code",
+        "content_type",
+        "content"
+      ]
     },
     "Link": {
       "type": "object",
@@ -935,14 +804,21 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["terms_of_use", "privacy_policy", "return_policy"]
+          "enum": [
+            "terms_of_use",
+            "privacy_policy",
+            "return_policy"
+          ]
         },
         "url": {
           "type": "string",
           "format": "uri"
         }
       },
-      "required": ["type", "url"]
+      "required": [
+        "type",
+        "url"
+      ]
     },
     "PaymentData": {
       "type": "object",
@@ -953,13 +829,18 @@
         },
         "provider": {
           "type": "string",
-          "enum": ["stripe"]
+          "enum": [
+            "stripe"
+          ]
         },
         "billing_address": {
           "$ref": "#/$defs/Address"
         }
       },
-      "required": ["token", "provider"]
+      "required": [
+        "token",
+        "provider"
+      ]
     },
     "Order": {
       "type": "object",
@@ -976,7 +857,11 @@
           "format": "uri"
         }
       },
-      "required": ["id", "checkout_session_id", "permalink_url"]
+      "required": [
+        "id",
+        "checkout_session_id",
+        "permalink_url"
+      ]
     },
     "Refund": {
       "type": "object",
@@ -984,13 +869,19 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["store_credit", "original_payment"]
+          "enum": [
+            "store_credit",
+            "original_payment"
+          ]
         },
         "amount": {
           "type": "integer"
         }
       },
-      "required": ["type", "amount"]
+      "required": [
+        "type",
+        "amount"
+      ]
     },
     "AuthenticationMetadata": {
       "type": "object",
@@ -1411,7 +1302,9 @@
               "$ref": "#/$defs/Order"
             }
           },
-          "required": ["order"]
+          "required": [
+            "order"
+          ]
         }
       ]
     },
@@ -1439,7 +1332,10 @@
           "$ref": "#/$defs/AffiliateAttribution"
         }
       },
-      "required": ["items", "agent_capabilities"]
+      "required": [
+        "items",
+        "agent_capabilities"
+      ]
     },
     "CheckoutSessionUpdateRequest": {
       "type": "object",
@@ -1482,7 +1378,9 @@
           "$ref": "#/$defs/AffiliateAttribution"
         }
       },
-      "required": ["payment_data"]
+      "required": [
+        "payment_data"
+      ]
     },
     "IntentTrace": {
       "type": "object",
@@ -1511,11 +1409,17 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "type": ["string", "number", "boolean"]
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
           }
         }
       },
-      "required": ["reason_code"]
+      "required": [
+        "reason_code"
+      ]
     },
     "CancelSessionRequest": {
       "type": "object",
@@ -1550,7 +1454,11 @@
           "description": "RFC 9535 JSONPath (optional)"
         }
       },
-      "required": ["type", "code", "message"]
+      "required": [
+        "type",
+        "code",
+        "message"
+      ]
     }
   }
 }

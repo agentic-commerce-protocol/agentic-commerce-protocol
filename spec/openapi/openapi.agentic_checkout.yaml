@@ -85,7 +85,7 @@ paths:
                       quantity: 1
                   agent_capabilities:
                     interventions:
-                      supported: ["3ds_redirect", "3ds_challenge", "otp", "email_verification"]
+                      supported: ["3ds", "biometric"]
                       redirect_context: "in_app"
                       max_interaction_depth: 2
                       display_context: "webview"
@@ -372,162 +372,6 @@ components:
         postal_code: { type: string }
       required: [name, line_one, city, state, country, postal_code]
 
-    ThreeDSCapability:
-      type: object
-      additionalProperties: false
-      description: 3D Secure capability details
-      properties:
-        versions:
-          type: array
-          items:
-            type: string
-            enum: ["2.1", "2.2", "2.3"]
-          description: Supported 3DS versions
-        channels:
-          type: array
-          items:
-            type: string
-            enum: [browser, mobile, 3ri]
-          description: Supported 3DS channels (browser, mobile, 3DS-Requestor Initiated)
-        flows:
-          type: array
-          items:
-            type: string
-            enum: [challenge, frictionless]
-          description: Supported 3DS flow types
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
-    BiometricCapability:
-      type: object
-      additionalProperties: false
-      description: Biometric authentication capability
-      properties:
-        types:
-          type: array
-          items:
-            type: string
-            enum: [fingerprint, face_id, face_recognition, iris, voice]
-          description: Types of biometric authentication supported
-        fallback_available:
-          type: boolean
-          description: Whether fallback to non-biometric auth is available
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
-    OTPCapability:
-      type: object
-      additionalProperties: false
-      description: One-time password capability
-      properties:
-        delivery_methods:
-          type: array
-          items:
-            type: string
-            enum: [sms, voice, authenticator_app]
-          description: OTP delivery methods supported
-        length:
-          type: integer
-          minimum: 4
-          maximum: 10
-          description: OTP code length
-        ttl_seconds:
-          type: integer
-          minimum: 30
-          description: Time-to-live for OTP in seconds
-        max_attempts:
-          type: integer
-          minimum: 1
-          description: Maximum number of verification attempts
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
-    EmailVerificationCapability:
-      type: object
-      additionalProperties: false
-      description: Email verification capability
-      properties:
-        methods:
-          type: array
-          items:
-            type: string
-            enum: [code, magic_link, both]
-          description: Email verification methods supported
-        code_length:
-          type: integer
-          minimum: 4
-          maximum: 10
-          description: Verification code length (if code method supported)
-        link_ttl_seconds:
-          type: integer
-          minimum: 60
-          description: Magic link time-to-live in seconds (if link method supported)
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
-    SMSVerificationCapability:
-      type: object
-      additionalProperties: false
-      description: SMS verification capability
-      properties:
-        code_length:
-          type: integer
-          minimum: 4
-          maximum: 10
-          description: Verification code length
-        ttl_seconds:
-          type: integer
-          minimum: 30
-          description: Code time-to-live in seconds
-        max_attempts:
-          type: integer
-          minimum: 1
-          description: Maximum number of verification attempts
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
-    AddressVerificationCapability:
-      type: object
-      additionalProperties: false
-      description: Address verification capability
-      properties:
-        methods:
-          type: array
-          items:
-            type: string
-            enum: [avs, postal_code_confirmation, full_address_confirmation, address_correction]
-          description: Address verification methods supported
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
-    PaymentMethodUpdateCapability:
-      type: object
-      additionalProperties: false
-      description: Payment method update capability
-      properties:
-        allowed_updates:
-          type: array
-          items:
-            type: string
-            enum: [card_expiry, billing_address, card_replacement, cvv_reentry]
-          description: Types of payment method updates allowed
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Additional implementation-specific configuration
-
     SellerInterventionCapabilities:
       type: object
       additionalProperties: false
@@ -537,22 +381,14 @@ components:
           type: array
           items:
             type: string
-            enum: [3ds, biometric, otp, email_verification, sms_verification]
+            enum: [3ds, biometric, address_verification]
           description: Intervention methods required for this session.
-        3ds:
-          $ref: "#/components/schemas/ThreeDSCapability"
-        biometric:
-          $ref: "#/components/schemas/BiometricCapability"
-        otp:
-          $ref: "#/components/schemas/OTPCapability"
-        email_verification:
-          $ref: "#/components/schemas/EmailVerificationCapability"
-        sms_verification:
-          $ref: "#/components/schemas/SMSVerificationCapability"
-        address_verification:
-          $ref: "#/components/schemas/AddressVerificationCapability"
-        payment_method_update:
-          $ref: "#/components/schemas/PaymentMethodUpdateCapability"
+        supported:
+          type: array
+          items:
+            type: string
+            enum: [3ds, biometric, address_verification]
+          description: Intervention types the Seller can handle.
         enforcement:
           type: string
           enum: [always, conditional, optional]
@@ -595,32 +431,6 @@ components:
         - $ref: "#/components/schemas/PaymentMethodSimple"
         - $ref: "#/components/schemas/PaymentMethodObject"
 
-    SellerFeatureCapabilities:
-      type: object
-      additionalProperties: false
-      description: Additional checkout features supported by the Seller.
-      properties:
-        partial_auth:
-          type: boolean
-          default: false
-          description: Supports partial authorization.
-        saved_payment_methods:
-          type: boolean
-          default: false
-          description: Can save payment methods for future use.
-        network_tokenization:
-          type: boolean
-          default: false
-          description: Supports network tokenized cards.
-        incremental_auth:
-          type: boolean
-          default: false
-          description: Supports incremental authorization.
-        async_completion:
-          type: boolean
-          default: false
-          description: Supports asynchronous payment completion.
-
     SellerCapabilities:
       type: object
       additionalProperties: false
@@ -641,8 +451,6 @@ components:
             - wallet.apple_pay
         interventions:
           $ref: "#/components/schemas/SellerInterventionCapabilities"
-        features:
-          $ref: "#/components/schemas/SellerFeatureCapabilities"
       required: [payment_methods]
 
     AgentInterventionCapabilities:
@@ -650,20 +458,12 @@ components:
       additionalProperties: false
       description: Intervention and authentication methods the Agent can handle when raised by Seller.
       properties:
-        3ds:
-          $ref: "#/components/schemas/ThreeDSCapability"
-        biometric:
-          $ref: "#/components/schemas/BiometricCapability"
-        otp:
-          $ref: "#/components/schemas/OTPCapability"
-        email_verification:
-          $ref: "#/components/schemas/EmailVerificationCapability"
-        sms_verification:
-          $ref: "#/components/schemas/SMSVerificationCapability"
-        address_verification:
-          $ref: "#/components/schemas/AddressVerificationCapability"
-        payment_method_update:
-          $ref: "#/components/schemas/PaymentMethodUpdateCapability"
+        supported:
+          type: array
+          items:
+            type: string
+            enum: [3ds, biometric, address_verification]
+          description: Intervention types the Agent can handle.
         max_redirects:
           type: integer
           minimum: 0
@@ -681,24 +481,6 @@ components:
           enum: [native, webview, modal, redirect]
           description: How the Agent presents interventions.
 
-    AgentFeatureCapabilities:
-      type: object
-      additionalProperties: false
-      description: Agent-specific feature support.
-      properties:
-        async_completion:
-          type: boolean
-          default: false
-          description: Agent can poll or receive webhooks for async payment completion.
-        session_persistence:
-          type: boolean
-          default: false
-          description: Agent can save and resume checkout sessions.
-        multi_session:
-          type: boolean
-          default: false
-          description: Agent can manage multiple concurrent checkout sessions.
-
     AgentCapabilities:
       type: object
       additionalProperties: false
@@ -709,8 +491,6 @@ components:
       properties:
         interventions:
           $ref: "#/components/schemas/AgentInterventionCapabilities"
-        features:
-          $ref: "#/components/schemas/AgentFeatureCapabilities"
 
     AffiliateAttributionSource:
       type: object

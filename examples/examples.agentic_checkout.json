@@ -785,9 +785,8 @@
       }
     ],
     "agent_capabilities": {
-      "payment_methods": ["bank_transfer.ach"],
-      "features": {
-        "async_completion": true
+      "interventions": {
+        "supported": ["3ds"]
       }
     }
   },
@@ -798,11 +797,9 @@
     "seller_capabilities": {
       "payment_methods": ["card", "card.network_token"],
       "interventions": {
-        "3ds": {
-          "versions": ["2.1", "2.2"],
-          "channels": ["browser"],
-          "flows": ["challenge"]
-        }
+        "required": [],
+        "supported": ["3ds"],
+        "enforcement": "conditional"
       }
     },
     "line_items": [
@@ -855,7 +852,9 @@
       }
     ],
     "agent_capabilities": {
-      "interventions": {}
+      "interventions": {
+        "supported": []
+      }
     }
   },
   "capability_negotiation_authentication_required_response": {
@@ -866,11 +865,7 @@
       "payment_methods": ["card"],
       "interventions": {
         "required": ["3ds"],
-        "3ds": {
-          "versions": ["2.1", "2.2"],
-          "channels": ["browser"],
-          "flows": ["challenge"]
-        },
+        "supported": ["3ds"],
         "enforcement": "always"
       }
     },

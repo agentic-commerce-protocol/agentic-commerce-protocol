@@ -1,42 +1,17 @@
 {
   "successful_negotiation_request": {
-    "items": [
+    "line_items": [
       {
-        "id": "item_123",
-        "quantity": 1
+        "id": "item_123"
       }
     ],
     "agent_capabilities": {
       "interventions": {
-        "3ds": {
-          "versions": ["2.1", "2.2"],
-          "channels": ["browser", "mobile"],
-          "flows": ["challenge"]
-        },
-        "biometric": {
-          "types": ["fingerprint", "face_id"],
-          "fallback_available": true,
-          "metadata": {
-            "timeout_seconds": 30
-          }
-        },
-        "otp": {
-          "delivery_methods": ["sms"],
-          "length": 6,
-          "max_attempts": 3,
-          "metadata": {
-            "carrier_support": "all_major"
-          }
-        },
-        "address_verification": {},
+        "supported": ["3ds", "biometric"],
         "max_redirects": 1,
         "redirect_context": "in_app",
         "max_interaction_depth": 2,
         "display_context": "webview"
-      },
-      "features": {
-        "async_completion": true,
-        "session_persistence": true
       }
     }
   },
@@ -48,25 +23,8 @@
       "payment_methods": ["card", "card.network_token", "wallet.apple_pay"],
       "interventions": {
         "required": [],
-        "3ds": {
-          "versions": ["2.1", "2.2", "2.3"],
-          "channels": ["browser", "mobile", "3ri"],
-          "flows": ["challenge"]
-        },
-        "email_verification": {
-          "methods": ["code", "magic_link"],
-          "code_length": 6,
-          "link_ttl_seconds": 600,
-          "metadata": {
-            "supports_custom_domain": true
-          }
-        },
+        "supported": ["3ds", "biometric", "address_verification"],
         "enforcement": "conditional"
-      },
-      "features": {
-        "network_tokenization": true,
-        "partial_auth": false,
-        "saved_payment_methods": true
       }
     },
     "line_items": [
@@ -105,15 +63,14 @@
     "links": []
   },
   "incompatible_payment_method_request": {
-    "items": [
+    "line_items": [
       {
-        "id": "item_456",
-        "quantity": 1
+        "id": "item_456"
       }
     ],
     "agent_capabilities": {
-      "features": {
-        "async_completion": true
+      "interventions": {
+        "supported": []
       }
     }
   },
@@ -124,11 +81,9 @@
     "seller_capabilities": {
       "payment_methods": ["card", "card.network_token"],
       "interventions": {
-        "3ds": {
-          "versions": ["2.1", "2.2"],
-          "channels": ["browser"],
-          "flows": ["challenge"]
-        }
+        "required": [],
+        "supported": ["3ds"],
+        "enforcement": "conditional"
       }
     },
     "line_items": [
@@ -173,18 +128,19 @@
     ],
     "links": []
   },
-  "authentication_requirement_request": {
-    "items": [
+  "intervention_requirement_request": {
+    "line_items": [
       {
-        "id": "item_789",
-        "quantity": 1
+        "id": "item_789"
       }
     ],
     "agent_capabilities": {
-      "interventions": {}
+      "interventions": {
+        "supported": []
+      }
     }
   },
-  "authentication_requirement_response": {
+  "intervention_requirement_response": {
     "id": "cs_ghi789",
     "status": "ready_for_payment",
     "currency": "eur",
@@ -192,11 +148,7 @@
       "payment_methods": ["card"],
       "interventions": {
         "required": ["3ds"],
-        "3ds": {
-          "versions": ["2.1", "2.2", "2.3"],
-          "channels": ["browser"],
-          "flows": ["challenge"]
-        },
+        "supported": ["3ds"],
         "enforcement": "always"
       }
     },
@@ -241,180 +193,15 @@
     ],
     "links": []
   },
-  "bnpl_capable_request": {
-    "items": [
-      {
-        "id": "item_101",
-        "quantity": 1
-      }
-    ],
-    "agent_capabilities": {
-      "interventions": {
-        "3ds": {
-          "versions": ["2.1", "2.2"],
-          "channels": ["browser"],
-          "flows": ["challenge"]
-        },
-        "redirect_context": "external_browser",
-        "max_interaction_depth": 1,
-        "display_context": "redirect"
-      }
-    }
-  },
-  "bnpl_capable_response": {
-    "id": "cs_jkl101",
-    "status": "ready_for_payment",
-    "currency": "usd",
-    "seller_capabilities": {
-      "payment_methods": ["card", "bnpl.klarna", "bnpl.affirm"],
-      "interventions": {
-        "3ds": {
-          "versions": ["2.1", "2.2"],
-          "channels": ["browser"],
-          "flows": ["challenge"]
-        },
-        "enforcement": "conditional"
-      },
-      "features": {
-        "async_completion": true
-      }
-    },
-    "line_items": [
-      {
-        "id": "line_item_jkl",
-        "item": {
-          "id": "item_101",
-          "quantity": 1
-        },
-        "base_amount": 89900,
-        "discount": 0,
-        "subtotal": 89900,
-        "tax": 7400,
-        "total": 97300
-      }
-    ],
-    "totals": [
-      {
-        "type": "subtotal",
-        "display_text": "Subtotal",
-        "amount": 89900
-      },
-      {
-        "type": "tax",
-        "display_text": "Tax",
-        "amount": 7400
-      },
-      {
-        "type": "total",
-        "display_text": "Total",
-        "amount": 97300
-      }
-    ],
-    "fulfillment_options": [],
-    "messages": [
-      {
-        "type": "info",
-        "content_type": "plain",
-        "content": "Pay in 4 interest-free installments with Klarna."
-      }
-    ],
-    "links": []
-  },
-  "network_tokenization_request": {
-    "items": [
-      {
-        "id": "item_202",
-        "quantity": 1
-      }
-    ],
-    "agent_capabilities": {
-      "interventions": {
-        "3ds": {
-          "versions": ["2.2", "2.3"],
-          "channels": ["mobile", "3ri"],
-          "flows": ["frictionless"]
-        },
-        "redirect_context": "none"
-      },
-      "features": {
-        "session_persistence": true
-      }
-    }
-  },
-  "network_tokenization_response": {
-    "id": "cs_mno202",
-    "status": "ready_for_payment",
-    "currency": "usd",
-    "seller_capabilities": {
-      "payment_methods": ["card", "card.network_token"],
-      "interventions": {
-        "3ds": {
-          "versions": ["2.1", "2.2", "2.3"],
-          "channels": ["browser", "mobile", "3ri"],
-          "flows": ["frictionless", "challenge"]
-        },
-        "enforcement": "conditional"
-      },
-      "features": {
-        "network_tokenization": true,
-        "saved_payment_methods": true
-      }
-    },
-    "line_items": [
-      {
-        "id": "line_item_mno",
-        "item": {
-          "id": "item_202",
-          "quantity": 1
-        },
-        "base_amount": 14999,
-        "discount": 1500,
-        "subtotal": 13499,
-        "tax": 1111,
-        "total": 14610
-      }
-    ],
-    "totals": [
-      {
-        "type": "items_base_amount",
-        "display_text": "Item(s) total",
-        "amount": 14999
-      },
-      {
-        "type": "items_discount",
-        "display_text": "Discount",
-        "amount": -1500
-      },
-      {
-        "type": "subtotal",
-        "display_text": "Subtotal",
-        "amount": 13499
-      },
-      {
-        "type": "tax",
-        "display_text": "Tax",
-        "amount": 1111
-      },
-      {
-        "type": "total",
-        "display_text": "Total",
-        "amount": 14610
-      }
-    ],
-    "fulfillment_options": [],
-    "messages": [],
-    "links": []
-  },
   "digital_wallet_request": {
-    "items": [
+    "line_items": [
       {
-        "id": "item_303",
-        "quantity": 2
+        "id": "item_303"
       }
     ],
     "agent_capabilities": {
       "interventions": {
-        "biometric": {},
+        "supported": ["biometric"],
         "redirect_context": "none",
         "display_context": "native"
       }
@@ -427,16 +214,9 @@
     "seller_capabilities": {
       "payment_methods": ["card", "card.digital_wallet", "wallet.apple_pay", "wallet.google_pay"],
       "interventions": {
-        "biometric": {},
-        "3ds": {
-          "versions": ["2.2", "2.3"],
-          "channels": ["mobile"],
-          "flows": ["frictionless"]
-        },
+        "required": [],
+        "supported": ["biometric", "3ds"],
         "enforcement": "conditional"
-      },
-      "features": {
-        "network_tokenization": true
       }
     },
     "line_items": [
@@ -475,14 +255,15 @@
     "links": []
   },
   "minimal_agent_capabilities_request": {
-    "items": [
+    "line_items": [
       {
-        "id": "item_404",
-        "quantity": 1
+        "id": "item_404"
       }
     ],
     "agent_capabilities": {
-      "payment_methods": ["card"]
+      "interventions": {
+        "supported": []
+      }
     }
   },
   "minimal_seller_capabilities_response": {
@@ -490,7 +271,12 @@
     "status": "ready_for_payment",
     "currency": "usd",
     "seller_capabilities": {
-      "payment_methods": ["card"]
+      "payment_methods": ["card"],
+      "interventions": {
+        "required": [],
+        "supported": [],
+        "enforcement": "conditional"
+      }
     },
     "line_items": [
       {
@@ -528,4 +314,3 @@
     "links": []
   }
 }
-
