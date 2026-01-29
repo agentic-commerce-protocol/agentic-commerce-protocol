@@ -4,6 +4,43 @@
 
 This release introduces significant enhancements to the Agentic Checkout Specification. These changes enable broader commerce scenarios while maintaining backward compatibility where possible.
 
+### Capability Negotiation
+
+Added support for **Capability Negotiation** to enable Agents and Sellers to discover and negotiate supported features during checkout.
+
+**Schema Changes:**
+- Added `Capabilities` object to requests and responses
+- Added `InterventionCapabilities` schema
+- Added `PaymentMethodObject` schema for payment method constraints
+- `capabilities` field is **REQUIRED** in `CheckoutSessionCreateRequest`
+- `capabilities` field is **REQUIRED** in all `CheckoutSession` responses
+
+**Key Features:**
+- **Single namespace**: Same `capabilities` object structure used in both requests and responses
+- **Intersection semantics**: Seller computes and returns intersection of supported interventions
+- **Context determines party**: Request context = Agent capabilities, Response context = Seller capabilities
+- **Early incompatibility detection**: Detect capability mismatches before payment authorization
+
+**Capabilities Supported:**
+
+*Payment Methods (Seller only, in responses):*
+- Simple strings: `card`, `card.network_token`, `wallet.apple_pay`, `bnpl.klarna`
+- Objects with constraints for cards: brands (visa, mastercard, etc.), funding_types (credit, debit, prepaid)
+
+*Interventions (both parties):*
+- `supported`: List of interventions (`3ds`, `biometric`, `address_verification`)
+  - Agent request: What interventions the agent can handle
+  - Seller response: Intersection of mutually supported interventions
+- Agent fields: `display_context`, `redirect_context`, `max_redirects`, `max_interaction_depth`
+- Seller fields: `required`, `enforcement`
+
+**Endpoints Updated:**
+- All checkout endpoints now include `capabilities` in requests/responses
+
+See [RFC: Capability Negotiation](../rfcs/rfc.capability_negotiation.md) for full specification details.
+
+---
+
 ### Breaking Changes
 
 #### 1. Renamed `items` to `line_items` in Create/Update Requests

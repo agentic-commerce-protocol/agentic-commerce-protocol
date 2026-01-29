@@ -9,6 +9,15 @@
         "quantity": 1
       }
     ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["3ds", "address_verification"],
+        "display_context": "webview",
+        "redirect_context": "in_app",
+        "max_redirects": 1,
+        "max_interaction_depth": 1
+      }
+    },
     "fulfillment_details": {
       "name": "John Doe",
       "phone_number": "15551234567",
@@ -46,6 +55,21 @@
     "protocol": {
       "version": "2026-01-22",
       "capabilities": []
+    },
+    "capabilities": {
+      "payment_methods": [
+        {
+          "method": "card",
+          "brands": ["visa", "mastercard", "amex"],
+          "funding_types": ["credit", "debit"]
+        },
+        "wallet.apple_pay"
+      ],
+      "interventions": {
+        "supported": ["3ds", "address_verification"],
+        "required": [],
+        "enforcement": "conditional"
+      }
     },
     "payment_provider": {
       "provider": "stripe",

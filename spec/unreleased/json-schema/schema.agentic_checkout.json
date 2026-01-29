@@ -243,6 +243,109 @@
       },
       "required": ["email"]
     },
+    "InterventionCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Intervention capabilities. Context-specific fields: display_context, redirect_context, max_redirects, max_interaction_depth (requests only). required, enforcement (responses only). supported field contains intersection in responses.",
+      "properties": {
+        "supported": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds", "biometric", "address_verification"]
+          },
+          "description": "Intervention types supported. Agent request: Interventions the agent can handle. Seller response: Intersection of supported interventions."
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds", "biometric"]
+          },
+          "description": "Intervention methods required for this session (seller only)."
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["always", "conditional", "optional"],
+          "description": "When required interventions are enforced (seller only)."
+        },
+        "display_context": {
+          "type": "string",
+          "enum": ["native", "webview", "modal", "redirect"],
+          "description": "How the Agent presents interventions (agent only)."
+        },
+        "redirect_context": {
+          "type": "string",
+          "enum": ["in_app", "external_browser", "none"],
+          "description": "How the Agent handles redirects (agent only)."
+        },
+        "max_redirects": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum number of redirects the Agent can handle (agent only)."
+        },
+        "max_interaction_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum depth of nested interactions the Agent can handle (agent only)."
+        }
+      }
+    },
+    "Capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Capabilities object used in requests and responses. Context determines the party: requests are from Agents, responses are from Sellers. Seller responses contain the intersection of supported interventions.",
+      "properties": {
+        "payment_methods": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              { "$ref": "#/$defs/PaymentMethodObject" }
+            ]
+          },
+          "description": "Payment methods accepted by the Seller for this session (responses only). Can be simple strings or objects with constraints (e.g., card brands)."
+        },
+        "interventions": {
+          "$ref": "#/$defs/InterventionCapabilities"
+        }
+      }
+    },
+    "PaymentMethodObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Payment method with additional constraints (e.g., card brands, PSP routing)",
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "The payment method identifier"
+        },
+        "brands": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["visa", "mastercard", "amex", "discover", "diners", "jcb", "unionpay", "eftpos", "interac"]
+          },
+          "description": "Specific card brands/networks accepted"
+        },
+        "funding_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["credit", "debit", "prepaid"]
+          },
+          "description": "For card methods, funding types accepted"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional PSP routing information"
+        }
+      },
+      "required": ["method"]
+    },
     "Item": {
       "type": "object",
       "additionalProperties": false,
@@ -1194,6 +1297,9 @@
           "type": "string"
         },
         "protocol": { "$ref": "#/$defs/ProtocolVersion" },
+        "capabilities": {
+          "$ref": "#/$defs/Capabilities"
+        },
         "buyer": {
           "$ref": "#/$defs/Buyer"
         },
@@ -1321,7 +1427,8 @@
         "totals",
         "fulfillment_options",
         "messages",
-        "links"
+        "links",
+        "capabilities"
       ]
     },
     "CheckoutSession": {
@@ -1365,6 +1472,9 @@
         "fulfillment_details": {
           "$ref": "#/$defs/FulfillmentDetails"
         },
+        "capabilities": {
+          "$ref": "#/$defs/Capabilities"
+        },
         "fulfillment_groups": {
           "type": "array",
           "items": { "$ref": "#/$defs/FulfillmentGroup" }
@@ -1384,7 +1494,7 @@
           "additionalProperties": true
         }
       },
-      "required": ["line_items", "currency"]
+      "required": ["line_items", "currency", "capabilities"]
     },
     "CheckoutSessionUpdateRequest": {
       "type": "object",
