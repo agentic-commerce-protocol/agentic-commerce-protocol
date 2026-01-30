@@ -547,15 +547,8 @@ components:
         Context determines the party: requests are from Agents, responses are from Sellers.
         Seller responses contain the intersection of supported interventions.
       properties:
-        payment_methods:
-          type: array
-          items:
-            oneOf:
-              - type: string
-              - $ref: "#/components/schemas/PaymentMethodObject"
-          description: |
-            Payment methods accepted by the Seller for this session (responses only).
-            Can be simple strings or objects with constraints (e.g., card brands).
+        payment:
+          $ref: "#/components/schemas/Payment"
         interventions:
           $ref: "#/components/schemas/InterventionCapabilities"
 
@@ -619,32 +612,60 @@ components:
         name: { type: string }
       required: [name]
 
-    PaymentMethod:
+    PaymentHandler:
       type: object
       additionalProperties: false
+      description: Payment handler configuration and capabilities
       properties:
-        type:
+        id:
           type: string
-          enum: [card]
-        supported_card_networks:
+          description: Seller-defined handler identifier
+        name:
+          type: string
+          description: Handler name in reverse-DNS format (e.g., dev.acp.tokenized.card)
+        version:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          description: Handler version in YYYY-MM-DD format
+        spec:
+          type: string
+          format: uri
+          description: URL to handler specification
+        requires_delegate_payment:
+          type: boolean
+          description: Whether this handler requires using delegate_payment API
+        requires_pci_compliance:
+          type: boolean
+          description: Whether this handler routes PCI DSS sensitive data
+        psp:
+          type: string
+          description: Payment Service Provider identifier
+        config_schema:
+          type: string
+          format: uri
+          description: URL to JSON Schema for handler configuration
+        instrument_schemas:
           type: array
           items:
             type: string
-            enum: [amex, discover, mastercard, visa]
-      required: [type]
+            format: uri
+          description: URLs to JSON Schemas for payment instruments
+        config:
+          type: object
+          description: Handler-specific configuration
+      required: [id, name, version, spec, requires_delegate_payment, requires_pci_compliance, psp, config_schema, instrument_schemas, config]
 
-    PaymentProvider:
+    Payment:
       type: object
       additionalProperties: false
+      description: Payment configuration with handlers
       properties:
-        provider:
-          type: string
-          enum: [stripe]
-        supported_payment_methods:
+        handlers:
           type: array
           items:
-            $ref: "#/components/schemas/PaymentMethod"
-      required: [provider, supported_payment_methods]
+            $ref: "#/components/schemas/PaymentHandler"
+          description: Available payment handlers
+      required: [handlers]
 
     VariantOption:
       type: object
@@ -979,8 +1000,28 @@ components:
       type: object
       additionalProperties: false
       properties:
-        token: { type: string }
-        provider: { type: string, enum: [stripe] }
+        handler_id:
+          type: string
+          description: ID of the payment handler to use
+        instrument:
+          type: object
+          description: Payment instrument details
+          properties:
+            type:
+              type: string
+              description: Instrument type (e.g., card, wallet_token)
+            credential:
+              type: object
+              description: Payment credential
+              properties:
+                type:
+                  type: string
+                  description: Credential type (e.g., spt, wallet_token)
+                token:
+                  type: string
+                  description: Credential token value
+              required: [type, token]
+          required: [type, credential]
         billing_address: { $ref: "#/components/schemas/Address" }
         purchase_order_number: { type: string }
         payment_terms:
@@ -988,7 +1029,7 @@ components:
         due_date: { type: string, format: date-time }
         approval_required: { type: boolean }
       anyOf:
-        - required: [token, provider]
+        - required: [handler_id, instrument]
         - required: [purchase_order_number]
 
     FulfillmentGroup:
@@ -1084,8 +1125,6 @@ components:
         protocol: { $ref: "#/components/schemas/ProtocolVersion" }
         capabilities: { $ref: "#/components/schemas/Capabilities" }
         buyer: { $ref: "#/components/schemas/Buyer" }
-        payment_provider: { $ref: "#/components/schemas/PaymentProvider" }
-        payment: { $ref: "#/components/schemas/PaymentResponse" }
         status:
           {
             type: string,

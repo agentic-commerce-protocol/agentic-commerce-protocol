@@ -296,15 +296,8 @@
       "additionalProperties": false,
       "description": "Capabilities object used in requests and responses. Context determines the party: requests are from Agents, responses are from Sellers. Seller responses contain the intersection of supported interventions.",
       "properties": {
-        "payment_methods": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              { "type": "string" },
-              { "$ref": "#/$defs/PaymentMethodObject" }
-            ]
-          },
-          "description": "Payment methods accepted by the Seller for this session (responses only). Can be simple strings or objects with constraints (e.g., card brands)."
+        "payment": {
+          "$ref": "#/$defs/Payment"
         },
         "interventions": {
           "$ref": "#/$defs/InterventionCapabilities"
@@ -403,40 +396,75 @@
       },
       "required": ["name"]
     },
-    "PaymentMethod": {
+    "PaymentHandler": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Payment handler configuration and capabilities",
       "properties": {
-        "type": {
+        "id": {
           "type": "string",
-          "enum": ["card"]
+          "description": "Seller-defined handler identifier"
         },
-        "supported_card_networks": {
+        "name": {
+          "type": "string",
+          "description": "Handler name in reverse-DNS format (e.g., dev.acp.tokenized.card)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Handler version in YYYY-MM-DD format"
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to handler specification"
+        },
+        "requires_delegate_payment": {
+          "type": "boolean",
+          "description": "Whether this handler requires using delegate_payment API"
+        },
+        "requires_pci_compliance": {
+          "type": "boolean",
+          "description": "Whether this handler routes PCI DSS sensitive data"
+        },
+        "psp": {
+          "type": "string",
+          "description": "Payment Service Provider identifier"
+        },
+        "config_schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to JSON Schema for handler configuration"
+        },
+        "instrument_schemas": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["amex", "discover", "mastercard", "visa"]
-          }
+            "format": "uri"
+          },
+          "description": "URLs to JSON Schemas for payment instruments"
+        },
+        "config": {
+          "type": "object",
+          "description": "Handler-specific configuration"
         }
       },
-      "required": ["type"]
+      "required": ["id", "name", "version", "spec", "requires_delegate_payment", "requires_pci_compliance", "psp", "config_schema", "instrument_schemas", "config"]
     },
-    "PaymentProvider": {
+    "Payment": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Payment configuration with handlers",
       "properties": {
-        "provider": {
-          "type": "string",
-          "enum": ["stripe"]
-        },
-        "supported_payment_methods": {
+        "handlers": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/PaymentMethod"
-          }
+            "$ref": "#/$defs/PaymentHandler"
+          },
+          "description": "Available payment handlers"
         }
       },
-      "required": ["provider", "supported_payment_methods"]
+      "required": ["handlers"]
     },
     "LineItem": {
       "type": "object",
@@ -884,12 +912,35 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "token": {
-          "type": "string"
-        },
-        "provider": {
+        "handler_id": {
           "type": "string",
-          "enum": ["stripe"]
+          "description": "ID of the payment handler to use"
+        },
+        "instrument": {
+          "type": "object",
+          "description": "Payment instrument details",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Instrument type (e.g., card, wallet_token)"
+            },
+            "credential": {
+              "type": "object",
+              "description": "Payment credential",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Credential type (e.g., spt, wallet_token)"
+                },
+                "token": {
+                  "type": "string",
+                  "description": "Credential token value"
+                }
+              },
+              "required": ["type", "token"]
+            }
+          },
+          "required": ["type", "credential"]
         },
         "billing_address": {
           "$ref": "#/$defs/Address"
@@ -900,7 +951,7 @@
         "approval_required": { "type": "boolean" }
       },
       "anyOf": [
-        { "required": ["token", "provider"] },
+        { "required": ["handler_id", "instrument"] },
         { "required": ["purchase_order_number"] }
       ]
     },
@@ -1289,10 +1340,6 @@
         "buyer": {
           "$ref": "#/$defs/Buyer"
         },
-        "payment_provider": {
-          "$ref": "#/$defs/PaymentProvider"
-        },
-        "payment": { "$ref": "#/$defs/PaymentResponse" },
         "status": {
           "type": "string",
           "enum": [

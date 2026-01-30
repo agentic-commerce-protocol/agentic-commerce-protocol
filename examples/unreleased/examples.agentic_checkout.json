@@ -57,33 +57,37 @@
       "capabilities": []
     },
     "capabilities": {
-      "payment_methods": [
-        {
-          "method": "card",
-          "brands": ["visa", "mastercard", "amex"],
-          "funding_types": ["credit", "debit"]
-        },
-        "wallet.apple_pay"
-      ],
+      "payment": {
+        "handlers": [
+          {
+            "id": "card_tokenized",
+            "name": "dev.acp.tokenized.card",
+            "version": "2026-01-22",
+            "spec": "https://acp.dev/handlers/tokenized.card",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "stripe",
+            "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+            "instrument_schemas": [
+              "https://acp.dev/schemas/handlers/tokenized.card/instrument.json"
+            ],
+            "config": {
+              "merchant_id": "acct_1234567890",
+              "psp": "stripe",
+              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+              "accepted_funding_types": ["credit", "debit"],
+              "supports_3ds": true,
+              "3ds_versions": ["2.1.0", "2.2.0"],
+              "environment": "production"
+            }
+          }
+        ]
+      },
       "interventions": {
         "supported": ["3ds", "address_verification"],
         "required": [],
         "enforcement": "conditional"
       }
-    },
-    "payment_provider": {
-      "provider": "stripe",
-      "supported_payment_methods": [
-        {
-          "type": "card",
-          "supported_card_networks": [
-            "amex",
-            "discover",
-            "mastercard",
-            "visa"
-          ]
-        }
-      ]
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -386,8 +390,14 @@
       "phone_number": "15552003434"
     },
     "payment_data": {
-      "token": "spt_123",
-      "provider": "stripe",
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_123"
+        }
+      },
       "billing_address": {
         "name": "John Smith",
         "line_one": "1234 Chat Road,",
@@ -407,8 +417,14 @@
       "phone_number": "15552003434"
     },
     "payment_data": {
-      "token": "spt_123",
-      "provider": "stripe",
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_123"
+        }
+      },
       "billing_address": {
         "name": "John Smith",
         "line_one": "1234 Chat Road,",
@@ -881,11 +897,33 @@
       "version": "2026-01-22",
       "capabilities": []
     },
-    "payment_provider": {
-      "provider": "stripe",
-      "supported_payment_methods": [
-        "card"
-      ]
+    "capabilities": {
+      "payment": {
+        "handlers": [
+          {
+            "id": "card_tokenized",
+            "name": "dev.acp.tokenized.card",
+            "version": "2026-01-22",
+            "spec": "https://acp.dev/handlers/tokenized.card",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "stripe",
+            "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+            "instrument_schemas": [
+              "https://acp.dev/schemas/handlers/tokenized.card/instrument.json"
+            ],
+            "config": {
+              "merchant_id": "acct_1234567890",
+              "psp": "stripe",
+              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+              "accepted_funding_types": ["credit", "debit"],
+              "supports_3ds": true,
+              "3ds_versions": ["2.1.0", "2.2.0"],
+              "environment": "production"
+            }
+          }
+        ]
+      }
     },
     "status": "authentication_required",
     "currency": "usd",

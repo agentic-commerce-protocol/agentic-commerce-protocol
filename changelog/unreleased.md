@@ -1,5 +1,125 @@
 # Unreleased Changes
 
+## Payment Handlers Framework (Breaking Change)
+
+**Introduced standardized payment handler framework to replace simple payment method identifiers.**
+
+**Impact:** Breaking change to payment method declaration and payment data structures.
+
+**What Changed:**
+
+1. **Payment Method Declaration:**
+   - Old: `payment_provider.supported_payment_methods` (array of simple objects/strings)
+   - New: `capabilities.payment.handlers` (array of rich **PaymentHandler** objects)
+
+2. **Payment Handler Structure:**
+   ```json
+   {
+     "id": "card_tokenized",
+     "name": "dev.acp.tokenized.card",          // Reverse-DNS format
+     "version": "2026-01-22",                    // YYYY-MM-DD
+     "spec": "https://acp.dev/handlers/...",    // Handler specification
+     "requires_delegate_payment": true,          // Delegation required
+     "requires_pci_compliance": false,           // PCI DSS flag
+     "psp": "stripe",                            // PSP identifier
+     "config_schema": "https://...",             // Config validation
+     "instrument_schemas": ["https://..."],      // Instrument validation
+     "config": {
+       "merchant_id": "acct_1234567890",         // Seller's PSP account ID
+       "psp": "stripe",
+       "accepted_brands": ["visa", "mastercard"],
+       "supports_3ds": true,
+       "environment": "production"
+     }
+   }
+   ```
+
+3. **Payment Data Structure:**
+   - Old: `{ "token": "spt_123", "provider": "stripe" }`
+   - New: `{ "handler_id": "card_tokenized", "instrument": { "type": "card", "credential": { "type": "spt", "token": "spt_123" } } }`
+
+**Migration:**
+
+```json
+// OLD - Simple payment method
+{
+  "payment_provider": {
+    "provider": "stripe",
+    "supported_payment_methods": [
+      {
+        "type": "card",
+        "supported_card_networks": ["visa", "mastercard"]
+      }
+    ]
+  }
+}
+
+// NEW - Payment handlers
+{
+  "capabilities": {
+    "payment": {
+      "handlers": [
+        {
+          "id": "card_tokenized",
+          "name": "dev.acp.tokenized.card",
+          "version": "2026-01-22",
+          "spec": "https://acp.dev/handlers/tokenized.card",
+          "requires_delegate_payment": true,
+          "requires_pci_compliance": false,
+          "psp": "stripe",
+          "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+          "instrument_schemas": ["https://acp.dev/schemas/handlers/tokenized.card/instrument.json"],
+          "config": {
+            "merchant_id": "acct_1234567890",
+            "psp": "stripe",
+            "accepted_brands": ["visa", "mastercard"],
+            "supports_3ds": true,
+            "environment": "production"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+```json
+// OLD - Payment data with token/provider
+{
+  "payment_data": {
+    "token": "spt_123",
+    "provider": "stripe",
+    "billing_address": { ... }
+  }
+}
+
+// NEW - Payment data with handler_id/instrument
+{
+  "payment_data": {
+    "handler_id": "card_tokenized",
+    "instrument": {
+      "type": "card",
+      "credential": {
+        "type": "spt",
+        "token": "spt_123"
+      }
+    },
+    "billing_address": { ... }
+  }
+}
+```
+
+**Benefits:**
+- Standardized handler discovery and negotiation
+- Explicit security requirements (`requires_delegate_payment`, `requires_pci_compliance`)
+- PSP identification for credential vaulting
+- Handler-specific configuration and validation
+- Extensible without protocol changes
+
+**See Also:** [Payment Handlers RFC](../rfcs/rfc.payment_handlers.md)
+
+---
+
 ## Version 2026-01-22 - Enhanced Checkout Capabilities
 
 This release introduces significant enhancements to the Agentic Checkout Specification. These changes enable broader commerce scenarios while maintaining backward compatibility where possible.
@@ -24,7 +144,7 @@ Added support for **Capability Negotiation** to enable Agents and Sellers to dis
 **Capabilities Supported:**
 
 *Payment Methods (Seller only, in responses):*
-- Simple strings: `card`, `card.network_token`, `wallet.apple_pay`, `bnpl.klarna`
+- Simple strings: `card`, `card.agentic_token`
 - Objects with constraints for cards: brands (visa, mastercard, etc.), funding_types (credit, debit, prepaid)
 
 *Interventions (both parties):*
