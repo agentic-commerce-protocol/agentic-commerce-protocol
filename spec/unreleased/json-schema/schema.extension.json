@@ -13,18 +13,13 @@
 
     "extends_target": {
       "type": "string",
-      "enum": [
-        "checkout.request",
-        "checkout.response",
-        "checkout.complete.request",
-        "checkout.complete.response"
-      ],
-      "description": "Identifies which part of the API the extension affects."
+      "pattern": "^\\$\\.[A-Za-z][A-Za-z0-9]*(\\.[A-Za-z][A-Za-z0-9_]*)*$",
+      "description": "JSONPath expression identifying the schema field added by this extension. Format: $.<SchemaName>.<fieldName> (e.g., $.CheckoutSession.discounts)."
     },
 
     "extension_declaration": {
       "type": "object",
-      "description": "Extension declaration in capabilities.extensions (response). Describes an active extension and which API surfaces it affects.",
+      "description": "Extension declaration in capabilities.extensions (response). Describes an active extension and which schema fields it adds.",
       "required": ["name"],
       "properties": {
         "name": {
@@ -37,7 +32,7 @@
             "$ref": "#/$defs/extends_target"
           },
           "uniqueItems": true,
-          "description": "Which parts of the API this extension affects (e.g., checkout.request, checkout.response)."
+          "description": "JSONPath expressions identifying the schema fields added by this extension (e.g., $.CheckoutSession.discounts)."
         },
         "schema": {
           "type": "string",
@@ -93,7 +88,7 @@
           "items": {
             "$ref": "#/$defs/extends_target"
           },
-          "description": "Which parts of the API this extension affects."
+          "description": "JSONPath expressions identifying the schema fields added by this extension."
         },
         "spec": {
           "type": "string",
@@ -135,7 +130,11 @@
                 "name": { "const": "Discount Extension" },
                 "description": { "const": "Discount code support with rich applied discounts, allocation details, and rejection messaging." },
                 "extends": {
-                  "const": ["checkout.request", "checkout.response"]
+                  "const": [
+                    "$.CheckoutSessionCreateRequest.discounts",
+                    "$.CheckoutSessionUpdateRequest.discounts",
+                    "$.CheckoutSession.discounts"
+                  ]
                 }
               }
             }
