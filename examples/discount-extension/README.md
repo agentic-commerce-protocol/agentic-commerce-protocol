@@ -45,7 +45,14 @@ Complex example showing multiple discounts stacked together with:
   "capabilities": {
     "payment_methods": ["card"],
     "extensions": [
-      {"name": "discount", "extends": ["checkout.request", "checkout.response"]}
+      {
+        "name": "discount",
+        "extends": [
+          "$.CheckoutSessionCreateRequest.discounts",
+          "$.CheckoutSessionUpdateRequest.discounts",
+          "$.CheckoutSession.discounts"
+        ]
+      }
     ]
   },
   "discounts": {
@@ -73,6 +80,16 @@ Complex example showing multiple discounts stacked together with:
   }
 }
 ```
+
+### The `extends` Field
+
+The `extends` field uses JSONPath expressions to precisely identify which schema fields are added by the extension:
+
+| JSONPath | Description |
+|----------|-------------|
+| `$.CheckoutSessionCreateRequest.discounts` | Adds `discounts` to create requests |
+| `$.CheckoutSessionUpdateRequest.discounts` | Adds `discounts` to update requests |
+| `$.CheckoutSession.discounts` | Adds `discounts` to session responses |
 
 ### Allocation Methods
 

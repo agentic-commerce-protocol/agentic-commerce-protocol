@@ -19,7 +19,14 @@
     "capabilities": {
       "payment_methods": ["card"],
       "extensions": [
-        {"name": "discount", "extends": ["checkout.request", "checkout.response"]}
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ]
+        }
       ]
     },
     "currency": "usd",

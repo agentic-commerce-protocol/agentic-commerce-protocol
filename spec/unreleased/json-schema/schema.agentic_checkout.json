@@ -324,7 +324,7 @@
     "ExtensionDeclaration": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Extension declaration in capabilities.extensions (response). Describes an active extension and which API surfaces it affects.",
+      "description": "Extension declaration in capabilities.extensions (response). Describes an active extension and which schema fields it adds.",
       "required": ["name"],
       "properties": {
         "name": {
@@ -336,10 +336,10 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["checkout.request", "checkout.response", "checkout.complete.request", "checkout.complete.response"]
+            "pattern": "^\\$\\.[A-Za-z][A-Za-z0-9]*(\\.[A-Za-z][A-Za-z0-9_]*)*$"
           },
           "uniqueItems": true,
-          "description": "Which parts of the API this extension affects."
+          "description": "JSONPath expressions identifying the schema fields added by this extension. Format: $.<SchemaName>.<fieldName> (e.g., $.CheckoutSession.discounts)."
         },
         "schema": {
           "type": "string",

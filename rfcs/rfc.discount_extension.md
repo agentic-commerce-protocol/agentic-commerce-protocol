@@ -59,16 +59,24 @@ responses:
     "extensions": [
       {
         "name": "discount",
-        "extends": ["checkout.request", "checkout.response"]
+        "extends": [
+          "$.CheckoutSessionCreateRequest.discounts",
+          "$.CheckoutSessionUpdateRequest.discounts",
+          "$.CheckoutSession.discounts"
+        ]
       }
     ]
   }
 }
 ```
 
-The `extends` field indicates this extension adds fields to both:
-- **checkout.request** — The `discounts.codes` array for submitting discount codes
-- **checkout.response** — The `discounts.applied` and `discounts.rejected` arrays
+The `extends` field uses JSONPath expressions to identify the exact fields added:
+
+| JSONPath | Description |
+|----------|-------------|
+| `$.CheckoutSessionCreateRequest.discounts` | Adds `discounts.codes` to create requests |
+| `$.CheckoutSessionUpdateRequest.discounts` | Adds `discounts.codes` to update requests |
+| `$.CheckoutSession.discounts` | Adds `discounts.applied` and `discounts.rejected` to responses |
 
 ---
 
@@ -305,7 +313,14 @@ Applied discounts are reflected in the core checkout fields:
   "capabilities": {
     "payment_methods": ["card"],
     "extensions": [
-      {"name": "discount", "extends": ["checkout.request", "checkout.response"]}
+      {
+        "name": "discount",
+        "extends": [
+          "$.CheckoutSessionCreateRequest.discounts",
+          "$.CheckoutSessionUpdateRequest.discounts",
+          "$.CheckoutSession.discounts"
+        ]
+      }
     ]
   },
   "discounts": {

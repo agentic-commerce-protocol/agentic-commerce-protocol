@@ -81,7 +81,11 @@ Merchants advertise extension support in the checkout response via
     "extensions": [
       {
         "name": "discount",
-        "extends": ["checkout.request", "checkout.response"]
+        "extends": [
+          "$.CheckoutSessionCreateRequest.discounts",
+          "$.CheckoutSessionUpdateRequest.discounts",
+          "$.CheckoutSession.discounts"
+        ]
       }
     ]
   }
@@ -111,29 +115,60 @@ Each extension in the response `capabilities.extensions` is an object:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Unique identifier for the extension |
-| `extends` | string[] | No | Which parts of the API this extension affects |
+| `extends` | string[] | No | JSONPath expressions identifying fields added by this extension |
 | `schema` | string | No | URL to the extension's JSON Schema |
 | `spec` | string | No | URL to the extension's specification document |
 
 ### 3.4 The `extends` Field
 
-The `extends` array clarifies which parts of the request/response are affected:
+The `extends` array uses **JSONPath expressions** to precisely identify which
+schema locations are extended. This enables:
 
-| Value | Description |
-|-------|-------------|
-| `checkout.request` | Adds fields to create/update checkout request body |
-| `checkout.response` | Adds fields to checkout session response body |
-| `checkout.complete.request` | Adds fields to complete checkout request |
-| `checkout.complete.response` | Adds fields to complete checkout response |
+- **Machine-parseable** field identification for tooling and SDK generation
+- **Schema composition** with precise merge points
+- **Validation** that extension fields exist at declared paths
+- **Consistency** with other JSONPath usage in the protocol (e.g., allocations)
 
-**Example:** The discount extension affects both requests and responses:
+#### 3.4.1 JSONPath Syntax
+
+Each `extends` entry is a JSONPath expression in the format:
+
+```
+$.<SchemaName>.<fieldName>
+```
+
+Where:
+- `$` is the JSONPath root
+- `<SchemaName>` is a schema definition name (e.g., `CheckoutSession`)
+- `<fieldName>` is the field being added by this extension
+
+#### 3.4.2 Common Schema Targets
+
+| JSONPath Pattern | Description |
+|------------------|-------------|
+| `$.CheckoutSessionCreateRequest.<field>` | Adds field to checkout create request |
+| `$.CheckoutSessionUpdateRequest.<field>` | Adds field to checkout update request |
+| `$.CheckoutSession.<field>` | Adds field to checkout session response |
+| `$.CheckoutSessionResponse.<field>` | Adds field to the full response envelope |
+| `$.CheckoutSessionCompleteRequest.<field>` | Adds field to complete checkout request |
+
+#### 3.4.3 Example: Discount Extension
+
+The discount extension adds a `discounts` field to requests and responses:
 
 ```json
 {
   "name": "discount",
-  "extends": ["checkout.request", "checkout.response"]
+  "extends": [
+    "$.CheckoutSessionCreateRequest.discounts",
+    "$.CheckoutSessionUpdateRequest.discounts",
+    "$.CheckoutSession.discounts"
+  ]
 }
 ```
+
+This tells consumers exactly which schema definitions are extended and which
+fields are added, enabling automated schema composition.
 
 ### 3.5 Extension Identifiers
 
@@ -258,7 +293,13 @@ use the same YYYY-MM-DD format:
 {
   "capabilities": {
     "extensions": [
-      {"name": "discount@2026-01-27", "extends": ["checkout.request", "checkout.response"]}
+      {
+        "name": "discount@2026-01-27",
+        "extends": [
+          "$.CheckoutSessionCreateRequest.discounts",
+          "$.CheckoutSession.discounts"
+        ]
+      }
     ]
   }
 }
