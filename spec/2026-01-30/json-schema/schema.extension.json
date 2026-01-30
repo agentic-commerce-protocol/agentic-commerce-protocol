@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-commerce-protocol.com/schemas/extension.json",
+  "title": "ACP Extension Schema",
+  "description": "Schema definitions for the ACP Extensions Framework. Extensions are optional, composable capabilities declared in capabilities.extensions.",
+
+  "$defs": {
+    "extension_identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*(@\\d{4}-\\d{2}-\\d{2})?$|^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9_-]*)+(@\\d{4}-\\d{2}-\\d{2})?$",
+      "description": "Extension identifier. Core extensions use simple names (e.g., 'discount'). Third-party extensions use reverse-domain naming (e.g., 'com.example.custom'). May include optional version suffix (e.g., 'discount@2026-01-27')."
+    },
+
+    "extends_target": {
+      "type": "string",
+      "pattern": "^\\$\\.[A-Za-z][A-Za-z0-9]*(\\.[A-Za-z][A-Za-z0-9_]*)*$",
+      "description": "JSONPath expression identifying the schema field added by this extension. Format: $.<SchemaName>.<fieldName> (e.g., $.CheckoutSession.discounts)."
+    },
+
+    "extension_declaration": {
+      "type": "object",
+      "description": "Extension declaration in capabilities.extensions (response). Describes an active extension and which schema fields it adds.",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/extension_identifier",
+          "description": "Unique identifier for the extension."
+        },
+        "extends": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/extends_target"
+          },
+          "uniqueItems": true,
+          "description": "JSONPath expressions identifying the schema fields added by this extension (e.g., $.CheckoutSession.discounts)."
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension's JSON Schema definition."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension's specification document."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "request_extensions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/extension_identifier"
+      },
+      "uniqueItems": true,
+      "description": "Extensions the agent understands. Sent in request capabilities.extensions."
+    },
+
+    "response_extensions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/extension_declaration"
+      },
+      "uniqueItems": true,
+      "description": "Active extensions for this session. Returned in response capabilities.extensions."
+    },
+
+    "extension_metadata": {
+      "type": "object",
+      "description": "Full metadata about an extension for documentation and discovery.",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/extension_identifier",
+          "description": "Unique identifier for the extension."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for the extension."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of what the extension provides."
+        },
+        "extends": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/extends_target"
+          },
+          "description": "JSONPath expressions identifying the schema fields added by this extension."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension specification document."
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension JSON Schema."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "experimental", "stable", "deprecated", "retired"],
+          "description": "Lifecycle status of the extension."
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/extension_identifier"
+          },
+          "description": "Extensions that this extension depends on."
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "core_extensions": {
+      "type": "object",
+      "description": "Registry of core ACP extensions.",
+      "properties": {
+        "discount": {
+          "allOf": [
+            { "$ref": "#/$defs/extension_metadata" },
+            {
+              "type": "object",
+              "properties": {
+                "id": { "const": "discount" },
+                "name": { "const": "Discount Extension" },
+                "description": { "const": "Discount code support with rich applied discounts, allocation details, and rejection messaging." },
+                "extends": {
+                  "const": [
+                    "$.CheckoutSessionCreateRequest.discounts",
+                    "$.CheckoutSessionUpdateRequest.discounts",
+                    "$.CheckoutSession.discounts"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

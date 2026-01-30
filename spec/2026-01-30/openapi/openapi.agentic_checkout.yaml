@@ -1,0 +1,1756 @@
+openapi: 3.1.0
+info:
+  title: Agentic Checkout API
+  version: "2025-12-12"
+  description: |
+    Merchant-implemented REST API for ChatGPT-driven checkout.
+    Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
+servers:
+  - url: https://merchant.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: CheckoutSessions
+    description: Create and manage checkout sessions
+
+paths:
+  /checkout_sessions:
+    post:
+      tags: [CheckoutSessions]
+      summary: Create a checkout session
+      operationId: createCheckoutSession
+      description: |
+        Initializes a new checkout session from items and (optionally) buyer and fulfillment info.
+        MUST return 201 with a rich, authoritative cart state.
+
+        Agents MAY include `affiliate_attribution` with `touchpoint: "first"` to record first-touch attribution.
+        This enables multi-touch attribution models where networks can capture both first and last touch.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/Signature"
+        - $ref: "#/components/parameters/Timestamp"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionCreateRequest"
+            examples:
+              minimal:
+                summary: Single item; no fulfillment details
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+              with_address:
+                summary: Single item with shipping address
+                value:
+                  items:
+                    - id: "item_456"
+                      quantity: 1
+                  fulfillment_details:
+                    name: "test"
+                    phone_number: "15551234567"
+                    email: "test@example.com"
+                    address:
+                      name: "test"
+                      line_one: "555 Golden Gate Avenue"
+                      line_two: "Apt 401"
+                      city: "San Francisco"
+                      state: "CA"
+                      country: "US"
+                      postal_code: "94102"
+              with_first_touch_attribution:
+                summary: With first-touch affiliate attribution
+                value:
+                  items:
+                    - id: "item_123"
+                      quantity: 1
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "first"
+      responses:
+        "201":
+          description: Created
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema: { type: string }
+            Request-Id:
+              description: Echo of the request correlation id
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Update a checkout session
+      operationId: updateCheckoutSession
+      description: |
+        Applies changes (items, fulfillment address, fulfillment option) and returns an updated authoritative cart state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionUpdateRequest"
+            examples:
+              set_fulfillment_option:
+                summary: Select a fulfillment option
+                value:
+                  selected_fulfillment_options:
+                    - type: "shipping"
+                      shipping:
+                        option_id: "fulfillment_option_456"
+                        item_ids: ["item_123"]
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+    get:
+      tags: [CheckoutSessions]
+      summary: Retrieve a checkout session
+      operationId: getCheckoutSession
+      description: Returns the latest authoritative state for the checkout session.
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}/complete:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/ContentType"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Complete a checkout session
+      operationId: completeCheckoutSession
+      description: |
+        Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
+
+        Agents MAY include `affiliate_attribution` to ensure the merchant receives final attribution context.
+        Attribution is stored alongside the resulting order but not returned in the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionCompleteRequest"
+            examples:
+              basic:
+                summary: Complete with payment data
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+              with_affiliate_attribution:
+                summary: Complete with last-touch affiliate attribution
+                value:
+                  buyer:
+                    first_name: "John"
+                    last_name: "Smith"
+                    email: "johnsmith@mail.com"
+                  payment_data:
+                    token: "spt_123"
+                    provider: "stripe"
+                  affiliate_attribution:
+                    provider: "impact.com"
+                    token: "atp_01J8Z3WXYZ9ABC"
+                    publisher_id: "pub_123"
+                    touchpoint: "last"
+      responses:
+        "200":
+          description: Completed session with order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSessionWithOrder"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /checkout_sessions/{checkout_session_id}/cancel:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: checkout_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [CheckoutSessions]
+      summary: Cancel a checkout session
+      operationId: cancelCheckoutSession
+      description: |
+        Cancels a session if not already completed or canceled.
+        Agents MAY include an intent_trace to communicate why the session is being abandoned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelSessionRequest"
+      responses:
+        "200":
+          description: Canceled session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "405":
+          description: Not cancelable (already completed/canceled)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      schema: { type: string, example: "Bearer api_key_123" }
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      schema: { type: string, example: "application/json" }
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: { type: string, example: "en-US" }
+    UserAgent:
+      name: User-Agent
+      in: header
+      required: false
+      schema:
+        {
+          type: string,
+          example: "ChatGPT/2.0 (Mac OS X 15.0.1; arm64; build 0)",
+        }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, example: "idempotency_key_123" }
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      schema: { type: string, example: "request_id_123" }
+    Signature:
+      name: Signature
+      in: header
+      required: false
+      schema: { type: string, example: "ZXltZX..." }
+    Timestamp:
+      name: Timestamp
+      in: header
+      required: false
+      schema:
+        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      schema: { type: string, example: "2026-01-16" }
+
+  schemas:
+    Address:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        line_one: { type: string }
+        line_two: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+      required: [name, line_one, city, state, country, postal_code]
+
+    AffiliateAttributionSource:
+      type: object
+      additionalProperties: false
+      description: Context about where the attribution originated.
+      properties:
+        type:
+          type: string
+          enum: [url, platform, unknown]
+          description: The type of attribution source.
+        url:
+          type: string
+          format: uri
+          description: Canonical content URL when type is 'url'.
+      required: [type]
+
+    AffiliateAttributionMetadata:
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+      description: |
+        Flat key/value map for additional non-sensitive context.
+        Keys must be strings; values must be strings, numbers, or booleans.
+        Arrays and nested objects are NOT permitted.
+
+    AffiliateAttribution:
+      type: object
+      description: |
+        Optional affiliate attribution data for crediting third-party publishers.
+        Write-only: not returned in responses. See RFC: Affiliate Attribution.
+
+        Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).
+      properties:
+        provider:
+          type: string
+          description: Identifier for the attribution provider / affiliate network namespace (e.g., 'impact.com').
+        token:
+          type: string
+          description: Opaque provider-issued token for fraud-resistant validation. Treat as secret.
+        publisher_id:
+          type: string
+          description: Provider-scoped affiliate/publisher identifier. Required if token is omitted.
+        campaign_id:
+          type: string
+          description: Provider-scoped campaign identifier.
+        creative_id:
+          type: string
+          description: Provider-scoped creative identifier.
+        sub_id:
+          type: string
+          description: Provider-scoped sub-tracking identifier.
+        source:
+          $ref: "#/components/schemas/AffiliateAttributionSource"
+        issued_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token was issued.
+        expires_at:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp when the attribution token expires.
+        metadata:
+          $ref: "#/components/schemas/AffiliateAttributionMetadata"
+        touchpoint:
+          type: string
+          enum: [first, last]
+          description: |
+            Attribution touchpoint type. Use 'first' when capturing at session creation,
+            'last' when capturing at completion. Enables multi-touch attribution models.
+      required: [provider]
+      anyOf:
+        - required: [token]
+        - required: [publisher_id]
+
+    FulfillmentDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        phone_number: { type: string }
+        email: { type: string, format: email }
+        address: { $ref: "#/components/schemas/Address" }
+
+    CompanyInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        tax_id: { type: string }
+        department: { type: string }
+        cost_center: { type: string }
+      required: [name]
+
+    LoyaltyInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        tier: { type: string }
+        points_balance: { type: integer }
+        member_since: { type: string, format: date-time }
+
+    TaxExemption:
+      type: object
+      additionalProperties: false
+      properties:
+        certificate_id: { type: string }
+        certificate_type:
+          { type: string, enum: [resale, exempt_organization, government] }
+        exempt_regions:
+          type: array
+          items: { type: string }
+        expires_at: { type: string, format: date-time }
+      required: [certificate_id, certificate_type]
+
+    Buyer:
+      type: object
+      additionalProperties: false
+      properties:
+        first_name: { type: string }
+        last_name: { type: string }
+        full_name: { type: string }
+        email: { type: string, format: email }
+        phone_number: { type: string }
+        customer_id: { type: string }
+        account_type: { type: string, enum: [guest, registered, business] }
+        authentication_status:
+          { type: string, enum: [authenticated, guest, requires_signin] }
+        company: { $ref: "#/components/schemas/CompanyInfo" }
+        loyalty: { $ref: "#/components/schemas/LoyaltyInfo" }
+        tax_exemption: { $ref: "#/components/schemas/TaxExemption" }
+      required: [email]
+
+    InterventionCapabilities:
+      type: object
+      additionalProperties: false
+      description: |
+        Intervention capabilities.
+        Context-specific fields: display_context, redirect_context, max_redirects, max_interaction_depth (requests only).
+        required, enforcement (responses only).
+        supported field contains intersection in responses.
+      properties:
+        supported:
+          type: array
+          items:
+            type: string
+            enum: [3ds, biometric, address_verification]
+          description: |
+            Intervention types supported.
+            - Agent request: Interventions the agent can handle
+            - Seller response: Intersection of supported interventions
+        required:
+          type: array
+          items:
+            type: string
+            enum: [3ds, biometric]
+          description: Intervention methods required for this session (seller only).
+        enforcement:
+          type: string
+          enum: [always, conditional, optional]
+          description: When required interventions are enforced (seller only).
+        display_context:
+          type: string
+          enum: [native, webview, modal, redirect]
+          description: How the Agent presents interventions (agent only).
+        redirect_context:
+          type: string
+          enum: [in_app, external_browser, none]
+          description: How the Agent handles redirects (agent only).
+        max_redirects:
+          type: integer
+          minimum: 0
+          description: Maximum number of redirects the Agent can handle (agent only).
+        max_interaction_depth:
+          type: integer
+          minimum: 1
+          description: Maximum depth of nested interactions the Agent can handle (agent only).
+
+    Capabilities:
+      type: object
+      additionalProperties: false
+      description: |
+        Capabilities object used in requests and responses.
+        Context determines the party: requests are from Agents, responses are from Sellers.
+        Seller responses contain the intersection of supported interventions.
+      properties:
+        payment:
+          $ref: "#/components/schemas/Payment"
+        interventions:
+          $ref: "#/components/schemas/InterventionCapabilities"
+        extensions:
+          oneOf:
+            - type: array
+              items:
+                type: string
+              uniqueItems: true
+              description: Extensions the agent understands (request). Simple identifiers like 'discount'.
+            - type: array
+              items:
+                $ref: "#/components/schemas/ExtensionDeclaration"
+              uniqueItems: true
+              description: Active extensions for this session (response). Objects with name, extends, schema, spec.
+          description: |
+            Extensions supported by the party.
+            Requests: array of extension identifiers.
+            Responses: array of extension declaration objects.
+
+    ExtensionDeclaration:
+      type: object
+      additionalProperties: false
+      description: Extension declaration in capabilities.extensions (response). Describes an active extension and which schema fields it adds.
+      required: [name]
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z][a-z0-9_-]*(@\d{4}-\d{2}-\d{2})?$|^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9_-]*)+(@\d{4}-\d{2}-\d{2})?$'
+          description: Unique identifier for the extension.
+        extends:
+          type: array
+          items:
+            type: string
+            pattern: '^\$\.[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9_]*)*$'
+          uniqueItems: true
+          description: |
+            JSONPath expressions identifying the schema fields added by this extension.
+            Format: $.<SchemaName>.<fieldName> (e.g., $.CheckoutSession.discounts).
+        schema:
+          type: string
+          format: uri
+          description: URL to the extension's JSON Schema definition.
+        spec:
+          type: string
+          format: uri
+          description: URL to the extension's specification document.
+
+    PaymentMethodObject:
+      type: object
+      additionalProperties: false
+      description: Payment method with additional constraints (e.g., card brands, PSP routing)
+      properties:
+        method:
+          type: string
+          description: The payment method identifier
+        brands:
+          type: array
+          items:
+            type: string
+            enum: [visa, mastercard, amex, discover, diners, jcb, unionpay, eftpos, interac]
+          description: Specific card brands/networks accepted
+        funding_types:
+          type: array
+          items:
+            type: string
+            enum: [credit, debit, prepaid]
+          description: For card methods, funding types accepted
+        providers:
+          type: array
+          items:
+            type: string
+          description: Optional PSP routing information
+      required: [method]
+
+    Item:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        name: { type: string }
+        unit_amount: { type: integer }
+      required: [id]
+
+    Disclosure:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [disclaimer] }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    CustomAttribute:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name: { type: string }
+        value: { type: string }
+      required: [display_name, value]
+
+    MarketplaceSellerDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+      required: [name]
+
+    PaymentHandler:
+      type: object
+      additionalProperties: false
+      description: Payment handler configuration and capabilities
+      properties:
+        id:
+          type: string
+          description: Seller-defined handler identifier
+        name:
+          type: string
+          description: Handler name in reverse-DNS format (e.g., dev.acp.tokenized.card)
+        version:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          description: Handler version in YYYY-MM-DD format
+        spec:
+          type: string
+          format: uri
+          description: URL to handler specification
+        requires_delegate_payment:
+          type: boolean
+          description: Whether this handler requires using delegate_payment API
+        requires_pci_compliance:
+          type: boolean
+          description: Whether this handler routes PCI DSS sensitive data
+        psp:
+          type: string
+          description: Payment Service Provider identifier
+        config_schema:
+          type: string
+          format: uri
+          description: URL to JSON Schema for handler configuration
+        instrument_schemas:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: URLs to JSON Schemas for payment instruments
+        config:
+          type: object
+          description: Handler-specific configuration
+      required: [id, name, version, spec, requires_delegate_payment, requires_pci_compliance, psp, config_schema, instrument_schemas, config]
+
+    Payment:
+      type: object
+      additionalProperties: false
+      description: Payment configuration with handlers
+      properties:
+        handlers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentHandler"
+          description: Available payment handlers
+      required: [handlers]
+
+    VariantOption:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        value: { type: string }
+      required: [name, value]
+
+    WeightInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        value: { type: number }
+        unit: { type: string, enum: [g, kg, oz, lb] }
+      required: [value, unit]
+
+    DimensionsInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        length: { type: number }
+        width: { type: number }
+        height: { type: number }
+        unit: { type: string, enum: [cm, in] }
+      required: [length, width, height, unit]
+
+    DiscountDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        code: { type: string }
+        type: { type: string, enum: [percentage, fixed, bogo, volume] }
+        amount: { type: integer }
+        description: { type: string }
+        source: { type: string, enum: [coupon, automatic, loyalty] }
+      required: [type, amount]
+
+    LineItem:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        item: { $ref: "#/components/schemas/Item" }
+        quantity: { type: integer, minimum: 1 }
+        name: { type: string }
+        description: { type: string }
+        images:
+          type: array
+          items: { type: string, format: uri }
+        unit_amount: { type: integer }
+        disclosures:
+          type: array
+          items: { $ref: "#/components/schemas/Disclosure" }
+        custom_attributes:
+          type: array
+          items: { $ref: "#/components/schemas/CustomAttribute" }
+        marketplace_seller_details:
+          { $ref: "#/components/schemas/MarketplaceSellerDetails" }
+        product_id: { type: string }
+        sku: { type: string }
+        variant_id: { type: string }
+        category: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        weight: { $ref: "#/components/schemas/WeightInfo" }
+        dimensions: { $ref: "#/components/schemas/DimensionsInfo" }
+        availability_status:
+          {
+            type: string,
+            enum: [in_stock, low_stock, out_of_stock, backorder, pre_order],
+          }
+        available_quantity: { type: integer, minimum: 0 }
+        max_quantity_per_order: { type: integer, minimum: 1 }
+        fulfillable_on: { type: string, format: date-time }
+        variant_options:
+          type: array
+          items: { $ref: "#/components/schemas/VariantOption" }
+        discount_details:
+          type: array
+          items: { $ref: "#/components/schemas/DiscountDetail" }
+        tax_exempt: { type: boolean }
+        tax_exemption_reason: { type: string }
+        parent_id: { type: string, description: "Reference to parent line item for bundled products" }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+          description: "Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total"
+      required: [id, item, quantity, totals]
+
+    TaxBreakdownItem:
+      type: object
+      additionalProperties: false
+      properties:
+        jurisdiction: { type: string }
+        rate: { type: number }
+        amount: { type: integer }
+      required: [jurisdiction, rate, amount]
+
+    Total:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            [
+              items_base_amount,
+              items_discount,
+              subtotal,
+              discount,
+              fulfillment,
+              tax,
+              fee,
+              gift_wrap,
+              tip,
+              store_credit,
+              total,
+            ]
+        display_text: { type: string }
+        amount: { type: integer }
+        presentment_amount: { type: integer }
+        description: { type: string }
+        breakdown:
+          type: array
+          items: { $ref: "#/components/schemas/TaxBreakdownItem" }
+      required: [type, display_text, amount]
+
+    FulfillmentOptionPickup:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: pickup }
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        location:
+          type: object
+          properties:
+            name: { type: string }
+            address: { $ref: "#/components/schemas/Address" }
+            phone: { type: string }
+            instructions: { type: string }
+          required: [name, address]
+        pickup_type: { type: string, enum: [in_store, curbside, locker] }
+        ready_by: { type: string, format: date-time }
+        pickup_by: { type: string, format: date-time }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+      required: [type, id, title, location, totals]
+
+    FulfillmentOptionLocalDelivery:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: local_delivery }
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        delivery_window:
+          type: object
+          properties:
+            start: { type: string, format: date-time }
+            end: { type: string, format: date-time }
+          required: [start, end]
+        service_area:
+          type: object
+          properties:
+            radius_miles: { type: number }
+            center_postal_code: { type: string }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+      required: [type, id, title, totals]
+
+    FulfillmentOptionShipping:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: shipping }
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        carrier: { type: string }
+        earliest_delivery_time: { type: string, format: date-time }
+        latest_delivery_time: { type: string, format: date-time }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+      required: [type, id, title, totals]
+
+    FulfillmentOptionDigital:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: digital }
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+      required: [type, id, title, totals]
+
+    SelectedFulfillmentOption:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, enum: [shipping, digital, pickup, local_delivery] }
+        option_id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+      required: [type, option_id, item_ids]
+
+    MessageInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: info }
+        severity: { type: string, enum: [info, low, medium, high, critical] }
+        param: { type: string, description: "RFC 9535 JSONPath" }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, content_type, content]
+
+    MessageWarning:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: warning }
+        code:
+          {
+            type: string,
+            enum:
+              [
+                low_stock,
+                high_demand,
+                shipping_delay,
+                price_change,
+                expiring_promotion,
+                limited_availability,
+                discount_code_expired,
+                discount_code_invalid,
+                discount_code_already_applied,
+                discount_code_combination_disallowed,
+                discount_code_minimum_not_met,
+                discount_code_user_not_logged_in,
+                discount_code_user_ineligible,
+                discount_code_usage_limit_reached,
+              ],
+          }
+        severity: { type: string, enum: [info, low, medium, high, critical] }
+        param: { type: string, description: "RFC 9535 JSONPath" }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, code, content_type, content]
+
+    MessageError:
+      type: object
+      additionalProperties: false
+      properties:
+        type: { type: string, const: error }
+        code:
+          {
+            type: string,
+            enum:
+              [
+                missing,
+                invalid,
+                out_of_stock,
+                payment_declined,
+                requires_sign_in,
+                requires_3ds,
+                low_stock,
+                quantity_exceeded,
+                coupon_invalid,
+                coupon_expired,
+                minimum_not_met,
+                maximum_exceeded,
+                region_restricted,
+                age_verification_required,
+                approval_required,
+                unsupported,
+                not_found,
+                conflict,
+                rate_limited,
+                expired,
+              ],
+          }
+        severity: { type: string, enum: [info, low, medium, high, critical] }
+        param:
+          { type: string, description: "RFC 9535 JSONPath", nullable: true }
+        content_type: { type: string, enum: [plain, markdown] }
+        content: { type: string }
+      required: [type, code, content_type, content]
+
+    GiftWrap:
+      type: object
+      additionalProperties: false
+      properties:
+        enabled: { type: boolean }
+        style: { type: string, enum: [birthday, holiday, elegant] }
+        charge: { type: integer }
+      required: [enabled]
+
+    Link:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum:
+              [
+                terms_of_use,
+                privacy_policy,
+                return_policy,
+                shipping_policy,
+                contact_us,
+                about_us,
+                faq,
+                support,
+              ],
+          }
+        title: { type: string }
+        url: { type: string, format: uri }
+      required: [type, url]
+
+    SplitPayment:
+      type: object
+      additionalProperties: false
+      properties:
+        amount: { type: integer }
+      required: [amount]
+
+    PaymentData:
+      type: object
+      additionalProperties: false
+      properties:
+        handler_id:
+          type: string
+          description: ID of the payment handler to use
+        instrument:
+          type: object
+          description: Payment instrument details
+          properties:
+            type:
+              type: string
+              description: Instrument type (e.g., card, wallet_token)
+            credential:
+              type: object
+              description: Payment credential
+              properties:
+                type:
+                  type: string
+                  description: Credential type (e.g., spt, wallet_token)
+                token:
+                  type: string
+                  description: Credential token value
+              required: [type, token]
+          required: [type, credential]
+        billing_address: { $ref: "#/components/schemas/Address" }
+        purchase_order_number: { type: string }
+        payment_terms:
+          { type: string, enum: [immediate, net_15, net_30, net_60, net_90] }
+        due_date: { type: string, format: date-time }
+        approval_required: { type: boolean }
+      anyOf:
+        - required: [handler_id, instrument]
+        - required: [purchase_order_number]
+
+    FulfillmentGroup:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        item_ids:
+          type: array
+          items: { type: string }
+        destination_type:
+          {
+            type: string,
+            enum: [shipping, pickup, local_delivery, digital],
+          }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        location_id: { type: string }
+        instructions: { type: string }
+      required: [id, item_ids, destination_type]
+
+    EstimatedDelivery:
+      type: object
+      additionalProperties: false
+      properties:
+        earliest: { type: string, format: date-time }
+        latest: { type: string, format: date-time }
+      required: [earliest, latest]
+
+    OrderConfirmation:
+      type: object
+      additionalProperties: false
+      properties:
+        confirmation_number: { type: string }
+        confirmation_email_sent: { type: boolean }
+        receipt_url: { type: string, format: uri }
+        invoice_number: { type: string }
+
+    SupportInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email }
+        phone: { type: string }
+        hours: { type: string }
+        help_center_url: { type: string, format: uri }
+
+    Order:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        checkout_session_id: { type: string }
+        order_number: { type: string }
+        permalink_url: { type: string, format: uri }
+        status: { type: string, enum: [confirmed, processing, shipped, delivered] }
+        estimated_delivery: { $ref: "#/components/schemas/EstimatedDelivery" }
+        confirmation: { $ref: "#/components/schemas/OrderConfirmation" }
+        support: { $ref: "#/components/schemas/SupportInfo" }
+      required: [id, checkout_session_id, permalink_url]
+
+    ProtocolVersion:
+      type: object
+      additionalProperties: false
+      description: Protocol metadata included in checkout responses. Indicates the ACP version.
+      properties:
+        version:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          example: "2026-01-30"
+          description: ACP protocol version in YYYY-MM-DD format.
+      required: [version]
+
+    DiscountAllocation:
+      type: object
+      additionalProperties: false
+      description: Breakdown of how a discount amount was allocated to a specific target.
+      required: [path, amount]
+      properties:
+        path:
+          type: string
+          description: "JSONPath to the allocation target (e.g., '$.line_items[0]', '$.totals.shipping')."
+        amount:
+          type: integer
+          minimum: 0
+          description: Amount allocated to this target in minor (cents) currency units.
+
+    Coupon:
+      type: object
+      additionalProperties: false
+      description: Coupon details describing the discount terms.
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the coupon.
+        name:
+          type: string
+          description: "Human-readable coupon name (e.g., 'Summer Sale 20% Off')."
+        percent_off:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage discount (0-100). Mutually exclusive with amount_off.
+        amount_off:
+          type: integer
+          minimum: 0
+          description: Fixed discount amount in minor currency units. Mutually exclusive with percent_off.
+        currency:
+          type: string
+          pattern: '^[a-z]{3}$'
+          description: ISO 4217 currency code for amount_off. Required if amount_off is set.
+        duration:
+          type: string
+          enum: [once, repeating, forever]
+          description: "How long the discount applies. 'once' = single use, 'repeating' = multiple billing periods, 'forever' = indefinitely."
+        duration_in_months:
+          type: integer
+          minimum: 1
+          description: "Number of months the coupon applies if duration is 'repeating'."
+        max_redemptions:
+          type: integer
+          minimum: 1
+          description: Maximum number of times this coupon can be redeemed across all customers.
+        times_redeemed:
+          type: integer
+          minimum: 0
+          description: Number of times this coupon has been redeemed.
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+          description: Arbitrary key-value metadata attached to the coupon.
+
+    AppliedDiscount:
+      type: object
+      additionalProperties: false
+      description: A discount that was successfully applied to the checkout session.
+      required: [id, coupon, amount]
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this applied discount instance.
+        code:
+          type: string
+          description: The discount code entered by the user. Omitted for automatic discounts.
+        coupon:
+          $ref: "#/components/schemas/Coupon"
+        amount:
+          type: integer
+          minimum: 0
+          description: Total discount amount in minor (cents) currency units.
+        automatic:
+          type: boolean
+          default: false
+          description: True if applied automatically by merchant rules (no code required).
+        start:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the discount became active.
+        end:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the discount expires.
+        method:
+          type: string
+          enum: [each, across]
+          description: "Allocation method. 'each' = applied independently per item. 'across' = split proportionally by value."
+        priority:
+          type: integer
+          minimum: 1
+          description: Stacking order for discount calculation. Lower numbers applied first (1 = first).
+        allocations:
+          type: array
+          items: { $ref: "#/components/schemas/DiscountAllocation" }
+          description: Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount.
+
+    DiscountsRequest:
+      type: object
+      additionalProperties: false
+      description: Discount codes input for checkout create/update requests.
+      properties:
+        codes:
+          type: array
+          items: { type: string }
+          description: Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear.
+
+    DiscountsResponse:
+      type: object
+      additionalProperties: false
+      description: Discount codes input and applied discounts output in checkout responses.
+      properties:
+        codes:
+          type: array
+          items: { type: string }
+          description: Echo of submitted discount codes.
+        applied:
+          type: array
+          items: { $ref: "#/components/schemas/AppliedDiscount" }
+          description: Discounts successfully applied (code-based and automatic).
+
+    PaymentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        provider: { type: string }
+        instruments:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        handlers:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    CheckoutSessionBase:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        protocol: { $ref: "#/components/schemas/ProtocolVersion" }
+        capabilities: { $ref: "#/components/schemas/Capabilities" }
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        status:
+          {
+            type: string,
+            enum:
+              [
+                incomplete,
+                not_ready_for_payment,
+                requires_escalation,
+                authentication_required,
+                ready_for_payment,
+                pending_approval,
+                complete_in_progress,
+                completed,
+                canceled,
+                in_progress,
+                expired,
+              ],
+          }
+        currency: { type: string }
+        presentment_currency: { type: string }
+        exchange_rate: { type: number }
+        exchange_rate_timestamp: { type: string, format: date-time }
+        locale: { type: string }
+        timezone: { type: string }
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/LineItem" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        fulfillment_options:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/FulfillmentOptionShipping"
+              - $ref: "#/components/schemas/FulfillmentOptionDigital"
+              - $ref: "#/components/schemas/FulfillmentOptionPickup"
+              - $ref: "#/components/schemas/FulfillmentOptionLocalDelivery"
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+        fulfillment_groups:
+          type: array
+          items: { $ref: "#/components/schemas/FulfillmentGroup" }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+        messages:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MessageInfo"
+              - $ref: "#/components/schemas/MessageWarning"
+              - $ref: "#/components/schemas/MessageError"
+        links:
+          type: array
+          items: { $ref: "#/components/schemas/Link" }
+        authentication_metadata:
+          $ref: "#/components/schemas/AuthenticationMetadata"
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        continue_url: { type: string, format: uri }
+        metadata:
+          type: object
+          additionalProperties: true
+        quote_id: { type: string }
+        quote_expires_at: { type: string, format: date-time }
+        discounts:
+          $ref: "#/components/schemas/DiscountsResponse"
+          description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
+      required:
+        [
+          id,
+          status,
+          currency,
+          line_items,
+          totals,
+          fulfillment_options,
+          messages,
+          links,
+          capabilities,
+        ]
+
+    CheckoutSession:
+      allOf:
+        - $ref: "#/components/schemas/CheckoutSessionBase"
+
+    CheckoutSessionWithOrder:
+      allOf:
+        - $ref: "#/components/schemas/CheckoutSessionBase"
+        - type: object
+          properties:
+            order: { $ref: "#/components/schemas/Order" }
+          required: [order]
+
+    CheckoutSessionCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/Item" }
+          minItems: 1
+        currency: { type: string, description: "ISO 4217 currency code" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        capabilities: { $ref: "#/components/schemas/Capabilities" }
+        fulfillment_groups:
+          type: array
+          items: { $ref: "#/components/schemas/FulfillmentGroup" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
+        coupons:
+          type: array
+          items: { type: string }
+          description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
+        discounts:
+          $ref: "#/components/schemas/DiscountsRequest"
+          description: Discount codes to apply to the checkout session.
+        locale: { type: string }
+        timezone: { type: string }
+        quote_id: { type: string }
+        metadata:
+          type: object
+          additionalProperties: true
+      required: [line_items, currency, capabilities]
+
+    CheckoutSessionUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/Item" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+        fulfillment_groups:
+          type: array
+          items: { $ref: "#/components/schemas/FulfillmentGroup" }
+        selected_fulfillment_options:
+          type: array
+          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+        coupons:
+          type: array
+          items: { type: string }
+          description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
+        discounts:
+          $ref: "#/components/schemas/DiscountsRequest"
+          description: Discount codes to apply. Replaces previously submitted codes.
+
+    RiskSignals:
+      type: object
+      additionalProperties: false
+      properties:
+        ip_address: { type: string }
+        user_agent: { type: string }
+        accept_language: { type: string }
+        session_id: { type: string }
+        device_fingerprint: { type: string }
+
+    CheckoutSessionCompleteRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        buyer: { $ref: "#/components/schemas/Buyer" }
+        payment_data: { $ref: "#/components/schemas/PaymentData" }
+        authentication_result:
+          { $ref: "#/components/schemas/AuthenticationResult" }
+        affiliate_attribution:
+          { $ref: "#/components/schemas/AffiliateAttribution" }
+        risk_signals: { $ref: "#/components/schemas/RiskSignals" }
+      required: [payment_data]
+
+    AuthenticationMetadata:
+      type: object
+      additionalProperties: true
+      description: >
+        Seller-provided authentication metadata for 3DS flows.
+      required:
+        - channel
+        - acquirer_details
+        - directory_server
+      properties:
+        channel:
+          type: object
+          additionalProperties: false
+          description: Details about the channel used for this 3DS Authentication.
+          required:
+            - type
+            - browser
+          properties:
+            type:
+              type: string
+              enum: [browser]
+              description: Use "browser" to indicate the transaction originated from a browser.
+            browser:
+              type: object
+              additionalProperties: false
+              description: Browser details collected server- or client-side.
+              properties:
+                accept_header:
+                  type: string
+                  description: The HTTP Accept header from the cardholder’s browser.
+                ip_address:
+                  type: string
+                  maxLength: 45
+                  description: The IP address of the browser.
+                javascript_enabled:
+                  type: boolean
+                  description: Whether the cardholder browser can execute JavaScript.
+                language:
+                  type: string
+                  maxLength: 35
+                  description: An IETF BCP 47 language tag representing the browser language.
+                user_agent:
+                  type: string
+                  description: The browser user agent string.
+                color_depth:
+                  type: integer
+                  description: The screen color depth. Required if javascript_enabled is true.
+                java_enabled:
+                  type: boolean
+                  description: Browser Java support. Required if javascript_enabled is true.
+                screen_height:
+                  type: integer
+                  description: Screen height in pixels. Required if javascript_enabled is true.
+                screen_width:
+                  type: integer
+                  description: Screen width in pixels. Required if javascript_enabled is true.
+                timezone_offset:
+                  type: integer
+                  description: Time difference in minutes between UTC and the browser local time. Required if javascript_enabled is true.
+              required:
+                - accept_header
+                - ip_address
+                - javascript_enabled
+                - language
+                - user_agent
+
+        acquirer_details:
+          type: object
+          additionalProperties: false
+          description: Details about the acquirer used for this 3DS Authentication. This object MUST be present.
+          properties:
+            acquirer_bin:
+              type: string
+              maxLength: 11
+              description: The Acquirer BIN (directory-server specific).
+            acquirer_country:
+              type: string
+              minLength: 2
+              maxLength: 2
+              description: Two-letter ISO 3166-1 alpha-2 country code.
+            acquirer_merchant_id:
+              type: string
+              maxLength: 35
+              description: The Merchant ID assigned by the acquirer.
+            merchant_name:
+              type: string
+              maxLength: 40
+              description: Merchant name assigned by the acquirer.
+            requestor_id:
+              type: string
+              maxLength: 35
+              description: Requestor ID (if required by the directory server).
+          required:
+            - acquirer_bin
+            - acquirer_country
+            - acquirer_merchant_id
+            - merchant_name
+
+        directory_server:
+          type: string
+          enum: [american_express, mastercard, visa]
+          description: The 3DS directory server used for this Authentication.
+
+        flow_preference:
+          type: object
+          additionalProperties: false
+          description: >
+            Contains additional details on the seller's preference for the 3DS
+            authentication flow. Sellers MAY request a preference, but issuers
+            ultimately decide the actual flow.
+          properties:
+            type:
+              type: string
+              enum: [challenge, frictionless]
+              description: >
+                Type of flow requested for this 3DS Authentication. "challenge"
+                requests a challenge flow; "frictionless" requests a frictionless flow.
+            challenge:
+              type: object
+              additionalProperties: false
+              description: >
+                Details about the requested challenge flow.
+              properties:
+                type:
+                  type: string
+                  enum: [mandated, preferred]
+                  description: >
+                    Subtype of challenge preference.
+            frictionless:
+              type: object
+              additionalProperties: false
+              description: >
+                Details about the requested frictionless flow.
+          required: [type]
+      allOf:
+        - if:
+            properties:
+              channel:
+                properties:
+                  browser:
+                    properties:
+                      javascript_enabled:
+                        const: true
+          then:
+            properties:
+              channel:
+                properties:
+                  browser:
+                    required:
+                      - color_depth
+                      - java_enabled
+                      - screen_height
+                      - screen_width
+                      - timezone_offset
+
+    AuthenticationResult:
+      type: object
+      additionalProperties: false
+      description: >
+        Agent-provided authentication results returned to the seller for card-based 3D Secure.
+      properties:
+        outcome:
+          type: string
+          description: The outcome of this 3DS Authentication.
+          enum:
+            - abandoned
+            - attempt_acknowledged
+            - authenticated
+            - canceled
+            - denied
+            - informational
+            - internal_error
+            - not_supported
+            - processing_error
+            - rejected
+          example: "authenticated"
+        outcome_details:
+          type: object
+          description: >
+            Detailed authentication data. This field is required when the outcome is
+            'authenticated', 'informational', or 'attempt_acknowledged'.
+          additionalProperties: false
+          properties:
+            three_ds_cryptogram:
+              type: string
+              description: >
+                The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is
+                20 bytes, base64-encoded into a 28-character string.
+              example: "AbCdEfGhIjKlMnOpQrStUvWxY0="
+            electronic_commerce_indicator:
+              type: string
+              description: >
+                Electronic Commerce Indicator (ECI) returned by the 3D Secure provider.
+                Indicates the degree/type of authentication performed.
+              enum: ["01", "02", "05", "06", "07"]
+              example: "05"
+            transaction_id:
+              type: string
+              description: >
+                Transaction identifier returned by the 3DS system:
+                - For 3DS1: the XID
+                - For 3DS2: the Directory Server Transaction ID (dsTransID)
+              example: "dsTransId_abc123"
+            version:
+              type: string
+              description: >
+                The 3D Secure version used for this authentication (for example "1.0.2" or "2.2.0").
+              example: "2.2.0"
+          required:
+            - three_ds_cryptogram
+            - electronic_commerce_indicator
+            - transaction_id
+            - version
+      required:
+        - outcome
+      allOf:
+        - if:
+            properties:
+              outcome:
+                enum: [authenticated, informational, attempt_acknowledged]
+          then:
+            required: [outcome_details]
+
+    IntentTrace:
+      type: object
+      properties:
+        reason_code:
+          type: string
+          description: |
+            Reason for abandonment. This enum is extensible: servers SHOULD accept
+            unrecognized values and treat them as "other" (see RFC Section 7.2).
+            Validators SHOULD be configured for lenient enum handling.
+          enum:
+            - price_sensitivity
+            - shipping_cost
+            - shipping_speed
+            - product_fit
+            - trust_security
+            - returns_policy
+            - payment_options
+            - comparison
+            - timing_deferred
+            - other
+        trace_summary:
+          type: string
+          maxLength: 500
+          description: A generated summary of the specific objection or negotiation gap.
+        metadata:
+          type: object
+          additionalProperties:
+            type: [string, number, boolean]
+      required: [reason_code]
+
+    CancelSessionRequest:
+      type: object
+      properties:
+        intent_trace: { $ref: "#/components/schemas/IntentTrace" }
+
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          {
+            type: string,
+            enum:
+              [
+                invalid_request,
+                request_not_idempotent,
+                processing_error,
+                service_unavailable,
+              ],
+          }
+        code: { type: string, description: "Implementation-defined error code" }
+        message: { type: string }
+        param: { type: string, description: "RFC 9535 JSONPath (optional)" }
+      required: [type, code, message]
