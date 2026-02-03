@@ -27,6 +27,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 ### 2.1 Initialization (MUST happen before tokenization)
 
 - **Version compatibility:** Client **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2025-09-29`).
+  - When rejecting a request due to missing or unsupported `API-Version` header, servers **SHOULD** return HTTP `400 Bad Request` with a `supported_versions` array listing all versions the server accepts. Servers **MAY** use `unsupported_api_version` or `missing_api_version` as well-known `code` values.
 - **Identity proofing requirements:** Server advertises acceptable signature algorithms (e.g., Ed25519, ES256) out-of-band.
 - **Implementation details:** Client capabilities (risk signals, wallet types) **SHOULD** be documented or discoverable.
 - **Client preparation:** Canonical JSON of request; cryptographic key material for signing.

@@ -34,6 +34,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 ### 2.1 Initialization
 
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-16`).
+  - When rejecting a request due to missing or unsupported `API-Version` header, servers **SHOULD** return HTTP `400 Bad Request` with a `supported_versions` array listing all versions the server accepts. Servers **MAY** use `unsupported_api_version` or `missing_api_version` as well-known `code` values.
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
 
