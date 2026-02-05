@@ -47,8 +47,7 @@ changelog/
 ├── 2025-12-12.md
 ├── 2026-01-16.md
 ├── 2026-01-30.md
-├── unreleased.md
-└── unreleased/              # Individual changelog entries
+└── unreleased/              # Individual changelog entries (current development)
 
 docs/
 ├── governance.md
