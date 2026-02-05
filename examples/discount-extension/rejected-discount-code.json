@@ -89,6 +89,7 @@
       {
         "type": "warning",
         "code": "discount_code_expired",
+        "resolution": "recoverable",
         "param": "$.discounts.codes[1]",
         "content_type": "plain",
         "content": "Code 'EXPIRED50' expired on December 1, 2025 and could not be applied."

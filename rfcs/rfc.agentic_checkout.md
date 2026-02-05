@@ -186,8 +186,15 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **PaymentHandler**: `id`, `name`, `version`, `spec`, `requires_delegate_payment`, `requires_pci_compliance`, `psp`, `config_schema`, `instrument_schemas[]`, `config` (handler-specific configuration)
 - **PaymentData**: `handler_id`, `instrument` (with `type` and `credential`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
-- **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
-- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
+- **Message (info)**: `type: "info"`, `severity?`, `resolution?`, `param?`, `content_type: "plain"|"markdown"`, `content`
+- **Message (warning)**: `type: "warning"`, `code`, `severity?`, `resolution?`, `param?`, `content_type`, `content`
+- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `severity?`, `resolution?`, `param?`, `content_type`, `content`
+
+Message resolution values:
+- `resolution` (optional): Declares who resolves this message. Values:
+  - `recoverable`: Agent can fix via API (e.g., retry with different parameters)
+  - `requires_buyer_input`: Buyer must provide information the API cannot collect programmatically
+  - `requires_buyer_review`: Buyer must authorize before order placement (policy, regulatory, or entitlement rules)
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 - **Total**: `type`, `display_text`, `amount` (**int**), `description?`
 
@@ -688,6 +695,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:
   - Renamed `fulfillment_address` to `fulfillment_details` with nested structure (`name`, `phone_number`, `email`, `address`)
   - Replaced `fulfillment_option_id` with `selected_fulfillment_options[]` array supporting multiple selections and item mappings

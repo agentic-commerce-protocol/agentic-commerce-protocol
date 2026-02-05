@@ -933,6 +933,10 @@ components:
       properties:
         type: { type: string, const: info }
         severity: { type: string, enum: [info, low, medium, high, critical] }
+        resolution:
+          type: string
+          enum: [recoverable, requires_buyer_input, requires_buyer_review]
+          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param: { type: string, description: "RFC 9535 JSONPath" }
         content_type: { type: string, enum: [plain, markdown] }
         content: { type: string }
@@ -965,6 +969,10 @@ components:
               ],
           }
         severity: { type: string, enum: [info, low, medium, high, critical] }
+        resolution:
+          type: string
+          enum: [recoverable, requires_buyer_input, requires_buyer_review]
+          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param: { type: string, description: "RFC 9535 JSONPath" }
         content_type: { type: string, enum: [plain, markdown] }
         content: { type: string }
@@ -1003,6 +1011,10 @@ components:
               ],
           }
         severity: { type: string, enum: [info, low, medium, high, critical] }
+        resolution:
+          type: string
+          enum: [recoverable, requires_buyer_input, requires_buyer_review]
+          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param:
           { type: string, description: "RFC 9535 JSONPath", nullable: true }
         content_type: { type: string, enum: [plain, markdown] }
