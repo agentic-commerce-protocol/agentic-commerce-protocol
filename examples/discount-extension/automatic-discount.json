@@ -1,0 +1,91 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Automatic discount applied by the merchant without a code (e.g., free shipping on orders over $50)",
+
+  "request": {
+    "line_items": [
+      {"id": "item_123", "quantity": 3}
+    ],
+    "currency": "usd"
+  },
+
+  "response": {
+    "id": "checkout_session_auto789",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_123"},
+        "name": "Organic Coffee Beans (1lb)",
+        "quantity": 3,
+        "unit_amount": 1899,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 5697},
+          {"type": "total", "display_text": "Total", "amount": 5697}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": [],
+      "applied": [
+        {
+          "id": "di_auto_freeship",
+          "coupon": {
+            "id": "coupon_freeship50",
+            "name": "Free shipping on orders over $50",
+            "amount_off": 599,
+            "currency": "usd"
+          },
+          "amount": 599,
+          "automatic": true,
+          "allocations": [
+            {"path": "$.totals.fulfillment", "amount": 599}
+          ]
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "description": "Free on orders over $50",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 5697},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "discount", "display_text": "Free Shipping", "amount": 599},
+      {"type": "total", "display_text": "Total", "amount": 5697}
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Free shipping applied! Orders over $50 ship free."
+      }
+    ],
+    "links": []
+  }
+}
+

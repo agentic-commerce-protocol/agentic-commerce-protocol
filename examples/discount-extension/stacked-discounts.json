@@ -1,0 +1,139 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Multiple stacked discounts showing priority order and allocation breakdown",
+
+  "request": {
+    "line_items": [
+      {"id": "item_laptop", "quantity": 1},
+      {"id": "item_mouse", "quantity": 1}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["SUMMER20", "LOYALTY5"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_stacked789",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "loyal-customer@example.com",
+      "customer_id": "cust_loyal123",
+      "account_type": "registered",
+      "loyalty": {
+        "tier": "gold",
+        "points_balance": 5000
+      }
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_laptop"},
+        "name": "MacBook Pro 14\"",
+        "quantity": 1,
+        "unit_amount": 199900,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 199900},
+          {"type": "items_discount", "display_text": "Discount", "amount": 40280},
+          {"type": "total", "display_text": "Total", "amount": 159620}
+        ]
+      },
+      {
+        "id": "li_2",
+        "item": {"id": "item_mouse"},
+        "name": "Magic Mouse",
+        "quantity": 1,
+        "unit_amount": 9900,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 9900},
+          {"type": "items_discount", "display_text": "Discount", "amount": 2220},
+          {"type": "total", "display_text": "Total", "amount": 7680}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": ["SUMMER20", "LOYALTY5"],
+      "applied": [
+        {
+          "id": "di_summer",
+          "code": "SUMMER20",
+          "coupon": {
+            "id": "coupon_summer20",
+            "name": "Summer Sale 20% Off",
+            "percent_off": 20,
+            "duration": "once"
+          },
+          "amount": 41960,
+          "method": "each",
+          "priority": 1,
+          "allocations": [
+            {"path": "$.line_items[0]", "amount": 39980},
+            {"path": "$.line_items[1]", "amount": 1980}
+          ]
+        },
+        {
+          "id": "di_loyalty",
+          "code": "LOYALTY5",
+          "coupon": {
+            "id": "coupon_loyalty5",
+            "name": "$5 Loyalty Reward",
+            "amount_off": 500,
+            "currency": "usd",
+            "duration": "once"
+          },
+          "amount": 500,
+          "method": "across",
+          "priority": 2
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_express",
+        "title": "Express Shipping (2-3 days)",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 1999}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 209800},
+      {"type": "items_discount", "display_text": "Summer Sale (20% off)", "amount": 41960},
+      {"type": "items_discount", "display_text": "Loyalty Reward ($5)", "amount": 500},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 167340},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 1999},
+      {"type": "tax", "display_text": "Tax", "amount": 13470},
+      {"type": "total", "display_text": "Total", "amount": 182809}
+    ],
+    "messages": [],
+    "links": []
+  },
+
+  "_notes": {
+    "stacking_order": [
+      "Priority 1: SUMMER20 (20% off) applied first to original prices",
+      "Priority 2: LOYALTY5 ($5 off) applied second to discounted prices",
+      "Lower priority numbers are calculated first"
+    ],
+    "allocation_method": [
+      "SUMMER20 uses 'each' method: 20% calculated on each item independently",
+      "LOYALTY5 uses 'across' method: $5 applied to order total (no item-level breakdown)"
+    ]
+  }
+}
+
