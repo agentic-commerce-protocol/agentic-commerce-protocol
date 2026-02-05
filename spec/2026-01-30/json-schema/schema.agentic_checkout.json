@@ -649,6 +649,22 @@
       },
       "required": ["type", "display_text", "amount"]
     },
+    "SelectedFulfillmentOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["shipping", "digital", "pickup", "local_delivery"]
+        },
+        "option_id": { "type": "string" },
+        "item_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["type", "option_id", "item_ids"]
+    },
     "FulfillmentOptionPickup": {
       "type": "object",
       "additionalProperties": false,
