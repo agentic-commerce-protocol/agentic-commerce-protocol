@@ -1,4 +1,8 @@
-# Automated Consistency Validation
+# Scripts
+
+This directory contains automated scripts for maintaining the Agentic Commerce Protocol specification.
+
+## Automated Consistency Validation
 
 This directory contains automated validation scripts that ensure consistency across JSON Schemas, OpenAPI specifications, and examples.
 

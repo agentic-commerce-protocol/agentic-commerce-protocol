@@ -47,7 +47,8 @@ changelog/
 ├── 2025-12-12.md
 ├── 2026-01-16.md
 ├── 2026-01-30.md
-└── unreleased.md
+├── unreleased.md
+└── unreleased/              # Individual changelog entries
 
 docs/
 ├── governance.md
@@ -157,7 +158,7 @@ See [docs/governance.md](docs/governance.md) for guidance on what requires a SEP
 
 - Updated OpenAPI / JSON Schemas (if applicable)
 - New or updated examples
-- Changelog entry in `changelog/unreleased.md`
+- Changelog entry file in `changelog/unreleased/` (see [CONTRIBUTING.md](CONTRIBUTING.md) for details)
 
 ---
 

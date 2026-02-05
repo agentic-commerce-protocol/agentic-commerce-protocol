@@ -99,6 +99,52 @@ We've created PR templates to help make your contribution process smoother and g
 
 ---
 
+## Changelog Workflow
+
+We use a directory-based changelog system to avoid merge conflicts when multiple contributors are working simultaneously.
+
+### For Contributors: Adding a Changelog Entry
+
+When you make a change, create a new markdown file in `changelog/unreleased/`:
+
+1. **Create a file** with a descriptive name:
+   ```bash
+   # Example filenames:
+   changelog/unreleased/add-payment-handlers.md
+   changelog/unreleased/fix-fulfillment-schema.md
+   changelog/unreleased/update-capability-negotiation.md
+   ```
+
+2. **Write your changelog entry** following this format:
+   ```markdown
+   ## Title of Your Change
+
+   Brief description of what changed and why.
+
+   ### Breaking Changes (if applicable)
+   - List any breaking changes
+   - Include migration guidance
+
+   ### Changes
+   - Specific change 1
+   - Specific change 2
+
+   ### Files Updated
+   - `path/to/file1.json`
+   - `path/to/file2.yaml`
+
+   ### Reference
+   - PR: #<pr-number>
+   ```
+
+3. **Commit the file** with your PR
+
+### For Maintainers: Building a Release
+
+When cutting a new release, manually combine all files in `changelog/unreleased/` into a single `changelog/YYYY-MM-DD.md` file, then remove the individual entry files.
+
+---
+
 ## Spec Versioning & Review Process
 
 - **Versioning**: All breaking changes or new features to the protocol/specs must increment the version (e.g., `2025-09-29` → `2025-10-01`).
@@ -123,7 +169,9 @@ Every PR **must** include, as appropriate:
 
 - [ ] **OpenAPI / JSON Schema**: Update or add to `spec/openapi/` and `spec/json-schema/` as needed.
 - [ ] **Examples**: Add or update sample requests/responses in `examples/`.
-- [ ] **Changelog**: Add an entry to `changelog/unreleased.md` describing your change.
+- [ ] **Changelog**: Add a changelog entry file to `changelog/unreleased/` describing your change.
+  - Create a new file: `changelog/unreleased/your-change-description.md`
+  - Follow the format shown in the Changelog Workflow section above
 - [ ] **Documentation**: Update `README.md` or relevant RFCs if behavior or usage changes.
 - [ ] **CLA**: Ensure you have signed the appropriate CLA.
 

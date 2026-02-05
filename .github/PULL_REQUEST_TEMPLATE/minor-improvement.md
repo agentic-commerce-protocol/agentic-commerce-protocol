@@ -84,7 +84,7 @@ Before submitting, ensure:
 - [ ] My change follows the project's code style and conventions
 - [ ] I have updated relevant documentation (if applicable)
 - [ ] I have added/updated examples (if applicable)
-- [ ] I have added an entry to `changelog/unreleased.md`
+- [ ] I have added a changelog entry file to `changelog/unreleased/your-change-description.md`
 - [ ] I have tested my changes locally
 - [ ] This change does NOT require a SEP (it's minor/non-breaking)
 - [ ] All CI checks pass
