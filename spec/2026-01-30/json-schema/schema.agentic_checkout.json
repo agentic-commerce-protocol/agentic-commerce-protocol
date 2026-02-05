@@ -1618,7 +1618,7 @@
         "selected_fulfillment_options": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/SelectedFulfillmentOptions"
+            "$ref": "#/$defs/SelectedFulfillmentOption"
           }
         },
         "fulfillment_groups": {
@@ -1784,7 +1784,7 @@
         "selected_fulfillment_options": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/SelectedFulfillmentOptions"
+            "$ref": "#/$defs/SelectedFulfillmentOption"
           }
         },
         "coupons": {
