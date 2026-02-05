@@ -39,7 +39,12 @@
     "id": "checkout_session_123",
     "payment_provider": {
       "provider": "stripe",
-      "supported_payment_methods": ["card"]
+      "supported_payment_methods": [
+        {
+          "type": "card",
+          "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+        }
+      ]
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -142,25 +147,25 @@
         "type": "shipping",
         "id": "fulfillment_option_123",
         "title": "Standard",
-        "subtitle": "Arrives in 4-5 days",
+        "description": "Arrives in 4-5 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-        "subtotal": 100,
-        "tax": 0,
-        "total": 100
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
       },
       {
         "type": "shipping",
         "id": "fulfillment_option_456",
         "title": "Express",
-        "subtitle": "Arrives in 1-2 days",
+        "description": "Arrives in 1-2 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-        "subtotal": 500,
-        "tax": 0,
-        "total": 500
+        "totals": [
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+        ]
       }
     ],
     "messages": [],
@@ -259,25 +264,25 @@
         "type": "shipping",
         "id": "fulfillment_option_123",
         "title": "Standard",
-        "subtitle": "Arrives in 4-5 days",
+        "description": "Arrives in 4-5 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-        "subtotal": 100,
-        "tax": 0,
-        "total": 100
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
       },
       {
         "type": "shipping",
         "id": "fulfillment_option_456",
         "title": "Express",
-        "subtitle": "Arrives in 1-2 days",
+        "description": "Arrives in 1-2 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-        "subtotal": 500,
-        "tax": 0,
-        "total": 500
+        "totals": [
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+        ]
       }
     ],
     "messages": [],
@@ -428,25 +433,25 @@
         "type": "shipping",
         "id": "fulfillment_option_123",
         "title": "Standard",
-        "subtitle": "Arrives in 4-5 days",
+        "description": "Arrives in 4-5 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-        "subtotal": 100,
-        "tax": 0,
-        "total": 100
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
       },
       {
         "type": "shipping",
         "id": "fulfillment_option_456",
         "title": "Express",
-        "subtitle": "Arrives in 1-2 days",
+        "description": "Arrives in 1-2 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-        "subtotal": 500,
-        "tax": 0,
-        "total": 500
+        "totals": [
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+        ]
       }
     ],
     "messages": [],
@@ -539,25 +544,25 @@
         "type": "shipping",
         "id": "fulfillment_option_123",
         "title": "Standard",
-        "subtitle": "Arrives in 4-5 days",
+        "description": "Arrives in 4-5 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-        "subtotal": 100,
-        "tax": 0,
-        "total": 100
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
       },
       {
         "type": "shipping",
         "id": "fulfillment_option_456",
         "title": "Express",
-        "subtitle": "Arrives in 1-2 days",
+        "description": "Arrives in 1-2 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-        "subtotal": 500,
-        "tax": 0,
-        "total": 500
+        "totals": [
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+        ]
       }
     ],
     "messages": [],
@@ -665,13 +670,13 @@
         "type": "shipping",
         "id": "fulfillment_option_123",
         "title": "Standard",
-        "subtitle": "Arrives in 4-5 days",
+        "description": "Arrives in 4-5 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-        "subtotal": 100,
-        "tax": 0,
-        "total": 100
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
       },
       {
         "type": "shipping",
@@ -681,9 +686,9 @@
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-        "subtotal": 500,
-        "tax": 0,
-        "total": 500
+        "totals": [
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+        ]
       }
     ],
     "messages": [
@@ -734,7 +739,10 @@
     "payment_provider": {
       "provider": "stripe",
       "supported_payment_methods": [
-        "card"
+        {
+          "type": "card",
+          "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+        }
       ]
     },
     "status": "authentication_required",

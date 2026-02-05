@@ -125,7 +125,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 **Response body (authoritative cart):**
 
 - `id` (string)
-- `payment_provider` (e.g., `stripe`, `supported_payment_methods: ["card"]`)
+- `capabilities.payment.handlers` (array of **PaymentHandler** objects with handler config, PSP, and requirements)
 - `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
@@ -178,19 +178,28 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
 - **Address**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
 - **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested Address object)
-- **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal?`, `tax?`, `total` (**int**)
-- **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal?`, `tax?`, `total` (**int**)
-- **SelectedFulfillmentOption**: `type` (`shipping|digital`), and type-specific nested object (e.g., `shipping: {option_id, item_ids[]}`)
-- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (`["card"]`)
-- **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
+- **FulfillmentOption (shipping)**: `id`, `title`, `description?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `totals` (array of **Total**)
+- **FulfillmentOption (digital)**: `id`, `title`, `description?`, `totals` (array of **Total**)
+- **FulfillmentOption (pickup)**: `id`, `title`, `description?`, `location`, `pickup_type?`, `ready_by?`, `pickup_by?`, `totals` (array of **Total**)
+- **FulfillmentOption (local_delivery)**: `id`, `title`, `description?`, `delivery_window?`, `service_area?`, `totals` (array of **Total**)
+- **SelectedFulfillmentOption**: `type` (`shipping|digital|pickup|local_delivery`), `option_id`, `item_ids[]` (simple object mapping fulfillment option to items)
+- **PaymentHandler**: `id`, `name`, `version`, `spec`, `requires_delegate_payment`, `requires_pci_compliance`, `psp`, `config_schema`, `instrument_schemas[]`, `config` (handler-specific configuration)
+- **PaymentData**: `handler_id`, `instrument` (with `type` and `credential`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
-- **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
-- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
+- **Message (info)**: `type: "info"`, `severity?`, `resolution?`, `param?`, `content_type: "plain"|"markdown"`, `content`
+- **Message (warning)**: `type: "warning"`, `code`, `severity?`, `resolution?`, `param?`, `content_type`, `content`
+- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `severity?`, `resolution?`, `param?`, `content_type`, `content`
+
+Message resolution values:
+- `resolution` (optional): Declares who resolves this message. Values:
+  - `recoverable`: Agent can fix via API (e.g., retry with different parameters)
+  - `requires_buyer_input`: Buyer must provide information the API cannot collect programmatically
+  - `requires_buyer_review`: Buyer must authorize before order placement (policy, regulatory, or entitlement rules)
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
+- **Total**: `type`, `display_text`, `amount` (**int**), `description?`
 
 3D Secure / Authentication-specific types:
-- **AuthenticationMetadata**: 
-  - `channel` (object): `type` ("browser"), `browser` (object containing `accept_header`, `ip_address`, `javascript_enabled` (bool), `language`, `user_agent`; plus conditional fields if JS enabled: `color_depth`, `java_enabled`, `screen_height`, `screen_width`, `timezone_offset`).
+- **AuthenticationMetadata**:
   - `acquirer_details` (object): `acquirer_bin`, `acquirer_country`, `acquirer_merchant_id`, `merchant_name`, `requestor_id?`.
   - `directory_server`: enum `american_express` | `mastercard` | `visa`.
   - `flow_preference?` (object): `type` ("challenge" | "frictionless"), `challenge?` (object), `frictionless?` (object).
@@ -220,7 +229,7 @@ All money fields are **integers (minor units)**.
 
 - **Authentication:** `Authorization: Bearer <token>` **REQUIRED**.
 - **Integrity & Freshness:** `Signature` over canonical JSON and `Timestamp` **SHOULD** be verified with a bounded clock‑skew window.
-- **PCI/PII:** Do not log full PAN/CVC; redact addresses as required by policy. TLS 1.2+ **MUST** be used.
+- **PCI/PII:** Do not log full PAN/CVC; redact addresses as required by policy. TLS 1.3 **MUST** be used.
 - **Webhooks:** Verify HMAC (`Merchant-Signature`) on webhook calls (see separate Webhooks RFC/OAS).
 
 ---
@@ -231,7 +240,7 @@ All money fields are **integers (minor units)**.
 - All monetary amounts are **integers** (minor units).
 - `status` ∈ `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`.
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
-- `selected_fulfillment_options[].shipping.option_id` or `digital.option_id` **MUST** match an element of `fulfillment_options` when set.
+- `selected_fulfillment_options[].option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
 - When status is `authentication_required`, the session response MUST include `authentication_metadata`.
 
@@ -266,9 +275,27 @@ All money fields are **integers (minor units)**.
 ```json
 {
   "id": "checkout_session_123",
-  "payment_provider": {
-    "provider": "stripe",
-    "supported_payment_methods": ["card"]
+  "payment": {
+    "handlers": [
+      {
+        "id": "card_tokenized",
+        "name": "dev.acp.tokenized.card",
+        "version": "2026-01-22",
+        "spec": "https://acp.dev/handlers/tokenized.card",
+        "requires_delegate_payment": true,
+        "requires_pci_compliance": false,
+        "psp": "stripe",
+        "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+        "instrument_schemas": ["https://acp.dev/schemas/handlers/tokenized.card/instrument.json"],
+        "config": {
+          "merchant_id": "acct_1234567890",
+          "psp": "stripe",
+          "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+          "supports_3ds": true,
+          "environment": "production"
+        }
+      }
+    ]
   },
   "status": "ready_for_payment",
   "currency": "usd",
@@ -300,10 +327,8 @@ All money fields are **integers (minor units)**.
   "selected_fulfillment_options": [
     {
       "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_123",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_123",
+      "item_ids": ["item_456"]
     }
   ],
   "totals": [
@@ -322,25 +347,25 @@ All money fields are **integers (minor units)**.
       "type": "shipping",
       "id": "fulfillment_option_123",
       "title": "Standard",
-      "subtitle": "Arrives in 4-5 days",
+      "description": "Arrives in 4-5 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
       "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-      "subtotal": 100,
-      "tax": 0,
-      "total": 100
+      "totals": [
+        { "type": "total", "display_text": "Shipping", "amount": 100 }
+      ]
     },
     {
       "type": "shipping",
       "id": "fulfillment_option_456",
       "title": "Express",
-      "subtitle": "Arrives in 1-2 days",
+      "description": "Arrives in 1-2 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
       "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-      "subtotal": 500,
-      "tax": 0,
-      "total": 500
+      "totals": [
+        { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+      ]
     }
   ],
   "messages": [],
@@ -359,11 +384,8 @@ All money fields are **integers (minor units)**.
 {
   "selected_fulfillment_options": [
     {
-      "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_456",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_456",
+      "item_ids": ["item_456"]
     }
   ]
 }
@@ -403,11 +425,8 @@ All money fields are **integers (minor units)**.
   },
   "selected_fulfillment_options": [
     {
-      "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_456",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_456",
+      "item_ids": ["item_456"]
     }
   ],
   "totals": [
@@ -426,25 +445,25 @@ All money fields are **integers (minor units)**.
       "type": "shipping",
       "id": "fulfillment_option_123",
       "title": "Standard",
-      "subtitle": "Arrives in 4-5 days",
+      "description": "Arrives in 4-5 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
       "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-      "subtotal": 100,
-      "tax": 0,
-      "total": 100
+      "totals": [
+        { "type": "total", "display_text": "Shipping", "amount": 100 }
+      ]
     },
     {
       "type": "shipping",
       "id": "fulfillment_option_456",
       "title": "Express",
-      "subtitle": "Arrives in 1-2 days",
+      "description": "Arrives in 1-2 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
       "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-      "subtotal": 500,
-      "tax": 0,
-      "total": 500
+      "totals": [
+        { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+      ]
     }
   ],
   "messages": [],
@@ -468,8 +487,14 @@ All money fields are **integers (minor units)**.
     "phone_number": "15552003434"
   },
   "payment_data": {
-    "token": "spt_123",
-    "provider": "stripe",
+    "handler_id": "card_tokenized",
+    "instrument": {
+      "type": "card",
+      "credential": {
+        "type": "spt",
+        "token": "spt_123"
+      }
+    },
     "billing_address": {
       "name": "test",
       "line_one": "1234 Chat Road",
@@ -535,10 +560,8 @@ If the session is in `authentication_required` state, a client MUST include `aut
   "selected_fulfillment_options": [
     {
       "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_123",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_123",
+      "item_ids": ["item_456"]
     }
   ],
   "totals": [
@@ -557,25 +580,25 @@ If the session is in `authentication_required` state, a client MUST include `aut
       "type": "shipping",
       "id": "fulfillment_option_123",
       "title": "Standard",
-      "subtitle": "Arrives in 4-5 days",
+      "description": "Arrives in 4-5 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
       "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-      "subtotal": 100,
-      "tax": 0,
-      "total": 100
+      "totals": [
+        { "type": "total", "display_text": "Shipping", "amount": 100 }
+      ]
     },
     {
       "type": "shipping",
       "id": "fulfillment_option_456",
       "title": "Express",
-      "subtitle": "Arrives in 1-2 days",
+      "description": "Arrives in 1-2 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
       "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-      "subtotal": 500,
-      "tax": 0,
-      "total": 500
+      "totals": [
+        { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+      ]
     }
   ],
   "messages": [],
@@ -655,7 +678,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 10. Conformance Checklist
 
-- [ ] Enforces HTTPS, JSON, and `API-Version: 2025-12-12`
+- [ ] Enforces HTTPS, JSON, and `API-Version: 2026-01-15`
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
@@ -671,6 +694,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:
   - Renamed `fulfillment_address` to `fulfillment_details` with nested structure (`name`, `phone_number`, `email`, `address`)
   - Replaced `fulfillment_option_id` with `selected_fulfillment_options[]` array supporting multiple selections and item mappings

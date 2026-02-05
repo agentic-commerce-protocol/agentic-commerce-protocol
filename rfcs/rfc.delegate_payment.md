@@ -105,7 +105,7 @@ Exactly **one** credential type is supported today: **card**.
 - `name`: string
 - `cvc`: string (max 4)
 - `checks_performed`: array of `avs` | `cvv` | `ani` | `auth0`
-- `iin`: string (max 6)
+- `iin`: string (max 8)
 - `display_card_funding_type`: `credit` | `debit` | `prepaid` (**REQUIRED**)
 - `display_wallet_type`: string (e.g., wallet indicator for virtual)
 - `display_brand`: string (e.g., `visa`, `amex`)
@@ -204,7 +204,7 @@ Exactly **one** credential type is supported today: **card**.
 - **Integrity:** `Signature` over canonical JSON **SHOULD** be verified (algorithm policy advertised out-of-band).
 - **Freshness:** `Timestamp` **SHOULD** be required and checked within an acceptable clock-skew window.
 - **PII/PCI:** Card data handling **MUST** follow applicable PCI DSS requirements; logs **MUST NOT** contain full PAN or CVC.
-- **Transport:** All requests **MUST** use HTTPS/TLS 1.2+.
+- **Transport:** All requests **MUST** use HTTPS/TLS 1.3.
 
 ---
 
@@ -218,7 +218,7 @@ Exactly **one** credential type is supported today: **card**.
   - `exp_month` length ≤ 2 and value `"01"`–`"12"`.
   - `exp_year` length ≤ 4 and four digits.
   - `cvc` length ≤ 4.
-  - `iin` length ≤ 6.
+  - `iin` length ≤ 8.
 - `display_card_funding_type` ∈ `credit|debit|prepaid`.
 - `allowance.currency` matches `^[a-z]{3}$` (e.g., `usd`).
 - `allowance.expires_at` must be RFC 3339.

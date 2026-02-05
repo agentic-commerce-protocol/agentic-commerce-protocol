@@ -10,6 +10,8 @@ Last updated: 2026-01-06
 |------------------|-------------|------------------|-------------------------|-----------|
 | Stripe, Inc. | 2025-11-21 | prasad-stripe | prasad-stripe,bharath-stripe,stevekaliski-stripe,nvp-stripe,elorakelkel-stripe,mfix-stripe | NA |
 | OpenAI LLC | 2025-11-21 | aravindrao-oai | aravindrao-oai,riley-oai,bhavinmodi-oai,brianlin-oai | NA |
+| Adyen N.V. | 2026-01-28 | pedroreis-adyen | jose-adyen,johnny-adyen,dean-adyen,pedroreis-adyen | NA |
+
 
 ## Individual CLA Signatories
 
