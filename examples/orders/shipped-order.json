@@ -1,0 +1,113 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json#/$defs/Order",
+  "_description": "Order with all items shipped and delivered, including rich fulfillment tracking.",
+  "id": "ord_shipped_456",
+  "checkout_session_id": "cs_def123",
+  "permalink_url": "https://merchant.example.com/orders/ord_shipped_456",
+  "order_number": "ORD-2026-00456",
+  "status": "delivered",
+  "line_items": [
+    {
+      "id": "li_laptop",
+      "title": "MacBook Pro 16\"",
+      "product_id": "prod_mbp16",
+      "description": "Apple MacBook Pro 16-inch with M3 Pro chip",
+      "image_url": "https://merchant.example.com/images/mbp16.jpg",
+      "url": "https://merchant.example.com/products/macbook-pro-16",
+      "quantity": { "ordered": 1, "shipped": 1 },
+      "unit_price": 249900,
+      "subtotal": 249900,
+      "status": "delivered"
+    },
+    {
+      "id": "li_case",
+      "title": "Laptop Sleeve",
+      "product_id": "prod_sleeve",
+      "quantity": { "ordered": 1, "shipped": 1 },
+      "unit_price": 4900,
+      "subtotal": 4900,
+      "status": "delivered"
+    }
+  ],
+  "fulfillments": [
+    {
+      "id": "ful_main",
+      "type": "shipping",
+      "status": "delivered",
+      "line_items": [
+        { "id": "li_laptop", "quantity": 1 },
+        { "id": "li_case", "quantity": 1 }
+      ],
+      "carrier": "FedEx",
+      "tracking_number": "794644790138",
+      "tracking_url": "https://www.fedex.com/fedextrack/?trknbr=794644790138",
+      "destination": {
+        "name": "John Smith",
+        "line_one": "123 Main Street",
+        "line_two": "Apt 4B",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94102"
+      },
+      "estimated_delivery": {
+        "earliest": "2026-02-05T09:00:00Z",
+        "latest": "2026-02-05T18:00:00Z"
+      },
+      "events": [
+        {
+          "id": "evt_1",
+          "type": "processing",
+          "occurred_at": "2026-02-01T10:00:00Z",
+          "description": "Order received and being processed"
+        },
+        {
+          "id": "evt_2",
+          "type": "shipped",
+          "occurred_at": "2026-02-02T14:30:00Z",
+          "description": "Picked up by carrier",
+          "location": "Memphis, TN"
+        },
+        {
+          "id": "evt_3",
+          "type": "in_transit",
+          "occurred_at": "2026-02-03T08:00:00Z",
+          "location": "Oakland, CA"
+        },
+        {
+          "id": "evt_4",
+          "type": "out_for_delivery",
+          "occurred_at": "2026-02-05T07:30:00Z",
+          "location": "San Francisco, CA"
+        },
+        {
+          "id": "evt_5",
+          "type": "delivered",
+          "occurred_at": "2026-02-05T14:22:00Z",
+          "description": "Delivered - Left at front door",
+          "location": "San Francisco, CA"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "subtotal": 254800,
+    "shipping": 0,
+    "tax": 22307,
+    "discount": 0,
+    "total": 277107,
+    "currency": "usd"
+  },
+  "confirmation": {
+    "confirmation_number": "CONF-2026-00456",
+    "confirmation_email_sent": true,
+    "receipt_url": "https://merchant.example.com/receipts/ord_shipped_456"
+  },
+  "support": {
+    "email": "support@merchant.example.com",
+    "phone": "+1-800-555-0123",
+    "hours": "Mon-Fri 9am-6pm PT",
+    "help_center_url": "https://merchant.example.com/help"
+  }
+}
+

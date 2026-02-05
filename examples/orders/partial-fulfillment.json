@@ -1,0 +1,79 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json#/$defs/Order",
+  "_description": "Order with partial fulfillment - some items shipped, others backordered.",
+  "id": "ord_partial_789",
+  "checkout_session_id": "cs_ghi456",
+  "permalink_url": "https://merchant.example.com/orders/ord_partial_789",
+  "order_number": "ORD-2026-00789",
+  "status": "processing",
+  "line_items": [
+    {
+      "id": "li_shoes",
+      "title": "Running Shoes - Size 10",
+      "product_id": "prod_shoes_10",
+      "image_url": "https://merchant.example.com/images/shoes.jpg",
+      "quantity": { "ordered": 3, "shipped": 3 },
+      "unit_price": 12900,
+      "subtotal": 38700,
+      "status": "shipped"
+    },
+    {
+      "id": "li_shirts",
+      "title": "Cotton T-Shirt - Blue - Medium",
+      "product_id": "prod_shirt_blue_m",
+      "image_url": "https://merchant.example.com/images/shirt-blue.jpg",
+      "quantity": { "ordered": 2, "shipped": 0 },
+      "unit_price": 2900,
+      "subtotal": 5800,
+      "status": "processing"
+    }
+  ],
+  "fulfillments": [
+    {
+      "id": "ful_shoes",
+      "type": "shipping",
+      "status": "delivered",
+      "line_items": [
+        { "id": "li_shoes", "quantity": 3 }
+      ],
+      "carrier": "UPS",
+      "tracking_number": "1Z999AA10123456784",
+      "tracking_url": "https://www.ups.com/track?tracknum=1Z999AA10123456784",
+      "events": [
+        {
+          "id": "evt_s1",
+          "type": "shipped",
+          "occurred_at": "2026-02-02T10:00:00Z"
+        },
+        {
+          "id": "evt_s2",
+          "type": "delivered",
+          "occurred_at": "2026-02-04T14:00:00Z",
+          "description": "Left at front door"
+        }
+      ]
+    },
+    {
+      "id": "ful_shirts",
+      "type": "shipping",
+      "status": "pending",
+      "line_items": [
+        { "id": "li_shirts", "quantity": 2 }
+      ],
+      "description": "Backordered - Expected to ship by Feb 15, 2026",
+      "estimated_delivery": {
+        "earliest": "2026-02-18T00:00:00Z",
+        "latest": "2026-02-22T00:00:00Z"
+      },
+      "events": []
+    }
+  ],
+  "totals": {
+    "subtotal": 44500,
+    "shipping": 899,
+    "tax": 3978,
+    "total": 49377,
+    "currency": "usd"
+  }
+}
+
