@@ -1265,85 +1265,10 @@
       "additionalProperties": true,
       "description": "Seller-provided authentication metadata for 3DS flows.",
       "required": [
-        "channel",
         "acquirer_details",
         "directory_server"
       ],
       "properties": {
-        "channel": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Details about the channel used for this 3DS Authentication.",
-          "required": [
-            "type",
-            "browser"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "browser"
-              ],
-              "description": "Use 'browser' to indicate the transaction originated from a browser."
-            },
-            "browser": {
-              "type": "object",
-              "additionalProperties": false,
-              "description": "Browser details collected server- or client-side.",
-              "properties": {
-                "accept_header": {
-                  "type": "string",
-                  "description": "The HTTP Accept header from the cardholder\u2019s browser."
-                },
-                "ip_address": {
-                  "type": "string",
-                  "maxLength": 45,
-                  "description": "The IP address of the browser."
-                },
-                "javascript_enabled": {
-                  "type": "boolean",
-                  "description": "Whether the cardholder browser can execute JavaScript."
-                },
-                "language": {
-                  "type": "string",
-                  "maxLength": 35,
-                  "description": "An IETF BCP 47 language tag representing the browser language."
-                },
-                "user_agent": {
-                  "type": "string",
-                  "description": "The browser user agent string."
-                },
-                "color_depth": {
-                  "type": "integer",
-                  "description": "The screen color depth. Required if javascript_enabled is true."
-                },
-                "java_enabled": {
-                  "type": "boolean",
-                  "description": "Browser Java support. Required if javascript_enabled is true."
-                },
-                "screen_height": {
-                  "type": "integer",
-                  "description": "Screen height in pixels. Required if javascript_enabled is true."
-                },
-                "screen_width": {
-                  "type": "integer",
-                  "description": "Screen width in pixels. Required if javascript_enabled is true."
-                },
-                "timezone_offset": {
-                  "type": "integer",
-                  "description": "Time difference in minutes between UTC and the browser local time. Required if javascript_enabled is true."
-                }
-              },
-              "required": [
-                "accept_header",
-                "ip_address",
-                "javascript_enabled",
-                "language",
-                "user_agent"
-              ]
-            }
-          }
-        },
         "acquirer_details": {
           "type": "object",
           "additionalProperties": false,
@@ -1439,43 +1364,7 @@
             "type"
           ]
         }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "channel": {
-                "properties": {
-                  "browser": {
-                    "properties": {
-                      "javascript_enabled": {
-                        "const": true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "channel": {
-                "properties": {
-                  "browser": {
-                    "required": [
-                      "color_depth",
-                      "java_enabled",
-                      "screen_height",
-                      "screen_width",
-                      "timezone_offset"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
+      }
     },
     "AuthenticationResult": {
       "type": "object",
