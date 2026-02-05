@@ -1,0 +1,100 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Rejected discount code with one valid and one expired code",
+
+  "request": {
+    "line_items": [
+      {"id": "item_123", "quantity": 1}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["SAVE10", "EXPIRED50"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_reject456",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_123"},
+        "name": "Wireless Charger",
+        "quantity": 1,
+        "unit_amount": 3999,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 3999},
+          {"type": "total", "display_text": "Total", "amount": 3999}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": ["SAVE10", "EXPIRED50"],
+      "applied": [
+        {
+          "id": "di_save10",
+          "code": "SAVE10",
+          "coupon": {
+            "id": "coupon_save10",
+            "name": "$10 Off Your Order",
+            "amount_off": 1000,
+            "currency": "usd",
+            "duration": "once"
+          },
+          "amount": 1000
+        }
+      ],
+      "rejected": [
+        {
+          "code": "EXPIRED50",
+          "reason": "discount_code_expired",
+          "message": "Code 'EXPIRED50' expired on December 1, 2025 and could not be applied."
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 499}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 3999},
+      {"type": "discount", "display_text": "Order Discount (SAVE10)", "amount": 1000},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 499},
+      {"type": "total", "display_text": "Total", "amount": 3498}
+    ],
+    "messages": [
+      {
+        "type": "warning",
+        "code": "discount_code_expired",
+        "param": "$.discounts.codes[1]",
+        "content_type": "plain",
+        "content": "Code 'EXPIRED50' expired on December 1, 2025 and could not be applied."
+      }
+    ],
+    "links": []
+  }
+}
+

@@ -95,6 +95,11 @@ There are three categories of changes within the ACP project:
 - Minor enum or data changes to support additional participants
 - Tooling improvements
 
+**Pull Request Templates**: Contributors should use the appropriate PR template
+when submitting changes:
+- Major and Process Changes: Use [sep-proposal.md](../.github/PULL_REQUEST_TEMPLATE/sep-proposal.md)
+- Minor Changes: Use [minor-improvement.md](../.github/PULL_REQUEST_TEMPLATE/minor-improvement.md)
+
 ### Specification Enhancement Proposals (SEPs)
 
 ACP follows a simplified version of the MCP SEP process. SEPs are design

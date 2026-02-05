@@ -2,12 +2,21 @@
   "name": "@agentic-commerce-protocol/specification",
   "version": "0.1.0",
   "scripts": {
-    "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s spec/json-schema/**/*.json"
+    "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s spec/json-schema/**/*.json",
+    "validate:json-schema": "ajv compile --spec=draft2020 -c ajv-formats -s 'spec/**/json-schema/*.json'",
+    "validate:openapi": "echo 'OpenAPI validation requires additional tooling - see scripts/validate-consistency.js'",
+    "validate:examples": "node scripts/validate-consistency.js",
+    "validate:consistency": "node scripts/validate-consistency.js",
+    "validate:prohibited-schemas": "node scripts/validate-consistency.js",
+    "validate:field-types": "node scripts/validate-consistency.js",
+    "report:consistency": "node scripts/validate-consistency.js",
+    "validate:all": "node scripts/validate-consistency.js"
   },
   "devDependencies": {
     "ajv": "^8.17.1",
     "ajv-cli": "^5.0.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^4.1.0"
   },
   "license": "Apache-2.0",
   "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247"
