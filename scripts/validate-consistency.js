@@ -269,15 +269,26 @@ function validateExamples() {
           const example = examples[exampleName];
 
           // Try to infer which schema this example should validate against
-          // Common patterns: checkout_session_*, complete_session_*, etc.
+          // agentic_checkout: checkout_session_*, create*request, complete*request
+          // delegate_payment: delegate_payment_request, delegate_payment_success_response, delegate_payment_error_*
           let schemaRef = null;
 
-          if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
-            schemaRef = '#/$defs/CheckoutSession';
-          } else if (exampleName.includes('create') && exampleName.includes('request')) {
-            schemaRef = '#/$defs/CheckoutSessionCreateRequest';
-          } else if (exampleName.includes('complete') && exampleName.includes('request')) {
-            schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
+          if (spec === 'agentic_checkout') {
+            if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
+              schemaRef = '#/$defs/CheckoutSession';
+            } else if (exampleName.includes('create') && exampleName.includes('request')) {
+              schemaRef = '#/$defs/CheckoutSessionCreateRequest';
+            } else if (exampleName.includes('complete') && exampleName.includes('request')) {
+              schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
+            }
+          } else if (spec === 'delegate_payment') {
+            if (exampleName === 'delegate_payment_request') {
+              schemaRef = '#/$defs/DelegatePaymentRequest';
+            } else if (exampleName === 'delegate_payment_success_response') {
+              schemaRef = '#/$defs/DelegatePaymentResponse';
+            } else if (exampleName.startsWith('delegate_payment_error_')) {
+              schemaRef = '#/$defs/Error';
+            }
           }
 
           // Skip validation if we can't determine the schema
