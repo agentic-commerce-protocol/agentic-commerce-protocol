@@ -2,7 +2,7 @@
   "name": "@agentic-commerce-protocol/specification",
   "version": "0.1.0",
   "scripts": {
-    "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s spec/json-schema/**/*.json",
+    "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s 'spec/unreleased/json-schema/*.json'",
     "validate:json-schema": "ajv compile --spec=draft2020 -c ajv-formats -s 'spec/**/json-schema/*.json'",
     "validate:openapi": "echo 'OpenAPI validation requires additional tooling - see scripts/validate-consistency.js'",
     "validate:examples": "node scripts/validate-consistency.js",
