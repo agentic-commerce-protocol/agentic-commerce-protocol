@@ -775,6 +775,29 @@
         "unit_amount": 5000
       }
     ],
+    "fulfillment_details": {
+      "name": "Alice Example",
+      "phone_number": "15551234567",
+      "email": "alice@example.com",
+      "address": {
+        "name": "Alice Example",
+        "line_one": "1 Example St",
+        "line_two": "Unit 2",
+        "city": "Oakland",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94607"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "shipping": {
+          "option_id": "ful_overnight_01",
+          "item_ids": ["item_3ds_001"]
+        }
+      }
+    ],
     "totals": [
       {
         "type": "items_base_amount",
