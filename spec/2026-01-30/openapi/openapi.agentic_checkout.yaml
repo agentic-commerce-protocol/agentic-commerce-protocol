@@ -971,6 +971,8 @@ components:
       required: [type, code, content_type, content]
 
     MessageError:
+      type: object
+      additionalProperties: false
       description: |
         Business-logic error within a valid CheckoutSession response. Used in messages[]
         on 2xx responses when the session is valid but has actionable issues (e.g.
@@ -979,8 +981,6 @@ components:
         can return a valid CheckoutSession and the problem is conversational (e.g.
         invalid email → code "invalid" and param "$.buyer.email"; out of stock →
         code "out_of_stock" and param "$.items[0]").
-      type: object
-      additionalProperties: false
       properties:
         type: { type: string, const: error }
         code:
@@ -1763,6 +1763,8 @@ components:
         intent_trace: { $ref: "#/components/schemas/IntentTrace" }
 
     Error:
+      type: object
+      additionalProperties: false
       description: |
         Protocol-level error returned in 4xx/5xx responses when the server cannot
         return a valid CheckoutSession at all (e.g. malformed request or unexpected
@@ -1771,8 +1773,6 @@ components:
         required fields, or invalid JSON; request_not_idempotent — idempotency
         violation; processing_error — unexpected server-side failure;
         service_unavailable — temporary unavailability.
-      type: object
-      additionalProperties: false
       properties:
         type:
           {

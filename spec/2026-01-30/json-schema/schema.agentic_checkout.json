@@ -909,9 +909,9 @@
       "required": ["type", "code", "content_type", "content"]
     },
     "MessageError": {
-      "description": "Business-logic error within a valid CheckoutSession response. Used in messages[] on 2xx responses when the session is valid but has actionable issues (e.g. status \"not_ready_for_payment\"). The agent can respond by asking the buyer for corrections or trying alternatives. Use MessageError—not Error—when you can return a valid CheckoutSession and the problem is conversational (e.g. invalid email → code \"invalid\" and param \"$.buyer.email\"; out of stock → code \"out_of_stock\" and param \"$.items[0]\").",
       "type": "object",
       "additionalProperties": false,
+      "description": "Business-logic error within a valid CheckoutSession response. Used in messages[] on 2xx responses when the session is valid but has actionable issues (e.g. status \"not_ready_for_payment\"). The agent can respond by asking the buyer for corrections or trying alternatives. Use MessageError—not Error—when you can return a valid CheckoutSession and the problem is conversational (e.g. invalid email → code \"invalid\" and param \"$.buyer.email\"; out of stock → code \"out_of_stock\" and param \"$.items[0]\").",
       "properties": {
         "type": {
           "type": "string",
@@ -1861,9 +1861,9 @@
       }
     },
     "Error": {
-      "description": "Protocol-level error returned in 4xx/5xx responses when the server cannot return a valid CheckoutSession at all (e.g. malformed request or unexpected failure). Use Error—not MessageError—when there is no valid session state to return. type semantics: invalid_request — malformed request, missing required fields, or invalid JSON; request_not_idempotent — idempotency violation; processing_error — unexpected server-side failure; service_unavailable — temporary unavailability.",
       "type": "object",
       "additionalProperties": false,
+      "description": "Protocol-level error returned in 4xx/5xx responses when the server cannot return a valid CheckoutSession at all (e.g. malformed request or unexpected failure). Use Error—not MessageError—when there is no valid session state to return. type semantics: invalid_request — malformed request, missing required fields, or invalid JSON; request_not_idempotent — idempotency violation; processing_error — unexpected server-side failure; service_unavailable — temporary unavailability.",
       "properties": {
         "type": {
           "type": "string",
