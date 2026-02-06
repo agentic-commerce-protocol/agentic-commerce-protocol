@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout Webhooks API
-  version: "unreleased"
+  version: "2026-01-30"
   description: |
     Webhook receiver hosted by OpenAI to accept merchant order lifecycle events.
 servers:
