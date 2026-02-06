@@ -67,7 +67,6 @@ Learn more at [agenticcommerce.dev](https://agenticcommerce.dev).
 ├── CODE_OF_CONDUCT.md
 ├── LICENSE
 └── README.md
-
 ```
 ​
 ---
