@@ -68,7 +68,7 @@
       "properties": {
         "scheme": { "type": "string", "description": "Payment scheme (e.g. exact)." },
         "network": { "type": "string", "description": "Network in CAIP-2 format." },
-        "amount": { "type": "string", "description": "Payment amount in atomic token units." },
+        "amount": { "type": "integer", "description": "Payment amount in atomic token units." },
         "asset": { "type": "string", "description": "Token contract address or asset identifier." },
         "payTo": { "type": "string", "description": "Recipient address." },
         "maxTimeoutSeconds": { "type": "integer", "description": "Maximum time allowed for payment." },
