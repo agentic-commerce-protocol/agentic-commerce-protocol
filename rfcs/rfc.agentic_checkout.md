@@ -34,6 +34,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 ### 2.1 Initialization
 
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-16`).
+  - When rejecting a request due to missing or unsupported `API-Version` header, servers **SHOULD** return HTTP `400 Bad Request` with a `supported_versions` array listing all versions the server accepts. Servers **MAY** use `unsupported_api_version` or `missing_api_version` as well-known `code` values.
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
 
@@ -560,7 +561,7 @@ If the session is in `authentication_required` state, a client MUST include `aut
   "selected_fulfillment_options": [
     {
       "type": "shipping",
-      "option_id": "fulfillment_option_123",
+      "option_id": "fulfillment_option_456",
       "item_ids": ["item_456"]
     }
   ],
@@ -572,8 +573,8 @@ If the session is in `authentication_required` state, a client MUST include `aut
     },
     { "type": "subtotal", "display_text": "Subtotal", "amount": 300 },
     { "type": "tax", "display_text": "Tax", "amount": 30 },
-    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 100 },
-    { "type": "total", "display_text": "Total", "amount": 430 }
+    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 500 },
+    { "type": "total", "display_text": "Total", "amount": 830 }
   ],
   "fulfillment_options": [
     {
@@ -655,8 +656,8 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
     },
     { "type": "subtotal", "display_text": "Subtotal", "amount": 300 },
     { "type": "tax", "display_text": "Tax", "amount": 30 },
-    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 100 },
-    { "type": "total", "display_text": "Total", "amount": 430 }
+    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 500 },
+    { "type": "total", "display_text": "Total", "amount": 830 }
   ],
   "messages": [
     {
