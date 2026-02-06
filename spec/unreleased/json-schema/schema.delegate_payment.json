@@ -46,6 +46,73 @@
         "postal_code"
       ]
     },
+    "PaymentMethodCrypto": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "x402-based crypto payment. PSP delegates verification to a facilitator and stores the signed payload until settlement.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "crypto"
+        },
+        "x402_payload": {
+          "$ref": "#/$defs/X402PaymentPayload"
+        }
+      },
+      "required": ["type", "x402_payload"]
+    },
+    "X402PaymentRequirements": {
+      "type": "object",
+      "description": "x402 PaymentRequirements (accepted).",
+      "additionalProperties": false,
+      "properties": {
+        "scheme": { "type": "string", "description": "Payment scheme (e.g. exact)." },
+        "network": { "type": "string", "description": "Network in CAIP-2 format." },
+        "amount": { "type": "string", "description": "Payment amount in atomic token units." },
+        "asset": { "type": "string", "description": "Token contract address or asset identifier." },
+        "payTo": { "type": "string", "description": "Recipient address." },
+        "maxTimeoutSeconds": { "type": "integer", "description": "Maximum time allowed for payment." },
+        "extra": { "type": "object", "description": "Scheme-specific data (optional)." }
+      },
+      "required": ["scheme", "network", "amount", "asset", "payTo", "maxTimeoutSeconds"]
+    },
+    "X402Authorization": {
+      "type": "object",
+      "description": "x402 authorization (payload.authorization).",
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "string", "description": "Payer's wallet address." },
+        "to": { "type": "string", "description": "Recipient's wallet address." },
+        "value": { "type": "string", "description": "Payment amount in atomic units." },
+        "validAfter": { "type": "string", "description": "Unix timestamp when authorization becomes valid." },
+        "validBefore": { "type": "string", "description": "Unix timestamp when authorization expires." },
+        "nonce": { "type": "string", "description": "32-byte nonce (hex) for replay protection." }
+      },
+      "required": ["from", "to", "value", "validAfter", "validBefore", "nonce"]
+    },
+    "X402Payload": {
+      "type": "object",
+      "description": "x402 payload (signature and authorization).",
+      "additionalProperties": false,
+      "properties": {
+        "signature": { "type": "string", "description": "EIP-712 or Ed25519 signature." },
+        "authorization": { "$ref": "#/$defs/X402Authorization" }
+      },
+      "required": ["signature", "authorization"]
+    },
+    "X402PaymentPayload": {
+      "type": "object",
+      "description": "Signed x402 PaymentPayload (see https://github.com/coinbase/x402).",
+      "required": ["x402Version", "accepted", "payload"],
+      "properties": {
+        "x402Version": { "type": "integer", "description": "Protocol version (must be 2)." },
+        "accepted": { "$ref": "#/$defs/X402PaymentRequirements" },
+        "payload": { "$ref": "#/$defs/X402Payload" },
+        "resource": { "type": "object", "description": "ResourceInfo describing the resource being paid for (optional)." },
+        "extensions": { "type": "object", "description": "Protocol extensions (optional)." }
+      },
+      "additionalProperties": true
+    },
     "PaymentMethodCard": {
       "type": "object",
       "additionalProperties": false,
@@ -165,17 +232,20 @@
     "RiskSignal": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Risk signal from agent/upstream. type indicates the risk category; score and action guide PSP handling. card_testing = card fraud/testing; crypto_wallet_risk = wallet/replay/amount risk for crypto (e.g. nonce reuse, wallet reputation).",
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["card_testing"]
+          "enum": ["card_testing", "crypto_wallet_risk"]
         },
         "score": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Risk score (interpretation is out-of-band)."
         },
         "action": {
           "type": "string",
-          "enum": ["blocked", "manual_review", "authorized"]
+          "enum": ["blocked", "manual_review", "authorized"],
+          "description": "Recommended handling: blocked = reject; manual_review = human review; authorized = proceed."
         }
       },
       "required": ["type", "score", "action"]
@@ -185,7 +255,10 @@
       "additionalProperties": false,
       "properties": {
         "payment_method": {
-          "$ref": "#/$defs/PaymentMethodCard"
+          "oneOf": [
+            { "$ref": "#/$defs/PaymentMethodCard" },
+            { "$ref": "#/$defs/PaymentMethodCrypto" }
+          ]
         },
         "allowance": {
           "$ref": "#/$defs/Allowance"
@@ -245,7 +318,19 @@
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict"]
+          "enum": [
+            "invalid_card",
+            "duplicate_request",
+            "idempotency_conflict",
+            "invalid_x402_payload",
+            "x402_signature_invalid",
+            "x402_expired",
+            "x402_nonce_reused",
+            "x402_amount_mismatch",
+            "x402_network_unsupported",
+            "x402_verification_failed",
+            "x402_settlement_failed"
+          ]
         },
         "message": {
           "type": "string"
