@@ -3,7 +3,7 @@
     "items": [
       {
         "id": "item_123",
-        "quantity": 1
+        "quantity": 2.5
       }
     ],
     "fulfillment_address": {
@@ -29,7 +29,7 @@
         "id": "line_item_123",
         "item": {
           "id": "item_123",
-          "quantity": 1
+          "quantity": 2.5
         },
         "base_amount": 300,
         "discount": 0,
@@ -121,7 +121,7 @@
         "id": "line_item_123",
         "item": {
           "id": "item_123",
-          "quantity": 1
+          "quantity": 2.5
         },
         "base_amount": 300,
         "discount": 0,
@@ -237,7 +237,7 @@
         "id": "line_item_123",
         "item": {
           "id": "item_123",
-          "quantity": 1
+          "quantity": 2.5
         },
         "base_amount": 300,
         "discount": 0,
@@ -326,7 +326,7 @@
         "id": "line_item_123",
         "item": {
           "id": "item_123",
-          "quantity": 1
+          "quantity": 2.5
         },
         "base_amount": 300,
         "discount": 0,
@@ -415,7 +415,7 @@
         "id": "line_item_123",
         "item": {
           "id": "item_123",
-          "quantity": 1
+          "quantity": 2.5
         },
         "base_amount": 300,
         "discount": 0,
