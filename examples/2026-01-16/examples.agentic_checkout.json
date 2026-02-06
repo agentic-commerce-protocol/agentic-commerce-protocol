@@ -682,7 +682,7 @@
         "type": "shipping",
         "id": "fulfillment_option_456",
         "title": "Express",
-        "subtitle": "Arrives in 1-2 days",
+        "description": "Arrives in 1-2 days",
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
@@ -763,16 +763,6 @@
         "unit_amount": 5000
       }
     ],
-    "fulfillment_address": {
-      "name": "Alice Example",
-      "line_one": "1 Example St",
-      "line_two": "Unit 2",
-      "city": "Oakland",
-      "state": "CA",
-      "country": "US",
-      "postal_code": "94607"
-    },
-    "fulfillment_option_id": "ful_overnight_01",
     "totals": [
       {
         "type": "items_base_amount",
@@ -805,13 +795,13 @@
         "type": "shipping",
         "id": "ful_overnight_01",
         "title": "Overnight",
-        "subtitle": "Next-business-day delivery",
+        "description": "Next-business-day delivery",
         "carrier": "UPS",
         "earliest_delivery_time": "2026-01-13T08:00:00Z",
         "latest_delivery_time": "2026-01-13T20:00:00Z",
-        "subtotal": 2500,
-        "tax": 0,
-        "total": 2500
+        "totals": [
+          { "type": "total", "display_text": "Overnight Shipping", "amount": 2500 }
+        ]
       }
     ],
     "messages": [],

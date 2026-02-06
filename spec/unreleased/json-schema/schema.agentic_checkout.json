@@ -1581,7 +1581,8 @@
         "discounts": {
           "$ref": "#/$defs/DiscountsResponse",
           "description": "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
-        }
+        },
+        "order": { "$ref": "#/$defs/Order" }
       },
       "required": [
         "id",

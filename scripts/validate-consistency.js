@@ -272,7 +272,9 @@ function validateExamples() {
           // Common patterns: checkout_session_*, complete_session_*, etc.
           let schemaRef = null;
 
-          if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
+          if (exampleName === 'complete_checkout_session_response') {
+            schemaRef = '#/$defs/CheckoutSessionWithOrder';
+          } else if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
             schemaRef = '#/$defs/CheckoutSession';
           } else if (exampleName.includes('create') && exampleName.includes('request')) {
             schemaRef = '#/$defs/CheckoutSessionCreateRequest';
@@ -286,9 +288,10 @@ function validateExamples() {
             return;
           }
 
-          // Validate using the schema reference
+          // Validate using the schema reference (full URI when schema has $id so AJV can resolve)
           try {
-            const validate = ajv.getSchema(schemaRef);
+            const schemaKey = schema.$id ? schema.$id + schemaRef : schemaRef;
+            const validate = ajv.getSchema(schemaKey);
             if (!validate) {
               // Schema reference not found, skip silently
               return;

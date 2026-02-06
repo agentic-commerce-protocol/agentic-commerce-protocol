@@ -1667,6 +1667,7 @@
         "created_at": { "type": "string", "format": "date-time" },
         "updated_at": { "type": "string", "format": "date-time" },
         "expires_at": { "type": "string", "format": "date-time" },
+        "order": { "$ref": "#/$defs/Order" },
         "continue_url": { "type": "string", "format": "uri" },
         "metadata": {
           "type": "object",
