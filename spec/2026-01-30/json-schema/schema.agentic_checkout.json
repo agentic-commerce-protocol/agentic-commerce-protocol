@@ -939,7 +939,8 @@
             "not_found",
             "conflict",
             "rate_limited",
-            "expired"
+            "expired",
+            "intervention_required"
           ]
         },
         "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },

@@ -1008,6 +1008,7 @@ components:
                 conflict,
                 rate_limited,
                 expired,
+                intervention_required,
               ],
           }
         severity: { type: string, enum: [info, low, medium, high, critical] }
