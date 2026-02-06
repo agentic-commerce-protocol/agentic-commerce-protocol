@@ -2,7 +2,7 @@
 
 /**
  * Comprehensive consistency validator for Agentic Commerce Protocol
- * 
+ *
  * Validates:
  * 1. JSON Schema vs OpenAPI schema consistency
  * 2. Examples validate against schemas
@@ -17,14 +17,14 @@ const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
 const yaml = require('js-yaml');
 
-const VERSIONS = ['2025-09-29', '2025-12-12', '2026-01-16', 'unreleased'];
+const VERSIONS = ['2025-09-29', '2025-12-12', '2026-01-16', '2026-01-30', 'unreleased'];
 const SPECS = ['agentic_checkout', 'delegate_payment'];
 const PROHIBITED_SCHEMAS = {
   'agentic_checkout': ['Refund'] // Refund should only be in webhook spec
 };
 
 const CRITICAL_AMOUNT_FIELDS = [
-  'base_amount', 'discount', 'subtotal', 'tax', 'total', 
+  'base_amount', 'discount', 'subtotal', 'tax', 'total',
   'amount', 'max_amount', 'unit_amount'
 ];
 
@@ -54,11 +54,11 @@ function success(message) {
 // 1. Validate JSON Schema Syntax
 function validateJsonSchemaSyntax() {
   console.log('\n📋 Validating JSON Schema Syntax...\n');
-  
+
   VERSIONS.forEach(version => {
     SPECS.forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
-      
+
       if (!fs.existsSync(schemaPath)) {
         warn(`Schema not found: ${schemaPath}`, { version, spec });
         return;
@@ -67,12 +67,12 @@ function validateJsonSchemaSyntax() {
       try {
         const content = fs.readFileSync(schemaPath, 'utf8');
         const schema = JSON.parse(content);
-        
+
         // Basic validation
         if (!schema.$schema) {
           error(`Missing $schema in ${version}/${spec}`, { version, spec });
         }
-        
+
         success(`Valid JSON Schema: ${version}/${spec}`);
       } catch (err) {
         error(`Invalid JSON in ${version}/${spec}: ${err.message}`, { version, spec });
@@ -84,13 +84,13 @@ function validateJsonSchemaSyntax() {
 // 2. Validate OpenAPI Syntax
 function validateOpenApiSyntax() {
   console.log('\n📋 Validating OpenAPI Syntax...\n');
-  
+
   VERSIONS.forEach(version => {
     const specs = ['agentic_checkout', 'delegate_payment', 'agentic_checkout_webhook'];
-    
+
     specs.forEach(spec => {
       const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
-      
+
       if (!fs.existsSync(openApiPath)) {
         // Webhook might not exist in all versions
         if (spec !== 'agentic_checkout_webhook') {
@@ -102,11 +102,11 @@ function validateOpenApiSyntax() {
       try {
         const content = fs.readFileSync(openApiPath, 'utf8');
         const openapi = yaml.load(content);
-        
+
         if (!openapi.openapi || !openapi.info || !openapi.paths) {
           error(`Invalid OpenAPI structure in ${version}/${spec}`, { version, spec });
         }
-        
+
         success(`Valid OpenAPI: ${version}/${spec}`);
       } catch (err) {
         error(`Invalid YAML in ${version}/${spec}: ${err.message}`, { version, spec });
@@ -118,31 +118,31 @@ function validateOpenApiSyntax() {
 // 3. Check for prohibited schemas
 function checkProhibitedSchemas() {
   console.log('\n🚫 Checking for Prohibited Schemas...\n');
-  
+
   VERSIONS.forEach(version => {
     Object.keys(PROHIBITED_SCHEMAS).forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
-      
+
       if (!fs.existsSync(schemaPath)) return;
 
       try {
         const content = fs.readFileSync(schemaPath, 'utf8');
         const schema = JSON.parse(content);
-        
+
         PROHIBITED_SCHEMAS[spec].forEach(prohibitedName => {
           if (schema.$defs && schema.$defs[prohibitedName]) {
             error(
               `Prohibited schema "${prohibitedName}" found in ${spec}`,
-              { 
-                version, 
-                spec, 
+              {
+                version,
+                spec,
                 schema: prohibitedName,
                 reason: `${prohibitedName} should only be in webhook spec, not ${spec}`
               }
             );
           }
         });
-        
+
         success(`No prohibited schemas in ${version}/${spec}`);
       } catch (err) {
         // Already caught in syntax validation
@@ -154,17 +154,17 @@ function checkProhibitedSchemas() {
 // 4. Validate field types (especially amounts must be integers)
 function validateFieldTypes() {
   console.log('\n🔢 Validating Field Types (amounts must be integers)...\n');
-  
+
   VERSIONS.forEach(version => {
     SPECS.forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
-      
+
       if (!fs.existsSync(schemaPath)) return;
 
       try {
         const content = fs.readFileSync(schemaPath, 'utf8');
         const schema = JSON.parse(content);
-        
+
         // Check all $defs for amount fields
         if (schema.$defs) {
           Object.keys(schema.$defs).forEach(defName => {
@@ -172,7 +172,7 @@ function validateFieldTypes() {
             if (def.properties) {
               Object.keys(def.properties).forEach(propName => {
                 const prop = def.properties[propName];
-                
+
                 // Check if this is an amount field
                 if (CRITICAL_AMOUNT_FIELDS.includes(propName)) {
                   if (prop.type !== 'integer') {
@@ -186,27 +186,27 @@ function validateFieldTypes() {
             }
           });
         }
-        
+
         success(`Field types correct in ${version}/${spec}`);
       } catch (err) {
         // Already caught in syntax validation
       }
     });
   });
-  
+
   // Also check OpenAPI
   VERSIONS.forEach(version => {
     const specs = ['agentic_checkout', 'delegate_payment'];
-    
+
     specs.forEach(spec => {
       const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
-      
+
       if (!fs.existsSync(openApiPath)) return;
 
       try {
         const content = fs.readFileSync(openApiPath, 'utf8');
         const openapi = yaml.load(content);
-        
+
         // Check schemas for amount fields
         if (openapi.components && openapi.components.schemas) {
           Object.keys(openapi.components.schemas).forEach(schemaName => {
@@ -214,7 +214,7 @@ function validateFieldTypes() {
             if (schemaDef.properties) {
               Object.keys(schemaDef.properties).forEach(propName => {
                 const prop = schemaDef.properties[propName];
-                
+
                 if (CRITICAL_AMOUNT_FIELDS.includes(propName)) {
                   if (prop.type !== 'integer') {
                     error(
@@ -227,7 +227,7 @@ function validateFieldTypes() {
             }
           });
         }
-        
+
         success(`Field types correct in OpenAPI ${version}/${spec}`);
       } catch (err) {
         // Already caught in syntax validation
@@ -239,12 +239,12 @@ function validateFieldTypes() {
 // 5. Validate examples against schemas
 function validateExamples() {
   console.log('\n📝 Validating Examples Against Schemas...\n');
-  
+
   VERSIONS.forEach(version => {
     SPECS.forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
       const examplesPath = path.join(__dirname, '..', 'examples', version, `examples.${spec}.json`);
-      
+
       if (!fs.existsSync(schemaPath) || !fs.existsSync(examplesPath)) {
         return;
       }
@@ -252,26 +252,26 @@ function validateExamples() {
       try {
         const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
         const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf8'));
-        
+
         // Create new AJV instance per schema to avoid ID conflicts
-        const ajv = new Ajv({ 
-          strict: false, 
+        const ajv = new Ajv({
+          strict: false,
           allErrors: true,
           validateSchema: false  // Don't validate the metaschema
         });
         addFormats(ajv);
-        
+
         // Add the full schema (with $defs) to AJV
         ajv.addSchema(schema);
-        
+
         // Examples file is an object with named examples
         Object.keys(examples).forEach(exampleName => {
           const example = examples[exampleName];
-          
+
           // Try to infer which schema this example should validate against
           // Common patterns: checkout_session_*, complete_session_*, etc.
           let schemaRef = null;
-          
+
           if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
             schemaRef = '#/$defs/CheckoutSession';
           } else if (exampleName.includes('create') && exampleName.includes('request')) {
@@ -279,13 +279,13 @@ function validateExamples() {
           } else if (exampleName.includes('complete') && exampleName.includes('request')) {
             schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
           }
-          
+
           // Skip validation if we can't determine the schema
           if (!schemaRef) {
             // Don't warn - many examples are just documentation snippets
             return;
           }
-          
+
           // Validate using the schema reference
           try {
             const validate = ajv.getSchema(schemaRef);
@@ -293,17 +293,17 @@ function validateExamples() {
               // Schema reference not found, skip silently
               return;
             }
-            
+
             const valid = validate(example);
-            
+
             if (!valid) {
               error(
                 `Example "${exampleName}" does not validate against schema`,
-                { 
-                  version, 
-                  spec, 
-                  example: exampleName, 
-                  errors: validate.errors 
+                {
+                  version,
+                  spec,
+                  example: exampleName,
+                  errors: validate.errors
                 }
               );
             }
@@ -312,7 +312,7 @@ function validateExamples() {
             return;
           }
         });
-        
+
         success(`Examples validated for ${version}/${spec}`);
       } catch (err) {
         error(`Error validating examples for ${version}/${spec}: ${err.message}`, { version, spec });
@@ -341,7 +341,7 @@ if (errors.length === 0 && warnings.length === 0) {
   if (warnings.length > 0) {
     console.log(`⚠️  ${warnings.length} warning(s)`);
   }
-  
+
   if (errors.length > 0) {
     console.log(`❌ ${errors.length} error(s)`);
     console.log('\nValidation FAILED. Please fix the errors above.');

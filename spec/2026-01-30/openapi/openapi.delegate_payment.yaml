@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce — Delegate Payment API
-  version: "2025-09-29"
+  version: "2026-01-30"
   description: |
     Delegate a payment using a provided payment method and allowance.
 servers:
@@ -310,7 +310,7 @@ components:
             enum: [avs, cvv, ani, auth0]
         iin:
           type: string
-          maxLength: 8
+          maxLength: 6
         display_card_funding_type:
           type: string
           enum: [credit, debit, prepaid]
@@ -320,7 +320,9 @@ components:
           type: string
         display_last4:
           type: string
+          minLength: 4
           maxLength: 4
+          pattern: "^[0-9]{4}$"
         metadata:
           type: object
           additionalProperties: { type: string }

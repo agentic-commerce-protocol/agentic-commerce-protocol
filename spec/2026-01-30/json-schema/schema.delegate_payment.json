@@ -93,7 +93,7 @@
         },
         "iin": {
           "type": "string",
-          "maxLength": 8
+          "maxLength": 6
         },
         "display_card_funding_type": {
           "type": "string",

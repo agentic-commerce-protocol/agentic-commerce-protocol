@@ -1063,21 +1063,6 @@
       }
     ],
     "authentication_metadata": {
-      "channel": {
-        "type": "browser",
-        "browser": {
-          "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "ip_address": "203.0.113.42",
-          "javascript_enabled": true,
-          "language": "en-US",
-          "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko)",
-          "color_depth": 24,
-          "java_enabled": false,
-          "screen_height": 1440,
-          "screen_width": 900,
-          "timezone_offset": -480
-        }
-      },
       "acquirer_details": {
         "acquirer_bin": "123456",
         "acquirer_country": "US",

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "unreleased"
+  version: "2026-01-30"
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -344,7 +344,7 @@ components:
       name: API-Version
       in: header
       required: true
-      schema: { type: string, example: "2026-01-16" }
+      schema: { type: string, example: "2026-01-30" }
 
   schemas:
     Address:
@@ -933,10 +933,6 @@ components:
       properties:
         type: { type: string, const: info }
         severity: { type: string, enum: [info, low, medium, high, critical] }
-        resolution:
-          type: string
-          enum: [recoverable, requires_buyer_input, requires_buyer_review]
-          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param: { type: string, description: "RFC 9535 JSONPath" }
         content_type: { type: string, enum: [plain, markdown] }
         content: { type: string }
@@ -969,10 +965,6 @@ components:
               ],
           }
         severity: { type: string, enum: [info, low, medium, high, critical] }
-        resolution:
-          type: string
-          enum: [recoverable, requires_buyer_input, requires_buyer_review]
-          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param: { type: string, description: "RFC 9535 JSONPath" }
         content_type: { type: string, enum: [plain, markdown] }
         content: { type: string }
@@ -1011,10 +1003,6 @@ components:
               ],
           }
         severity: { type: string, enum: [info, low, medium, high, critical] }
-        resolution:
-          type: string
-          enum: [recoverable, requires_buyer_input, requires_buyer_review]
-          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param:
           { type: string, description: "RFC 9535 JSONPath", nullable: true }
         content_type: { type: string, enum: [plain, markdown] }
@@ -1162,7 +1150,7 @@ components:
         version:
           type: string
           pattern: '^\d{4}-\d{2}-\d{2}$'
-          example: "2026-01-27"
+          example: "2026-01-30"
           description: ACP protocol version in YYYY-MM-DD format.
       required: [version]
 
@@ -1514,9 +1502,66 @@ components:
       description: >
         Seller-provided authentication metadata for 3DS flows.
       required:
+        - channel
         - acquirer_details
         - directory_server
       properties:
+        channel:
+          type: object
+          additionalProperties: false
+          description: Details about the channel used for this 3DS Authentication.
+          required:
+            - type
+            - browser
+          properties:
+            type:
+              type: string
+              enum: [browser]
+              description: Use "browser" to indicate the transaction originated from a browser.
+            browser:
+              type: object
+              additionalProperties: false
+              description: Browser details collected server- or client-side.
+              properties:
+                accept_header:
+                  type: string
+                  description: The HTTP Accept header from the cardholder’s browser.
+                ip_address:
+                  type: string
+                  maxLength: 45
+                  description: The IP address of the browser.
+                javascript_enabled:
+                  type: boolean
+                  description: Whether the cardholder browser can execute JavaScript.
+                language:
+                  type: string
+                  maxLength: 35
+                  description: An IETF BCP 47 language tag representing the browser language.
+                user_agent:
+                  type: string
+                  description: The browser user agent string.
+                color_depth:
+                  type: integer
+                  description: The screen color depth. Required if javascript_enabled is true.
+                java_enabled:
+                  type: boolean
+                  description: Browser Java support. Required if javascript_enabled is true.
+                screen_height:
+                  type: integer
+                  description: Screen height in pixels. Required if javascript_enabled is true.
+                screen_width:
+                  type: integer
+                  description: Screen width in pixels. Required if javascript_enabled is true.
+                timezone_offset:
+                  type: integer
+                  description: Time difference in minutes between UTC and the browser local time. Required if javascript_enabled is true.
+              required:
+                - accept_header
+                - ip_address
+                - javascript_enabled
+                - language
+                - user_agent
+
         acquirer_details:
           type: object
           additionalProperties: false
@@ -1585,6 +1630,26 @@ components:
               description: >
                 Details about the requested frictionless flow.
           required: [type]
+      allOf:
+        - if:
+            properties:
+              channel:
+                properties:
+                  browser:
+                    properties:
+                      javascript_enabled:
+                        const: true
+          then:
+            properties:
+              channel:
+                properties:
+                  browser:
+                    required:
+                      - color_depth
+                      - java_enabled
+                      - screen_height
+                      - screen_width
+                      - timezone_offset
 
     AuthenticationResult:
       type: object

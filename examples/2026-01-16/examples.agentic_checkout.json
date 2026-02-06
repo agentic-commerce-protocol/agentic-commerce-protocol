@@ -677,6 +677,18 @@
         "totals": [
           { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
+      },
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_456",
+        "title": "Express",
+        "subtitle": "Arrives in 1-2 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "totals": [
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+        ]
       }
     ],
     "messages": [

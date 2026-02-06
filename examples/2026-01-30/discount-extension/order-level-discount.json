@@ -1,6 +1,6 @@
 {
   "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
-  "description": "Example: Rejected discount code with one valid and one expired code",
+  "description": "Example: Order-level discount with a fixed amount off the total",
 
   "request": {
     "line_items": [
@@ -8,12 +8,12 @@
     ],
     "currency": "usd",
     "discounts": {
-      "codes": ["SAVE10", "EXPIRED50"]
+      "codes": ["SAVE10"]
     }
   },
 
   "response": {
-    "id": "checkout_session_reject456",
+    "id": "checkout_session_abc123",
     "status": "ready_for_payment",
     "capabilities": {
       "payment_methods": ["card"],
@@ -24,7 +24,8 @@
             "$.CheckoutSessionCreateRequest.discounts",
             "$.CheckoutSessionUpdateRequest.discounts",
             "$.CheckoutSession.discounts"
-          ]
+          ],
+          "schema": "https://agenticcommerce.dev/schemas/discount/2026-01-27.json"
         }
       ]
     },
@@ -35,37 +36,32 @@
     "line_items": [
       {
         "id": "li_1",
-        "item": {"id": "item_123"},
-        "name": "Wireless Charger",
+        "item": {
+          "id": "item_123"
+        },
+        "name": "Wireless Headphones",
         "quantity": 1,
-        "unit_amount": 3999,
+        "unit_amount": 5000,
         "totals": [
-          {"type": "subtotal", "display_text": "Subtotal", "amount": 3999},
-          {"type": "total", "display_text": "Total", "amount": 3999}
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+          {"type": "total", "display_text": "Total", "amount": 5000}
         ]
       }
     ],
     "discounts": {
-      "codes": ["SAVE10", "EXPIRED50"],
+      "codes": ["SAVE10"],
       "applied": [
         {
-          "id": "di_save10",
+          "id": "di_abc123",
           "code": "SAVE10",
           "coupon": {
-            "id": "coupon_save10",
+            "id": "coupon_xyz",
             "name": "$10 Off Your Order",
             "amount_off": 1000,
             "currency": "usd",
             "duration": "once"
           },
           "amount": 1000
-        }
-      ],
-      "rejected": [
-        {
-          "code": "EXPIRED50",
-          "reason": "discount_code_expired",
-          "message": "Code 'EXPIRED50' expired on December 1, 2025 and could not be applied."
         }
       ]
     },
@@ -75,26 +71,17 @@
         "id": "shipping_standard",
         "title": "Standard Shipping",
         "totals": [
-          {"type": "fulfillment", "display_text": "Shipping", "amount": 499}
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 599}
         ]
       }
     ],
     "totals": [
-      {"type": "subtotal", "display_text": "Subtotal", "amount": 3999},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
       {"type": "discount", "display_text": "Order Discount (SAVE10)", "amount": 1000},
-      {"type": "fulfillment", "display_text": "Shipping", "amount": 499},
-      {"type": "total", "display_text": "Total", "amount": 3498}
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 599},
+      {"type": "total", "display_text": "Total", "amount": 4599}
     ],
-    "messages": [
-      {
-        "type": "warning",
-        "code": "discount_code_expired",
-        "resolution": "recoverable",
-        "param": "$.discounts.codes[1]",
-        "content_type": "plain",
-        "content": "Code 'EXPIRED50' expired on December 1, 2025 and could not be applied."
-      }
-    ],
+    "messages": [],
     "links": []
   }
 }

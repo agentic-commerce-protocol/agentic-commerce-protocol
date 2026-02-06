@@ -126,7 +126,7 @@ Before submitting this SEP PR, ensure:
 - [ ] I have signed the [Contributor License Agreement (CLA)](../legal/cla/INDIVIDUAL.md)
 - [ ] This PR includes updates to OpenAPI/JSON schemas (if applicable)
 - [ ] This PR includes example requests/responses (if applicable)
-- [ ] This PR includes an entry in `changelog/unreleased.md`
+- [ ] This PR includes a changelog entry file in `changelog/unreleased/your-change-description.md`
 - [ ] I am seeking or have found a sponsor (Founding Maintainer)
 
 ---
