@@ -3,16 +3,12 @@
     "currency": "usd",
     "line_items": [
       {
-        "item": {
-          "id": "item_123"
-        },
-        "quantity": 2
+        "id": "item_123",
+        "unit_amount": 300
       },
       {
-        "item": {
-          "id": "item_456"
-        },
-        "quantity": 1
+        "id": "item_456",
+        "unit_amount": 500
       }
     ],
     "fulfillment_details": {
@@ -42,7 +38,8 @@
       {
         "id": "line_item_123",
         "item": {
-          "id": "item_123"
+          "id": "item_123",
+          "unit_amount": 300
         },
         "quantity": 2,
         "name": "Vintage Denim Jacket",
@@ -88,7 +85,8 @@
       {
         "id": "line_item_456",
         "item": {
-          "id": "item_456"
+          "id": "item_456",
+          "unit_amount": 500
         },
         "quantity": 1,
         "name": "Leather Belt",

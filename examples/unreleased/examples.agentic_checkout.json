@@ -1139,22 +1139,25 @@
       "email": "marie.dupont@example.fr"
     },
     "payment_data": {
-      "token": "spt_3ds_denied_001",
-      "provider": "stripe",
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_denied_001"
+        }
+      },
       "billing_address": {
         "name": "Marie Dupont",
         "line_one": "12 Rue de la Paix",
         "city": "Paris",
+        "state": "IDF",
         "country": "FR",
         "postal_code": "75002"
       }
     },
     "authentication_result": {
-      "outcome": "denied",
-      "outcome_details": {
-        "transaction_id": "dsTransId_denied_789",
-        "version": "2.2.0"
-      }
+      "outcome": "denied"
     }
   },
   "error_400_invalid_item": {
@@ -1166,9 +1169,9 @@
   "checkout_session_with_out_of_stock": {
     "id": "checkout_session_oos_001",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
     },
+    "capabilities": {},
     "status": "not_ready_for_payment",
     "currency": "usd",
     "line_items": [
@@ -1182,7 +1185,7 @@
         "unit_amount": 300,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -1285,9 +1288,9 @@
   "checkout_session_with_payment_declined": {
     "id": "checkout_session_pd_001",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
     },
+    "capabilities": {},
     "status": "ready_for_payment",
     "currency": "usd",
     "line_items": [
@@ -1301,7 +1304,7 @@
         "unit_amount": 300,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
