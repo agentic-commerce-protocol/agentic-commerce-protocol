@@ -97,7 +97,7 @@ paths:
                     metadata:
                       source: "agent_checkout"
                       merchant_id: "acme"
-                      idempotency_key: "idem_abc123"
+                      idempotency_key: "550e8400-e29b-41d4-a716-446655440000"
         "400":
           description: Bad Request
           content:
@@ -245,6 +245,7 @@ components:
       description: "Idempotency key. MUST be present on all POST requests. Opaque string, max 255 characters. UUID v4 recommended. Scoped to authenticated identity + endpoint."
       schema:
         type: string
+        minLength: 1
         maxLength: 255
         example: "550e8400-e29b-41d4-a716-446655440000"
     RequestId:
