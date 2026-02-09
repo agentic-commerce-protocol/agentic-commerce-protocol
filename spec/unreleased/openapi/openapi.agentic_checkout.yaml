@@ -347,7 +347,20 @@ components:
       schema: { type: string, example: "2026-01-16" }
 
   schemas:
-    Address:
+    BillingAddress:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        line_one: { type: string }
+        line_two: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+      required: [postal_code, country]
+
+    FulfillmentAddress:
       type: object
       additionalProperties: false
       properties:
@@ -443,7 +456,7 @@ components:
         name: { type: string }
         phone_number: { type: string }
         email: { type: string, format: email }
-        address: { $ref: "#/components/schemas/Address" }
+        address: { $ref: "#/components/schemas/FulfillmentAddress" }
 
     CompanyInfo:
       type: object
@@ -851,7 +864,7 @@ components:
           type: object
           properties:
             name: { type: string }
-            address: { $ref: "#/components/schemas/Address" }
+            address: { $ref: "#/components/schemas/FulfillmentAddress" }
             phone: { type: string }
             instructions: { type: string }
           required: [name, address]
@@ -1095,7 +1108,7 @@ components:
                   description: Credential token value
               required: [type, token]
           required: [type, credential]
-        billing_address: { $ref: "#/components/schemas/Address" }
+        billing_address: { $ref: "#/components/schemas/BillingAddress" }
         purchase_order_number: { type: string }
         payment_terms:
           { type: string, enum: [immediate, net_15, net_30, net_60, net_90] }

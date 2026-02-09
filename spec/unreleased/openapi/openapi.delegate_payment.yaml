@@ -264,7 +264,7 @@ components:
         allowance:
           $ref: "#/components/schemas/Allowance"
         billing_address:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/BillingAddress"
         risk_signals:
           type: array
           minItems: 1
@@ -330,7 +330,7 @@ components:
           type: boolean
       required: [type, card_number_type, number, display_card_funding_type, metadata]
 
-    Address:
+    BillingAddress:
       type: object
       additionalProperties: false
       properties:
@@ -347,7 +347,7 @@ components:
             description: "ISO-3166-1 alpha-2",
           }
         postal_code: { type: string, maxLength: 20 }
-      required: [name, line_one, city, state, country, postal_code]
+      required: [postal_code, country]
 
     Allowance:
       type: object

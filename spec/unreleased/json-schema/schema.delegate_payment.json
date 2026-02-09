@@ -3,7 +3,7 @@
   "$id": "https://example.com/schemas/delegate-payment/bundle.schema.json",
   "title": "Delegate Payment \u2014 Schema Bundle",
   "$defs": {
-    "Address": {
+    "BillingAddress": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -38,12 +38,8 @@
         }
       },
       "required": [
-        "name",
-        "line_one",
-        "city",
-        "state",
-        "country",
-        "postal_code"
+        "postal_code",
+        "country"
       ]
     },
     "PaymentMethodCard": {
@@ -195,7 +191,7 @@
           "$ref": "#/$defs/Allowance"
         },
         "billing_address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/BillingAddress"
         },
         "risk_signals": {
           "type": "array",
