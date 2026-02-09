@@ -1139,22 +1139,273 @@
       "email": "marie.dupont@example.fr"
     },
     "payment_data": {
-      "token": "spt_3ds_denied_001",
-      "provider": "stripe",
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_denied_001"
+        }
+      },
       "billing_address": {
         "name": "Marie Dupont",
         "line_one": "12 Rue de la Paix",
         "city": "Paris",
+        "state": "IDF",
         "country": "FR",
         "postal_code": "75002"
       }
     },
     "authentication_result": {
-      "outcome": "denied",
-      "outcome_details": {
-        "transaction_id": "dsTransId_denied_789",
-        "version": "2.2.0"
-      }
+      "outcome": "denied"
     }
+  },
+  "error_400_invalid_item": {
+    "type": "invalid_request",
+    "code": "invalid_item_id",
+    "message": "The item ID 'invalid_item' does not exist.",
+    "param": "$.line_items[0].item.id"
+  },
+  "checkout_session_with_out_of_stock": {
+    "id": "checkout_session_oos_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "capabilities": {},
+    "status": "not_ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_oos_001",
+        "item": {
+          "id": "item_123"
+        },
+        "quantity": 1,
+        "name": "Vintage Denim Jacket",
+        "unit_amount": 300,
+        "totals": [
+          {
+            "type": "items_base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "John Doe",
+      "phone_number": "15551234567",
+      "email": "johndoe@example.com",
+      "address": {
+        "name": "John Doe",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_123"]
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 330
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "description": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
+      }
+    ],
+    "messages": [
+      {
+        "type": "error",
+        "code": "out_of_stock",
+        "param": "$.line_items[0].item.id",
+        "content_type": "plain",
+        "content": "The item 'Vintage Denim Jacket' is currently out of stock. Please select a different item."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "checkout_session_with_payment_declined": {
+    "id": "checkout_session_pd_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "capabilities": {},
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_pd_001",
+        "item": {
+          "id": "item_123"
+        },
+        "quantity": 1,
+        "name": "Vintage Denim Jacket",
+        "unit_amount": 300,
+        "totals": [
+          {
+            "type": "items_base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "John Doe",
+      "phone_number": "15551234567",
+      "email": "johndoe@example.com",
+      "address": {
+        "name": "John Doe",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_123"]
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 100
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 430
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "description": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
+      }
+    ],
+    "messages": [
+      {
+        "type": "error",
+        "code": "payment_declined",
+        "content_type": "plain",
+        "content": "Your payment was declined. Please try a different payment method."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
   }
 }
