@@ -114,6 +114,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "virtual": {
+          "type": "boolean",
+          "description": "Whether the card is a virtual card"
         }
       },
       "required": [
@@ -245,7 +249,7 @@
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict"]
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests"]
         },
         "message": {
           "type": "string"

@@ -968,6 +968,9 @@
         },
         "authentication_metadata": {
           "$ref": "#/$defs/AuthenticationMetadata"
+        },
+        "order": {
+          "$ref": "#/$defs/Order"
         }
       },
       "required": [

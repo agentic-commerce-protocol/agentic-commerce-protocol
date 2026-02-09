@@ -3,10 +3,7 @@
     "currency": "usd",
     "line_items": [
       {
-        "item": {
-          "id": "item_123"
-        },
-        "quantity": 1
+        "id": "item_123"
       }
     ],
     "capabilities": {
@@ -37,12 +34,18 @@
     "currency": "usd",
     "line_items": [
       {
-        "item": {
-          "id": "item_123"
-        },
-        "quantity": 1
+        "id": "item_123"
       }
     ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["3ds", "address_verification"],
+        "display_context": "webview",
+        "redirect_context": "in_app",
+        "max_redirects": 1,
+        "max_interaction_depth": 1
+      }
+    },
     "affiliate_attribution": {
       "provider": "impact.com",
       "token": "atp_01J8Z3WXYZ9ABC",
@@ -53,8 +56,7 @@
   "create_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
     },
     "capabilities": {
       "payment": {
@@ -124,7 +126,7 @@
         ],
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -255,8 +257,11 @@
   "update_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -269,7 +274,7 @@
         "quantity": 1,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -445,8 +450,11 @@
   "complete_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "buyer": {
       "first_name": "John",
@@ -474,7 +482,7 @@
         },
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -595,8 +603,11 @@
   "get_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -609,7 +620,7 @@
         "quantity": 1,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -745,8 +756,11 @@
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "canceled",
     "currency": "usd",
@@ -759,7 +773,7 @@
         "quantity": 1,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -894,8 +908,7 @@
   "checkout_session_authentication_required": {
     "id": "checkout_session_3ds_001",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
     },
     "capabilities": {
       "payment": {
@@ -938,7 +951,7 @@
         "unit_amount": 5000,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 5000
           },
@@ -965,16 +978,27 @@
         ]
       }
     ],
-    "fulfillment_address": {
+    "fulfillment_details": {
       "name": "Alice Example",
-      "line_one": "1 Example St",
-      "line_two": "Unit 2",
-      "city": "Oakland",
-      "state": "CA",
-      "country": "US",
-      "postal_code": "94607"
+      "phone_number": "15551234567",
+      "email": "alice@example.com",
+      "address": {
+        "name": "Alice Example",
+        "line_one": "1 Example St",
+        "line_two": "Unit 2",
+        "city": "Oakland",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94607"
+      }
     },
-    "fulfillment_option_id": "ful_overnight_01",
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "ful_overnight_01",
+        "item_ids": ["item_3ds_001"]
+      }
+    ],
     "totals": [
       {
         "type": "items_base_amount",
@@ -1049,8 +1073,14 @@
       "email": "alice@example.com"
     },
     "payment_data": {
-      "token": "spt_3ds_token_001",
-      "provider": "stripe",
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_token_001"
+        }
+      },
       "billing_address": {
         "name": "Alice Example",
         "line_one": "1 Example St",
