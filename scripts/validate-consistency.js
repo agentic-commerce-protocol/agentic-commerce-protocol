@@ -269,15 +269,28 @@ function validateExamples() {
           const example = examples[exampleName];
 
           // Try to infer which schema this example should validate against
-          // Common patterns: checkout_session_*, complete_session_*, etc.
+          // agentic_checkout: checkout_session_*, create*request, complete*request
+          // delegate_payment: delegate_payment_request, delegate_payment_success_response, delegate_payment_error_*
           let schemaRef = null;
 
-          if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
-            schemaRef = '#/$defs/CheckoutSession';
-          } else if (exampleName.includes('create') && exampleName.includes('request')) {
-            schemaRef = '#/$defs/CheckoutSessionCreateRequest';
-          } else if (exampleName.includes('complete') && exampleName.includes('request')) {
-            schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
+          if (spec === 'agentic_checkout') {
+            if (exampleName === 'complete_checkout_session_response') {
+              schemaRef = '#/$defs/CheckoutSessionWithOrder';
+            } else if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
+              schemaRef = '#/$defs/CheckoutSession';
+            } else if (exampleName.includes('create') && exampleName.includes('request')) {
+              schemaRef = '#/$defs/CheckoutSessionCreateRequest';
+            } else if (exampleName.includes('complete') && exampleName.includes('request')) {
+              schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
+            }
+          } else if (spec === 'delegate_payment') {
+            if (exampleName === 'delegate_payment_request') {
+              schemaRef = '#/$defs/DelegatePaymentRequest';
+            } else if (exampleName === 'delegate_payment_success_response') {
+              schemaRef = '#/$defs/DelegatePaymentResponse';
+            } else if (exampleName.startsWith('delegate_payment_error_')) {
+              schemaRef = '#/$defs/Error';
+            }
           }
 
           // Skip validation if we can't determine the schema
@@ -286,9 +299,10 @@ function validateExamples() {
             return;
           }
 
-          // Validate using the schema reference
+          // Validate using the schema reference (full URI when schema has $id so AJV can resolve)
           try {
-            const validate = ajv.getSchema(schemaRef);
+            const schemaKey = schema.$id ? schema.$id + schemaRef : schemaRef;
+            const validate = ajv.getSchema(schemaKey);
             if (!validate) {
               // Schema reference not found, skip silently
               return;
