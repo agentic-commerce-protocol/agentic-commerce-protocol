@@ -1,0 +1,84 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Full sale metadata with EU Omnibus compliance fields and discount_eligible set to false",
+
+  "response": {
+    "id": "checkout_session_sale002",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "sale",
+          "extends": [
+            "$.CheckoutSession.sales",
+            "$.LineItem.sale"
+          ]
+        },
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts",
+            "$.LineItem.discount_eligible"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_headphones"},
+        "name": "Wireless Headphones",
+        "quantity": 1,
+        "unit_amount": 5000,
+        "sale": {
+          "id": "sale_winter2026",
+          "compare_at_amount": 7500,
+          "lowest_recent_amount": 5500,
+          "lowest_recent_period_days": 30
+        },
+        "discount_eligible": false,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+          {"type": "total", "display_text": "Total", "amount": 5000}
+        ]
+      }
+    ],
+    "sales": [
+      {
+        "id": "sale_winter2026",
+        "name": "Winter Sale",
+        "start": "2026-02-01T00:00:00Z",
+        "end": "2026-02-14T23:59:59Z"
+      }
+    ],
+    "discounts": {
+      "codes": [],
+      "applied": []
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 5000},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "total", "display_text": "Total", "amount": 5000}
+    ],
+    "messages": [],
+    "links": []
+  }
+}

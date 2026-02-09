@@ -1130,6 +1130,15 @@
           "type": "string",
           "description": "Reference to parent line item for bundled products"
         },
+        "sale": {
+          "$ref": "#/$defs/LineItemSale",
+          "description": "Sale extension: per-item sale pricing context. Present when 'sale' extension is active."
+        },
+        "discount_eligible": {
+          "type": "boolean",
+          "default": true,
+          "description": "Discount extension: whether this item accepts code-based discounts. Present when 'discount' extension is active."
+        },
         "totals": {
           "type": "array",
           "items": {
@@ -1858,7 +1867,8 @@
             "discount_code_minimum_not_met",
             "discount_code_user_not_logged_in",
             "discount_code_user_ineligible",
-            "discount_code_usage_limit_reached"
+            "discount_code_usage_limit_reached",
+            "discount_code_sale_item_excluded"
           ],
           "description": "Warning code indicating the type of warning"
         },
@@ -2302,6 +2312,92 @@
             "$ref": "#/$defs/DiscountAllocation"
           },
           "description": "Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount."
+        },
+        "excluded_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ExcludedItem" },
+          "description": "Items excluded from this discount, with reasons."
+        }
+      }
+    },
+    "Sale": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A sale campaign registered at session level and referenced by line items.",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable, opaque identifier for the sale (e.g., 'sale_winter2026'). Referenced by sale.id on line items."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable sale label (e.g., 'Winter Sale', 'Black Friday Doorbuster')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Richer context about the sale. Agents can use this to contextualize the sale for the buyer."
+        },
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the sale became effective."
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the sale expires."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Arbitrary key-value pairs. Values MUST be strings."
+        }
+      }
+    },
+    "LineItemSale": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-item sale pricing context. References a session-level Sale by id.",
+      "required": ["id", "compare_at_amount"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "References a Sale in CheckoutSession.sales[]."
+        },
+        "compare_at_amount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The regular / 'was' price in minor currency units. MUST be greater than the line item's unit_amount."
+        },
+        "lowest_recent_amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lowest price in the recent period, in minor currency units. Supports EU Omnibus Directive compliance."
+        },
+        "lowest_recent_period_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days covered by lowest_recent_amount (default: 30). Required when lowest_recent_amount is present."
+        }
+      },
+      "dependentRequired": {
+        "lowest_recent_amount": ["lowest_recent_period_days"]
+      }
+    },
+    "ExcludedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "An item excluded from a discount.",
+      "required": ["path", "reason"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "JSONPath to the excluded item."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for exclusion (e.g., 'sale_item')."
         }
       },
       "example": {
@@ -3313,6 +3409,11 @@
         },
         "order": {
           "$ref": "#/$defs/Order"
+        },
+        "sales": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Sale" },
+          "description": "Sale extension: active sales registry. Present when 'sale' extension is active."
         }
       },
       "required": [

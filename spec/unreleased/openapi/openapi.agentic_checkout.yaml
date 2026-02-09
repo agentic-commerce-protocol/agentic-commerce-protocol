@@ -1353,6 +1353,13 @@ components:
         parent_id:
           type: string
           description: Reference to parent line item for bundled products
+        sale:
+          $ref: "#/components/schemas/LineItemSale"
+          description: "Sale extension: per-item sale pricing context. Present when 'sale' extension is active."
+        discount_eligible:
+          type: boolean
+          default: true
+          description: "Discount extension: whether this item accepts code-based discounts. Present when 'discount' extension is active."
         totals:
           type: array
           items:
@@ -1771,6 +1778,7 @@ components:
             - discount_code_user_not_logged_in
             - discount_code_user_ineligible
             - discount_code_usage_limit_reached
+            - discount_code_sale_item_excluded
           description: Warning code indicating the type of warning
         severity:
           type: string
@@ -2615,10 +2623,85 @@ components:
           items:
             $ref: "#/components/schemas/DiscountAllocation"
           description: Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount.
+        excluded_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExcludedItem"
+          description: "Items excluded from this discount, with reasons."
       example:
         code: SAVE20
         amount: 1000
         allocations: []
+
+    ExcludedItem:
+      type: object
+      additionalProperties: false
+      description: An item excluded from a discount.
+      required:
+        - path
+        - reason
+      properties:
+        path:
+          type: string
+          description: JSONPath to the excluded item.
+        reason:
+          type: string
+          description: "Reason for exclusion (e.g., 'sale_item')."
+
+    Sale:
+      type: object
+      additionalProperties: false
+      description: A sale campaign registered at session level and referenced by line items.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: "Stable, opaque identifier for the sale (e.g., 'sale_winter2026'). Referenced by sale.id on line items."
+        name:
+          type: string
+          description: "Human-readable sale label (e.g., 'Winter Sale', 'Black Friday Doorbuster')."
+        description:
+          type: string
+          description: Richer context about the sale. Agents can use this to contextualize the sale for the buyer.
+        start:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the sale became effective.
+        end:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the sale expires.
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Arbitrary key-value pairs. Values MUST be strings.
+
+    LineItemSale:
+      type: object
+      additionalProperties: false
+      description: Per-item sale pricing context. References a session-level Sale by id.
+      required:
+        - id
+        - compare_at_amount
+      properties:
+        id:
+          type: string
+          description: References a Sale in CheckoutSession.sales[].
+        compare_at_amount:
+          type: integer
+          minimum: 1
+          description: "The regular / 'was' price in minor currency units. MUST be greater than the line item's unit_amount."
+        lowest_recent_amount:
+          type: integer
+          minimum: 0
+          description: Lowest price in the recent period, in minor currency units. Supports EU Omnibus Directive compliance.
+        lowest_recent_period_days:
+          type: integer
+          minimum: 1
+          description: "Days covered by lowest_recent_amount (default: 30). Required when lowest_recent_amount is present."
+
     RejectedDiscount:
       type: object
       additionalProperties: false
@@ -2650,6 +2733,7 @@ components:
         - discount_code_user_not_logged_in
         - discount_code_user_ineligible
         - discount_code_usage_limit_reached
+        - discount_code_sale_item_excluded
       description: Error codes for rejected discount codes, used in messages[].code.
       example: discount_code_expired
     DiscountsRequest:
@@ -2841,6 +2925,11 @@ components:
         discounts:
           $ref: "#/components/schemas/DiscountsResponse"
           description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
+        sales:
+          type: array
+          description: "Sale extension: active sales registry. Present when 'sale' extension is active."
+          items:
+            $ref: "#/components/schemas/Sale"
       required:
         - id
         - status
