@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-commerce-protocol.com/schemas/sale.json",
+  "title": "Sale Extension",
+  "description": "Extends Checkout with sale pricing context, enabling agents to communicate compare-at prices, sale windows, and EU Omnibus compliance data. Version: 2026-02-09.",
+
+  "$defs": {
+    "sale": {
+      "type": "object",
+      "description": "A sale campaign. Registered at session level in CheckoutSession.sales[] and referenced by line items.",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable, opaque identifier for the sale (e.g., 'sale_winter2026'). Referenced by sale.id on line items. Consistent across sessions."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable sale label (e.g., 'Winter Sale', 'Black Friday Doorbuster')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Richer context about the sale. Agents can use this to contextualize the sale for the buyer."
+        },
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the sale became effective."
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the sale expires."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary key-value pairs. Values MUST be strings."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "line_item_sale": {
+      "type": "object",
+      "description": "Per-item sale pricing context. References a session-level Sale by id.",
+      "required": ["id", "compare_at_amount"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "References a Sale in CheckoutSession.sales[]."
+        },
+        "compare_at_amount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The regular / 'was' price in minor currency units. MUST be greater than the line item's unit_amount."
+        },
+        "lowest_recent_amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lowest price in the recent period, in minor currency units. Supports EU Omnibus Directive compliance."
+        },
+        "lowest_recent_period_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days covered by lowest_recent_amount (default: 30). Required when lowest_recent_amount is present."
+        }
+      },
+      "dependentRequired": {
+        "lowest_recent_amount": ["lowest_recent_period_days"]
+      },
+      "additionalProperties": false
+    },
+
+    "sales_response": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/sale" },
+      "description": "Array of active sales for this checkout session. Ordering indicates presentation priority — first entry is most prominent/urgent."
+    },
+
+    "checkout_with_sale": {
+      "title": "Checkout with Sale Extension",
+      "description": "Checkout session extended with sale pricing context.",
+      "allOf": [
+        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "sales": {
+              "$ref": "#/$defs/sales_response",
+              "description": "Active sales registry for this checkout session."
+            }
+          }
+        }
+      ]
+    }
+  }
+}

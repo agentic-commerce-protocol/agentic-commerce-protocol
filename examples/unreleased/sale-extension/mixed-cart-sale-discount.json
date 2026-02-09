@@ -1,0 +1,125 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Sale item excluded from discount code, regular item receives the discount. Demonstrates interaction between sale and discount extensions.",
+
+  "request": {
+    "line_items": [
+      {"id": "item_headphones", "quantity": 1},
+      {"id": "item_tshirt", "quantity": 1}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["SAVE20"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_sale003",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "sale",
+          "extends": [
+            "$.CheckoutSession.sales",
+            "$.LineItem.sale"
+          ]
+        },
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts",
+            "$.LineItem.discount_eligible"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_headphones"},
+        "name": "Wireless Headphones",
+        "quantity": 1,
+        "unit_amount": 5000,
+        "sale": {
+          "id": "sale_winter2026",
+          "compare_at_amount": 7500
+        },
+        "discount_eligible": false,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+          {"type": "total", "display_text": "Total", "amount": 5000}
+        ]
+      },
+      {
+        "id": "li_2",
+        "item": {"id": "item_tshirt"},
+        "name": "Cotton T-Shirt",
+        "quantity": 1,
+        "unit_amount": 3000,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 3000},
+          {"type": "items_discount", "display_text": "Discount", "amount": 600},
+          {"type": "total", "display_text": "Total", "amount": 2400}
+        ]
+      }
+    ],
+    "sales": [
+      {
+        "id": "sale_winter2026",
+        "name": "Winter Sale",
+        "start": "2026-02-01T00:00:00Z",
+        "end": "2026-02-14T23:59:59Z"
+      }
+    ],
+    "discounts": {
+      "codes": ["SAVE20"],
+      "applied": [
+        {
+          "id": "di_save20",
+          "code": "SAVE20",
+          "coupon": {
+            "id": "coupon_save20",
+            "name": "20% Off",
+            "percent_off": 20,
+            "duration": "once"
+          },
+          "amount": 600,
+          "method": "each",
+          "allocations": [
+            {"path": "$.line_items[1]", "amount": 600}
+          ],
+          "excluded_items": [
+            {"path": "$.line_items[0]", "reason": "sale_item"}
+          ]
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 8000},
+      {"type": "items_discount", "display_text": "Item Discounts (SAVE20)", "amount": 600},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 7400},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "total", "display_text": "Total", "amount": 7400}
+    ],
+    "messages": [],
+    "links": []
+  }
+}

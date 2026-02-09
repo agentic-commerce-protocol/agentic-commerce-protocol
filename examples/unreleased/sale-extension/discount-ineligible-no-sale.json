@@ -1,0 +1,95 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: discount_eligible set to false without any sale object, proving the two concepts are independent. A submitted discount code is rejected.",
+
+  "request": {
+    "line_items": [
+      {"id": "item_sneakers", "quantity": 1}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["WELCOME10"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_sale005",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "sale",
+          "extends": [
+            "$.CheckoutSession.sales",
+            "$.LineItem.sale"
+          ]
+        },
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts",
+            "$.LineItem.discount_eligible"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_sneakers"},
+        "name": "Limited Edition Sneakers",
+        "quantity": 1,
+        "unit_amount": 19900,
+        "discount_eligible": false,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 19900},
+          {"type": "total", "display_text": "Total", "amount": 19900}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": ["WELCOME10"],
+      "applied": [],
+      "rejected": [
+        {
+          "code": "WELCOME10",
+          "reason": "discount_code_sale_item_excluded",
+          "message": "Code 'WELCOME10' cannot be applied — all items in this cart are excluded from discount codes."
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 19900},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 19900},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "total", "display_text": "Total", "amount": 19900}
+    ],
+    "messages": [
+      {
+        "type": "warning",
+        "code": "discount_code_sale_item_excluded",
+        "param": "$.discounts.codes[0]",
+        "content_type": "plain",
+        "content": "Code 'WELCOME10' cannot be applied — all items in this cart are excluded from discount codes."
+      }
+    ],
+    "links": []
+  }
+}
