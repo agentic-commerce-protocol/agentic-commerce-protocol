@@ -32,8 +32,9 @@ loyalty point redemption.
 ### 2.1 Building on the Foundation
 
 ACP provides basic discount support via the `coupons` array in requests and
-`DiscountDetail` type in line items. This extension enhances these capabilities
-with a richer feature set.
+`DiscountDetail` type in line items. This extension replaces these capabilities
+with a richer feature set. `DiscountDetail` is deprecated in favor of
+`AppliedDiscount` (see §10.2).
 
 ### 2.2 What This Extension Adds
 
@@ -550,7 +551,113 @@ The `coupons` field in requests is a **deprecated alias** for `discounts.codes`:
 Merchants **SHOULD** accept both formats. If both are present, `discounts.codes`
 takes precedence.
 
-### 10.2 Clients Without Extension Support
+### 10.2 DiscountDetail Deprecation
+
+The `DiscountDetail` type on `LineItem.discount_details[]` in the base schema is
+**deprecated**. `AppliedDiscount` on `CheckoutSession.discounts.applied[]` is
+the authoritative discount representation.
+
+**Behavioral rules:**
+
+- Merchants using the Discount Extension **SHOULD** use `discounts.applied[]` as
+  the authoritative representation and **SHOULD** omit `discount_details[]`.
+- When both `discount_details[]` and `discounts.applied[]` are present,
+  `discounts.applied[]` takes precedence.
+- Merchants not using the Discount Extension **MAY** continue to use
+  `discount_details[]` during the deprecation period.
+- The `DiscountDetail` type and `discount_details` field will be removed in a
+  future spec version.
+
+#### `DiscountDetail.source` Mapping
+
+During the deprecation period, `DiscountDetail.source` values correspond to
+`AppliedDiscount` fields as follows:
+
+| `DiscountDetail.source` | Equivalent in Discount Extension | Notes |
+|-------------------------|----------------------------------|-------|
+| `coupon` | `AppliedDiscount` with `code` | Buyer-submitted discount code |
+| `automatic` | `AppliedDiscount` with `automatic: true` | Merchant rule, no code required |
+| `loyalty` | `AppliedDiscount` with `automatic: true` + `coupon.metadata` | No direct equivalent; model as automatic with loyalty context in metadata |
+
+#### Migration Example
+
+**Before** — merchant using `discount_details[]` (deprecated):
+
+```json
+{
+  "line_items": [
+    {
+      "id": "li_1",
+      "name": "Running Shoes",
+      "unit_amount": 8000,
+      "quantity": 1,
+      "discount_details": [
+        {
+          "code": "SAVE20",
+          "type": "percentage",
+          "amount": 2000,
+          "description": "20% off with code SAVE20",
+          "source": "coupon"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**After** — merchant using `discounts.applied[]` (via Discount Extension):
+
+```json
+{
+  "line_items": [
+    {
+      "id": "li_1",
+      "name": "Running Shoes",
+      "unit_amount": 8000,
+      "quantity": 1
+    }
+  ],
+  "discounts": {
+    "codes": ["SAVE20"],
+    "applied": [
+      {
+        "id": "di_save20",
+        "code": "SAVE20",
+        "coupon": { "id": "c_save20", "name": "20% Off", "percent_off": 20 },
+        "amount": 2000,
+        "automatic": false,
+        "method": "each",
+        "priority": 1,
+        "allocations": [{ "path": "$.line_items[0]", "amount": 2000 }]
+      }
+    ]
+  }
+}
+```
+
+### 10.3 Normative Boundary: What AppliedDiscount Represents
+
+`AppliedDiscount` represents reductions computed at checkout time, applied on top
+of the line item's `unit_amount`. Catalog-level price changes — where
+`unit_amount` already reflects the reduced price — **MUST NOT** be modeled as
+applied discounts; they are simply the price.
+
+The `automatic` field on `AppliedDiscount` indicates a checkout-time reduction
+applied by merchant rules without a buyer-submitted code (e.g., "free shipping
+over $50", "10% off for loyalty members"). It does not indicate a catalog-level
+price change.
+
+| Reduction type | `unit_amount` reflects it? | Correct representation |
+|----------------|---------------------------|------------------------|
+| Checkout-time rule-based | No — reduction applied on top | `AppliedDiscount` with `automatic: true` |
+| Buyer-submitted code | No — reduction applied on top | `AppliedDiscount` with `code` |
+| Catalog-level price change | Yes — `unit_amount` IS the reduced price | Not a discount — simply the price |
+| ~~Legacy per-item~~ | Ambiguous | Migrate to `AppliedDiscount` |
+
+The same boundary applies to `discount_details[]` during the deprecation period:
+catalog-level price reductions **MUST NOT** appear in `discount_details[]`.
+
+### 10.4 Clients Without Extension Support
 
 - Clients that don't support the discount extension **SHOULD** ignore the
   `discounts` object in responses
@@ -583,5 +690,6 @@ takes precedence.
 
 ## 13. Change Log
 
+- **2026-02-09**: Deprecate `DiscountDetail` in favor of `AppliedDiscount` (§10.2); add normative boundary for `automatic: true` (§10.3); add migration guidance ([#124](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/124))
 - **2026-01-27**: Initial draft
 

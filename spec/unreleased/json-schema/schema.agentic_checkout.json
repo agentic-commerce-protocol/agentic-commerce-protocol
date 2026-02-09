@@ -34,6 +34,7 @@
     },
     "DiscountDetail": {
       "type": "object",
+      "description": "DEPRECATED: Use the Discount Extension's AppliedDiscount (discounts.applied[]) instead. DiscountDetail will be removed in a future spec version.",
       "additionalProperties": false,
       "properties": {
         "code": { "type": "string" },
@@ -584,7 +585,8 @@
         },
         "discount_details": {
           "type": "array",
-          "items": { "$ref": "#/$defs/DiscountDetail" }
+          "items": { "$ref": "#/$defs/DiscountDetail" },
+          "description": "DEPRECATED: Use the Discount Extension's discounts.applied[] instead."
         },
         "tax_exempt": { "type": "boolean" },
         "tax_exemption_reason": { "type": "string" },
