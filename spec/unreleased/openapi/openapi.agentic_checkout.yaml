@@ -1215,6 +1215,8 @@ components:
     DiscountDetail:
       type: object
       additionalProperties: false
+      deprecated: true
+      description: "DEPRECATED: Use the Discount Extension's AppliedDiscount (discounts.applied[]) instead. DiscountDetail will be removed in a future spec version."
       properties:
         code:
           type: string
@@ -1343,7 +1345,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DiscountDetail"
-          description: Line-item level discount details
+          deprecated: true
+          description: "DEPRECATED: Use the Discount Extension's discounts.applied[] instead."
         tax_exempt:
           type: boolean
           description: Whether this line item is tax exempt
