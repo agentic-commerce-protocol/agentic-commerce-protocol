@@ -120,7 +120,7 @@ of `unit_amount`. Beyond this, `AppliedDiscount` lacks compare-at pricing,
 campaign identity, and EU Omnibus fields. Automatic discounts are a legitimate
 concept — checkout-time, condition-based reductions like "free shipping over $50"
 — but they are not catalog price changes. `DiscountDetail` is an under-specified
-legacy type with no RFC documentation; see issue #TBD for proposed clarification.
+legacy type with no RFC documentation; see [issue #124](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/124) for proposed clarification.
 
 ### 2.4 Checkout as the Authoritative Pricing Surface
 
@@ -405,7 +405,7 @@ variant, entirely separate from its discount and cart rules systems.
 
 > **Note:** The base schema's `DiscountDetail` type on `LineItem.discount_details[]`
 > predates the Discount Extension and has limited documentation around its
-> `source: "automatic"` value. See issue #TBD for a proposal to clarify the
+> `source: "automatic"` value. See [issue #124](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/124) for a proposal to clarify the
 > relationship between `DiscountDetail`, `AppliedDiscount`, and sale pricing.
 
 ---
