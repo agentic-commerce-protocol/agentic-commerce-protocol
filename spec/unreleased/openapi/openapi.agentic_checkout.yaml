@@ -1245,13 +1245,17 @@ components:
         Order returned after checkout completion. Contains order details and optional
         rich post-purchase tracking (line items, fulfillments, adjustments).
       properties:
+        type:
+          type: string
+          const: order
+          description: "Discriminator field for webhook payloads. Always 'order' when present."
         id: { type: string }
         checkout_session_id: { type: string }
         order_number: { type: string, description: "Human-readable order number for customer reference" }
         permalink_url: { type: string, format: uri }
         status:
           type: string
-          enum: [confirmed, processing, shipped, delivered, canceled]
+          enum: [created, confirmed, manual_review, processing, shipped, delivered, canceled]
           description: "Order-level status. Can be derived from line item and fulfillment statuses."
         estimated_delivery: { $ref: "#/components/schemas/EstimatedDelivery" }
         confirmation: { $ref: "#/components/schemas/OrderConfirmation" }
@@ -1353,26 +1357,45 @@ components:
           description: "Fulfillment method type"
         status:
           type: string
-          enum: [pending, processing, shipped, in_transit, out_for_delivery, delivered, failed, canceled]
-          description: "Current fulfillment status"
+          enum: [pending, processing, shipped, in_transit, out_for_delivery, ready_for_pickup, delivered, failed, canceled]
+          description: |
+            Current fulfillment status. Not all statuses apply to all types:
+            - shipping: pending, processing, shipped, in_transit, out_for_delivery, delivered, failed, canceled
+            - pickup: pending, processing, ready_for_pickup, delivered, failed, canceled
+            - digital: pending, processing, delivered, failed, canceled
         line_items:
           type: array
           items: { $ref: "#/components/schemas/LineItemReference" }
           description: "Which line items and quantities are in this fulfillment"
         carrier:
           type: string
-          description: "Carrier name (e.g., 'FedEx', 'UPS', 'USPS')"
+          description: "Carrier name (e.g., 'FedEx', 'UPS', 'USPS'). Applies to type: shipping."
         tracking_number:
           type: string
-          description: "Carrier tracking number"
+          description: "Carrier tracking number. Applies to type: shipping."
         tracking_url:
           type: string
           format: uri
-          description: "URL to track this shipment"
+          description: "URL to track this shipment. Applies to type: shipping."
         destination:
           $ref: "#/components/schemas/Address"
         estimated_delivery:
           $ref: "#/components/schemas/EstimatedDelivery"
+        digital_delivery:
+          type: object
+          description: "Digital delivery details. Applies to type: digital."
+          properties:
+            access_url:
+              type: string
+              format: uri
+              description: "URL to access digital content (download link, streaming page, etc.)"
+            license_key:
+              type: string
+              description: "License or activation key"
+            expires_at:
+              type: string
+              format: date-time
+              description: "When access expires (RFC 3339 timestamp)"
         description:
           type: string
           description: "Human-readable description (e.g., 'Backordered - ships Feb 15')"
@@ -1392,7 +1415,7 @@ components:
           description: "Event identifier"
         type:
           type: string
-          enum: [processing, shipped, in_transit, out_for_delivery, delivered, failed_attempt, returned]
+          enum: [processing, shipped, in_transit, out_for_delivery, ready_for_pickup, delivered, failed_attempt, returned]
           description: "Event type"
         occurred_at:
           type: string
@@ -1432,7 +1455,7 @@ components:
           description: "Which line items and quantities are affected (optional for order-level adjustments)"
         amount:
           type: integer
-          description: "Amount in minor currency units (cents)"
+          description: "Total amount credited to the buyer in minor currency units, inclusive of any applicable tax"
         currency:
           type: string
           pattern: '^[a-z]{3}$'
@@ -1448,7 +1471,7 @@ components:
     OrderTotals:
       type: object
       additionalProperties: false
-      description: "Order-level totals breakdown."
+      description: "Order-level totals breakdown. 'total' is always the original charged amount at checkout, before any post-order adjustments."
       properties:
         subtotal:
           type: integer
@@ -1464,7 +1487,10 @@ components:
           description: "Total discount amount in minor currency units"
         total:
           type: integer
-          description: "Final order total in minor currency units"
+          description: "Original order total as charged at checkout in minor currency units, before any post-order adjustments (refunds, credits, etc.)"
+        amount_refunded:
+          type: integer
+          description: "Total amount refunded to buyer in minor currency units. Sum of completed refund-type adjustments (inclusive of tax)."
         currency:
           type: string
           pattern: '^[a-z]{3}$'

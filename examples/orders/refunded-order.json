@@ -63,9 +63,9 @@
       "line_items": [
         { "id": "li_headphones", "quantity": 1 }
       ],
-      "amount": 29900,
+      "amount": 32516,
       "currency": "usd",
-      "description": "Defective item - left earpiece intermittent audio",
+      "description": "Defective item - left earpiece intermittent audio (includes $26.16 tax)",
       "reason": "defective"
     }
   ],
@@ -74,6 +74,7 @@
     "shipping": 0,
     "tax": 5399,
     "total": 67099,
+    "amount_refunded": 32516,
     "currency": "usd"
   },
   "support": {

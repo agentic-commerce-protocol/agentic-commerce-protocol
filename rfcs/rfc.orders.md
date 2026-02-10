@@ -94,9 +94,9 @@ fields without breaking existing implementations.
 
 We use `fulfillments[]` rather than `shipments[]` to cover:
 
-- **Shipping** — Physical carrier delivery
-- **Pickup** — In-store, curbside, locker pickup
-- **Digital** — Download links, license keys, streaming access
+- **Shipping** — Physical carrier delivery (with `carrier`, `tracking_number`, `tracking_url`)
+- **Pickup** — In-store, curbside, locker pickup (with `ready_for_pickup` status)
+- **Digital** — Download links, license keys, streaming access (with `digital_delivery` sub-object)
 
 ---
 
@@ -108,6 +108,7 @@ The existing `Order` schema gains optional fields:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+| `type` | string | No | Discriminator for webhook payloads (always `"order"`) |
 | `id` | string | Yes | Order identifier |
 | `checkout_session_id` | string | Yes | Associated checkout session |
 | `permalink_url` | string (uri) | Yes | Order page URL |
@@ -122,7 +123,9 @@ The existing `Order` schema gains optional fields:
 | `totals` | OrderTotals | No | Financial summary |
 
 **Order status values:**
+- `created` — Order received but not yet confirmed
 - `confirmed` — Order placed successfully
+- `manual_review` — Order held for fraud or manual review
 - `processing` — Being prepared
 - `shipped` — All items handed to carrier
 - `delivered` — All items delivered
@@ -163,15 +166,24 @@ The existing `Order` schema gains optional fields:
 |-------|------|----------|-------------|
 | `id` | string | Yes | Fulfillment identifier |
 | `type` | enum | Yes | `shipping`, `pickup`, `digital` |
-| `status` | enum | No | Current status |
+| `status` | enum | No | Current status (see applicability table below) |
 | `line_items` | LineItemReference[] | No | Items in this fulfillment |
-| `carrier` | string | No | Carrier name |
-| `tracking_number` | string | No | Tracking number |
-| `tracking_url` | string (uri) | No | Tracking URL |
+| `carrier` | string | No | Carrier name (shipping only) |
+| `tracking_number` | string | No | Tracking number (shipping only) |
+| `tracking_url` | string (uri) | No | Tracking URL (shipping only) |
 | `destination` | Address | No | Delivery address |
 | `estimated_delivery` | EstimatedDelivery | No | Delivery estimate |
+| `digital_delivery` | object | No | Digital delivery details (digital only) |
 | `description` | string | No | Human-readable description |
 | `events` | FulfillmentEvent[] | No | Event history |
+
+**`digital_delivery` object:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `access_url` | string (uri) | No | URL to access digital content |
+| `license_key` | string | No | License or activation key |
+| `expires_at` | string (date-time) | No | When access expires |
 
 **Fulfillment status values:**
 - `pending` — Not yet started (e.g., backordered)
@@ -179,9 +191,27 @@ The existing `Order` schema gains optional fields:
 - `shipped` — Handed to carrier
 - `in_transit` — In carrier network
 - `out_for_delivery` — On delivery vehicle
+- `ready_for_pickup` — Ready for customer pickup
 - `delivered` — Successfully delivered
 - `failed` — Delivery failed
 - `canceled` — Fulfillment canceled
+
+**Status applicability by fulfillment type:**
+
+Not all statuses apply to all fulfillment types. Merchants SHOULD only use
+applicable statuses for each type:
+
+| Status | shipping | pickup | digital |
+|--------|----------|--------|---------|
+| `pending` | yes | yes | yes |
+| `processing` | yes | yes | yes |
+| `shipped` | yes | - | - |
+| `in_transit` | yes | - | - |
+| `out_for_delivery` | yes | - | - |
+| `ready_for_pickup` | - | yes | - |
+| `delivered` | yes | yes | yes |
+| `failed` | yes | yes | yes |
+| `canceled` | yes | yes | yes |
 
 **LineItemReference:**
 
@@ -205,6 +235,7 @@ The existing `Order` schema gains optional fields:
 - `shipped` — Handed to carrier
 - `in_transit` — In carrier network
 - `out_for_delivery` — On delivery vehicle
+- `ready_for_pickup` — Ready for customer pickup
 - `delivered` — Successfully delivered
 - `failed_attempt` — Delivery attempt failed
 - `returned` — Returned to sender
@@ -218,7 +249,7 @@ The existing `Order` schema gains optional fields:
 | `occurred_at` | string (date-time) | Yes | When adjustment occurred |
 | `status` | enum | Yes | Adjustment status |
 | `line_items` | LineItemReference[] | No | Affected line items |
-| `amount` | integer | No | Amount in minor units |
+| `amount` | integer | No | Total amount credited to buyer (minor units, tax-inclusive) |
 | `currency` | string | No | ISO 4217 currency code |
 | `description` | string | No | Human-readable reason |
 | `reason` | string | No | Structured reason code |
@@ -246,8 +277,15 @@ The existing `Order` schema gains optional fields:
 | `shipping` | integer | No | Shipping cost |
 | `tax` | integer | No | Tax amount |
 | `discount` | integer | No | Total discount |
-| `total` | integer | Yes | Final order total |
+| `total` | integer | Yes | Original order total as charged at checkout |
+| `amount_refunded` | integer | No | Total amount refunded to buyer (sum of completed refund adjustments) |
 | `currency` | string | Yes | ISO 4217 currency code |
+
+**Note on `total` semantics:** `total` always represents the original charged
+amount at checkout, before any post-order adjustments (refunds, credits, etc.).
+This allows agents to surface both numbers unambiguously: "Your order was $670.99
+and you've been refunded $325.16." Agents SHOULD NOT subtract adjustments from
+`total` to derive a net amount.
 
 ---
 
@@ -318,7 +356,9 @@ Order with one fulfilled and one pending fulfillment:
 
 ### 5.2 Order with Refund
 
-Order with a partial refund for a defective item:
+Order with a partial refund for a defective item. Note that `adjustment.amount`
+is tax-inclusive (item price + applicable tax), and `totals.total` is the
+original charged amount:
 
 ```json
 {
@@ -343,21 +383,66 @@ Order with a partial refund for a defective item:
       "occurred_at": "2026-02-10T14:30:00Z",
       "status": "completed",
       "line_items": [{ "id": "li_headphones", "quantity": 1 }],
-      "amount": 14900,
+      "amount": 16092,
       "currency": "usd",
-      "description": "Defective item - one earpiece not working"
+      "description": "Defective item - one earpiece not working (includes $11.92 tax)"
     }
   ],
   "totals": {
     "subtotal": 29800,
     "tax": 2384,
     "total": 32184,
+    "amount_refunded": 16092,
     "currency": "usd"
   }
 }
 ```
 
-**Agent response:** "Your order was delivered. You received a $149.00 refund for a defective pair of headphones on Feb 10."
+**Agent response:** "Your order was $321.84. You received a $160.92 refund for a defective pair of headphones on Feb 10."
+
+### 5.3 Digital Delivery
+
+Order with a software license delivered digitally:
+
+```json
+{
+  "id": "ord_789",
+  "checkout_session_id": "cs_012",
+  "permalink_url": "https://merchant.com/orders/789",
+  "status": "delivered",
+  "line_items": [
+    {
+      "id": "li_software",
+      "title": "Pro Photo Editor - Annual License",
+      "quantity": { "ordered": 1, "shipped": 1 },
+      "unit_price": 9900,
+      "subtotal": 9900,
+      "status": "delivered"
+    }
+  ],
+  "fulfillments": [
+    {
+      "id": "ful_1",
+      "type": "digital",
+      "status": "delivered",
+      "line_items": [{ "id": "li_software", "quantity": 1 }],
+      "digital_delivery": {
+        "access_url": "https://merchant.com/downloads/photo-editor?token=abc123",
+        "license_key": "PPRO-2026-XXXX-YYYY-ZZZZ",
+        "expires_at": "2027-02-10T00:00:00Z"
+      }
+    }
+  ],
+  "totals": {
+    "subtotal": 9900,
+    "tax": 866,
+    "total": 10766,
+    "currency": "usd"
+  }
+}
+```
+
+**Agent response:** "Your Pro Photo Editor license has been delivered. Your license key is PPRO-2026-XXXX-YYYY-ZZZZ and expires Feb 10, 2027."
 
 ---
 
@@ -365,9 +450,25 @@ Order with a partial refund for a defective item:
 
 Order updates are sent via the existing Order webhook mechanism. When sending
 order updates, merchants MUST include the full order object (not incremental
-deltas).
+deltas). All optional Order fields (`line_items`, `fulfillments`, `adjustments`,
+`totals`) SHOULD be included when available.
 
-See `openapi.agentic_checkout_webhook.yaml` for webhook schema.
+### 6.1 Webhook Schema
+
+The `EventDataOrder` schema in `openapi.agentic_checkout_webhook.yaml` composes
+the full `Order` schema via `$ref`. This means all Order fields are accepted in
+webhook payloads. The `type: "order"` discriminator field MUST be included in
+webhook payloads.
+
+### 6.2 Replacement of `refunds[]` with `adjustments[]`
+
+The legacy `refunds[]` field and `Refund` schema have been **removed** from the
+webhook spec. The `adjustments[]` array on the Order schema is the only
+supported mechanism for representing refunds, credits, returns, disputes, and
+other post-order changes in webhook payloads.
+
+Existing integrations that previously used `refunds[]` MUST migrate to
+`adjustments[]` with `type: "refund"` or `type: "store_credit"` as appropriate.
 
 ---
 
@@ -387,6 +488,8 @@ if (shipped == ordered) → "shipped"
 
 **Order status:**
 ```
+if (order just received) → "created"
+if (held for review) → "manual_review"
 if (all line items canceled) → "canceled"
 if (all line items delivered) → "delivered"
 if (all line items shipped) → "shipped"
@@ -408,5 +511,6 @@ An empty `adjustments: []` array means no post-order changes have occurred.
 
 ## 8. Change Log
 
+- **2026-02-10**: Review feedback — Extended Order.status enum (`created`, `manual_review`); added `amount_refunded` to OrderTotals; documented `total` as original charge amount; added `digital_delivery` sub-object to Fulfillment; added `ready_for_pickup` status; documented per-type status applicability; clarified `Adjustment.amount` as tax-inclusive; updated webhook spec to compose Order via `$ref`; deprecated `refunds[]` in favor of `adjustments[]`
 - **2026-02-05**: Initial draft — Added OrderLineItem, Fulfillment, FulfillmentEvent, Adjustment, OrderTotals schemas
 

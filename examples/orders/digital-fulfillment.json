@@ -1,0 +1,63 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json#/$defs/Order",
+  "_description": "Order with digital fulfillment - software license delivery.",
+  "id": "ord_digital_201",
+  "checkout_session_id": "cs_mno456",
+  "permalink_url": "https://merchant.example.com/orders/ord_digital_201",
+  "order_number": "ORD-2026-00201",
+  "status": "delivered",
+  "line_items": [
+    {
+      "id": "li_software",
+      "title": "Pro Photo Editor - Annual License",
+      "product_id": "prod_photo_editor_pro",
+      "image_url": "https://merchant.example.com/images/photo-editor.jpg",
+      "url": "https://merchant.example.com/products/photo-editor-pro",
+      "quantity": { "ordered": 1, "shipped": 1 },
+      "unit_price": 9900,
+      "subtotal": 9900,
+      "status": "delivered"
+    }
+  ],
+  "fulfillments": [
+    {
+      "id": "ful_digital_1",
+      "type": "digital",
+      "status": "delivered",
+      "line_items": [
+        { "id": "li_software", "quantity": 1 }
+      ],
+      "digital_delivery": {
+        "access_url": "https://merchant.example.com/downloads/photo-editor-pro?token=abc123",
+        "license_key": "PPRO-2026-XXXX-YYYY-ZZZZ",
+        "expires_at": "2027-02-10T00:00:00Z"
+      },
+      "description": "Digital license delivered via email",
+      "events": [
+        {
+          "id": "evt_d1",
+          "type": "processing",
+          "occurred_at": "2026-02-10T09:00:00Z",
+          "description": "Generating license key"
+        },
+        {
+          "id": "evt_d2",
+          "type": "delivered",
+          "occurred_at": "2026-02-10T09:00:30Z",
+          "description": "License key sent to buyer's email"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "subtotal": 9900,
+    "tax": 866,
+    "total": 10766,
+    "currency": "usd"
+  },
+  "confirmation": {
+    "confirmation_number": "CONF-2026-00201",
+    "confirmation_email_sent": true,
+    "receipt_url": "https://merchant.example.com/receipts/ord_digital_201"
+  }
+}
