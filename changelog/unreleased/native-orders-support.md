@@ -46,7 +46,7 @@ Extended to a superset that aligns with the webhook spec:
 ## Webhook Spec Alignment
 
 - `EventDataOrder` now composes the full `Order` schema via cross-file `$ref`
-- `refunds[]` on `EventDataOrder` is deprecated in favor of `adjustments[]`
+- `refunds[]` and the `Refund` schema have been removed from `EventDataOrder` in favor of `adjustments[]`
 - Fixed pre-existing bug: inline example had `amount: "1.00"` (string) instead of integer
 - Updated inline examples to show rich Order fields (line_items, fulfillments, adjustments, totals)
 
