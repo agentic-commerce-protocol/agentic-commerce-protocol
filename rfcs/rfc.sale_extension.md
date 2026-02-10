@@ -271,8 +271,8 @@ session-level `Sale` by `id` and carries item-specific fields.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `id` | string | Yes | References a `Sale` entry in `$.CheckoutSession.sales[]`. Links this item to its sale campaign. |
-| `compare_at_amount` | integer | Yes | The regular / "was" price for this item, in minor currency units. This is the field that justifies the `sale` object's existence — it answers whether `unit_amount` is a regular price or a reduced one. |
-| `lowest_recent_amount` | integer | No | Lowest price for this item in the recent period, in minor currency units. Supports EU Omnibus compliance. |
+| `compare_at_amount` | integer | Yes | The non-promotional regular price (everyday shelf price) for this item, in minor currency units — not an intermediate promotional price. This is the field that justifies the `sale` object's existence — it answers whether `unit_amount` is a regular price or a reduced one. |
+| `lowest_recent_amount` | integer | No | Lowest price for this item in the recent period, in minor currency units. Supports EU Omnibus compliance and provides intermediate pricing context for verticals with layered promotions (e.g., a grocery weekly ad price preceding a flash doorbuster). |
 | `lowest_recent_period_days` | integer | No | Number of days covered by `lowest_recent_amount`. Default: 30. Merchants MAY use any lookback window (e.g., 365 for "lowest price this year"). |
 
 ### 4.3 Normalized Model
@@ -293,6 +293,20 @@ product). If multiple promotions overlap, the merchant resolves the overlap
 before responding — the result is a single reduced `unit_amount` with a single
 `sale` reference. Multiple simultaneous discounts ON TOP of a sale price are
 handled by the Discount Extension.
+
+**Price waterfall resolution:** Merchants with complex promotional calendars
+(grocery TPRs, weekly ads, flash promotions) resolve overlapping promotions
+internally before responding — consistent with how every major platform from
+Instacart to Oracle Retail operates. The checkout response carries the resolved
+result:
+
+- `compare_at_amount` — the regular price (top of the waterfall)
+- `unit_amount` — the current effective price (resolved output)
+- `lowest_recent_amount` — intermediate pricing context when the gap between
+  regular and current price spans multiple promotional layers
+
+Example: a $75 shelf price, $60 weekly ad, and $50 doorbuster →
+`compare_at_amount: 7500`, `lowest_recent_amount: 6000`, `unit_amount: 5000`.
 
 ---
 

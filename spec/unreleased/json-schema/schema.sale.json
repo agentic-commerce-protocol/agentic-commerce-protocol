@@ -55,12 +55,12 @@
         "compare_at_amount": {
           "type": "integer",
           "minimum": 1,
-          "description": "The regular / 'was' price in minor currency units. MUST be greater than the line item's unit_amount."
+          "description": "The non-promotional regular price (everyday shelf price) in minor currency units. MUST be greater than the line item's unit_amount."
         },
         "lowest_recent_amount": {
           "type": "integer",
           "minimum": 0,
-          "description": "Lowest price in the recent period, in minor currency units. Supports EU Omnibus Directive compliance."
+          "description": "Lowest price in the recent period, in minor currency units. Supports EU Omnibus compliance and intermediate pricing context for layered promotions."
         },
         "lowest_recent_period_days": {
           "type": "integer",
