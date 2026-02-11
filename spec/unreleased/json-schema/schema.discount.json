@@ -147,7 +147,12 @@
               },
               "reason": {
                 "type": "string",
-                "description": "Reason for exclusion (e.g., 'sale_item')."
+                "enum": ["sale_item", "map_restricted", "limited_edition", "pre_order", "other"],
+                "description": "Machine-readable reason for exclusion."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable explanation of why the item was excluded."
               }
             },
             "additionalProperties": false
@@ -218,7 +223,7 @@
     "line_item_discount_eligible": {
       "type": "boolean",
       "default": true,
-      "description": "Whether this item accepts code-based discount codes. Default: true. Does not affect automatic discounts."
+      "description": "Whether this item accepts code-based discount codes. When false, the item is excluded from ALL code-based discounts (blanket exclusion). When true (default), the item may accept discount codes but per-discount eligibility rules still apply. Does not affect automatic discounts."
     },
 
     "discount_error_codes": {
@@ -232,7 +237,7 @@
         "discount_code_user_not_logged_in",
         "discount_code_user_ineligible",
         "discount_code_usage_limit_reached",
-        "discount_code_sale_item_excluded"
+        "discount_code_item_ineligible"
       ],
       "description": "Error codes for rejected discount codes, used in messages[].code."
     },

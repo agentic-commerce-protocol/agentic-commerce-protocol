@@ -450,7 +450,7 @@ discount codes. The merchant rejects the code entirely.
 ```
 Cart: [Headphones ($50, was $75), Speaker ($80, was $120)]
 Agent applies: SAVE10
-Result: Rejected — "discount_code_sale_item_excluded"
+Result: Rejected — "discount_code_item_ineligible"
 ```
 
 Without this extension, the merchant must misuse
@@ -513,10 +513,17 @@ A new flat field on `LineItem`, governed by the Discount Extension via
 
 **Semantics:**
 
-- `discount_eligible: false` signals that the merchant's policy excludes this
-  item from code-based discounts. Automatic discounts (`automatic: true`) are
-  unaffected — the merchant would not simultaneously mark an item as ineligible
-  and apply an automatic discount to it.
+- **`false`** — blanket exclusion from ALL code-based discounts. No discount code
+  will apply to this item. This is the protocol equivalent of "excluded from all
+  promotions" as seen on e-commerce storefronts. Agents SHOULD NOT attempt to
+  apply discount codes to this item. Automatic discounts (`automatic: true`) are
+  unaffected.
+- **`true` (default)** — the item MAY accept discount codes. This does not
+  guarantee any specific code will apply — per-discount eligibility rules still
+  apply at application time. When a discount is partially applied and specific
+  items are excluded, the `excluded_items` array on `AppliedDiscount` provides
+  per-discount exclusion context with a machine-readable `reason` and optional
+  human-readable `message`.
 - `discount_eligible` is independent of the `sale` extension. An item can be
   discount-ineligible without being on sale (new arrivals, MAP-restricted items,
   limited editions, pre-orders). An item can be on sale and still accept discount
@@ -544,7 +551,7 @@ A new error code for the `discounts.rejected` array:
 
 | Code | Description |
 |------|-------------|
-| `discount_code_sale_item_excluded` | All eligible items in the cart are on sale and excluded from this discount code. |
+| `discount_code_item_ineligible` | All eligible items in the cart are ineligible for this discount code (e.g., on sale, MAP-restricted, limited edition). |
 
 This is additive to the existing rejection reason enum defined in the Discount
 Extension RFC Section 7.1.
@@ -562,7 +569,8 @@ A new optional field on `AppliedDiscount` for partial-application transparency:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `path` | string | Yes | JSONPath to the excluded line item (e.g., `$.line_items[0]`). |
-| `reason` | string | Yes | Why the item was excluded (e.g., `sale_item`). |
+| `reason` | enum | Yes | Machine-readable reason for exclusion. One of: `sale_item`, `map_restricted`, `limited_edition`, `pre_order`, `other`. |
+| `message` | string | No | Human-readable explanation of why the item was excluded. |
 
 **Example:**
 
@@ -575,7 +583,7 @@ A new optional field on `AppliedDiscount` for partial-application transparency:
   "method": "each",
   "allocations": [{ "path": "$.line_items[1]", "amount": 600 }],
   "excluded_items": [
-    { "path": "$.line_items[0]", "reason": "sale_item" }
+    { "path": "$.line_items[0]", "reason": "sale_item", "message": "This item is on sale and excluded from this discount code." }
   ]
 }
 ```
@@ -646,7 +654,7 @@ This RFC is fully additive:
 2. All sale fields are response-only. No existing request formats change.
 3. `discount_eligible` is an optional field with a default of `true`. Its absence
    preserves current behavior identically.
-4. The new rejection reason `discount_code_sale_item_excluded` is additive to the
+4. The new rejection reason `discount_code_item_ineligible` is additive to the
    existing enum. Agents that do not recognize it can treat it as a generic
    rejection.
 5. `excluded_items` on `AppliedDiscount` is optional. Existing discount
@@ -725,8 +733,8 @@ responses remain unchanged.
   policy for the item
 - [ ] `discount_eligible` does not affect automatic discount application
 - [ ] Absence of `discount_eligible` implies `true`
-- [ ] `discount_code_sale_item_excluded` rejection reason is used when all
-  eligible items are sale-excluded
+- [ ] `discount_code_item_ineligible` rejection reason is used when all
+  eligible items are ineligible for discount codes
 
 ---
 

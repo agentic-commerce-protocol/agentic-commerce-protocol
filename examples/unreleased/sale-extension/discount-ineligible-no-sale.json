@@ -60,7 +60,7 @@
       "rejected": [
         {
           "code": "WELCOME10",
-          "reason": "discount_code_sale_item_excluded",
+          "reason": "discount_code_item_ineligible",
           "message": "Code 'WELCOME10' cannot be applied — all items in this cart are excluded from discount codes."
         }
       ]
@@ -84,7 +84,7 @@
     "messages": [
       {
         "type": "warning",
-        "code": "discount_code_sale_item_excluded",
+        "code": "discount_code_item_ineligible",
         "param": "$.discounts.codes[0]",
         "content_type": "plain",
         "content": "Code 'WELCOME10' cannot be applied — all items in this cart are excluded from discount codes."
