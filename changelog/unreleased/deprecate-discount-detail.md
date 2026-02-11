@@ -1,23 +1,47 @@
 # Unreleased Changes
 
-## Deprecate `DiscountDetail` in Favor of `AppliedDiscount`
+## Consolidate `DiscountDetail` into `AppliedDiscount`
 
-ACP had two overlapping discount representations with no spec guidance on their relationship: `DiscountDetail` in the base schema (5 fields, no RFC, no examples) and `AppliedDiscount` in the Discount Extension (11+ fields, full RFC, 5 examples). This change deprecates the under-specified type and clarifies the normative boundary for `AppliedDiscount`.
+ACP had two overlapping discount representations: `DiscountDetail` in the base schema (5 fields, no RFC) and `AppliedDiscount` in the Discount Extension (11+ fields, full RFC). Two `DiscountDetail` fields — `description` and `type` — had no migration target in `AppliedDiscount`, blocking lossless deprecation. This change closes the parity gap and deprecates `DiscountDetail`.
 
-### Changes
+### Parity Additions
 
-- **JSON Schema**: Added `DEPRECATED` descriptions to `DiscountDetail` type and `discount_details` field on `LineItem` in `schema.agentic_checkout.json`.
+New optional fields on `AppliedDiscount`:
 
-- **OpenAPI**: Added `deprecated: true` and updated descriptions to `DiscountDetail` component and `discount_details` field in `openapi.agentic_checkout.yaml`.
+| Field | Type | Source |
+|-------|------|--------|
+| `description` | `string` | Mirrors `DiscountDetail.description` — human-readable discount description |
+| `type` | `string` enum `["percentage", "fixed", "bogo", "volume"]` | Mirrors `DiscountDetail.type` — discount type |
 
-- **Discount Extension RFC**: Added deprecation section (§10.2) following the `coupons` → `discounts.codes` pattern (§10.1), normative boundary language for `automatic: true` (§10.3), `DiscountDetail.source` mapping table, and before/after migration example.
+### Deprecation
 
-### Behavioral Rules
+- **`DiscountDetail`** type and `LineItem.discount_details[]` field: deprecated (unchanged from prior commit in base schema).
+- **`AppliedDiscount.automatic`** field: deprecated. Use the absence of `code` to identify automatic discounts instead.
 
-- Merchants using the Discount Extension **SHOULD** use `discounts.applied[]` as the authoritative representation and **SHOULD** omit `discount_details[]`.
-- When both `discount_details[]` and `discounts.applied[]` are present, `discounts.applied[]` takes precedence.
-- Merchants not using the Discount Extension **MAY** continue to use `discount_details[]` during the deprecation period.
-- The `DiscountDetail` type and `discount_details` field will be removed in a future spec version.
+### Lossless Field Mapping
+
+| `DiscountDetail` field | `AppliedDiscount` field | Notes |
+|------------------------|------------------------|-------|
+| `code` | `code` | Direct mapping |
+| `type` | `type` | Same enum values |
+| `amount` | `amount` | Direct mapping |
+| `description` | `description` | Direct mapping (new) |
+| `source` | Derived from `code` presence | `coupon` → `code` present; `automatic`/`loyalty` → `code` absent |
+
+### Schema Changes
+
+- **JSON Schema** (`schema.discount.json`): Added `description` and `type` to `applied_discount.properties`; marked `automatic` as deprecated.
+- **OpenAPI** (`openapi.agentic_checkout.yaml`): Added `description` and `type` to `AppliedDiscount.properties`; marked `automatic` as deprecated.
+
+### RFC Changes
+
+- **§2.1**: Updated motivation to mention consolidation with parity additions.
+- **§4.2**: Added `description` and `type` rows; marked `automatic` as deprecated.
+- **§9.3**: Added deprecation note on `automatic` field.
+- **§10.2**: Added lossless field parity table; updated source mapping to use `code` presence/absence; updated migration example with `description` and `type`.
+- **§10.3**: Rewrote normative boundary to use `code` presence/absence as primary signal; noted `automatic` is deprecated.
+- **§12**: Updated conformance checklist.
+- **§13**: Updated changelog entry.
 
 ### Related
 
