@@ -26,8 +26,7 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131",
-        "company": ""
+        "postal_code": "94131"
       }
     },
     "order_notes": "Leave at front door if I'm not home."
@@ -166,8 +165,7 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131",
-        "company": ""
+        "postal_code": "94131"
       }
     },
     "selected_fulfillment_options": [
@@ -609,7 +607,7 @@
       "confirmation": {
         "confirmation_number": "CNF-1001",
         "confirmation_email_sent": true,
-        "customer_note": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
+        "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
       }
     }
   },
@@ -671,8 +669,7 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131",
-        "company": ""
+        "postal_code": "94131"
       }
     },
     "selected_fulfillment_options": [
@@ -1237,8 +1234,7 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131",
-        "company": ""
+        "postal_code": "94131"
       }
     },
     "selected_fulfillment_options": [
@@ -1357,8 +1353,7 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131",
-        "company": ""
+        "postal_code": "94131"
       }
     },
     "selected_fulfillment_options": [

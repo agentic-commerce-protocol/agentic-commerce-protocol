@@ -842,9 +842,9 @@
         "confirmation_email_sent": { "type": "boolean" },
         "receipt_url": { "type": "string", "format": "uri" },
         "invoice_number": { "type": "string" },
-        "customer_note": {
+        "order_notes": {
           "type": "string",
-          "description": "Echo of order_notes / customer note attached to the order."
+          "description": "Echo of order_notes attached to the order."
         }
       }
     },
