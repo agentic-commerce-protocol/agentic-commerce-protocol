@@ -14,7 +14,7 @@ Full sale metadata with campaign name, description, start/end window, and EU Omn
 A cart with one sale item and one regular item. A discount code is applied but only to the regular item — the sale item is excluded. Demonstrates `excluded_items` on `AppliedDiscount` and partial discount application.
 
 ### [discount-ineligible-no-sale.json](./discount-ineligible-no-sale.json)
-Proves that `discount_eligible` is independent of the `sale` extension. An item has `discount_eligible: false` with no sale object — it's a limited edition item that simply doesn't accept discount codes. A submitted code is rejected with `discount_code_sale_item_excluded`.
+Proves that `discount_eligible` is independent of the `sale` extension. An item has `discount_eligible: false` with no sale object — it's a limited edition item that simply doesn't accept discount codes. A submitted code is rejected with `discount_code_item_ineligible`.
 
 ### [bfcm-multiple-sales.json](./bfcm-multiple-sales.json)
 Two concurrent sales (Black Friday and Cyber Monday) in the `sales[]` registry, demonstrating array priority ordering, metadata on sales, and a 365-day lookback period. Three line items span both sales plus a regular-priced item.

@@ -1868,7 +1868,7 @@
             "discount_code_user_not_logged_in",
             "discount_code_user_ineligible",
             "discount_code_usage_limit_reached",
-            "discount_code_sale_item_excluded"
+            "discount_code_item_ineligible"
           ],
           "description": "Warning code indicating the type of warning"
         },
@@ -2397,7 +2397,12 @@
         },
         "reason": {
           "type": "string",
-          "description": "Reason for exclusion (e.g., 'sale_item')."
+          "enum": ["sale_item", "map_restricted", "limited_edition", "pre_order", "other"],
+          "description": "Machine-readable reason for exclusion."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable explanation of why the item was excluded."
         }
       },
       "example": {

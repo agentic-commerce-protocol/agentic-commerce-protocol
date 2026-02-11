@@ -97,7 +97,7 @@
             {"path": "$.line_items[1]", "amount": 600}
           ],
           "excluded_items": [
-            {"path": "$.line_items[0]", "reason": "sale_item"}
+            {"path": "$.line_items[0]", "reason": "sale_item", "message": "This item is on sale and excluded from this discount code."}
           ]
         }
       ]

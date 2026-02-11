@@ -1359,7 +1359,7 @@ components:
         discount_eligible:
           type: boolean
           default: true
-          description: "Discount extension: whether this item accepts code-based discounts. Present when 'discount' extension is active."
+          description: "Discount extension: whether this item accepts code-based discounts. When false, the item is excluded from ALL code-based discounts (blanket exclusion). When true (default), per-discount eligibility rules still apply. Does not affect automatic discounts. Present when 'discount' extension is active."
         totals:
           type: array
           items:
@@ -1778,7 +1778,7 @@ components:
             - discount_code_user_not_logged_in
             - discount_code_user_ineligible
             - discount_code_usage_limit_reached
-            - discount_code_sale_item_excluded
+            - discount_code_item_ineligible
           description: Warning code indicating the type of warning
         severity:
           type: string
@@ -2646,7 +2646,11 @@ components:
           description: JSONPath to the excluded item.
         reason:
           type: string
-          description: "Reason for exclusion (e.g., 'sale_item')."
+          enum: [sale_item, map_restricted, limited_edition, pre_order, other]
+          description: Machine-readable reason for exclusion.
+        message:
+          type: string
+          description: Human-readable explanation of why the item was excluded.
 
     Sale:
       type: object
@@ -2733,7 +2737,7 @@ components:
         - discount_code_user_not_logged_in
         - discount_code_user_ineligible
         - discount_code_usage_limit_reached
-        - discount_code_sale_item_excluded
+        - discount_code_item_ineligible
       description: Error codes for rejected discount codes, used in messages[].code.
       example: discount_code_expired
     DiscountsRequest:

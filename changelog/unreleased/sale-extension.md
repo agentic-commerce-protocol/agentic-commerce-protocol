@@ -14,7 +14,7 @@ New `sale` extension providing sale pricing context on checkout sessions, and co
 ### Amendment: Discount Extension
 
 - **`discount_eligible` field** on LineItem (boolean, default: `true`) — whether item accepts code-based discount codes
-- **New rejection reason** `discount_code_sale_item_excluded` — for carts where all eligible items are excluded
+- **New rejection reason** `discount_code_item_ineligible` — for carts where all eligible items are ineligible for discount codes
 - **`excluded_items` on `AppliedDiscount`** — transparency for partial discount application with exclusion reasons
 - **Updated `extends`** — discount extension now also extends `$.LineItem.discount_eligible`
 
