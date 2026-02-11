@@ -96,6 +96,15 @@
           "type": "string",
           "description": "The discount code entered by the user. Omitted for automatic discounts."
         },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the discount (e.g., '20% off with code SAVE20')."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["percentage", "fixed", "bogo", "volume"],
+          "description": "The type of discount applied."
+        },
         "coupon": {
           "$ref": "#/$defs/coupon",
           "description": "Details about the underlying coupon/promotion."
@@ -108,7 +117,8 @@
         "automatic": {
           "type": "boolean",
           "default": false,
-          "description": "True if applied automatically by merchant rules (no code required)."
+          "deprecated": true,
+          "description": "DEPRECATED: Use the absence of `code` to identify automatic discounts instead. True if applied automatically by merchant rules (no code required). This field will be removed in a future spec version."
         },
         "start": {
           "type": "string",
