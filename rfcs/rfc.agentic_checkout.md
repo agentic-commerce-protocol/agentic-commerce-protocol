@@ -177,8 +177,9 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **CustomAttribute**: `display_name` (string), `value` (string)
 - **MarketplaceSellerDetails**: `name` (string)
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
-- **Address**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
-- **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested Address object)
+- **FulfillmentAddress**: `name`, `line_one`, `city`, `state`, `country`, `postal_code` (all required); `line_two` (optional)
+- **BillingAddress**: `postal_code`, `country` (required); `name`, `line_one`, `line_two`, `city`, `state` (optional)
+- **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested FulfillmentAddress object)
 - **FulfillmentOption (shipping)**: `id`, `title`, `description?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `totals` (array of **Total**)
 - **FulfillmentOption (digital)**: `id`, `title`, `description?`, `totals` (array of **Total**)
 - **FulfillmentOption (pickup)**: `id`, `title`, `description?`, `location`, `pickup_type?`, `ready_by?`, `pickup_by?`, `totals` (array of **Total**)
@@ -695,6 +696,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **Unreleased**: Split `Address` into `BillingAddress` and `FulfillmentAddress` schemas. `BillingAddress` (for payment billing) requires only `postal_code` and `country`. `FulfillmentAddress` (for shipping) retains all required fields.
 - **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:
   - Renamed `fulfillment_address` to `fulfillment_details` with nested structure (`name`, `phone_number`, `email`, `address`)
