@@ -8,7 +8,10 @@
     ],
     "capabilities": {
       "interventions": {
-        "supported": ["3ds", "address_verification"],
+        "supported": [
+          "3ds",
+          "address_verification"
+        ],
         "display_context": "webview",
         "redirect_context": "in_app",
         "max_redirects": 1,
@@ -26,7 +29,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     }
   },
@@ -39,7 +44,10 @@
     ],
     "capabilities": {
       "interventions": {
-        "supported": ["3ds", "address_verification"],
+        "supported": [
+          "3ds",
+          "address_verification"
+        ],
         "display_context": "webview",
         "redirect_context": "in_app",
         "max_redirects": 1,
@@ -76,17 +84,31 @@
             "config": {
               "merchant_id": "acct_1234567890",
               "psp": "stripe",
-              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
-              "accepted_funding_types": ["credit", "debit"],
+              "accepted_brands": [
+                "visa",
+                "mastercard",
+                "amex",
+                "discover"
+              ],
+              "accepted_funding_types": [
+                "credit",
+                "debit"
+              ],
               "supports_3ds": true,
-              "3ds_versions": ["2.1.0", "2.2.0"],
+              "3ds_versions": [
+                "2.1.0",
+                "2.2.0"
+              ],
               "environment": "production"
             }
           }
         ]
       },
       "interventions": {
-        "supported": ["3ds", "address_verification"],
+        "supported": [
+          "3ds",
+          "address_verification"
+        ],
         "required": [],
         "enforcement": "conditional"
       }
@@ -164,14 +186,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -217,7 +243,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       },
       {
@@ -229,7 +259,11 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+          {
+            "type": "total",
+            "display_text": "Express Shipping",
+            "amount": 500
+          }
         ]
       }
     ],
@@ -250,7 +284,9 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_456",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ]
   },
@@ -260,8 +296,14 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": { "handlers": [] },
-      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
+      "payment": {
+        "handlers": []
+      },
+      "interventions": {
+        "supported": [],
+        "required": [],
+        "enforcement": "conditional"
+      }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -312,14 +354,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_456",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -359,7 +405,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       },
       {
@@ -371,7 +421,11 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+          {
+            "type": "total",
+            "display_text": "Express Shipping",
+            "amount": 500
+          }
         ]
       }
     ],
@@ -410,7 +464,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     }
   },
@@ -437,7 +493,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "affiliate_attribution": {
@@ -453,8 +511,14 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": { "handlers": [] },
-      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
+      "payment": {
+        "handlers": []
+      },
+      "interventions": {
+        "supported": [],
+        "required": [],
+        "enforcement": "conditional"
+      }
     },
     "buyer": {
       "first_name": "John",
@@ -520,14 +584,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_456",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -567,7 +635,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       },
       {
@@ -579,7 +651,11 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+          {
+            "type": "total",
+            "display_text": "Express Shipping",
+            "amount": 500
+          }
         ]
       }
     ],
@@ -606,8 +682,14 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": { "handlers": [] },
-      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
+      "payment": {
+        "handlers": []
+      },
+      "interventions": {
+        "supported": [],
+        "required": [],
+        "enforcement": "conditional"
+      }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -658,14 +740,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -705,7 +791,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       },
       {
@@ -717,7 +807,11 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+          {
+            "type": "total",
+            "display_text": "Express Shipping",
+            "amount": 500
+          }
         ]
       }
     ],
@@ -759,8 +853,14 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": { "handlers": [] },
-      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
+      "payment": {
+        "handlers": []
+      },
+      "interventions": {
+        "supported": [],
+        "required": [],
+        "enforcement": "conditional"
+      }
     },
     "status": "canceled",
     "currency": "usd",
@@ -811,14 +911,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_456",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -858,7 +962,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       }
     ],
@@ -928,10 +1036,21 @@
             "config": {
               "merchant_id": "acct_1234567890",
               "psp": "stripe",
-              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
-              "accepted_funding_types": ["credit", "debit"],
+              "accepted_brands": [
+                "visa",
+                "mastercard",
+                "amex",
+                "discover"
+              ],
+              "accepted_funding_types": [
+                "credit",
+                "debit"
+              ],
               "supports_3ds": true,
-              "3ds_versions": ["2.1.0", "2.2.0"],
+              "3ds_versions": [
+                "2.1.0",
+                "2.2.0"
+              ],
               "environment": "production"
             }
           }
@@ -989,14 +1108,18 @@
         "city": "Oakland",
         "state": "CA",
         "country": "US",
-        "postal_code": "94607"
+        "postal_code": "94607",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "ful_overnight_01",
-        "item_ids": ["item_3ds_001"]
+        "item_ids": [
+          "item_3ds_001"
+        ]
       }
     ],
     "totals": [
@@ -1036,9 +1159,21 @@
         "earliest_delivery_time": "2026-01-13T08:00:00Z",
         "latest_delivery_time": "2026-01-13T20:00:00Z",
         "totals": [
-          { "type": "subtotal", "display_text": "Shipping Fee", "amount": 2500 },
-          { "type": "tax", "display_text": "Tax", "amount": 0 },
-          { "type": "total", "display_text": "Total", "amount": 2500 }
+          {
+            "type": "subtotal",
+            "display_text": "Shipping Fee",
+            "amount": 2500
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 0
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 2500
+          }
         ]
       }
     ],
@@ -1088,7 +1223,9 @@
         "city": "Oakland",
         "state": "CA",
         "country": "US",
-        "postal_code": "94607"
+        "postal_code": "94607",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "authentication_result": {
@@ -1153,7 +1290,9 @@
         "city": "Paris",
         "state": "IDF",
         "country": "FR",
-        "postal_code": "75002"
+        "postal_code": "75002",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "authentication_result": {
@@ -1223,14 +1362,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -1265,7 +1408,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       }
     ],
@@ -1342,14 +1489,18 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": ["item_123"]
+        "item_ids": [
+          "item_123"
+        ]
       }
     ],
     "totals": [
@@ -1389,7 +1540,11 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 100 }
+          {
+            "type": "total",
+            "display_text": "Shipping",
+            "amount": 100
+          }
         ]
       }
     ],

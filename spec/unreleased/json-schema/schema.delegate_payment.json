@@ -35,6 +35,17 @@
         "postal_code": {
           "type": "string",
           "maxLength": 20
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 256,
+          "description": "Optional billing email (receipts, 3DS, fraud)."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Optional billing phone (fraud, 3DS)."
         }
       },
       "required": [
@@ -125,7 +136,8 @@
         "card_number_type",
         "number",
         "display_card_funding_type",
-        "metadata"
+        "metadata",
+        "virtual"
       ]
     },
     "Allowance": {
@@ -155,6 +167,10 @@
         "expires_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "order_id": {
+          "type": "string",
+          "description": "Optional merchant order identifier for correlation."
         }
       },
       "required": [
@@ -225,6 +241,11 @@
           "type": "string",
           "format": "date-time"
         },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the token becomes invalid; echoes allowance.expires_at for merchant convenience."
+        },
         "metadata": {
           "type": "object",
           "additionalProperties": {
@@ -249,7 +270,7 @@
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests"]
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "unsupported_api_version", "missing_api_version"]
         },
         "message": {
           "type": "string"

@@ -49,25 +49,44 @@
       "additionalProperties": false,
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "line_one": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 60
         },
         "line_two": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 60
         },
         "city": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 60
         },
         "state": {
           "type": "string"
         },
         "country": {
-          "type": "string"
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2,
+          "description": "ISO-3166-1 alpha-2"
         },
         "postal_code": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 20
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 256,
+          "description": "Optional billing/shipping email (receipts, 3DS, fraud)."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Optional billing/shipping phone (fraud, 3DS)."
         }
       },
       "required": [
