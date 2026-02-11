@@ -371,6 +371,14 @@ components:
         country: { type: string, description: "ISO 3166-1 alpha-2 country code" }
         postal_code: { type: string, description: "Postal or ZIP code" }
       required: [name, line_one, city, state, country, postal_code]
+      example:
+        name: "Jane Doe"
+        line_one: "123 Main Street"
+        line_two: "Apt 4B"
+        city: "New York"
+        state: "NY"
+        country: "US"
+        postal_code: "10001"
 
     AffiliateAttributionSource:
       type: object
@@ -386,6 +394,9 @@ components:
           format: uri
           description: Canonical content URL when type is 'url'.
       required: [type]
+      example:
+        type: "url"
+        url: "https://example.com/product-review"
 
     AffiliateAttributionMetadata:
       type: object
@@ -398,6 +409,10 @@ components:
         Flat key/value map for additional non-sensitive context.
         Keys must be strings; values must be strings, numbers, or booleans.
         Arrays and nested objects are NOT permitted.
+      example:
+        campaign_type: "influencer"
+        commission_rate: 0.15
+        is_verified: true
 
     AffiliateAttribution:
       type: object
@@ -447,6 +462,17 @@ components:
       anyOf:
         - required: [token]
         - required: [publisher_id]
+      example:
+        provider: "impact.com"
+        token: "atp_01J8Z3WXYZ9ABC"
+        publisher_id: "pub_123"
+        campaign_id: "camp_summer2026"
+        touchpoint: "first"
+        source:
+          type: "url"
+          url: "https://example.com/product-review"
+        issued_at: "2026-02-11T10:00:00Z"
+        expires_at: "2026-02-11T11:00:00Z"
 
     FulfillmentDetails:
       type: object
@@ -456,6 +482,18 @@ components:
         phone_number: { type: string, description: "Contact phone number" }
         email: { type: string, format: email, description: "Contact email address" }
         address: { $ref: "#/components/schemas/Address", description: "Fulfillment address" }
+      example:
+        name: "John Smith"
+        phone_number: "15551234567"
+        email: "john.smith@example.com"
+        address:
+          name: "John Smith"
+          line_one: "555 Golden Gate Avenue"
+          line_two: "Apt 401"
+          city: "San Francisco"
+          state: "CA"
+          country: "US"
+          postal_code: "94102"
 
     CompanyInfo:
       type: object
@@ -466,6 +504,11 @@ components:
         department: { type: string, description: "Department within the organization" }
         cost_center: { type: string, description: "Cost center code for internal accounting" }
       required: [name]
+      example:
+        name: "Acme Corporation"
+        tax_id: "12-3456789"
+        department: "Marketing"
+        cost_center: "CC-2001"
 
     LoyaltyInfo:
       type: object
@@ -474,6 +517,10 @@ components:
         tier: { type: string, description: "Loyalty program tier level" }
         points_balance: { type: integer, description: "Current loyalty points balance" }
         member_since: { type: string, format: date-time, description: "RFC 3339 timestamp when the customer joined the loyalty program" }
+      example:
+        tier: "Gold"
+        points_balance: 5000
+        member_since: "2024-01-15T09:00:00Z"
 
     TaxExemption:
       type: object
@@ -488,6 +535,11 @@ components:
           description: "List of regions where the exemption applies (e.g., state codes)"
         expires_at: { type: string, format: date-time, description: "RFC 3339 timestamp when the exemption certificate expires" }
       required: [certificate_id, certificate_type]
+      example:
+        certificate_id: "cert_12345"
+        certificate_type: "resale"
+        exempt_regions: ["CA", "NY", "TX"]
+        expires_at: "2027-12-31T23:59:59Z"
 
     Buyer:
       type: object
@@ -506,6 +558,14 @@ components:
         loyalty: { $ref: "#/components/schemas/LoyaltyInfo", description: "Loyalty program information" }
         tax_exemption: { $ref: "#/components/schemas/TaxExemption", description: "Tax exemption details" }
       required: [email]
+      example:
+        first_name: "Alice"
+        last_name: "Johnson"
+        email: "alice.johnson@example.com"
+        phone_number: "15559876543"
+        customer_id: "cust_abc123"
+        account_type: "registered"
+        authentication_status: "authenticated"
 
     InterventionCapabilities:
       type: object
@@ -551,6 +611,12 @@ components:
           type: integer
           minimum: 1
           description: Maximum depth of nested interactions the Agent can handle (agent only).
+      example:
+        supported: ["3ds", "address_verification"]
+        display_context: "webview"
+        redirect_context: "in_app"
+        max_redirects: 3
+        max_interaction_depth: 2
 
     Capabilities:
       type: object
@@ -580,6 +646,22 @@ components:
             Extensions supported by the party.
             Requests: array of extension identifiers.
             Responses: array of extension declaration objects.
+      example:
+        payment:
+          handlers:
+            - id: "handler_1"
+              name: "dev.acp.tokenized.card"
+              version: "2026-01-30"
+              spec: "https://example.com/handler-spec"
+              requires_delegate_payment: true
+              requires_pci_compliance: false
+              psp: "stripe"
+              config_schema: "https://example.com/config-schema"
+              instrument_schemas: ["https://example.com/instrument-schema"]
+              config: {}
+        interventions:
+          supported: ["3ds"]
+        extensions: ["discount"]
 
     ExtensionDeclaration:
       type: object
@@ -608,6 +690,11 @@ components:
           type: string
           format: uri
           description: URL to the extension's specification document.
+      example:
+        name: "discount@2026-01-30"
+        extends: ["$.CheckoutSession.discounts", "$.CheckoutSessionCreateRequest.discounts"]
+        schema: "https://example.com/extensions/discount/schema.json"
+        spec: "https://example.com/extensions/discount/spec"
 
     PaymentMethodObject:
       type: object
@@ -635,6 +722,11 @@ components:
             type: string
           description: Optional PSP routing information
       required: [method]
+      example:
+        method: "card"
+        brands: ["visa", "mastercard", "amex"]
+        funding_types: ["credit", "debit"]
+        providers: ["stripe"]
 
     Item:
       type: object
@@ -644,6 +736,10 @@ components:
         name: { type: string, description: "Display name of the item" }
         unit_amount: { type: integer, description: "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [id]
+      example:
+        id: "item_123"
+        name: "Wireless Headphones"
+        unit_amount: 7999
 
     Disclosure:
       type: object
@@ -653,6 +749,10 @@ components:
         content_type: { type: string, enum: [plain, markdown], description: "Format of the disclosure content" }
         content: { type: string, description: "The disclosure text content" }
       required: [type, content_type, content]
+      example:
+        type: "disclaimer"
+        content_type: "plain"
+        content: "This product contains small parts and is not suitable for children under 3 years."
 
     CustomAttribute:
       type: object
@@ -661,6 +761,9 @@ components:
         display_name: { type: string, description: "Human-readable label for the attribute" }
         value: { type: string, description: "Attribute value" }
       required: [display_name, value]
+      example:
+        display_name: "Engraving"
+        value: "Happy Birthday!"
 
     MarketplaceSellerDetails:
       type: object
@@ -668,6 +771,8 @@ components:
       properties:
         name: { type: string, description: "Name of the marketplace seller or vendor" }
       required: [name]
+      example:
+        name: "TechGear Store"
 
     PaymentHandler:
       type: object
@@ -711,6 +816,18 @@ components:
           type: object
           description: Handler-specific configuration
       required: [id, name, version, spec, requires_delegate_payment, requires_pci_compliance, psp, config_schema, instrument_schemas, config]
+      example:
+        id: "handler_stripe_card"
+        name: "dev.acp.tokenized.card"
+        version: "2026-01-30"
+        spec: "https://example.com/payment-handlers/tokenized-card"
+        requires_delegate_payment: true
+        requires_pci_compliance: false
+        psp: "stripe"
+        config_schema: "https://example.com/schemas/card-config.json"
+        instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+        config:
+          publishable_key: "pk_test_123"
 
     Payment:
       type: object
@@ -723,6 +840,19 @@ components:
             $ref: "#/components/schemas/PaymentHandler"
           description: Available payment handlers
       required: [handlers]
+      example:
+        handlers:
+          - id: "handler_stripe_card"
+            name: "dev.acp.tokenized.card"
+            version: "2026-01-30"
+            spec: "https://example.com/payment-handlers/tokenized-card"
+            requires_delegate_payment: true
+            requires_pci_compliance: false
+            psp: "stripe"
+            config_schema: "https://example.com/schemas/card-config.json"
+            instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+            config:
+              publishable_key: "pk_test_123"
 
     VariantOption:
       type: object
@@ -731,6 +861,9 @@ components:
         name: { type: string, description: "Variant attribute name (e.g., 'Size', 'Color')" }
         value: { type: string, description: "Variant attribute value (e.g., 'Large', 'Blue')" }
       required: [name, value]
+      example:
+        name: "Color"
+        value: "Midnight Blue"
 
     WeightInfo:
       type: object
@@ -739,6 +872,9 @@ components:
         value: { type: number, description: "Numeric weight value" }
         unit: { type: string, enum: [g, kg, oz, lb], description: "Unit of measurement for weight" }
       required: [value, unit]
+      example:
+        value: 250
+        unit: "g"
 
     DimensionsInfo:
       type: object
@@ -749,6 +885,11 @@ components:
         height: { type: number, description: "Height dimension" }
         unit: { type: string, enum: [cm, in], description: "Unit of measurement for dimensions" }
       required: [length, width, height, unit]
+      example:
+        length: 15.5
+        width: 10.2
+        height: 5.8
+        unit: "cm"
 
     DiscountDetail:
       type: object
@@ -760,6 +901,12 @@ components:
         description: { type: string, description: "Human-readable discount description" }
         source: { type: string, enum: [coupon, automatic, loyalty], description: "Source of the discount" }
       required: [type, amount]
+      example:
+        code: "SAVE20"
+        type: "percentage"
+        amount: 1600
+        description: "20% off your order"
+        source: "coupon"
 
     LineItem:
       type: object
@@ -820,6 +967,20 @@ components:
           items: { $ref: "#/components/schemas/Total" }
           description: "Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total"
       required: [id, item, quantity, totals]
+      example:
+        id: "li_001"
+        item:
+          id: "item_123"
+          name: "Wireless Headphones"
+          unit_amount: 7999
+        quantity: 2
+        name: "Premium Wireless Headphones"
+        unit_amount: 7999
+        availability_status: "in_stock"
+        totals:
+          - type: "subtotal"
+            display_text: "Subtotal"
+            amount: 15998
 
     TaxBreakdownItem:
       type: object
@@ -829,6 +990,10 @@ components:
         rate: { type: number, description: "Tax rate as a decimal (e.g., 0.0875 for 8.75%)" }
         amount: { type: integer, description: "Tax amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [jurisdiction, rate, amount]
+      example:
+        jurisdiction: "California State Tax"
+        rate: 0.0725
+        amount: 1160
 
     Total:
       type: object
@@ -860,6 +1025,17 @@ components:
           items: { $ref: "#/components/schemas/TaxBreakdownItem" }
           description: "Detailed breakdown for tax totals"
       required: [type, display_text, amount]
+      example:
+        type: "tax"
+        display_text: "Sales Tax"
+        amount: 1400
+        breakdown:
+          - jurisdiction: "California State Tax"
+            rate: 0.0725
+            amount: 1160
+          - jurisdiction: "San Francisco County Tax"
+            rate: 0.015
+            amount: 240
 
     FulfillmentOptionPickup:
       type: object
@@ -886,6 +1062,28 @@ components:
           items: { $ref: "#/components/schemas/Total" }
           description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, location, totals]
+      example:
+        type: "pickup"
+        id: "pickup_001"
+        title: "In-Store Pickup"
+        description: "Pick up at our downtown location"
+        location:
+          name: "Downtown Store"
+          address:
+            name: "Downtown Store"
+            line_one: "100 Market Street"
+            city: "San Francisco"
+            state: "CA"
+            country: "US"
+            postal_code: "94105"
+          phone: "14155551234"
+          instructions: "Use the pickup counter on the first floor"
+        pickup_type: "in_store"
+        ready_by: "2026-02-12T15:00:00Z"
+        totals:
+          - type: "fulfillment"
+            display_text: "Pickup"
+            amount: 0
 
     FulfillmentOptionLocalDelivery:
       type: object
@@ -913,6 +1111,21 @@ components:
           items: { $ref: "#/components/schemas/Total" }
           description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, totals]
+      example:
+        type: "local_delivery"
+        id: "local_001"
+        title: "Same-Day Local Delivery"
+        description: "Delivered by our team today"
+        delivery_window:
+          start: "2026-02-11T16:00:00Z"
+          end: "2026-02-11T20:00:00Z"
+        service_area:
+          radius_miles: 10
+          center_postal_code: "94102"
+        totals:
+          - type: "fulfillment"
+            display_text: "Delivery Fee"
+            amount: 999
 
     FulfillmentOptionShipping:
       type: object
@@ -930,6 +1143,18 @@ components:
           items: { $ref: "#/components/schemas/Total" }
           description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, totals]
+      example:
+        type: "shipping"
+        id: "ship_standard"
+        title: "Standard Shipping"
+        description: "Delivery in 5-7 business days"
+        carrier: "USPS"
+        earliest_delivery_time: "2026-02-16T00:00:00Z"
+        latest_delivery_time: "2026-02-20T23:59:59Z"
+        totals:
+          - type: "fulfillment"
+            display_text: "Shipping"
+            amount: 599
 
     FulfillmentOptionDigital:
       type: object
@@ -944,6 +1169,15 @@ components:
           items: { $ref: "#/components/schemas/Total" }
           description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, totals]
+      example:
+        type: "digital"
+        id: "digital_001"
+        title: "Instant Download"
+        description: "Available immediately after purchase"
+        totals:
+          - type: "fulfillment"
+            display_text: "Digital Delivery"
+            amount: 0
 
     SelectedFulfillmentOption:
       type: object
@@ -956,6 +1190,10 @@ components:
           items: { type: string }
           description: "List of line item IDs associated with this fulfillment option"
       required: [type, option_id, item_ids]
+      example:
+        type: "shipping"
+        option_id: "ship_standard"
+        item_ids: ["li_001", "li_002"]
 
     MessageInfo:
       type: object
@@ -967,6 +1205,11 @@ components:
         content_type: { type: string, enum: [plain, markdown], description: "Format of the message content" }
         content: { type: string, description: "Informational message text" }
       required: [type, content_type, content]
+      example:
+        type: "info"
+        severity: "info"
+        content_type: "plain"
+        content: "Free shipping on orders over $50"
 
     MessageWarning:
       type: object
@@ -1000,6 +1243,13 @@ components:
         content_type: { type: string, enum: [plain, markdown], description: "Format of the warning message content" }
         content: { type: string, description: "Warning message text" }
       required: [type, code, content_type, content]
+      example:
+        type: "warning"
+        code: "low_stock"
+        severity: "medium"
+        param: "$.line_items[0]"
+        content_type: "plain"
+        content: "Only 3 items left in stock"
 
     MessageError:
       type: object
@@ -1049,6 +1299,13 @@ components:
         content_type: { type: string, enum: [plain, markdown], description: "Format of the error message content" }
         content: { type: string, description: "Error message text" }
       required: [type, code, content_type, content]
+      example:
+        type: "error"
+        code: "out_of_stock"
+        severity: "medium"
+        param: "$.line_items[0]"
+        content_type: "plain"
+        content: "The item is out of stock"
 
     GiftWrap:
       type: object
@@ -1058,6 +1315,10 @@ components:
         style: { type: string, enum: [birthday, holiday, elegant], description: "Gift wrap style selected" }
         charge: { type: integer, description: "Additional charge for gift wrapping in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [enabled]
+      example:
+        enabled: true
+        style: "elegant"
+        charge: 500
 
     Link:
       type: object
@@ -1082,6 +1343,10 @@ components:
         title: { type: string, description: "Display text for the link" }
         url: { type: string, format: uri, description: "URL destination" }
       required: [type, url]
+      example:
+        type: "return_policy"
+        title: "Return Policy"
+        url: "https://example.com/returns"
 
     SplitPayment:
       type: object
@@ -1089,6 +1354,8 @@ components:
       properties:
         amount: { type: integer, description: "Payment amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100) for this split" }
       required: [amount]
+      example:
+        amount: 5000
 
     PaymentData:
       type: object
@@ -1125,6 +1392,20 @@ components:
       anyOf:
         - required: [handler_id, instrument]
         - required: [purchase_order_number]
+      example:
+        handler_id: "handler_stripe_card"
+        instrument:
+          type: "card"
+          credential:
+            type: "spt"
+            token: "spt_1234567890"
+        billing_address:
+          name: "John Smith"
+          line_one: "123 Main Street"
+          city: "New York"
+          state: "NY"
+          country: "US"
+          postal_code: "10001"
 
     FulfillmentGroup:
       type: object
@@ -1145,6 +1426,11 @@ components:
         location_id: { type: string, description: "Location identifier for pickup or local delivery" }
         instructions: { type: string, description: "Special fulfillment instructions" }
       required: [id, item_ids, destination_type]
+      example:
+        id: "fg_001"
+        item_ids: ["li_001", "li_002"]
+        destination_type: "shipping"
+        instructions: "Leave package at front door"
 
     EstimatedDelivery:
       type: object
@@ -1153,6 +1439,9 @@ components:
         earliest: { type: string, format: date-time, description: "RFC 3339 timestamp for earliest expected delivery" }
         latest: { type: string, format: date-time, description: "RFC 3339 timestamp for latest expected delivery" }
       required: [earliest, latest]
+      example:
+        earliest: "2026-02-14T00:00:00Z"
+        latest: "2026-02-18T23:59:59Z"
 
     OrderConfirmation:
       type: object
@@ -1162,6 +1451,11 @@ components:
         confirmation_email_sent: { type: boolean, description: "Whether a confirmation email has been sent" }
         receipt_url: { type: string, format: uri, description: "URL to the order receipt" }
         invoice_number: { type: string, description: "Invoice number if generated" }
+      example:
+        confirmation_number: "ORD-2026-02-11-001"
+        confirmation_email_sent: true
+        receipt_url: "https://example.com/receipts/ord_123"
+        invoice_number: "INV-2026-001"
 
     SupportInfo:
       type: object
@@ -1171,6 +1465,11 @@ components:
         phone: { type: string, description: "Support contact phone number" }
         hours: { type: string, description: "Support hours of operation" }
         help_center_url: { type: string, format: uri, description: "URL to merchant's help center" }
+      example:
+        email: "support@example.com"
+        phone: "18005551234"
+        hours: "Mon-Fri 9am-5pm PST"
+        help_center_url: "https://example.com/help"
 
     Order:
       type: object
@@ -1185,6 +1484,19 @@ components:
         confirmation: { $ref: "#/components/schemas/OrderConfirmation", description: "Order confirmation details" }
         support: { $ref: "#/components/schemas/SupportInfo", description: "Customer support contact information" }
       required: [id, checkout_session_id, permalink_url]
+      example:
+        id: "ord_123456"
+        checkout_session_id: "cs_abc123"
+        order_number: "ORD-2026-001"
+        permalink_url: "https://example.com/orders/ord_123456"
+        status: "confirmed"
+        estimated_delivery:
+          earliest: "2026-02-14T00:00:00Z"
+          latest: "2026-02-18T23:59:59Z"
+        confirmation:
+          confirmation_number: "ORD-2026-02-11-001"
+          confirmation_email_sent: true
+          receipt_url: "https://example.com/receipts/ord_123456"
 
     ProtocolVersion:
       type: object
@@ -1197,6 +1509,8 @@ components:
           example: "2026-01-30"
           description: ACP protocol version in YYYY-MM-DD format.
       required: [version]
+      example:
+        version: "2026-01-30"
 
     DiscountAllocation:
       type: object
@@ -1211,6 +1525,9 @@ components:
           type: integer
           minimum: 0
           description: Amount allocated to this target in minor (cents) currency units.
+      example:
+        path: "$.line_items[0]"
+        amount: 500
 
     Coupon:
       type: object
@@ -1257,6 +1574,13 @@ components:
           type: object
           additionalProperties: { type: string }
           description: Arbitrary key-value metadata attached to the coupon.
+      example:
+        id: "coupon_summer2026"
+        name: "Summer Sale 20% Off"
+        percent_off: 20
+        duration: "once"
+        max_redemptions: 1000
+        times_redeemed: 145
 
     AppliedDiscount:
       type: object
@@ -1300,6 +1624,21 @@ components:
           type: array
           items: { $ref: "#/components/schemas/DiscountAllocation" }
           description: Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount.
+      example:
+        id: "applied_discount_001"
+        code: "SAVE20"
+        coupon:
+          id: "coupon_summer2026"
+          name: "Summer Sale 20% Off"
+          percent_off: 20
+          duration: "once"
+        amount: 1600
+        automatic: false
+        method: "across"
+        priority: 1
+        allocations:
+          - path: "$.line_items[0]"
+            amount: 1600
 
     RejectedDiscount:
       type: object
@@ -1310,11 +1649,16 @@ components:
         code: { type: string, description: "The discount code that was rejected." }
         reason: { $ref: "#/components/schemas/DiscountErrorCode", description: "Error code indicating why the discount was rejected." }
         message: { type: string, description: "Human-readable explanation of why the code was rejected." }
+      example:
+        code: "EXPIRED10"
+        reason: "discount_code_expired"
+        message: "This discount code expired on January 31, 2026"
 
     DiscountErrorCode:
       type: string
       enum: [discount_code_expired, discount_code_invalid, discount_code_already_applied, discount_code_combination_disallowed, discount_code_minimum_not_met, discount_code_user_not_logged_in, discount_code_user_ineligible, discount_code_usage_limit_reached]
       description: Error codes for rejected discount codes, used in messages[].code.
+      example: "discount_code_expired"
 
     DiscountsRequest:
       type: object
@@ -1325,6 +1669,8 @@ components:
           type: array
           items: { type: string }
           description: Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear.
+      example:
+        codes: ["SAVE20", "FREESHIP"]
 
     DiscountsResponse:
       type: object
@@ -1343,6 +1689,20 @@ components:
           type: array
           items: { $ref: "#/components/schemas/RejectedDiscount" }
           description: Discount codes that could not be applied, with reasons.
+      example:
+        codes: ["SAVE20"]
+        applied:
+          - id: "applied_discount_001"
+            code: "SAVE20"
+            coupon:
+              id: "coupon_summer2026"
+              name: "Summer Sale 20% Off"
+              percent_off: 20
+              duration: "once"
+            amount: 1600
+            automatic: false
+            method: "across"
+        rejected: []
 
     PaymentResponse:
       type: object
@@ -1361,6 +1721,10 @@ components:
             type: object
             additionalProperties: true
           description: "Available payment handlers"
+      example:
+        provider: "stripe"
+        instruments: []
+        handlers: []
 
     CheckoutSessionBase:
       type: object
@@ -1461,6 +1825,73 @@ components:
           links,
           capabilities,
         ]
+      example:
+        id: "cs_abc123"
+        protocol:
+          version: "2026-01-30"
+        capabilities:
+          payment:
+            handlers:
+              - id: "handler_stripe_card"
+                name: "dev.acp.tokenized.card"
+                version: "2026-01-30"
+                spec: "https://example.com/payment-handlers/tokenized-card"
+                requires_delegate_payment: true
+                requires_pci_compliance: false
+                psp: "stripe"
+                config_schema: "https://example.com/schemas/card-config.json"
+                instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+                config: {}
+          interventions:
+            supported: ["3ds"]
+          extensions:
+            - name: "discount@2026-01-30"
+              extends: ["$.CheckoutSession.discounts"]
+              schema: "https://example.com/extensions/discount/schema.json"
+              spec: "https://example.com/extensions/discount/spec"
+        status: "ready_for_payment"
+        currency: "usd"
+        line_items:
+          - id: "li_001"
+            item:
+              id: "item_123"
+              name: "Wireless Headphones"
+              unit_amount: 7999
+            quantity: 2
+            name: "Premium Wireless Headphones"
+            unit_amount: 7999
+            availability_status: "in_stock"
+            totals:
+              - type: "subtotal"
+                display_text: "Subtotal"
+                amount: 15998
+        totals:
+          - type: "subtotal"
+            display_text: "Subtotal"
+            amount: 15998
+          - type: "tax"
+            display_text: "Sales Tax"
+            amount: 1400
+          - type: "total"
+            display_text: "Total"
+            amount: 17398
+        fulfillment_options:
+          - type: "shipping"
+            id: "ship_standard"
+            title: "Standard Shipping"
+            carrier: "USPS"
+            totals:
+              - type: "fulfillment"
+                display_text: "Shipping"
+                amount: 599
+        messages: []
+        links:
+          - type: "return_policy"
+            title: "Return Policy"
+            url: "https://example.com/returns"
+        created_at: "2026-02-11T10:00:00Z"
+        updated_at: "2026-02-11T10:05:00Z"
+        expires_at: "2026-02-11T22:00:00Z"
 
     CheckoutSession:
       allOf:
@@ -1473,6 +1904,78 @@ components:
           properties:
             order: { $ref: "#/components/schemas/Order" }
           required: [order]
+      example:
+        id: "cs_abc123"
+        protocol:
+          version: "2026-01-30"
+        capabilities:
+          payment:
+            handlers:
+              - id: "handler_stripe_card"
+                name: "dev.acp.tokenized.card"
+                version: "2026-01-30"
+                spec: "https://example.com/payment-handlers/tokenized-card"
+                requires_delegate_payment: true
+                requires_pci_compliance: false
+                psp: "stripe"
+                config_schema: "https://example.com/schemas/card-config.json"
+                instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+                config: {}
+          interventions:
+            supported: ["3ds"]
+          extensions:
+            - name: "discount@2026-01-30"
+              extends: ["$.CheckoutSession.discounts"]
+              schema: "https://example.com/extensions/discount/schema.json"
+              spec: "https://example.com/extensions/discount/spec"
+        status: "completed"
+        currency: "usd"
+        line_items:
+          - id: "li_001"
+            item:
+              id: "item_123"
+              name: "Wireless Headphones"
+              unit_amount: 7999
+            quantity: 2
+            name: "Premium Wireless Headphones"
+            unit_amount: 7999
+            availability_status: "in_stock"
+            totals:
+              - type: "subtotal"
+                display_text: "Subtotal"
+                amount: 15998
+        totals:
+          - type: "subtotal"
+            display_text: "Subtotal"
+            amount: 15998
+          - type: "tax"
+            display_text: "Sales Tax"
+            amount: 1400
+          - type: "total"
+            display_text: "Total"
+            amount: 17398
+        fulfillment_options:
+          - type: "shipping"
+            id: "ship_standard"
+            title: "Standard Shipping"
+            carrier: "USPS"
+            totals:
+              - type: "fulfillment"
+                display_text: "Shipping"
+                amount: 599
+        messages: []
+        links:
+          - type: "return_policy"
+            title: "Return Policy"
+            url: "https://example.com/returns"
+        created_at: "2026-02-11T10:00:00Z"
+        updated_at: "2026-02-11T10:30:00Z"
+        order:
+          id: "ord_123456"
+          checkout_session_id: "cs_abc123"
+          order_number: "ORD-2026-001"
+          permalink_url: "https://example.com/orders/ord_123456"
+          status: "confirmed"
 
     CheckoutSessionCreateRequest:
       type: object
@@ -1508,6 +2011,28 @@ components:
           additionalProperties: true
           description: "Arbitrary metadata for merchant use"
       required: [line_items, currency, capabilities]
+      example:
+        line_items:
+          - id: "item_123"
+            name: "Wireless Headphones"
+            unit_amount: 7999
+        currency: "usd"
+        capabilities:
+          payment:
+            handlers:
+              - id: "handler_stripe_card"
+                name: "dev.acp.tokenized.card"
+                version: "2026-01-30"
+                spec: "https://example.com/payment-handlers/tokenized-card"
+                requires_delegate_payment: true
+                requires_pci_compliance: false
+                psp: "stripe"
+                config_schema: "https://example.com/schemas/card-config.json"
+                instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+                config: {}
+          interventions:
+            supported: ["3ds"]
+          extensions: ["discount"]
 
     CheckoutSessionUpdateRequest:
       type: object
@@ -1534,6 +2059,11 @@ components:
         discounts:
           $ref: "#/components/schemas/DiscountsRequest"
           description: Discount codes to apply. Replaces previously submitted codes.
+      example:
+        selected_fulfillment_options:
+          - type: "shipping"
+            option_id: "ship_standard"
+            item_ids: ["li_001"]
 
     RiskSignals:
       type: object
@@ -1544,6 +2074,12 @@ components:
         accept_language: { type: string, description: "Accept-Language header from the buyer's browser" }
         session_id: { type: string, description: "Session identifier for the buyer" }
         device_fingerprint: { type: string, description: "Device fingerprint for fraud detection" }
+      example:
+        ip_address: "203.0.113.45"
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+        accept_language: "en-US,en;q=0.9"
+        session_id: "sess_abc123"
+        device_fingerprint: "fp_xyz789"
 
     CheckoutSessionCompleteRequest:
       type: object
@@ -1557,6 +2093,18 @@ components:
           { $ref: "#/components/schemas/AffiliateAttribution", description: "Affiliate attribution data for last-touch tracking" }
         risk_signals: { $ref: "#/components/schemas/RiskSignals", description: "Risk and fraud signals" }
       required: [payment_data]
+      example:
+        buyer:
+          first_name: "John"
+          last_name: "Smith"
+          email: "johnsmith@mail.com"
+        payment_data:
+          handler_id: "handler_stripe_card"
+          instrument:
+            type: "card"
+            credential:
+              type: "spt"
+              token: "spt_123"
 
     AuthenticationMetadata:
       type: object
@@ -1712,6 +2260,26 @@ components:
                       - screen_height
                       - screen_width
                       - timezone_offset
+      example:
+        channel:
+          type: "browser"
+          browser:
+            accept_header: "text/html,application/xhtml+xml"
+            ip_address: "203.0.113.45"
+            javascript_enabled: true
+            language: "en-US"
+            user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+            color_depth: 24
+            java_enabled: false
+            screen_height: 1080
+            screen_width: 1920
+            timezone_offset: -480
+        acquirer_details:
+          acquirer_bin: "123456"
+          acquirer_country: "US"
+          acquirer_merchant_id: "merchant_123"
+          merchant_name: "Example Store"
+        directory_server: "visa"
 
     AuthenticationResult:
       type: object
@@ -1780,6 +2348,13 @@ components:
                 enum: [authenticated, informational, attempt_acknowledged]
           then:
             required: [outcome_details]
+      example:
+        outcome: "authenticated"
+        outcome_details:
+          three_ds_cryptogram: "AbCdEfGhIjKlMnOpQrStUvWxY0="
+          electronic_commerce_indicator: "05"
+          transaction_id: "dsTransId_abc123"
+          version: "2.2.0"
 
     IntentTrace:
       type: object
@@ -1810,11 +2385,20 @@ components:
           additionalProperties:
             type: [string, number, boolean]
       required: [reason_code]
+      example:
+        reason_code: "price_sensitivity"
+        trace_summary: "Customer mentioned the price was higher than expected and wanted to compare with other options"
+        metadata:
+          compared_sites: 3
 
     CancelSessionRequest:
       type: object
       properties:
         intent_trace: { $ref: "#/components/schemas/IntentTrace" }
+      example:
+        intent_trace:
+          reason_code: "price_sensitivity"
+          trace_summary: "Customer mentioned the price was higher than expected"
 
     Error:
       type: object
@@ -1844,3 +2428,8 @@ components:
         message: { type: string, description: "Human-readable error message" }
         param: { type: string, description: "RFC 9535 JSONPath (optional)" }
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "missing_required_field"
+        message: "The 'currency' field is required"
+        param: "$.currency"
