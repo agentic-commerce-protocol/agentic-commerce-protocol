@@ -8,7 +8,7 @@
 - **Fulfillment**: Tracks shipping, pickup, and digital delivery with carrier info and tracking
 - **FulfillmentEvent**: Append-only log of delivery events (shipped, in transit, delivered, etc.)
 - **Adjustment**: Post-order changes (refunds, credits, returns, disputes, chargebacks)
-- **OrderTotals**: Order-level financial summary (subtotal, shipping, tax, discount, total)
+- **Order Totals**: Reuses checkout `Total` schema for order-level financial summary
 - **LineItemReference**: References line items in fulfillments and adjustments
 
 ## Enhanced Order Schema
@@ -28,10 +28,11 @@ All new fields are optional, maintaining backward compatibility.
 Extended to a superset that aligns with the webhook spec:
 `[created, confirmed, manual_review, processing, shipped, delivered, canceled]`
 
-## OrderTotals Semantics
+## Order Totals
 
-- `total` is now documented as the original charged amount at checkout (pre-adjustment)
-- Added optional `amount_refunded` field for sum of completed refund adjustments
+- Replaced flat `OrderTotals` object with `Total[]` array, reusing the same `Total` schema from checkout sessions
+- Added `amount_refunded` to `Total.type` enum for post-purchase refund tracking
+- The `total` entry is documented as the original charged amount at checkout (pre-adjustment)
 
 ## Digital Fulfillment
 
@@ -56,6 +57,6 @@ Extended to a superset that aligns with the webhook spec:
 - "What did I order?" → `line_items[]` with details
 - "Which items shipped?" → `line_items[].quantity.shipped`
 - "Did I get a refund?" → `adjustments[]` with status
-- "How much was I refunded?" → `totals.amount_refunded`
+- "How much was I refunded?" → `totals[]` entry with `type: "amount_refunded"`
 
 **Files changed:** `spec/unreleased/openapi/openapi.agentic_checkout.yaml`, `spec/unreleased/openapi/openapi.agentic_checkout_webhook.yaml`, `spec/unreleased/json-schema/schema.agentic_checkout.json`, `rfcs/rfc.orders.md`, `examples/orders/`

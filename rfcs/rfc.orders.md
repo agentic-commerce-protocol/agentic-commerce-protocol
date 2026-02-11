@@ -45,7 +45,7 @@ This enhancement introduces:
 - **Fulfillment** — Delivery method tracking (shipping, pickup, digital)
 - **FulfillmentEvent** — Point-in-time delivery events
 - **Adjustment** — Post-order changes (refunds, returns, credits)
-- **OrderTotals** — Order-level financial summary
+- **Order Totals** — Order-level financial summary (reuses checkout `Total` schema)
 
 ---
 
@@ -74,7 +74,7 @@ response and progressively add richer data as their systems support it:
   "line_items": [...],
   "fulfillments": [...],
   "adjustments": [...],
-  "totals": { "total": 15342, "currency": "usd" }
+  "totals": [{ "type": "total", "display_text": "Total", "amount": 15342 }]
 }
 ```
 
@@ -120,7 +120,7 @@ The existing `Order` schema gains optional fields:
 | `line_items` | OrderLineItem[] | No | What was ordered |
 | `fulfillments` | Fulfillment[] | No | How items are delivered |
 | `adjustments` | Adjustment[] | No | Post-order changes |
-| `totals` | OrderTotals | No | Financial summary |
+| `totals` | Total[] | No | Financial summary (reuses checkout `Total` schema) |
 
 **Order status values:**
 - `created` — Order received but not yet confirmed
@@ -269,23 +269,34 @@ applicable statuses for each type:
 - `completed` — Successfully completed
 - `failed` — Failed to process
 
-### 4.6 OrderTotals
+### 4.6 Order Totals
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `subtotal` | integer | No | Sum of line item subtotals |
-| `shipping` | integer | No | Shipping cost |
-| `tax` | integer | No | Tax amount |
-| `discount` | integer | No | Total discount |
-| `total` | integer | Yes | Original order total as charged at checkout |
-| `amount_refunded` | integer | No | Total amount refunded to buyer (sum of completed refund adjustments) |
-| `currency` | string | Yes | ISO 4217 currency code |
+Order-level totals reuse the existing `Total` schema from the checkout spec.
+`Order.totals` is a `Total[]` array, the same shape used on checkout sessions,
+line items, and fulfillment options.
 
-**Note on `total` semantics:** `total` always represents the original charged
-amount at checkout, before any post-order adjustments (refunds, credits, etc.).
-This allows agents to surface both numbers unambiguously: "Your order was $670.99
-and you've been refunded $325.16." Agents SHOULD NOT subtract adjustments from
-`total` to derive a net amount.
+This means agents parsing checkout and order responses can use the same code
+path for totals extraction.
+
+**Order-relevant `Total.type` values:**
+
+| Type | Description |
+|------|-------------|
+| `subtotal` | Sum of line item subtotals |
+| `fulfillment` | Shipping / delivery cost |
+| `tax` | Tax amount |
+| `discount` | Total discount |
+| `total` | Original order total as charged at checkout |
+| `amount_refunded` | Total amount refunded to buyer (sum of completed refund adjustments) |
+
+The `amount_refunded` type is new for post-purchase tracking. All other types
+are shared with checkout totals.
+
+**Note on `total` semantics:** The entry with `type: "total"` always represents
+the original charged amount at checkout, before any post-order adjustments
+(refunds, credits, etc.). This allows agents to surface both numbers
+unambiguously: "Your order was $670.99 and you've been refunded $325.16."
+Agents SHOULD NOT subtract adjustments from `total` to derive a net amount.
 
 ---
 
@@ -342,13 +353,12 @@ Order with one fulfilled and one pending fulfillment:
       "events": []
     }
   ],
-  "totals": {
-    "subtotal": 34700,
-    "shipping": 1200,
-    "tax": 2890,
-    "total": 38790,
-    "currency": "usd"
-  }
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 34700 },
+    { "type": "fulfillment", "display_text": "Shipping", "amount": 1200 },
+    { "type": "tax", "display_text": "Tax", "amount": 2890 },
+    { "type": "total", "display_text": "Total", "amount": 38790 }
+  ]
 }
 ```
 
@@ -357,7 +367,7 @@ Order with one fulfilled and one pending fulfillment:
 ### 5.2 Order with Refund
 
 Order with a partial refund for a defective item. Note that `adjustment.amount`
-is tax-inclusive (item price + applicable tax), and `totals.total` is the
+is tax-inclusive (item price + applicable tax), and the `total` entry is the
 original charged amount:
 
 ```json
@@ -388,13 +398,12 @@ original charged amount:
       "description": "Defective item - one earpiece not working (includes $11.92 tax)"
     }
   ],
-  "totals": {
-    "subtotal": 29800,
-    "tax": 2384,
-    "total": 32184,
-    "amount_refunded": 16092,
-    "currency": "usd"
-  }
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 29800 },
+    { "type": "tax", "display_text": "Tax", "amount": 2384 },
+    { "type": "total", "display_text": "Total", "amount": 32184 },
+    { "type": "amount_refunded", "display_text": "Refunded", "amount": 16092 }
+  ]
 }
 ```
 
@@ -433,12 +442,11 @@ Order with a software license delivered digitally:
       }
     }
   ],
-  "totals": {
-    "subtotal": 9900,
-    "tax": 866,
-    "total": 10766,
-    "currency": "usd"
-  }
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 9900 },
+    { "type": "tax", "display_text": "Tax", "amount": 866 },
+    { "type": "total", "display_text": "Total", "amount": 10766 }
+  ]
 }
 ```
 
@@ -511,6 +519,7 @@ An empty `adjustments: []` array means no post-order changes have occurred.
 
 ## 8. Change Log
 
-- **2026-02-10**: Review feedback — Extended Order.status enum (`created`, `manual_review`); added `amount_refunded` to OrderTotals; documented `total` as original charge amount; added `digital_delivery` sub-object to Fulfillment; added `ready_for_pickup` status; documented per-type status applicability; clarified `Adjustment.amount` as tax-inclusive; updated webhook spec to compose Order via `$ref`; deprecated `refunds[]` in favor of `adjustments[]`
+- **2026-02-11**: Totals alignment — Replaced flat `OrderTotals` object with `Total[]` array (reusing checkout spec's `Total` schema); added `amount_refunded` to `Total.type` enum
+- **2026-02-10**: Review feedback — Extended Order.status enum (`created`, `manual_review`); added `amount_refunded` to OrderTotals; documented `total` as original charge amount; added `digital_delivery` sub-object to Fulfillment; added `ready_for_pickup` status; documented per-type status applicability; clarified `Adjustment.amount` as tax-inclusive; updated webhook spec to compose Order via `$ref`; removed `refunds[]` in favor of `adjustments[]`
 - **2026-02-05**: Initial draft — Added OrderLineItem, Fulfillment, FulfillmentEvent, Adjustment, OrderTotals schemas
 

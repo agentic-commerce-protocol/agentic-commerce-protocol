@@ -49,12 +49,11 @@
       ]
     }
   ],
-  "totals": {
-    "subtotal": 9900,
-    "tax": 866,
-    "total": 10766,
-    "currency": "usd"
-  },
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 9900 },
+    { "type": "tax", "display_text": "Tax", "amount": 866 },
+    { "type": "total", "display_text": "Total", "amount": 10766 }
+  ],
   "confirmation": {
     "confirmation_number": "CONF-2026-00201",
     "confirmation_email_sent": true,

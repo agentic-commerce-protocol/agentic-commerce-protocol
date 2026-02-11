@@ -68,12 +68,11 @@
       "events": []
     }
   ],
-  "totals": {
-    "subtotal": 44500,
-    "shipping": 899,
-    "tax": 3978,
-    "total": 49377,
-    "currency": "usd"
-  }
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 44500 },
+    { "type": "fulfillment", "display_text": "Shipping", "amount": 899 },
+    { "type": "tax", "display_text": "Tax", "amount": 3978 },
+    { "type": "total", "display_text": "Total", "amount": 49377 }
+  ]
 }
 

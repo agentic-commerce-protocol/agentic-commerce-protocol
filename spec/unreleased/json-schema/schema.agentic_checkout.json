@@ -981,7 +981,8 @@
             "gift_wrap",
             "tip",
             "store_credit",
-            "total"
+            "total",
+            "amount_refunded"
           ],
           "description": "Type of total line item"
         },
@@ -2108,7 +2109,11 @@
           "items": { "$ref": "#/$defs/Adjustment" },
           "description": "Post-order changes: refunds, credits, returns, disputes"
         },
-        "totals": { "$ref": "#/$defs/OrderTotals" }
+        "totals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds."
+        }
       },
       "required": [
         "id",
@@ -2348,43 +2353,6 @@
         }
       },
       "required": ["id", "type", "occurred_at", "status"]
-    },
-    "OrderTotals": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Order-level totals breakdown. 'total' is always the original charged amount at checkout, before any post-order adjustments.",
-      "properties": {
-        "subtotal": {
-          "type": "integer",
-          "description": "Sum of line item subtotals in minor currency units"
-        },
-        "shipping": {
-          "type": "integer",
-          "description": "Shipping cost in minor currency units"
-        },
-        "tax": {
-          "type": "integer",
-          "description": "Tax amount in minor currency units"
-        },
-        "discount": {
-          "type": "integer",
-          "description": "Total discount amount in minor currency units"
-        },
-        "total": {
-          "type": "integer",
-          "description": "Original order total as charged at checkout in minor currency units, before any post-order adjustments (refunds, credits, etc.)"
-        },
-        "amount_refunded": {
-          "type": "integer",
-          "description": "Total amount refunded to buyer in minor currency units. Sum of completed refund-type adjustments (inclusive of tax)."
-        },
-        "currency": {
-          "type": "string",
-          "pattern": "^[a-z]{3}$",
-          "description": "ISO 4217 currency code"
-        }
-      },
-      "required": ["total", "currency"]
     },
     "AuthenticationMetadata": {
       "type": "object",

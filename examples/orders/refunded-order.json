@@ -69,14 +69,13 @@
       "reason": "defective"
     }
   ],
-  "totals": {
-    "subtotal": 61700,
-    "shipping": 0,
-    "tax": 5399,
-    "total": 67099,
-    "amount_refunded": 32516,
-    "currency": "usd"
-  },
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 61700 },
+    { "type": "fulfillment", "display_text": "Shipping", "amount": 0 },
+    { "type": "tax", "display_text": "Tax", "amount": 5399 },
+    { "type": "total", "display_text": "Total", "amount": 67099 },
+    { "type": "amount_refunded", "display_text": "Refunded", "amount": 32516 }
+  ],
   "support": {
     "email": "returns@merchant.example.com",
     "help_center_url": "https://merchant.example.com/returns"

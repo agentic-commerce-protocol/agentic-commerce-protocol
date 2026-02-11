@@ -74,11 +74,10 @@ paths:
                         unit_price: 9900
                         subtotal: 9900
                     totals:
-                      subtotal: 9900
-                      shipping: 500
-                      tax: 860
-                      total: 11260
-                      currency: "usd"
+                      - { type: subtotal, display_text: "Subtotal", amount: 9900 }
+                      - { type: fulfillment, display_text: "Shipping", amount: 500 }
+                      - { type: tax, display_text: "Tax", amount: 860 }
+                      - { type: total, display_text: "Total", amount: 11260 }
               order_shipped:
                 summary: Order shipped with tracking
                 value:
@@ -111,11 +110,10 @@ paths:
                             occurred_at: "2026-02-05T10:00:00Z"
                     adjustments: []
                     totals:
-                      subtotal: 9900
-                      shipping: 500
-                      tax: 860
-                      total: 11260
-                      currency: "usd"
+                      - { type: subtotal, display_text: "Subtotal", amount: 9900 }
+                      - { type: fulfillment, display_text: "Shipping", amount: 500 }
+                      - { type: tax, display_text: "Tax", amount: 860 }
+                      - { type: total, display_text: "Total", amount: 11260 }
               order_with_refund:
                 summary: Order with a completed refund
                 value:
@@ -135,12 +133,11 @@ paths:
                         currency: "usd"
                         description: "Defective item refund (inclusive of tax)"
                     totals:
-                      subtotal: 9900
-                      shipping: 500
-                      tax: 860
-                      total: 11260
-                      amount_refunded: 10760
-                      currency: "usd"
+                      - { type: subtotal, display_text: "Subtotal", amount: 9900 }
+                      - { type: fulfillment, display_text: "Shipping", amount: 500 }
+                      - { type: tax, display_text: "Tax", amount: 860 }
+                      - { type: total, display_text: "Total", amount: 11260 }
+                      - { type: amount_refunded, display_text: "Refunded", amount: 10760 }
       responses:
         "200":
           description: Event accepted

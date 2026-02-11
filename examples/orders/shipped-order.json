@@ -90,14 +90,13 @@
       ]
     }
   ],
-  "totals": {
-    "subtotal": 254800,
-    "shipping": 0,
-    "tax": 22307,
-    "discount": 0,
-    "total": 277107,
-    "currency": "usd"
-  },
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 254800 },
+    { "type": "discount", "display_text": "Discount", "amount": 0 },
+    { "type": "fulfillment", "display_text": "Shipping", "amount": 0 },
+    { "type": "tax", "display_text": "Tax", "amount": 22307 },
+    { "type": "total", "display_text": "Total", "amount": 277107 }
+  ],
   "confirmation": {
     "confirmation_number": "CONF-2026-00456",
     "confirmation_email_sent": true,
