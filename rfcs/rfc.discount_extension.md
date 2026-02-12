@@ -24,7 +24,6 @@ discounts.
 **Out of scope:** Discount creation/management APIs, coupon validation rules,
 loyalty point redemption.
 
-
 ---
 
 ## 2. Motivation
@@ -74,11 +73,11 @@ responses:
 
 The `extends` field uses JSONPath expressions to identify the exact fields added:
 
-| JSONPath | Description |
-|----------|-------------|
-| `$.CheckoutSessionCreateRequest.discounts` | Adds `discounts.codes` to create requests |
-| `$.CheckoutSessionUpdateRequest.discounts` | Adds `discounts.codes` to update requests |
-| `$.CheckoutSession.discounts` | Adds `discounts.applied` and `discounts.rejected` to responses |
+| JSONPath                                   | Description                                                    |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| `$.CheckoutSessionCreateRequest.discounts` | Adds `discounts.codes` to create requests                      |
+| `$.CheckoutSessionUpdateRequest.discounts` | Adds `discounts.codes` to update requests                      |
+| `$.CheckoutSession.discounts`              | Adds `discounts.applied` and `discounts.rejected` to responses |
 
 Merchants **MAY** also include the optional `schema` field with a URL to the
 JSON Schema defining the `discounts` object. For core ACP extensions, this is
@@ -93,65 +92,64 @@ When this extension is active, checkout is extended with a `discounts` object.
 
 ### 4.1 Discounts Object
 
-| Field | Type | Request | Response | Description |
-|-------|------|---------|----------|-------------|
-| `codes` | string[] | Optional | Echo | Discount codes to apply. Case-insensitive. Replaces previously submitted codes. |
-| `applied` | AppliedDiscount[] | Omit | Required | Discounts successfully applied (code-based and automatic). |
-| `rejected` | RejectedDiscount[] | Omit | Optional | Discount codes that could not be applied, with reasons. |
+| Field      | Type               | Request  | Response | Description                                                                     |
+| ---------- | ------------------ | -------- | -------- | ------------------------------------------------------------------------------- |
+| `codes`    | string[]           | Optional | Echo     | Discount codes to apply. Case-insensitive. Replaces previously submitted codes. |
+| `applied`  | AppliedDiscount[]  | Omit     | Required | Discounts successfully applied (code-based and automatic).                      |
+| `rejected` | RejectedDiscount[] | Omit     | Optional | Discount codes that could not be applied, with reasons.                         |
 
 ### 4.2 Applied Discount
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier for this applied discount |
-| `code` | string | No | The discount code. Omitted for automatic discounts. |
-| `description` | string | No | Human-readable description of the discount (e.g., "20% off with code SAVE20"). |
-| `type` | string | No | Discount type: `percentage`, `fixed`, `bogo`, or `volume`. |
-| `coupon` | Coupon | Yes | Details about the underlying coupon/promotion |
-| `amount` | integer | Yes | Total discount amount in minor currency units |
-| `automatic` | boolean | No | **DEPRECATED** — use the absence of `code` to identify automatic discounts. Default: false. Will be removed in a future spec version. |
-| `start` | string | No | RFC 3339 timestamp when discount became active |
-| `end` | string | No | RFC 3339 timestamp when discount expires |
-| `method` | string | No | Allocation method: `each` or `across` |
-| `priority` | integer | No | Stacking order (1 = first). Lower numbers applied first. |
-| `allocations` | Allocation[] | No | Breakdown of where discount was allocated |
+| Field         | Type         | Required | Description                                                                                      |
+| ------------- | ------------ | -------- | ------------------------------------------------------------------------------------------------ |
+| `id`          | string       | Yes      | Unique identifier for this applied discount                                                      |
+| `code`        | string       | No       | The discount code. Omitted for automatic discounts.                                              |
+| `description` | string       | No       | Human-readable description of the discount (e.g., "20% off with code SAVE20").                   |
+| `type`        | string       | No       | Discount classification: `percentage` or `fixed`. See §10.5 for future discount type extensions. |
+| `coupon`      | Coupon       | Yes      | Details about the underlying coupon/promotion                                                    |
+| `amount`      | integer      | Yes      | Total discount amount in minor currency units                                                    |
+| `start`       | string       | No       | RFC 3339 timestamp when discount became active                                                   |
+| `end`         | string       | No       | RFC 3339 timestamp when discount expires                                                         |
+| `method`      | string       | No       | Allocation method: `each` or `across`                                                            |
+| `priority`    | integer      | No       | Stacking order (1 = first). Lower numbers applied first.                                         |
+| `allocations` | Allocation[] | No       | Breakdown of where discount was allocated                                                        |
 
 ### 4.3 Coupon
 
 Nested coupon details describing the discount terms:
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | Yes | Unique coupon identifier |
-| `name` | string | Yes | Human-readable coupon name |
-| `percent_off` | number | No | Percentage discount (0-100). Mutually exclusive with `amount_off`. |
-| `amount_off` | integer | No | Fixed discount in minor units. Mutually exclusive with `percent_off`. |
-| `currency` | string | No | Currency for `amount_off` (ISO 4217). Required if `amount_off` is set. |
-| `duration` | string | No | How long discount applies: `once`, `repeating`, `forever` |
-| `duration_in_months` | integer | No | Number of months (if duration is `repeating`) |
-| `max_redemptions` | integer | No | Maximum times this coupon can be redeemed |
-| `times_redeemed` | integer | No | Number of times redeemed |
-| `metadata` | object | No | Arbitrary key-value metadata |
+| Field                | Type    | Required | Description                                                            |
+| -------------------- | ------- | -------- | ---------------------------------------------------------------------- |
+| `id`                 | string  | Yes      | Unique coupon identifier                                               |
+| `name`               | string  | Yes      | Human-readable coupon name                                             |
+| `percent_off`        | number  | No       | Percentage discount (0-100). Mutually exclusive with `amount_off`.     |
+| `amount_off`         | integer | No       | Fixed discount in minor units. Mutually exclusive with `percent_off`.  |
+| `currency`           | string  | No       | Currency for `amount_off` (ISO 4217). Required if `amount_off` is set. |
+| `duration`           | string  | No       | How long discount applies: `once`, `repeating`, `forever`              |
+| `duration_in_months` | integer | No       | Number of months (if duration is `repeating`)                          |
+| `max_redemptions`    | integer | No       | Maximum times this coupon can be redeemed                              |
+| `times_redeemed`     | integer | No       | Number of times redeemed                                               |
+| `metadata`           | object  | No       | Arbitrary key-value metadata                                           |
 
 ### 4.4 Allocation
 
 Breakdown of how a discount amount was allocated to a specific target:
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `path` | string | Yes | JSONPath to the allocation target (e.g., `$.line_items[0]`) |
-| `amount` | integer | Yes | Amount allocated to this target in minor currency units |
+| Field    | Type    | Required | Description                                                 |
+| -------- | ------- | -------- | ----------------------------------------------------------- |
+| `path`   | string  | Yes      | JSONPath to the allocation target (e.g., `$.line_items[0]`) |
+| `amount` | integer | Yes      | Amount allocated to this target in minor currency units     |
 
 ### 4.5 Rejected Discount
 
 When a submitted discount code cannot be applied, it appears in the `rejected`
 array with the reason:
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `code` | string | Yes | The discount code that was rejected |
-| `reason` | string | Yes | Error code indicating why (see Section 7.1) |
-| `message` | string | No | Human-readable explanation |
+| Field     | Type   | Required | Description                                 |
+| --------- | ------ | -------- | ------------------------------------------- |
+| `code`    | string | Yes      | The discount code that was rejected         |
+| `reason`  | string | Yes      | Error code indicating why (see Section 7.1) |
+| `message` | string | No       | Human-readable explanation                  |
 
 ---
 
@@ -161,12 +159,13 @@ array with the reason:
 
 The `method` field indicates how the discount was calculated:
 
-| Method | Meaning | Allocations |
-|--------|---------|-------------|
-| `each` | Applied independently per eligible item | Typically included to show per-item breakdown |
-| `across` | Applied to order total | Typically omitted (applies to total, not items) |
+| Method   | Meaning                                 | Allocations                                     |
+| -------- | --------------------------------------- | ----------------------------------------------- |
+| `each`   | Applied independently per eligible item | Typically included to show per-item breakdown   |
+| `across` | Applied to order total                  | Typically omitted (applies to total, not items) |
 
 **Example:**
+
 - `each`: "10% off each item" → 10% calculated per item, allocations show breakdown
 - `across`: "$5 off order" → $5 off the total, no item-level breakdown needed
 
@@ -186,11 +185,11 @@ Discount B (priority: 2): $10 off → $80 - $10 = $70
 The `allocations` array breaks down where each discount dollar landed, using
 JSONPath to identify targets:
 
-| Path Pattern | Target |
-|--------------|--------|
-| `$.line_items[0]` | First line item |
-| `$.line_items[1]` | Second line item |
-| `$.totals.shipping` | Shipping cost |
+| Path Pattern        | Target           |
+| ------------------- | ---------------- |
+| `$.line_items[0]`   | First line item  |
+| `$.line_items[1]`   | Second line item |
+| `$.totals.shipping` | Shipping cost    |
 
 **Invariant:** Sum of `allocations[].amount` equals `applied_discount.amount`.
 
@@ -258,16 +257,16 @@ To ensure users are informed, merchants **SHOULD** also include a message in the
 
 ### 7.1 Error Codes
 
-| Code | Description |
-|------|-------------|
-| `discount_code_expired` | Code has expired |
-| `discount_code_invalid` | Code not found or malformed |
-| `discount_code_already_applied` | Code is already applied |
-| `discount_code_combination_disallowed` | Cannot combine with another active discount |
-| `discount_code_minimum_not_met` | Order does not meet minimum purchase requirement |
-| `discount_code_user_not_logged_in` | Code requires authenticated user |
-| `discount_code_user_ineligible` | User does not meet eligibility criteria |
-| `discount_code_usage_limit_reached` | Code has reached maximum redemptions |
+| Code                                   | Description                                      |
+| -------------------------------------- | ------------------------------------------------ |
+| `discount_code_expired`                | Code has expired                                 |
+| `discount_code_invalid`                | Code not found or malformed                      |
+| `discount_code_already_applied`        | Code is already applied                          |
+| `discount_code_combination_disallowed` | Cannot combine with another active discount      |
+| `discount_code_minimum_not_met`        | Order does not meet minimum purchase requirement |
+| `discount_code_user_not_logged_in`     | Code requires authenticated user                 |
+| `discount_code_user_ineligible`        | User does not meet eligibility criteria          |
+| `discount_code_usage_limit_reached`    | Code has reached maximum redemptions             |
 
 ### 7.2 Message Severity
 
@@ -281,10 +280,10 @@ expects a discount but won't receive it, so they should be informed.
 
 Applied discounts are reflected in the core checkout fields:
 
-| Total Type | When to Use |
-|------------|-------------|
-| `items_discount` | Discounts allocated to line items |
-| `discount` | Order-level discounts (shipping, fees, flat order amount) |
+| Total Type       | When to Use                                               |
+| ---------------- | --------------------------------------------------------- |
+| `items_discount` | Discounts allocated to line items                         |
+| `discount`       | Order-level discounts (shipping, fees, flat order amount) |
 
 ### 8.1 Determining the Type
 
@@ -307,7 +306,7 @@ Applied discounts are reflected in the core checkout fields:
 
 ```json
 {
-  "line_items": [{"id": "item_123", "quantity": 1}],
+  "line_items": [{ "id": "item_123", "quantity": 1 }],
   "discounts": {
     "codes": ["SAVE10"]
   }
@@ -351,9 +350,9 @@ Applied discounts are reflected in the core checkout fields:
     ]
   },
   "totals": [
-    {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
-    {"type": "discount", "display_text": "Order Discount", "amount": 1000},
-    {"type": "total", "display_text": "Total", "amount": 4000}
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 5000 },
+    { "type": "discount", "display_text": "Order Discount", "amount": 1000 },
+    { "type": "total", "display_text": "Total", "amount": 4000 }
   ]
 }
 ```
@@ -388,22 +387,20 @@ Applied discounts are reflected in the core checkout fields:
         },
         "amount": 800,
         "method": "each",
-        "allocations": [
-          {"path": "$.line_items[0]", "amount": 800}
-        ]
+        "allocations": [{ "path": "$.line_items[0]", "amount": 800 }]
       }
     ]
   },
   "line_items": [
     {
       "id": "li_1",
-      "item": {"id": "prod_1", "quantity": 2},
+      "item": { "id": "prod_1", "quantity": 2 },
       "name": "T-Shirt",
       "unit_amount": 2000,
       "totals": [
-        {"type": "subtotal", "amount": 4000},
-        {"type": "items_discount", "amount": 800},
-        {"type": "total", "amount": 3200}
+        { "type": "subtotal", "amount": 4000 },
+        { "type": "items_discount", "amount": 800 },
+        { "type": "total", "amount": 3200 }
       ]
     }
   ]
@@ -427,17 +424,15 @@ Applied discounts are reflected in the core checkout fields:
           "amount_off": 599,
           "currency": "usd"
         },
-        "amount": 599,
-        "automatic": true
+        "amount": 599
       }
     ]
   }
 }
 ```
 
-> **Note:** The `automatic` field is deprecated. New implementations **SHOULD**
-> identify automatic discounts by the absence of `code` rather than the presence
-> of `automatic: true`. See §10.2 for migration guidance.
+> **Note:** Automatic discounts are identified by the absence of `code`. No
+> separate boolean field is needed — see §10.3 for the normative boundary.
 
 ### 9.4 Rejected Discount Code
 
@@ -511,8 +506,8 @@ Applied discounts are reflected in the core checkout fields:
         "method": "each",
         "priority": 1,
         "allocations": [
-          {"path": "$.line_items[0]", "amount": 1200},
-          {"path": "$.line_items[1]", "amount": 800}
+          { "path": "$.line_items[0]", "amount": 1200 },
+          { "path": "$.line_items[1]", "amount": 800 }
         ]
       },
       {
@@ -580,24 +575,43 @@ the authoritative discount representation.
 Every `DiscountDetail` property now has a direct mapping target in
 `AppliedDiscount`:
 
-| `DiscountDetail` field | `AppliedDiscount` field | Notes |
-|------------------------|------------------------|-------|
-| `code` | `code` | Direct mapping |
-| `type` | `type` | Same enum values: `percentage`, `fixed`, `bogo`, `volume` |
-| `amount` | `amount` | Direct mapping (minor currency units) |
-| `description` | `description` | Direct mapping (human-readable string) |
-| `source` | Derived from `code` presence | See source mapping table below |
+| `DiscountDetail` field | `AppliedDiscount` field      | Notes                                                                              |
+| ---------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| `code`                 | `code`                       | Direct mapping                                                                     |
+| `type`                 | `type`                       | `percentage` and `fixed` map directly; `bogo`/`volume` deferred to future proposal |
+| `amount`               | `amount`                     | Direct mapping (minor currency units)                                              |
+| `description`          | `description`                | Direct mapping (human-readable string)                                             |
+| `source`               | Derived from `code` presence | See source mapping table below                                                     |
 
 #### `DiscountDetail.source` Mapping
 
 During the deprecation period, `DiscountDetail.source` values correspond to
 `AppliedDiscount` fields as follows:
 
-| `DiscountDetail.source` | Equivalent in Discount Extension | Notes |
-|-------------------------|----------------------------------|-------|
-| `coupon` | `AppliedDiscount` with `code` present | Buyer-submitted discount code |
-| `automatic` | `AppliedDiscount` with `code` absent | Merchant rule, no code required |
-| `loyalty` | `AppliedDiscount` with `code` absent + `coupon.metadata` | No direct equivalent; model as automatic with loyalty context in metadata |
+| `DiscountDetail.source` | Equivalent in Discount Extension                         | Notes                                                                     |
+| ----------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `coupon`                | `AppliedDiscount` with `code` present                    | Buyer-submitted discount code                                             |
+| `automatic`             | `AppliedDiscount` with `code` absent                     | Merchant rule, no code required                                           |
+| `loyalty`               | `AppliedDiscount` with `code` absent + `coupon.metadata` | No direct equivalent; model as automatic with loyalty context in metadata |
+
+> **Known tradeoff — loyalty metadata vocabulary:** The `loyalty` mapping shifts
+> the burden to merchants to populate `coupon.metadata` consistently. Without a
+> protocol-defined vocabulary for metadata keys, each merchant may encode loyalty
+> context differently. This is an acceptable tradeoff for a base-schema stub
+> that had no structured loyalty semantics either, but agents consuming loyalty
+> discounts across merchants should be prepared for variation. A future proposal
+> may define recommended metadata keys for common automatic discount contexts.
+
+#### Per-Item Allocation Visibility
+
+`DiscountDetail` lived on `LineItem.discount_details[]`, so per-item discount
+visibility was implicit. `AppliedDiscount` is session-level; per-item visibility
+requires populating the optional `allocations[]` array.
+
+Merchants migrating from `discount_details[]` who were providing per-item
+discount information **SHOULD** populate `allocations[]` on the corresponding
+`AppliedDiscount` to preserve per-item visibility. Without allocations, agents
+lose the ability to attribute discount amounts to specific line items.
 
 #### Migration Example
 
@@ -671,20 +685,30 @@ code-based from automatic discounts:
   without a buyer-submitted code (e.g., "free shipping over $50", "10% off for
   loyalty members")
 
-The `automatic` field is **deprecated** and **SHOULD NOT** be set by new
-implementations. Consumers **SHOULD** use `code` presence/absence instead.
-
-| Reduction type | `unit_amount` reflects it? | Correct representation |
-|----------------|---------------------------|------------------------|
-| Checkout-time rule-based | No — reduction applied on top | `AppliedDiscount` with `code` absent |
-| Buyer-submitted code | No — reduction applied on top | `AppliedDiscount` with `code` present |
-| Catalog-level price change | Yes — `unit_amount` IS the reduced price | Not a discount — simply the price |
-| ~~Legacy per-item~~ | Ambiguous | Migrate to `AppliedDiscount` |
+| Reduction type             | `unit_amount` reflects it?               | Correct representation                |
+| -------------------------- | ---------------------------------------- | ------------------------------------- |
+| Checkout-time rule-based   | No — reduction applied on top            | `AppliedDiscount` with `code` absent  |
+| Buyer-submitted code       | No — reduction applied on top            | `AppliedDiscount` with `code` present |
+| Catalog-level price change | Yes — `unit_amount` IS the reduced price | Not a discount — simply the price     |
+| ~~Legacy per-item~~        | Ambiguous                                | Migrate to `AppliedDiscount`          |
 
 The same boundary applies to `discount_details[]` during the deprecation period:
 catalog-level price reductions **MUST NOT** appear in `discount_details[]`.
 
-### 10.4 Clients Without Extension Support
+### 10.4 Future Discount Type Extensions
+
+The `type` field currently supports `percentage` and `fixed` — values that have
+direct equivalents in coupon fields (`percent_off` and `amount_off`).
+`DiscountDetail` also defined `bogo` and `volume`, but these were classification
+labels with no structured backing — the coupon model lacks buy/get conditions,
+quantity thresholds, and tiered pricing. Adding these values to `type` without a
+corresponding schema to represent the mechanics carries forward the same problem.
+
+A future proposal **SHOULD** extend both the coupon model and the `type` enum
+together, so that each `type` value has real coupon field equivalents (e.g.,
+`bogo` with buy/get conditions, `volume` with quantity tiers).
+
+### 10.5 Clients Without Extension Support
 
 - Clients that don't support the discount extension **SHOULD** ignore the
   `discounts` object in responses
@@ -708,7 +732,7 @@ catalog-level price reductions **MUST NOT** appear in `discount_details[]`.
 - [ ] Accepts `discounts.codes` in create/update requests
 - [ ] Returns `discounts.applied` array with applied discounts
 - [ ] Includes `coupon` object with `name` and discount details
-- [ ] Supports automatic discounts by omitting `code`; `automatic` is deprecated
+- [ ] Supports automatic discounts by omitting `code` (no `automatic` field)
 - [ ] Returns rejection reasons via `messages[]` with appropriate codes
 - [ ] Reflects discounts in `totals[]` and line item totals
 - [ ] Accepts deprecated `coupons` field as alias
@@ -717,6 +741,6 @@ catalog-level price reductions **MUST NOT** appear in `discount_details[]`.
 
 ## 13. Change Log
 
+- **2026-02-12**: Resolve design questions per review feedback: remove `automatic` field (clean break, not deprecation); narrow `type` enum to `percentage`/`fixed` (defer `bogo`/`volume` to future proposal with coupon model extensions, §10.4); add per-item allocation migration guidance (§10.2); document loyalty metadata vocabulary tradeoff (§10.2) ([#124](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/124))
 - **2026-02-11**: Consolidate `DiscountDetail` into `AppliedDiscount`: add `description` and `type` for lossless parity (§4.2); deprecate `automatic` in favor of `code` presence/absence (§10.3); update migration guidance with lossless field mapping (§10.2) ([#124](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/124))
 - **2026-01-27**: Initial draft
-
