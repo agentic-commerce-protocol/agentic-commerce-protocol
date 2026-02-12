@@ -127,7 +127,7 @@
         },
         "type": {
           "type": "string",
-          "enum": ["percentage", "fixed", "bogo", "volume"],
+          "enum": ["percentage", "fixed"],
           "description": "The type of discount applied."
         },
         "coupon": {
@@ -138,12 +138,6 @@
           "type": "integer",
           "minimum": 0,
           "description": "Total discount amount in minor (cents) currency units."
-        },
-        "automatic": {
-          "type": "boolean",
-          "default": false,
-          "deprecated": true,
-          "description": "DEPRECATED: Use the absence of `code` to identify automatic discounts instead. True if applied automatically by merchant rules (no code required). This field will be removed in a future spec version."
         },
         "start": {
           "type": "string",
