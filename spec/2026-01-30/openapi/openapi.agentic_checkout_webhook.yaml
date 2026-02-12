@@ -112,6 +112,9 @@ components:
           type: integer
           description: "Refund amount in minor units (e.g. 100 cents for $1.00 or 100 for ¥100)"
       required: [type, amount]
+      example:
+        type: "original_payment"
+        amount: 1050
 
     EventDataOrder:
       type: object
@@ -138,6 +141,14 @@ components:
           description: "List of all refunds applied to this order"
           items: { $ref: "#/components/schemas/Refund" }
       required: [type, checkout_session_id, permalink_url, status, refunds]
+      example:
+        type: "order"
+        checkout_session_id: "cs_01HV3P3ABC123"
+        permalink_url: "https://merchant.example.com/orders/ord_123456"
+        status: "shipped"
+        refunds:
+          - type: "original_payment"
+            amount: 500
 
     WebhookEvent:
       type: object
@@ -151,6 +162,14 @@ components:
           $ref: "#/components/schemas/EventDataOrder"
           description: "The order object associated with this event"
       required: [type, data]
+      example:
+        type: "order_update"
+        data:
+          type: "order"
+          checkout_session_id: "cs_01HV3P3ABC123"
+          permalink_url: "https://merchant.example.com/orders/ord_123456"
+          status: "shipped"
+          refunds: []
 
     Error:
       type: object
@@ -170,3 +189,8 @@ components:
           type: string
           description: "JSONPath of the offending field if applicable"
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "missing_required_field"
+        message: "The 'amount' field is required"
+        param: "$.amount"

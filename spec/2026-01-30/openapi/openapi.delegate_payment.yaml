@@ -287,6 +287,43 @@ components:
           description: "Additional metadata for the request"
           additionalProperties: { type: string }
       required: [payment_method, allowance, risk_signals, metadata]
+      example:
+        payment_method:
+          type: "card"
+          card_number_type: "fpan"
+          number: "4242424242424242"
+          exp_month: "11"
+          exp_year: "2026"
+          name: "Jane Doe"
+          cvc: "223"
+          checks_performed: ["avs", "cvv"]
+          iin: "424242"
+          display_card_funding_type: "credit"
+          display_brand: "visa"
+          display_last4: "4242"
+          metadata: {}
+        allowance:
+          reason: "one_time"
+          max_amount: 5000
+          currency: "usd"
+          checkout_session_id: "cs_01HV3P3ABC123"
+          merchant_id: "acme_corp"
+          expires_at: "2026-02-13T12:00:00Z"
+        billing_address:
+          name: "Jane Doe"
+          line_one: "185 Berry Street"
+          line_two: "Suite 550"
+          city: "San Francisco"
+          state: "CA"
+          country: "US"
+          postal_code: "94107"
+        risk_signals:
+          - type: "card_testing"
+            score: 5
+            action: "authorized"
+        metadata:
+          session_id: "sess_abc123"
+          user_agent: "ChatGPT/2.0"
 
     PaymentMethodCard:
       type: object
@@ -359,6 +396,21 @@ components:
           type: boolean
           description: "Whether this is a virtual card number"
       required: [type, card_number_type, number, display_card_funding_type, metadata]
+      example:
+        type: "card"
+        card_number_type: "fpan"
+        number: "4242424242424242"
+        exp_month: "12"
+        exp_year: "2027"
+        name: "John Smith"
+        cvc: "123"
+        checks_performed: ["avs", "cvv"]
+        iin: "424242"
+        display_card_funding_type: "credit"
+        display_brand: "visa"
+        display_last4: "4242"
+        metadata:
+          card_origin: "manual_entry"
 
     Address:
       type: object
@@ -393,6 +445,14 @@ components:
           maxLength: 20
           description: "ZIP or postal code"
       required: [name, line_one, city, state, country, postal_code]
+      example:
+        name: "John Smith"
+        line_one: "555 Golden Gate Avenue"
+        line_two: "Apt 401"
+        city: "San Francisco"
+        state: "CA"
+        country: "US"
+        postal_code: "94102"
 
     Allowance:
       type: object
@@ -429,6 +489,13 @@ components:
           merchant_id,
           expires_at,
         ]
+      example:
+        reason: "one_time"
+        max_amount: 100000
+        currency: "usd"
+        checkout_session_id: "csn_01HV3P3XYZ789"
+        merchant_id: "merchant_12345"
+        expires_at: "2026-02-15T18:30:00Z"
 
     RiskSignal:
       type: object
@@ -446,6 +513,10 @@ components:
           enum: [blocked, manual_review, authorized]
           description: "Recommended action based on risk assessment"
       required: [type, score, action]
+      example:
+        type: "card_testing"
+        score: 15
+        action: "manual_review"
 
     DelegatePaymentResponse:
       type: object
@@ -463,6 +534,13 @@ components:
           description: "Metadata echoed from the request plus system-added fields"
           additionalProperties: { type: string }
       required: [id, created, metadata]
+      example:
+        id: "vt_01J8Z3WXYZ9ABC123"
+        created: "2026-02-12T14:30:00Z"
+        metadata:
+          source: "agent_checkout"
+          merchant_id: "acme_corp"
+          idempotency_key: "idem_xyz789"
 
     Error:
       type: object
@@ -489,3 +567,8 @@ components:
           type: string
           description: "JSONPath of offending field"
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "invalid_card"
+        message: "Invalid card expiration year"
+        param: "$.payment_method.exp_year"
