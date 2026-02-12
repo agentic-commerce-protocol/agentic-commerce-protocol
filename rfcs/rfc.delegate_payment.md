@@ -1,6 +1,6 @@
 # RFC: Agentic Commerce — Delegate Payment API
 
-**Status:** Draft  
+**Status:** Draft
 **Version:** 2025-09-29
 **Scope:** Delegate payment credential tokenization and controlled usage via allowance constraints
 
@@ -57,6 +57,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 ### 2.4 Token Creation & Response
 
 - On success, server **MUST** return `201 Created` with a unique token `id` and `created` timestamp.
+- Response **MAY** include `expires_at` (RFC 3339) echoing when the token becomes invalid (same as `allowance.expires_at`).
 - Response **MUST** echo correlation data under `metadata` when applicable (e.g., `merchant_id`, `idempotency_key`).
 
 ### 2.5 Usage & Expiry
@@ -115,8 +116,10 @@ Exactly **one** credential type is supported today: **card**.
 
 ### 3.4 Address (OPTIONAL)
 
-- `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),  
+- `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),
   `state` (ISO-3166-2 where applicable), `country` (ISO-3166-1 alpha-2), `postal_code` (≤20)
+- `email` (OPTIONAL): billing email (≤256) for receipts, 3DS, fraud.
+- `phone` (OPTIONAL): billing phone (≤32) for fraud, 3DS.
 
 ### 3.5 Allowance (REQUIRED)
 
@@ -126,6 +129,7 @@ Exactly **one** credential type is supported today: **card**.
 - `checkout_session_id`: string
 - `merchant_id`: string (≤256)
 - `expires_at`: RFC 3339 timestamp
+- `order_id`: string (OPTIONAL) — merchant order identifier for correlation.
 
 ### 3.6 RiskSignal (REQUIRED, one or more)
 
@@ -150,10 +154,16 @@ Exactly **one** credential type is supported today: **card**.
 
 **Body:**
 
+- `id`: string (REQUIRED) — vault token id, e.g. `vt_...`
+- `created`: string, RFC 3339 (REQUIRED)
+- `expires_at`: string, RFC 3339 (OPTIONAL) — when the token becomes invalid; servers **MAY** echo `allowance.expires_at`.
+- `metadata`: object (REQUIRED)
+
 ```json
 {
   "id": "vt_01J8Z3WXYZ9ABC",
   "created": "2025-09-29T11:00:00Z",
+  "expires_at": "2025-10-09T07:20:50.52Z",
   "metadata": {
     "source": "agent_checkout",
     "merchant_id": "acme",
@@ -164,7 +174,7 @@ Exactly **one** credential type is supported today: **card**.
 
 ### 4.2 Error — Flat Object (no envelope)
 
-**Status:** `4xx` / `5xx`  
+**Status:** `4xx` / `5xx`
 **Body:**
 
 ```json
@@ -223,6 +233,7 @@ Exactly **one** credential type is supported today: **card**.
 - `display_card_funding_type` ∈ `credit|debit|prepaid`.
 - `allowance.currency` matches `^[a-z]{3}$` (e.g., `usd`).
 - `allowance.expires_at` must be RFC 3339.
+- `allowance.order_id` optional; when present, for merchant order correlation.
 - At least one `risk_signal` item.
 
 ---
@@ -255,7 +266,8 @@ Exactly **one** credential type is supported today: **card**.
     "currency": "usd",
     "checkout_session_id": "csn_01HV3P3...",
     "merchant_id": "acme",
-    "expires_at": "2025-10-09T07:20:50.52Z"
+    "expires_at": "2025-10-09T07:20:50.52Z",
+    "order_id": "ord_abc123"
   },
   "billing_address": {
     "name": "Ada Lovelace",
@@ -264,7 +276,9 @@ Exactly **one** credential type is supported today: **card**.
     "city": "San Francisco",
     "state": "CA",
     "country": "US",
-    "postal_code": "94131"
+    "postal_code": "94131",
+    "email": "johndoe@example.com",
+    "phone": "+14155551234"
   },
   "risk_signals": [
     { "type": "card_testing", "score": 10, "action": "manual_review" }
@@ -279,6 +293,7 @@ Exactly **one** credential type is supported today: **card**.
 {
   "id": "vt_01J8Z3WXYZ9ABC",
   "created": "2025-09-29T11:00:00Z",
+  "expires_at": "2025-10-09T07:20:50.52Z",
   "metadata": {
     "source": "agent_checkout",
     "merchant_id": "acme",
@@ -322,7 +337,7 @@ Exactly **one** credential type is supported today: **card**.
 - [ ] Enforces **exactly one** credential type (`card`)
 - [ ] Honors `Idempotency-Key`; returns `409` on conflict
 - [ ] Emits **flat** error object with `type`/`code`/`message`/`param?`
-- [ ] Returns `201` with `id`, `created`, and `metadata`
+- [ ] Returns `201` with `id`, `created`, and `metadata`; optionally `expires_at`
 - [ ] Enforces `allowance` constraints and expiry
 - [ ] Redacts PCI data in logs/telemetry
 
@@ -331,3 +346,4 @@ Exactly **one** credential type is supported today: **card**.
 ## 10. Change Log
 
 - **2025-09-29**: Initial draft. Errors changed to **flat object** (no envelope). Tightened allowance and card display requirements.
+- **Unreleased**: Address: optional `email`, `phone`. Allowance: optional `order_id`. Response: optional `expires_at`. Validation and examples updated.

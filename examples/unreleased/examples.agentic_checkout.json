@@ -26,7 +26,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     }
   },
@@ -183,7 +185,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
@@ -331,7 +335,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
@@ -429,7 +435,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     }
   },
@@ -474,7 +482,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "affiliate_attribution": {
@@ -557,13 +567,15 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
-        "option_id": "fulfillment_option_456",
+        "option_id": "fulfillment_option_123",
         "item_ids": ["item_123"]
       }
     ],
@@ -695,7 +707,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
@@ -848,13 +862,15 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
       {
         "type": "shipping",
-        "option_id": "fulfillment_option_456",
+        "option_id": "fulfillment_option_123",
         "item_ids": ["item_123"]
       }
     ],
@@ -1026,7 +1042,9 @@
         "city": "Oakland",
         "state": "CA",
         "country": "US",
-        "postal_code": "94607"
+        "postal_code": "94607",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
@@ -1125,7 +1143,9 @@
         "city": "Oakland",
         "state": "CA",
         "country": "US",
-        "postal_code": "94607"
+        "postal_code": "94607",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "authentication_result": {
@@ -1190,7 +1210,9 @@
         "city": "Paris",
         "state": "IDF",
         "country": "FR",
-        "postal_code": "75002"
+        "postal_code": "75002",
+        "email": "johndoe@example.com",
+        "phone": "+33612345678"
       }
     },
     "authentication_result": {
@@ -1260,7 +1282,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
@@ -1379,7 +1403,9 @@
         "city": "San Francisco",
         "state": "CA",
         "country": "US",
-        "postal_code": "94131"
+        "postal_code": "94131",
+        "email": "johndoe@example.com",
+        "phone": "+15551234567"
       }
     },
     "selected_fulfillment_options": [
@@ -1446,3 +1472,4 @@
     ]
   }
 }
+
