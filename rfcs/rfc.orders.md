@@ -144,6 +144,7 @@ The existing `Order` schema gains optional fields:
 | `quantity` | OrderLineItemQuantity | Yes | Quantity tracking |
 | `unit_price` | integer | No | Price per unit (minor units) |
 | `subtotal` | integer | No | Line total (minor units) |
+| `totals` | Total[] | No | Optional line-item totals breakdown (same schema as checkout) |
 | `status` | enum | No | Derived line item status |
 
 **OrderLineItemQuantity:**

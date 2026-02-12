@@ -1312,6 +1312,10 @@ components:
         subtotal:
           type: integer
           description: "Line total in minor currency units (quantity.ordered * unit_price)"
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+          description: "Optional line-item level totals breakdown using the same Total schema as checkout. Merchants who can provide richer breakdowns MAY use this alongside or instead of unit_price/subtotal."
         status:
           type: string
           enum: [processing, partial, shipped, delivered, canceled]
