@@ -133,7 +133,27 @@
                   "const": [
                     "$.CheckoutSessionCreateRequest.discounts",
                     "$.CheckoutSessionUpdateRequest.discounts",
-                    "$.CheckoutSession.discounts"
+                    "$.CheckoutSession.discounts",
+                    "$.LineItem.discount_eligible"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "sale": {
+          "allOf": [
+            { "$ref": "#/$defs/extension_metadata" },
+            {
+              "type": "object",
+              "properties": {
+                "id": { "const": "sale" },
+                "name": { "const": "Sale Extension" },
+                "description": { "const": "Sale pricing context with compare-at prices, sale windows, and EU Omnibus compliance fields." },
+                "extends": {
+                  "const": [
+                    "$.CheckoutSession.sales",
+                    "$.LineItem.sale"
                   ]
                 }
               }

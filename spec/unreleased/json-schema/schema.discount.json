@@ -134,6 +134,30 @@
           "type": "array",
           "items": { "$ref": "#/$defs/allocation" },
           "description": "Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount."
+        },
+        "excluded_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "reason"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "JSONPath to the excluded item."
+              },
+              "reason": {
+                "type": "string",
+                "enum": ["sale_item", "map_restricted", "limited_edition", "pre_order", "other"],
+                "description": "Machine-readable reason for exclusion."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable explanation of why the item was excluded."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Items excluded from this discount, with reasons."
         }
       },
       "additionalProperties": false
@@ -196,6 +220,12 @@
       "additionalProperties": false
     },
 
+    "line_item_discount_eligible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this item accepts code-based discount codes. When false, the item is excluded from ALL code-based discounts (blanket exclusion). When true (default), the item may accept discount codes but per-discount eligibility rules still apply. Does not affect automatic discounts."
+    },
+
     "discount_error_codes": {
       "type": "string",
       "enum": [
@@ -206,7 +236,8 @@
         "discount_code_minimum_not_met",
         "discount_code_user_not_logged_in",
         "discount_code_user_ineligible",
-        "discount_code_usage_limit_reached"
+        "discount_code_usage_limit_reached",
+        "discount_code_item_ineligible"
       ],
       "description": "Error codes for rejected discount codes, used in messages[].code."
     },
