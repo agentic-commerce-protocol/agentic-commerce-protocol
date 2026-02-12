@@ -608,7 +608,18 @@ components:
           type: array
           items:
             type: string
-            enum: [visa, mastercard, amex, discover, diners, jcb, unionpay, eftpos, interac]
+            enum:
+              [
+                visa,
+                mastercard,
+                amex,
+                discover,
+                diners,
+                jcb,
+                unionpay,
+                eftpos,
+                interac,
+              ]
           description: Specific card brands/networks accepted
         funding_types:
           type: array
@@ -697,7 +708,19 @@ components:
         config:
           type: object
           description: Handler-specific configuration
-      required: [id, name, version, spec, requires_delegate_payment, requires_pci_compliance, psp, config_schema, instrument_schemas, config]
+      required:
+        [
+          id,
+          name,
+          version,
+          spec,
+          requires_delegate_payment,
+          requires_pci_compliance,
+          psp,
+          config_schema,
+          instrument_schemas,
+          config,
+        ]
 
     Payment:
       type: object
@@ -740,6 +763,8 @@ components:
     DiscountDetail:
       type: object
       additionalProperties: false
+      deprecated: true
+      description: "DEPRECATED: Use the Discount Extension's AppliedDiscount (discounts.applied[]) instead. DiscountDetail will be removed in a future spec version."
       properties:
         code: { type: string }
         type: { type: string, enum: [percentage, fixed, bogo, volume] }
@@ -792,9 +817,15 @@ components:
         discount_details:
           type: array
           items: { $ref: "#/components/schemas/DiscountDetail" }
+          deprecated: true
+          description: "DEPRECATED: Use the Discount Extension's discounts.applied[] instead."
         tax_exempt: { type: boolean }
         tax_exemption_reason: { type: string }
-        parent_id: { type: string, description: "Reference to parent line item for bundled products" }
+        parent_id:
+          {
+            type: string,
+            description: "Reference to parent line item for bundled products",
+          }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
@@ -920,7 +951,8 @@ components:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [shipping, digital, pickup, local_delivery] }
+        type:
+          { type: string, enum: [shipping, digital, pickup, local_delivery] }
         option_id: { type: string }
         item_ids:
           type: array
@@ -1114,10 +1146,7 @@ components:
           type: array
           items: { type: string }
         destination_type:
-          {
-            type: string,
-            enum: [shipping, pickup, local_delivery, digital],
-          }
+          { type: string, enum: [shipping, pickup, local_delivery, digital] }
         fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
         location_id: { type: string }
         instructions: { type: string }
@@ -1157,7 +1186,8 @@ components:
         checkout_session_id: { type: string }
         order_number: { type: string }
         permalink_url: { type: string, format: uri }
-        status: { type: string, enum: [confirmed, processing, shipped, delivered] }
+        status:
+          { type: string, enum: [confirmed, processing, shipped, delivered] }
         estimated_delivery: { $ref: "#/components/schemas/EstimatedDelivery" }
         confirmation: { $ref: "#/components/schemas/OrderConfirmation" }
         support: { $ref: "#/components/schemas/SupportInfo" }
@@ -1212,7 +1242,7 @@ components:
           description: Fixed discount amount in minor currency units. Mutually exclusive with percent_off.
         currency:
           type: string
-          pattern: '^[a-z]{3}$'
+          pattern: "^[a-z]{3}$"
           description: ISO 4217 currency code for amount_off. Required if amount_off is set.
         duration:
           type: string
@@ -1247,16 +1277,19 @@ components:
         code:
           type: string
           description: The discount code entered by the user. Omitted for automatic discounts.
+        description:
+          type: string
+          description: "Human-readable description of the discount (e.g., '20% off with code SAVE20')."
+        type:
+          type: string
+          enum: [percentage, fixed]
+          description: The type of discount applied.
         coupon:
           $ref: "#/components/schemas/Coupon"
         amount:
           type: integer
           minimum: 0
           description: Total discount amount in minor (cents) currency units.
-        automatic:
-          type: boolean
-          default: false
-          description: True if applied automatically by merchant rules (no code required).
         start:
           type: string
           format: date-time
@@ -1284,13 +1317,32 @@ components:
       description: A discount code that could not be applied, with the reason.
       required: [code, reason]
       properties:
-        code: { type: string, description: "The discount code that was rejected." }
-        reason: { $ref: "#/components/schemas/DiscountErrorCode", description: "Error code indicating why the discount was rejected." }
-        message: { type: string, description: "Human-readable explanation of why the code was rejected." }
+        code:
+          { type: string, description: "The discount code that was rejected." }
+        reason:
+          {
+            $ref: "#/components/schemas/DiscountErrorCode",
+            description: "Error code indicating why the discount was rejected.",
+          }
+        message:
+          {
+            type: string,
+            description: "Human-readable explanation of why the code was rejected.",
+          }
 
     DiscountErrorCode:
       type: string
-      enum: [discount_code_expired, discount_code_invalid, discount_code_already_applied, discount_code_combination_disallowed, discount_code_minimum_not_met, discount_code_user_not_logged_in, discount_code_user_ineligible, discount_code_usage_limit_reached]
+      enum:
+        [
+          discount_code_expired,
+          discount_code_invalid,
+          discount_code_already_applied,
+          discount_code_combination_disallowed,
+          discount_code_minimum_not_met,
+          discount_code_user_not_logged_in,
+          discount_code_user_ineligible,
+          discount_code_usage_limit_reached,
+        ]
       description: Error codes for rejected discount codes, used in messages[].code.
 
     DiscountsRequest:

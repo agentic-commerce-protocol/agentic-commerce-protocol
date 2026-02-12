@@ -34,13 +34,20 @@
     },
     "DiscountDetail": {
       "type": "object",
+      "description": "DEPRECATED: Use the Discount Extension's AppliedDiscount (discounts.applied[]) instead. DiscountDetail will be removed in a future spec version.",
       "additionalProperties": false,
       "properties": {
         "code": { "type": "string" },
-        "type": { "type": "string", "enum": ["percentage", "fixed", "bogo", "volume"] },
+        "type": {
+          "type": "string",
+          "enum": ["percentage", "fixed", "bogo", "volume"]
+        },
         "amount": { "type": "integer" },
         "description": { "type": "string" },
-        "source": { "type": "string", "enum": ["coupon", "automatic", "loyalty"] }
+        "source": {
+          "type": "string",
+          "enum": ["coupon", "automatic", "loyalty"]
+        }
       },
       "required": ["type", "amount"]
     },
@@ -205,7 +212,10 @@
       "additionalProperties": false,
       "properties": {
         "certificate_id": { "type": "string" },
-        "certificate_type": { "type": "string", "enum": ["resale", "exempt_organization", "government"] },
+        "certificate_type": {
+          "type": "string",
+          "enum": ["resale", "exempt_organization", "government"]
+        },
         "exempt_regions": {
           "type": "array",
           "items": { "type": "string" }
@@ -235,8 +245,14 @@
           "type": "string"
         },
         "customer_id": { "type": "string" },
-        "account_type": { "type": "string", "enum": ["guest", "registered", "business"] },
-        "authentication_status": { "type": "string", "enum": ["authenticated", "guest", "requires_signin"] },
+        "account_type": {
+          "type": "string",
+          "enum": ["guest", "registered", "business"]
+        },
+        "authentication_status": {
+          "type": "string",
+          "enum": ["authenticated", "guest", "requires_signin"]
+        },
         "company": { "$ref": "#/$defs/CompanyInfo" },
         "loyalty": { "$ref": "#/$defs/LoyaltyInfo" },
         "tax_exemption": { "$ref": "#/$defs/TaxExemption" }
@@ -366,7 +382,17 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["visa", "mastercard", "amex", "discover", "diners", "jcb", "unionpay", "eftpos", "interac"]
+            "enum": [
+              "visa",
+              "mastercard",
+              "amex",
+              "discover",
+              "diners",
+              "jcb",
+              "unionpay",
+              "eftpos",
+              "interac"
+            ]
           },
           "description": "Specific card brands/networks accepted"
         },
@@ -498,7 +524,18 @@
           "description": "Handler-specific configuration"
         }
       },
-      "required": ["id", "name", "version", "spec", "requires_delegate_payment", "requires_pci_compliance", "psp", "config_schema", "instrument_schemas", "config"]
+      "required": [
+        "id",
+        "name",
+        "version",
+        "spec",
+        "requires_delegate_payment",
+        "requires_pci_compliance",
+        "psp",
+        "config_schema",
+        "instrument_schemas",
+        "config"
+      ]
     },
     "Payment": {
       "type": "object",
@@ -573,7 +610,13 @@
         "dimensions": { "$ref": "#/$defs/DimensionsInfo" },
         "availability_status": {
           "type": "string",
-          "enum": ["in_stock", "low_stock", "out_of_stock", "backorder", "pre_order"]
+          "enum": [
+            "in_stock",
+            "low_stock",
+            "out_of_stock",
+            "backorder",
+            "pre_order"
+          ]
         },
         "available_quantity": { "type": "integer", "minimum": 0 },
         "max_quantity_per_order": { "type": "integer", "minimum": 1 },
@@ -584,23 +627,22 @@
         },
         "discount_details": {
           "type": "array",
-          "items": { "$ref": "#/$defs/DiscountDetail" }
+          "items": { "$ref": "#/$defs/DiscountDetail" },
+          "description": "DEPRECATED: Use the Discount Extension's discounts.applied[] instead."
         },
         "tax_exempt": { "type": "boolean" },
         "tax_exemption_reason": { "type": "string" },
-        "parent_id": { "type": "string", "description": "Reference to parent line item for bundled products" },
+        "parent_id": {
+          "type": "string",
+          "description": "Reference to parent line item for bundled products"
+        },
         "totals": {
           "type": "array",
           "items": { "$ref": "#/$defs/Total" },
           "description": "Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total"
         }
       },
-      "required": [
-        "id",
-        "item",
-        "quantity",
-        "totals"
-      ]
+      "required": ["id", "item", "quantity", "totals"]
     },
     "TaxBreakdownItem": {
       "type": "object",
@@ -667,7 +709,10 @@
           },
           "required": ["name", "address"]
         },
-        "pickup_type": { "type": "string", "enum": ["in_store", "curbside", "locker"] },
+        "pickup_type": {
+          "type": "string",
+          "enum": ["in_store", "curbside", "locker"]
+        },
         "ready_by": { "type": "string", "format": "date-time" },
         "pickup_by": { "type": "string", "format": "date-time" },
         "totals": {
@@ -791,7 +836,10 @@
       "additionalProperties": false,
       "properties": {
         "enabled": { "type": "boolean" },
-        "style": { "type": "string", "enum": ["birthday", "holiday", "elegant"] },
+        "style": {
+          "type": "string",
+          "enum": ["birthday", "holiday", "elegant"]
+        },
         "charge": { "type": "integer" }
       },
       "required": ["enabled"]
@@ -813,7 +861,10 @@
           "type": "array",
           "items": { "type": "string" }
         },
-        "destination_type": { "type": "string", "enum": ["shipping", "pickup", "local_delivery", "digital"] },
+        "destination_type": {
+          "type": "string",
+          "enum": ["shipping", "pickup", "local_delivery", "digital"]
+        },
         "fulfillment_details": { "$ref": "#/$defs/FulfillmentDetails" },
         "location_id": { "type": "string" },
         "instructions": { "type": "string" }
@@ -854,10 +905,17 @@
       "additionalProperties": false,
       "properties": {
         "type": { "type": "string", "const": "info" },
-        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "low", "medium", "high", "critical"]
+        },
         "resolution": {
           "type": "string",
-          "enum": ["recoverable", "requires_buyer_input", "requires_buyer_review"],
+          "enum": [
+            "recoverable",
+            "requires_buyer_input",
+            "requires_buyer_review"
+          ],
           "description": "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         },
         "param": {
@@ -898,10 +956,17 @@
             "discount_code_usage_limit_reached"
           ]
         },
-        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "low", "medium", "high", "critical"]
+        },
         "resolution": {
           "type": "string",
-          "enum": ["recoverable", "requires_buyer_input", "requires_buyer_review"],
+          "enum": [
+            "recoverable",
+            "requires_buyer_input",
+            "requires_buyer_review"
+          ],
           "description": "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         },
         "param": {
@@ -953,10 +1018,17 @@
             "intervention_required"
           ]
         },
-        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "low", "medium", "high", "critical"]
+        },
         "resolution": {
           "type": "string",
-          "enum": ["recoverable", "requires_buyer_input", "requires_buyer_review"],
+          "enum": [
+            "recoverable",
+            "requires_buyer_input",
+            "requires_buyer_review"
+          ],
           "description": "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         },
         "param": {
@@ -979,7 +1051,16 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["terms_of_use", "privacy_policy", "return_policy", "shipping_policy", "contact_us", "about_us", "faq", "support"]
+          "enum": [
+            "terms_of_use",
+            "privacy_policy",
+            "return_policy",
+            "shipping_policy",
+            "contact_us",
+            "about_us",
+            "faq",
+            "support"
+          ]
         },
         "title": { "type": "string" },
         "url": {
@@ -1027,7 +1108,10 @@
           "$ref": "#/$defs/Address"
         },
         "purchase_order_number": { "type": "string" },
-        "payment_terms": { "type": "string", "enum": ["immediate", "net_15", "net_30", "net_60", "net_90"] },
+        "payment_terms": {
+          "type": "string",
+          "enum": ["immediate", "net_15", "net_30", "net_60", "net_90"]
+        },
         "due_date": { "type": "string", "format": "date-time" },
         "approval_required": { "type": "boolean" }
       },
@@ -1146,11 +1230,6 @@
           "type": "integer",
           "minimum": 0,
           "description": "Total discount amount in minor (cents) currency units."
-        },
-        "automatic": {
-          "type": "boolean",
-          "default": false,
-          "description": "True if applied automatically by merchant rules (no code required)."
         },
         "start": {
           "type": "string",
@@ -1294,7 +1373,10 @@
           "type": "string",
           "format": "uri"
         },
-        "status": { "type": "string", "enum": ["confirmed", "processing", "shipped", "delivered"] },
+        "status": {
+          "type": "string",
+          "enum": ["confirmed", "processing", "shipped", "delivered"]
+        },
         "estimated_delivery": { "$ref": "#/$defs/EstimatedDelivery" },
         "confirmation": { "$ref": "#/$defs/OrderConfirmation" },
         "support": { "$ref": "#/$defs/SupportInfo" }
@@ -1305,10 +1387,7 @@
       "type": "object",
       "additionalProperties": true,
       "description": "Seller-provided authentication metadata for 3DS flows.",
-      "required": [
-        "acquirer_details",
-        "directory_server"
-      ],
+      "required": ["acquirer_details", "directory_server"],
       "properties": {
         "acquirer_details": {
           "type": "object",
@@ -1351,11 +1430,7 @@
         },
         "directory_server": {
           "type": "string",
-          "enum": [
-            "american_express",
-            "mastercard",
-            "visa"
-          ],
+          "enum": ["american_express", "mastercard", "visa"],
           "description": "The 3DS directory server used for this Authentication."
         },
         "flow_preference": {
@@ -1365,10 +1440,7 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": [
-                "challenge",
-                "frictionless"
-              ],
+              "enum": ["challenge", "frictionless"],
               "description": "Type of flow requested for this 3DS Authentication. 'challenge' requests a challenge flow; 'frictionless' requests a frictionless flow."
             },
             "challenge": {
@@ -1378,10 +1450,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "mandated",
-                    "preferred"
-                  ],
+                  "enum": ["mandated", "preferred"],
                   "description": "Subtype of challenge preference."
                 }
               }
@@ -1393,17 +1462,13 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "low_risk"
-                  ],
+                  "enum": ["low_risk"],
                   "description": "Subtype of frictionless preference."
                 }
               }
             }
           },
-          "required": [
-            "type"
-          ]
+          "required": ["type"]
         }
       }
     },
@@ -1442,13 +1507,7 @@
             "electronic_commerce_indicator": {
               "type": "string",
               "description": "Electronic Commerce Indicator (ECI) returned by the 3D Secure provider. Indicates the degree/type of authentication performed.",
-              "enum": [
-                "01",
-                "02",
-                "05",
-                "06",
-                "07"
-              ],
+              "enum": ["01", "02", "05", "06", "07"],
               "example": "05"
             },
             "transaction_id": {
@@ -1470,9 +1529,7 @@
           ]
         }
       },
-      "required": [
-        "outcome"
-      ],
+      "required": ["outcome"],
       "allOf": [
         {
           "if": {
@@ -1487,9 +1544,7 @@
             }
           },
           "then": {
-            "required": [
-              "outcome_details"
-            ]
+            "required": ["outcome_details"]
           }
         }
       ]
@@ -1674,7 +1729,10 @@
           },
           "minItems": 1
         },
-        "currency": { "type": "string", "description": "ISO 4217 currency code" },
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217 currency code"
+        },
         "fulfillment_details": {
           "$ref": "#/$defs/FulfillmentDetails"
         },
