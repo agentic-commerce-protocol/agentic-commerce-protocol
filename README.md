@@ -24,6 +24,7 @@ rfcs/
 ├── rfc.agentic_checkout.md
 ├── rfc.capability_negotiation.md
 ├── rfc.payment_handlers.md
+├── rfc.seller_backed_payment_handler.md
 ├── rfc.extensions.md
 ├── rfc.discount_extension.md
 └── ...

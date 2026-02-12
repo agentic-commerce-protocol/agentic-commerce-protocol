@@ -101,6 +101,25 @@
               ],
               "environment": "production"
             }
+          },
+          {
+            "id": "seller_pm_123",
+            "name": "dev.acp.seller_backed.saved_card",
+            "version": "2026-02-05",
+            "spec": "https://acp.dev/handlers/seller_backed/saved_card",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "seller_managed",
+            "config_schema": "https://acp.dev/schemas/handlers/seller_backed/saved_card/config.json",
+            "instrument_schemas": ["https://acp.dev/schemas/handlers/seller_backed/saved_card/instrument.json"],
+            "config": {
+              "merchant_id": "acct_seller_123",
+              "psp": "seller_managed",
+              "payment_method_id": "pm_saved_4242",
+              "display_name": "Visa ending in 4242",
+              "display_metadata": { "brand": "visa", "last4": "4242" },
+              "supports_3ds": true
+            }
           }
         ]
       },
@@ -467,6 +486,24 @@
         "postal_code": "94131",
         "email": "johndoe@example.com",
         "phone": "+15551234567"
+      }
+    }
+  },
+  "complete_checkout_session_request_seller_backed": {
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "payment_data": {
+      "handler_id": "seller_pm_123",
+      "instrument": {
+        "type": "seller_backed_saved_card",
+        "credential": {
+          "type": "spt",
+          "token": "vt_01J8Z3WXYZ9ABC"
+        }
       }
     }
   },
