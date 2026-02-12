@@ -1593,6 +1593,12 @@ components:
               additionalProperties: false
               description: >
                 Details about the requested frictionless flow.
+              properties:
+                type:
+                  type: string
+                  enum: [low_risk]
+                  description: >
+                    Subtype of frictionless preference.
           required: [type]
 
     AuthenticationResult:

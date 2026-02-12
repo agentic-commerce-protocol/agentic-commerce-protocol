@@ -1214,8 +1214,47 @@
           "type": "array",
           "items": { "$ref": "#/$defs/AppliedDiscount" },
           "description": "Discounts successfully applied (code-based and automatic)."
+        },
+        "rejected": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/RejectedDiscount" },
+          "description": "Discount codes that could not be applied, with reasons."
         }
       }
+    },
+    "RejectedDiscount": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A discount code that could not be applied, with the reason.",
+      "required": ["code", "reason"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The discount code that was rejected."
+        },
+        "reason": {
+          "$ref": "#/$defs/DiscountErrorCode",
+          "description": "Error code indicating why the discount was rejected."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable explanation of why the code was rejected."
+        }
+      }
+    },
+    "DiscountErrorCode": {
+      "type": "string",
+      "enum": [
+        "discount_code_expired",
+        "discount_code_invalid",
+        "discount_code_already_applied",
+        "discount_code_combination_disallowed",
+        "discount_code_minimum_not_met",
+        "discount_code_user_not_logged_in",
+        "discount_code_user_ineligible",
+        "discount_code_usage_limit_reached"
+      ],
+      "description": "Error codes for rejected discount codes, used in messages[].code."
     },
     "PaymentResponse": {
       "type": "object",
