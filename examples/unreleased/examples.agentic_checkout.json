@@ -81,7 +81,8 @@
               "supports_3ds": true,
               "3ds_versions": ["2.1.0", "2.2.0"],
               "environment": "production"
-            }
+            },
+            "display_order": 1
           },
           {
             "id": "seller_pm_123",
@@ -100,7 +101,8 @@
               "display_name": "Visa ending in 4242",
               "display_metadata": { "brand": "visa", "last4": "4242" },
               "supports_3ds": true
-            }
+            },
+            "display_order": 0
           }
         ]
       },
