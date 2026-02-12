@@ -598,12 +598,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 100
+        "amount": 500
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 430
+        "amount": 830
       }
     ],
     "fulfillment_options": [
@@ -893,12 +893,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 100
+        "amount": 500
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 430
+        "amount": 830
       }
     ],
     "fulfillment_options": [
@@ -1105,21 +1105,6 @@
       }
     ],
     "authentication_metadata": {
-      "channel": {
-        "type": "browser",
-        "browser": {
-          "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "ip_address": "203.0.113.42",
-          "javascript_enabled": true,
-          "language": "en-US",
-          "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko)",
-          "color_depth": 24,
-          "java_enabled": false,
-          "screen_height": 1440,
-          "screen_width": 900,
-          "timezone_offset": -480
-        }
-      },
       "acquirer_details": {
         "acquirer_bin": "123456",
         "acquirer_country": "US",
@@ -1204,6 +1189,42 @@
       "version": "2.2.0"
     }
   },
+  "complete_session_with_denied_authentication_request": {
+    "buyer": {
+      "first_name": "Marie",
+      "last_name": "Dupont",
+      "email": "marie.dupont@example.fr"
+    },
+    "payment_data": {
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_denied_001"
+        }
+      },
+      "billing_address": {
+        "name": "Marie Dupont",
+        "line_one": "12 Rue de la Paix",
+        "city": "Paris",
+        "state": "IDF",
+        "country": "FR",
+        "postal_code": "75002",
+        "email": "johndoe@example.com",
+        "phone": "+33612345678"
+      }
+    },
+    "authentication_result": {
+      "outcome": "denied"
+    }
+  },
+  "error_400_invalid_item": {
+    "type": "invalid_request",
+    "code": "invalid_item_id",
+    "message": "The item ID 'invalid_item' does not exist.",
+    "param": "$.line_items[0].item.id"
+  },
   "checkout_session_with_out_of_stock": {
     "id": "checkout_session_oos_001",
     "protocol": {
@@ -1270,9 +1291,7 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": [
-          "item_123"
-        ]
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -1307,11 +1326,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       }
     ],
@@ -1397,9 +1412,7 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": [
-          "item_123"
-        ]
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -1439,11 +1452,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       }
     ],
@@ -1461,41 +1470,5 @@
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
     ]
-  },
-  "complete_session_with_denied_authentication_request": {
-    "buyer": {
-      "first_name": "Marie",
-      "last_name": "Dupont",
-      "email": "marie.dupont@example.fr"
-    },
-    "payment_data": {
-      "handler_id": "card_tokenized",
-      "instrument": {
-        "type": "card",
-        "credential": {
-          "type": "spt",
-          "token": "spt_3ds_denied_001"
-        }
-      },
-      "billing_address": {
-        "name": "Marie Dupont",
-        "line_one": "12 Rue de la Paix",
-        "city": "Paris",
-        "state": "IDF",
-        "country": "FR",
-        "postal_code": "75002",
-        "email": "johndoe@example.com",
-        "phone": "+33612345678"
-      }
-    },
-    "authentication_result": {
-      "outcome": "denied"
-    }
-  },
-  "error_400_invalid_item": {
-    "type": "invalid_request",
-    "code": "invalid_item_id",
-    "message": "The item ID 'invalid_item' does not exist.",
-    "param": "$.line_items[0].item.id"
   }
 }
