@@ -115,6 +115,7 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
+        description: "Unique identifier for the checkout session"
         schema: { type: string }
     post:
       tags: [CheckoutSessions]
@@ -187,6 +188,7 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
+        description: "Unique identifier for the checkout session"
         schema: { type: string }
     post:
       tags: [CheckoutSessions]
@@ -260,6 +262,7 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
+        description: "Unique identifier for the checkout session"
         schema: { type: string }
     post:
       tags: [CheckoutSessions]
@@ -298,6 +301,7 @@ components:
     Authorization:
       name: Authorization
       in: header
+      description: "Bearer token for API authentication"
       required: true
       schema: { type: string, example: "Bearer api_key_123" }
     ContentType:
@@ -332,14 +336,16 @@ components:
     Signature:
       name: Signature
       in: header
+      description: "HMAC signature for webhook verification"
       required: false
       schema: { type: string, example: "ZXltZX..." }
     Timestamp:
       name: Timestamp
       in: header
+      description: "RFC 3339 date-time string for request timing validation"
       required: false
       schema:
-        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+        { type: string, format: date-time, example: "2026-01-30T10:30:00Z" }
     APIVersion:
       name: API-Version
       in: header
@@ -351,14 +357,22 @@ components:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        line_one: { type: string }
-        line_two: { type: string }
-        city: { type: string }
-        state: { type: string }
-        country: { type: string }
-        postal_code: { type: string }
+        name: { type: string, description: "Recipient name for this address" }
+        line_one: { type: string, description: "Primary street address line" }
+        line_two: { type: string, description: "Secondary address line (apartment, suite, etc.)" }
+        city: { type: string, description: "City name" }
+        state: { type: string, description: "State or province code" }
+        country: { type: string, description: "ISO 3166-1 alpha-2 country code" }
+        postal_code: { type: string, description: "Postal or ZIP code" }
       required: [name, line_one, city, state, country, postal_code]
+      example:
+        name: "Jane Doe"
+        line_one: "123 Main Street"
+        line_two: "Apt 4B"
+        city: "New York"
+        state: "NY"
+        country: "US"
+        postal_code: "10001"
 
     AffiliateAttributionSource:
       type: object
@@ -374,6 +388,9 @@ components:
           format: uri
           description: Canonical content URL when type is 'url'.
       required: [type]
+      example:
+        type: "url"
+        url: "https://example.com/product-review"
 
     AffiliateAttributionMetadata:
       type: object
@@ -386,6 +403,10 @@ components:
         Flat key/value map for additional non-sensitive context.
         Keys must be strings; values must be strings, numbers, or booleans.
         Arrays and nested objects are NOT permitted.
+      example:
+        campaign_type: "influencer"
+        commission_rate: 0.15
+        is_verified: true
 
     AffiliateAttribution:
       type: object
@@ -435,56 +456,94 @@ components:
       anyOf:
         - required: [token]
         - required: [publisher_id]
+      example:
+        provider: "impact.com"
+        token: "atp_01J8Z3WXYZ9ABC"
+        publisher_id: "pub_123"
+        campaign_id: "camp_summer2026"
+        touchpoint: "first"
+        source:
+          type: "url"
+          url: "https://example.com/product-review"
+        issued_at: "2026-02-11T10:00:00Z"
+        expires_at: "2026-02-11T11:00:00Z"
 
     FulfillmentDetails:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        phone_number: { type: string }
-        email: { type: string, format: email }
-        address: { $ref: "#/components/schemas/Address" }
+        name: { type: string, description: "Full name for fulfillment contact" }
+        phone_number: { type: string, description: "Contact phone number" }
+        email: { type: string, format: email, description: "Contact email address" }
+        address: { $ref: "#/components/schemas/Address", description: "Fulfillment address" }
+      example:
+        name: "John Smith"
+        phone_number: "15551234567"
+        email: "john.smith@example.com"
+        address:
+          name: "John Smith"
+          line_one: "555 Golden Gate Avenue"
+          line_two: "Apt 401"
+          city: "San Francisco"
+          state: "CA"
+          country: "US"
+          postal_code: "94102"
 
     CompanyInfo:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        tax_id: { type: string }
-        department: { type: string }
-        cost_center: { type: string }
+        name: { type: string, description: "Company or organization name" }
+        tax_id: { type: string, description: "Business tax identification number" }
+        department: { type: string, description: "Department within the organization" }
+        cost_center: { type: string, description: "Cost center code for internal accounting" }
       required: [name]
+      example:
+        name: "Acme Corporation"
+        tax_id: "12-3456789"
+        department: "Marketing"
+        cost_center: "CC-2001"
 
     LoyaltyInfo:
       type: object
       additionalProperties: false
       properties:
-        tier: { type: string }
-        points_balance: { type: integer }
-        member_since: { type: string, format: date-time }
+        tier: { type: string, description: "Loyalty program tier level" }
+        points_balance: { type: integer, description: "Current loyalty points balance" }
+        member_since: { type: string, format: date-time, description: "RFC 3339 timestamp when the customer joined the loyalty program" }
+      example:
+        tier: "Gold"
+        points_balance: 5000
+        member_since: "2024-01-15T09:00:00Z"
 
     TaxExemption:
       type: object
       additionalProperties: false
       properties:
-        certificate_id: { type: string }
+        certificate_id: { type: string, description: "Unique identifier for the tax exemption certificate" }
         certificate_type:
-          { type: string, enum: [resale, exempt_organization, government] }
+          { type: string, enum: [resale, exempt_organization, government], description: "Type of tax exemption certificate" }
         exempt_regions:
           type: array
           items: { type: string }
-        expires_at: { type: string, format: date-time }
+          description: "List of regions where the exemption applies (e.g., state codes)"
+        expires_at: { type: string, format: date-time, description: "RFC 3339 timestamp when the exemption certificate expires" }
       required: [certificate_id, certificate_type]
+      example:
+        certificate_id: "cert_12345"
+        certificate_type: "resale"
+        exempt_regions: ["CA", "NY", "TX"]
+        expires_at: "2027-12-31T23:59:59Z"
 
     Buyer:
       type: object
       additionalProperties: false
       properties:
-        first_name: { type: string }
-        last_name: { type: string }
-        full_name: { type: string }
-        email: { type: string, format: email }
-        phone_number: { type: string }
+        first_name: { type: string, description: "Buyer's first name" }
+        last_name: { type: string, description: "Buyer's last name" }
+        full_name: { type: string, description: "Buyer's full name" }
+        email: { type: string, format: email, description: "Buyer's email address" }
+        phone_number: { type: string, description: "Buyer's phone number" }
         customer_id: { type: string }
         account_type: { type: string, enum: [guest, registered, business] }
         authentication_status:
@@ -627,34 +686,47 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        name: { type: string }
-        unit_amount: { type: integer }
+        id: { type: string, description: "Unique identifier for the item" }
+        name: { type: string, description: "Display name of the item" }
+        unit_amount: { type: integer, description: "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [id]
+      example:
+        id: "item_123"
+        name: "Wireless Headphones"
+        unit_amount: 7999
 
     Disclosure:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [disclaimer] }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
+        type: { type: string, enum: [disclaimer], description: "Type of disclosure" }
+        content_type: { type: string, enum: [plain, markdown], description: "Format of the disclosure content" }
+        content: { type: string, description: "The disclosure text content" }
       required: [type, content_type, content]
+      example:
+        type: "disclaimer"
+        content_type: "plain"
+        content: "This product contains small parts and is not suitable for children under 3 years."
 
     CustomAttribute:
       type: object
       additionalProperties: false
       properties:
-        display_name: { type: string }
-        value: { type: string }
+        display_name: { type: string, description: "Human-readable label for the attribute" }
+        value: { type: string, description: "Attribute value" }
       required: [display_name, value]
+      example:
+        display_name: "Engraving"
+        value: "Happy Birthday!"
 
     MarketplaceSellerDetails:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
+        name: { type: string, description: "Name of the marketplace seller or vendor" }
       required: [name]
+      example:
+        name: "TechGear Store"
 
     PaymentHandler:
       type: object
@@ -718,38 +790,55 @@ components:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        value: { type: string }
+        name: { type: string, description: "Variant attribute name (e.g., 'Size', 'Color')" }
+        value: { type: string, description: "Variant attribute value (e.g., 'Large', 'Blue')" }
       required: [name, value]
+      example:
+        name: "Color"
+        value: "Midnight Blue"
 
     WeightInfo:
       type: object
       additionalProperties: false
       properties:
-        value: { type: number }
-        unit: { type: string, enum: [g, kg, oz, lb] }
+        value: { type: number, description: "Numeric weight value" }
+        unit: { type: string, enum: [g, kg, oz, lb], description: "Unit of measurement for weight" }
       required: [value, unit]
+      example:
+        value: 250
+        unit: "g"
 
     DimensionsInfo:
       type: object
       additionalProperties: false
       properties:
-        length: { type: number }
-        width: { type: number }
-        height: { type: number }
-        unit: { type: string, enum: [cm, in] }
+        length: { type: number, description: "Length dimension" }
+        width: { type: number, description: "Width dimension" }
+        height: { type: number, description: "Height dimension" }
+        unit: { type: string, enum: [cm, in], description: "Unit of measurement for dimensions" }
       required: [length, width, height, unit]
+      example:
+        length: 15.5
+        width: 10.2
+        height: 5.8
+        unit: "cm"
 
     DiscountDetail:
       type: object
       additionalProperties: false
       properties:
-        code: { type: string }
-        type: { type: string, enum: [percentage, fixed, bogo, volume] }
-        amount: { type: integer }
-        description: { type: string }
-        source: { type: string, enum: [coupon, automatic, loyalty] }
+        code: { type: string, description: "Discount code if applicable" }
+        type: { type: string, enum: [percentage, fixed, bogo, volume], description: "Type of discount" }
+        amount: { type: integer, description: "Discount amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
+        description: { type: string, description: "Human-readable discount description" }
+        source: { type: string, enum: [coupon, automatic, loyalty], description: "Source of the discount" }
       required: [type, amount]
+      example:
+        code: "SAVE20"
+        type: "percentage"
+        amount: 1600
+        description: "20% off your order"
+        source: "coupon"
 
     LineItem:
       type: object

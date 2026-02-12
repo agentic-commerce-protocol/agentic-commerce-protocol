@@ -115,6 +115,7 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
+        description: "Unique identifier for the checkout session"
         schema: { type: string }
     post:
       tags: [CheckoutSessions]
@@ -187,6 +188,7 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
+        description: "Unique identifier for the checkout session"
         schema: { type: string }
     post:
       tags: [CheckoutSessions]
@@ -260,6 +262,7 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
+        description: "Unique identifier for the checkout session"
         schema: { type: string }
     post:
       tags: [CheckoutSessions]
@@ -299,21 +302,25 @@ components:
       name: Authorization
       in: header
       required: true
+      description: "Bearer token for API authentication"
       schema: { type: string, example: "Bearer api_key_123" }
     ContentType:
       name: Content-Type
       in: header
       required: true
+      description: "Must be application/json for requests with a body"
       schema: { type: string, example: "application/json" }
     AcceptLanguage:
       name: Accept-Language
       in: header
       required: false
+      description: "Preferred language for response messages"
       schema: { type: string, example: "en-US" }
     UserAgent:
       name: User-Agent
       in: header
       required: false
+      description: "Client application identifier"
       schema:
         {
           type: string,
@@ -323,27 +330,32 @@ components:
       name: Idempotency-Key
       in: header
       required: false
+      description: "Unique key to safely retry requests without duplicate processing"
       schema: { type: string, example: "idempotency_key_123" }
     RequestId:
       name: Request-Id
       in: header
       required: false
+      description: "Unique identifier for request tracking and debugging"
       schema: { type: string, example: "request_id_123" }
     Signature:
       name: Signature
       in: header
       required: false
+      description: "HMAC signature for webhook verification"
       schema: { type: string, example: "ZXltZX..." }
     Timestamp:
       name: Timestamp
       in: header
       required: false
+      description: "RFC 3339 date-time string for request timing validation"
       schema:
-        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+        { type: string, format: date-time, example: "2026-01-30T10:30:00Z" }
     APIVersion:
       name: API-Version
       in: header
       required: true
+      description: "API version date in YYYY-MM-DD format"
       schema: { type: string, example: "2026-01-30" }
 
   schemas:
@@ -351,14 +363,22 @@ components:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        line_one: { type: string }
-        line_two: { type: string }
-        city: { type: string }
-        state: { type: string }
-        country: { type: string }
-        postal_code: { type: string }
+        name: { type: string, description: "Recipient name for this address" }
+        line_one: { type: string, description: "Primary street address line" }
+        line_two: { type: string, description: "Secondary address line (apartment, suite, etc.)" }
+        city: { type: string, description: "City name" }
+        state: { type: string, description: "State or province code" }
+        country: { type: string, description: "ISO 3166-1 alpha-2 country code" }
+        postal_code: { type: string, description: "Postal or ZIP code" }
       required: [name, line_one, city, state, country, postal_code]
+      example:
+        name: "Jane Doe"
+        line_one: "123 Main Street"
+        line_two: "Apt 4B"
+        city: "New York"
+        state: "NY"
+        country: "US"
+        postal_code: "10001"
 
     AffiliateAttributionSource:
       type: object
@@ -374,6 +394,9 @@ components:
           format: uri
           description: Canonical content URL when type is 'url'.
       required: [type]
+      example:
+        type: "url"
+        url: "https://example.com/product-review"
 
     AffiliateAttributionMetadata:
       type: object
@@ -386,6 +409,10 @@ components:
         Flat key/value map for additional non-sensitive context.
         Keys must be strings; values must be strings, numbers, or booleans.
         Arrays and nested objects are NOT permitted.
+      example:
+        campaign_type: "influencer"
+        commission_rate: 0.15
+        is_verified: true
 
     AffiliateAttribution:
       type: object
@@ -435,64 +462,110 @@ components:
       anyOf:
         - required: [token]
         - required: [publisher_id]
+      example:
+        provider: "impact.com"
+        token: "atp_01J8Z3WXYZ9ABC"
+        publisher_id: "pub_123"
+        campaign_id: "camp_summer2026"
+        touchpoint: "first"
+        source:
+          type: "url"
+          url: "https://example.com/product-review"
+        issued_at: "2026-02-11T10:00:00Z"
+        expires_at: "2026-02-11T11:00:00Z"
 
     FulfillmentDetails:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        phone_number: { type: string }
-        email: { type: string, format: email }
-        address: { $ref: "#/components/schemas/Address" }
+        name: { type: string, description: "Full name for fulfillment contact" }
+        phone_number: { type: string, description: "Contact phone number" }
+        email: { type: string, format: email, description: "Contact email address" }
+        address: { $ref: "#/components/schemas/Address", description: "Fulfillment address" }
+      example:
+        name: "John Smith"
+        phone_number: "15551234567"
+        email: "john.smith@example.com"
+        address:
+          name: "John Smith"
+          line_one: "555 Golden Gate Avenue"
+          line_two: "Apt 401"
+          city: "San Francisco"
+          state: "CA"
+          country: "US"
+          postal_code: "94102"
 
     CompanyInfo:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        tax_id: { type: string }
-        department: { type: string }
-        cost_center: { type: string }
+        name: { type: string, description: "Company or organization name" }
+        tax_id: { type: string, description: "Business tax identification number" }
+        department: { type: string, description: "Department within the organization" }
+        cost_center: { type: string, description: "Cost center code for internal accounting" }
       required: [name]
+      example:
+        name: "Acme Corporation"
+        tax_id: "12-3456789"
+        department: "Marketing"
+        cost_center: "CC-2001"
 
     LoyaltyInfo:
       type: object
       additionalProperties: false
       properties:
-        tier: { type: string }
-        points_balance: { type: integer }
-        member_since: { type: string, format: date-time }
+        tier: { type: string, description: "Loyalty program tier level" }
+        points_balance: { type: integer, description: "Current loyalty points balance" }
+        member_since: { type: string, format: date-time, description: "RFC 3339 timestamp when the customer joined the loyalty program" }
+      example:
+        tier: "Gold"
+        points_balance: 5000
+        member_since: "2024-01-15T09:00:00Z"
 
     TaxExemption:
       type: object
       additionalProperties: false
       properties:
-        certificate_id: { type: string }
+        certificate_id: { type: string, description: "Unique identifier for the tax exemption certificate" }
         certificate_type:
-          { type: string, enum: [resale, exempt_organization, government] }
+          { type: string, enum: [resale, exempt_organization, government], description: "Type of tax exemption certificate" }
         exempt_regions:
           type: array
           items: { type: string }
-        expires_at: { type: string, format: date-time }
+          description: "List of regions where the exemption applies (e.g., state codes)"
+        expires_at: { type: string, format: date-time, description: "RFC 3339 timestamp when the exemption certificate expires" }
       required: [certificate_id, certificate_type]
+      example:
+        certificate_id: "cert_12345"
+        certificate_type: "resale"
+        exempt_regions: ["CA", "NY", "TX"]
+        expires_at: "2027-12-31T23:59:59Z"
 
     Buyer:
       type: object
       additionalProperties: false
       properties:
-        first_name: { type: string }
-        last_name: { type: string }
-        full_name: { type: string }
-        email: { type: string, format: email }
-        phone_number: { type: string }
-        customer_id: { type: string }
-        account_type: { type: string, enum: [guest, registered, business] }
+        first_name: { type: string, description: "Buyer's first name" }
+        last_name: { type: string, description: "Buyer's last name" }
+        full_name: { type: string, description: "Buyer's full name" }
+        email: { type: string, format: email, description: "Buyer's email address" }
+        phone_number: { type: string, description: "Buyer's phone number" }
+        customer_id: { type: string, description: "Merchant's internal customer identifier" }
+        account_type: { type: string, enum: [guest, registered, business], description: "Type of buyer account" }
         authentication_status:
-          { type: string, enum: [authenticated, guest, requires_signin] }
-        company: { $ref: "#/components/schemas/CompanyInfo" }
-        loyalty: { $ref: "#/components/schemas/LoyaltyInfo" }
-        tax_exemption: { $ref: "#/components/schemas/TaxExemption" }
+          { type: string, enum: [authenticated, guest, requires_signin], description: "Buyer's authentication status" }
+        company: { $ref: "#/components/schemas/CompanyInfo", description: "Company information for business buyers" }
+        loyalty: { $ref: "#/components/schemas/LoyaltyInfo", description: "Loyalty program information" }
+        tax_exemption: { $ref: "#/components/schemas/TaxExemption", description: "Tax exemption details" }
       required: [email]
+      example:
+        first_name: "Alice"
+        last_name: "Johnson"
+        email: "alice.johnson@example.com"
+        phone_number: "15559876543"
+        customer_id: "cust_abc123"
+        account_type: "registered"
+        authentication_status: "authenticated"
 
     InterventionCapabilities:
       type: object
@@ -538,6 +611,12 @@ components:
           type: integer
           minimum: 1
           description: Maximum depth of nested interactions the Agent can handle (agent only).
+      example:
+        supported: ["3ds", "address_verification"]
+        display_context: "webview"
+        redirect_context: "in_app"
+        max_redirects: 3
+        max_interaction_depth: 2
 
     Capabilities:
       type: object
@@ -567,6 +646,22 @@ components:
             Extensions supported by the party.
             Requests: array of extension identifiers.
             Responses: array of extension declaration objects.
+      example:
+        payment:
+          handlers:
+            - id: "handler_1"
+              name: "dev.acp.tokenized.card"
+              version: "2026-01-30"
+              spec: "https://example.com/handler-spec"
+              requires_delegate_payment: true
+              requires_pci_compliance: false
+              psp: "stripe"
+              config_schema: "https://example.com/config-schema"
+              instrument_schemas: ["https://example.com/instrument-schema"]
+              config: {}
+        interventions:
+          supported: ["3ds"]
+        extensions: ["discount"]
 
     ExtensionDeclaration:
       type: object
@@ -595,6 +690,11 @@ components:
           type: string
           format: uri
           description: URL to the extension's specification document.
+      example:
+        name: "discount@2026-01-30"
+        extends: ["$.CheckoutSession.discounts", "$.CheckoutSessionCreateRequest.discounts"]
+        schema: "https://example.com/extensions/discount/schema.json"
+        spec: "https://example.com/extensions/discount/spec"
 
     PaymentMethodObject:
       type: object
@@ -622,39 +722,57 @@ components:
             type: string
           description: Optional PSP routing information
       required: [method]
+      example:
+        method: "card"
+        brands: ["visa", "mastercard", "amex"]
+        funding_types: ["credit", "debit"]
+        providers: ["stripe"]
 
     Item:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        name: { type: string }
-        unit_amount: { type: integer }
+        id: { type: string, description: "Unique identifier for the item" }
+        name: { type: string, description: "Display name of the item" }
+        unit_amount: { type: integer, description: "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [id]
+      example:
+        id: "item_123"
+        name: "Wireless Headphones"
+        unit_amount: 7999
 
     Disclosure:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [disclaimer] }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
+        type: { type: string, enum: [disclaimer], description: "Type of disclosure" }
+        content_type: { type: string, enum: [plain, markdown], description: "Format of the disclosure content" }
+        content: { type: string, description: "The disclosure text content" }
       required: [type, content_type, content]
+      example:
+        type: "disclaimer"
+        content_type: "plain"
+        content: "This product contains small parts and is not suitable for children under 3 years."
 
     CustomAttribute:
       type: object
       additionalProperties: false
       properties:
-        display_name: { type: string }
-        value: { type: string }
+        display_name: { type: string, description: "Human-readable label for the attribute" }
+        value: { type: string, description: "Attribute value" }
       required: [display_name, value]
+      example:
+        display_name: "Engraving"
+        value: "Happy Birthday!"
 
     MarketplaceSellerDetails:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
+        name: { type: string, description: "Name of the marketplace seller or vendor" }
       required: [name]
+      example:
+        name: "TechGear Store"
 
     PaymentHandler:
       type: object
@@ -698,6 +816,18 @@ components:
           type: object
           description: Handler-specific configuration
       required: [id, name, version, spec, requires_delegate_payment, requires_pci_compliance, psp, config_schema, instrument_schemas, config]
+      example:
+        id: "handler_stripe_card"
+        name: "dev.acp.tokenized.card"
+        version: "2026-01-30"
+        spec: "https://example.com/payment-handlers/tokenized-card"
+        requires_delegate_payment: true
+        requires_pci_compliance: false
+        psp: "stripe"
+        config_schema: "https://example.com/schemas/card-config.json"
+        instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+        config:
+          publishable_key: "pk_test_123"
 
     Payment:
       type: object
@@ -710,105 +840,160 @@ components:
             $ref: "#/components/schemas/PaymentHandler"
           description: Available payment handlers
       required: [handlers]
+      example:
+        handlers:
+          - id: "handler_stripe_card"
+            name: "dev.acp.tokenized.card"
+            version: "2026-01-30"
+            spec: "https://example.com/payment-handlers/tokenized-card"
+            requires_delegate_payment: true
+            requires_pci_compliance: false
+            psp: "stripe"
+            config_schema: "https://example.com/schemas/card-config.json"
+            instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+            config:
+              publishable_key: "pk_test_123"
 
     VariantOption:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        value: { type: string }
+        name: { type: string, description: "Variant attribute name (e.g., 'Size', 'Color')" }
+        value: { type: string, description: "Variant attribute value (e.g., 'Large', 'Blue')" }
       required: [name, value]
+      example:
+        name: "Color"
+        value: "Midnight Blue"
 
     WeightInfo:
       type: object
       additionalProperties: false
       properties:
-        value: { type: number }
-        unit: { type: string, enum: [g, kg, oz, lb] }
+        value: { type: number, description: "Numeric weight value" }
+        unit: { type: string, enum: [g, kg, oz, lb], description: "Unit of measurement for weight" }
       required: [value, unit]
+      example:
+        value: 250
+        unit: "g"
 
     DimensionsInfo:
       type: object
       additionalProperties: false
       properties:
-        length: { type: number }
-        width: { type: number }
-        height: { type: number }
-        unit: { type: string, enum: [cm, in] }
+        length: { type: number, description: "Length dimension" }
+        width: { type: number, description: "Width dimension" }
+        height: { type: number, description: "Height dimension" }
+        unit: { type: string, enum: [cm, in], description: "Unit of measurement for dimensions" }
       required: [length, width, height, unit]
+      example:
+        length: 15.5
+        width: 10.2
+        height: 5.8
+        unit: "cm"
 
     DiscountDetail:
       type: object
       additionalProperties: false
       properties:
-        code: { type: string }
-        type: { type: string, enum: [percentage, fixed, bogo, volume] }
-        amount: { type: integer }
-        description: { type: string }
-        source: { type: string, enum: [coupon, automatic, loyalty] }
+        code: { type: string, description: "Discount code if applicable" }
+        type: { type: string, enum: [percentage, fixed, bogo, volume], description: "Type of discount" }
+        amount: { type: integer, description: "Discount amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
+        description: { type: string, description: "Human-readable discount description" }
+        source: { type: string, enum: [coupon, automatic, loyalty], description: "Source of the discount" }
       required: [type, amount]
+      example:
+        code: "SAVE20"
+        type: "percentage"
+        amount: 1600
+        description: "20% off your order"
+        source: "coupon"
 
     LineItem:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        item: { $ref: "#/components/schemas/Item" }
-        quantity: { type: integer, minimum: 1 }
-        name: { type: string }
-        description: { type: string }
+        id: { type: string, description: "Unique identifier for the line item" }
+        item: { $ref: "#/components/schemas/Item", description: "Reference to the item being purchased" }
+        quantity: { type: integer, minimum: 1, description: "Number of units for this line item" }
+        name: { type: string, description: "Display name of the line item" }
+        description: { type: string, description: "Detailed description of the line item" }
         images:
           type: array
           items: { type: string, format: uri }
-        unit_amount: { type: integer }
+          description: "Array of image URLs for this line item"
+        unit_amount: { type: integer, description: "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
         disclosures:
           type: array
           items: { $ref: "#/components/schemas/Disclosure" }
+          description: "Legal disclosures or disclaimers for this item"
         custom_attributes:
           type: array
           items: { $ref: "#/components/schemas/CustomAttribute" }
+          description: "Custom attributes specific to this line item"
         marketplace_seller_details:
-          { $ref: "#/components/schemas/MarketplaceSellerDetails" }
-        product_id: { type: string }
-        sku: { type: string }
-        variant_id: { type: string }
-        category: { type: string }
+          { $ref: "#/components/schemas/MarketplaceSellerDetails", description: "Seller details for marketplace items" }
+        product_id: { type: string, description: "Merchant's product identifier" }
+        sku: { type: string, description: "Stock keeping unit identifier" }
+        variant_id: { type: string, description: "Product variant identifier" }
+        category: { type: string, description: "Product category" }
         tags:
           type: array
           items: { type: string }
-        weight: { $ref: "#/components/schemas/WeightInfo" }
-        dimensions: { $ref: "#/components/schemas/DimensionsInfo" }
+          description: "Product tags or labels"
+        weight: { $ref: "#/components/schemas/WeightInfo", description: "Weight information for the item" }
+        dimensions: { $ref: "#/components/schemas/DimensionsInfo", description: "Dimensions for the item" }
         availability_status:
           {
             type: string,
             enum: [in_stock, low_stock, out_of_stock, backorder, pre_order],
+            description: "Current availability status of the item"
           }
-        available_quantity: { type: integer, minimum: 0 }
-        max_quantity_per_order: { type: integer, minimum: 1 }
-        fulfillable_on: { type: string, format: date-time }
+        available_quantity: { type: integer, minimum: 0, description: "Quantity currently available for purchase" }
+        max_quantity_per_order: { type: integer, minimum: 1, description: "Maximum quantity allowed per order" }
+        fulfillable_on: { type: string, format: date-time, description: "RFC 3339 timestamp when item becomes available for fulfillment" }
         variant_options:
           type: array
           items: { $ref: "#/components/schemas/VariantOption" }
+          description: "Selected product variant options (e.g., size, color)"
         discount_details:
           type: array
           items: { $ref: "#/components/schemas/DiscountDetail" }
-        tax_exempt: { type: boolean }
-        tax_exemption_reason: { type: string }
+          description: "Line-item level discount details"
+        tax_exempt: { type: boolean, description: "Whether this line item is tax exempt" }
+        tax_exemption_reason: { type: string, description: "Reason for tax exemption if applicable" }
         parent_id: { type: string, description: "Reference to parent line item for bundled products" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
           description: "Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total"
       required: [id, item, quantity, totals]
+      example:
+        id: "li_001"
+        item:
+          id: "item_123"
+          name: "Wireless Headphones"
+          unit_amount: 7999
+        quantity: 2
+        name: "Premium Wireless Headphones"
+        unit_amount: 7999
+        availability_status: "in_stock"
+        totals:
+          - type: "subtotal"
+            display_text: "Subtotal"
+            amount: 15998
 
     TaxBreakdownItem:
       type: object
       additionalProperties: false
       properties:
-        jurisdiction: { type: string }
-        rate: { type: number }
-        amount: { type: integer }
+        jurisdiction: { type: string, description: "Tax jurisdiction name (e.g., 'California State Tax', 'City of San Francisco')" }
+        rate: { type: number, description: "Tax rate as a decimal (e.g., 0.0875 for 8.75%)" }
+        amount: { type: integer, description: "Tax amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [jurisdiction, rate, amount]
+      example:
+        jurisdiction: "California State Tax"
+        rate: 0.0725
+        amount: 1160
 
     Total:
       type: object
@@ -830,119 +1015,207 @@ components:
               store_credit,
               total,
             ]
-        display_text: { type: string }
-        amount: { type: integer }
-        presentment_amount: { type: integer }
-        description: { type: string }
+          description: "Type of total line item"
+        display_text: { type: string, description: "Localized display text for this total" }
+        amount: { type: integer, description: "Amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
+        presentment_amount: { type: integer, description: "Amount in presentment currency minor units if different from settlement currency" }
+        description: { type: string, description: "Additional descriptive text for this total" }
         breakdown:
           type: array
           items: { $ref: "#/components/schemas/TaxBreakdownItem" }
+          description: "Detailed breakdown for tax totals"
       required: [type, display_text, amount]
+      example:
+        type: "tax"
+        display_text: "Sales Tax"
+        amount: 1400
+        breakdown:
+          - jurisdiction: "California State Tax"
+            rate: 0.0725
+            amount: 1160
+          - jurisdiction: "San Francisco County Tax"
+            rate: 0.015
+            amount: 240
 
     FulfillmentOptionPickup:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: pickup }
-        id: { type: string }
-        title: { type: string }
-        description: { type: string }
+        type: { type: string, const: pickup, description: "Fulfillment type discriminator" }
+        id: { type: string, description: "Unique identifier for this fulfillment option" }
+        title: { type: string, description: "Display title for this pickup option" }
+        description: { type: string, description: "Additional details about this pickup option" }
         location:
           type: object
+          description: "Pickup location details"
           properties:
-            name: { type: string }
-            address: { $ref: "#/components/schemas/Address" }
-            phone: { type: string }
-            instructions: { type: string }
+            name: { type: string, description: "Location name" }
+            address: { $ref: "#/components/schemas/Address", description: "Pickup address" }
+            phone: { type: string, description: "Location phone number" }
+            instructions: { type: string, description: "Special pickup instructions" }
           required: [name, address]
-        pickup_type: { type: string, enum: [in_store, curbside, locker] }
-        ready_by: { type: string, format: date-time }
-        pickup_by: { type: string, format: date-time }
+        pickup_type: { type: string, enum: [in_store, curbside, locker], description: "Type of pickup method" }
+        ready_by: { type: string, format: date-time, description: "RFC 3339 timestamp when order will be ready for pickup" }
+        pickup_by: { type: string, format: date-time, description: "RFC 3339 timestamp by which order must be picked up" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+          description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, location, totals]
+      example:
+        type: "pickup"
+        id: "pickup_001"
+        title: "In-Store Pickup"
+        description: "Pick up at our downtown location"
+        location:
+          name: "Downtown Store"
+          address:
+            name: "Downtown Store"
+            line_one: "100 Market Street"
+            city: "San Francisco"
+            state: "CA"
+            country: "US"
+            postal_code: "94105"
+          phone: "14155551234"
+          instructions: "Use the pickup counter on the first floor"
+        pickup_type: "in_store"
+        ready_by: "2026-02-12T15:00:00Z"
+        totals:
+          - type: "fulfillment"
+            display_text: "Pickup"
+            amount: 0
 
     FulfillmentOptionLocalDelivery:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: local_delivery }
-        id: { type: string }
-        title: { type: string }
-        description: { type: string }
+        type: { type: string, const: local_delivery, description: "Fulfillment type discriminator" }
+        id: { type: string, description: "Unique identifier for this fulfillment option" }
+        title: { type: string, description: "Display title for this local delivery option" }
+        description: { type: string, description: "Additional details about this delivery option" }
         delivery_window:
           type: object
+          description: "Expected delivery time window"
           properties:
-            start: { type: string, format: date-time }
-            end: { type: string, format: date-time }
+            start: { type: string, format: date-time, description: "RFC 3339 timestamp for delivery window start" }
+            end: { type: string, format: date-time, description: "RFC 3339 timestamp for delivery window end" }
           required: [start, end]
         service_area:
           type: object
+          description: "Geographic service area for local delivery"
           properties:
-            radius_miles: { type: number }
-            center_postal_code: { type: string }
+            radius_miles: { type: number, description: "Delivery radius in miles" }
+            center_postal_code: { type: string, description: "Center point postal code for delivery radius" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+          description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, totals]
+      example:
+        type: "local_delivery"
+        id: "local_001"
+        title: "Same-Day Local Delivery"
+        description: "Delivered by our team today"
+        delivery_window:
+          start: "2026-02-11T16:00:00Z"
+          end: "2026-02-11T20:00:00Z"
+        service_area:
+          radius_miles: 10
+          center_postal_code: "94102"
+        totals:
+          - type: "fulfillment"
+            display_text: "Delivery Fee"
+            amount: 999
 
     FulfillmentOptionShipping:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: shipping }
-        id: { type: string }
-        title: { type: string }
-        description: { type: string }
-        carrier: { type: string }
-        earliest_delivery_time: { type: string, format: date-time }
-        latest_delivery_time: { type: string, format: date-time }
+        type: { type: string, const: shipping, description: "Fulfillment type discriminator" }
+        id: { type: string, description: "Unique identifier for this fulfillment option" }
+        title: { type: string, description: "Display title for this shipping option (e.g., 'Standard Shipping', 'Express')" }
+        description: { type: string, description: "Additional details about this shipping option" }
+        carrier: { type: string, description: "Shipping carrier name (e.g., 'USPS', 'FedEx')" }
+        earliest_delivery_time: { type: string, format: date-time, description: "RFC 3339 timestamp for earliest expected delivery" }
+        latest_delivery_time: { type: string, format: date-time, description: "RFC 3339 timestamp for latest expected delivery" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+          description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, totals]
+      example:
+        type: "shipping"
+        id: "ship_standard"
+        title: "Standard Shipping"
+        description: "Delivery in 5-7 business days"
+        carrier: "USPS"
+        earliest_delivery_time: "2026-02-16T00:00:00Z"
+        latest_delivery_time: "2026-02-20T23:59:59Z"
+        totals:
+          - type: "fulfillment"
+            display_text: "Shipping"
+            amount: 599
 
     FulfillmentOptionDigital:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: digital }
-        id: { type: string }
-        title: { type: string }
-        description: { type: string }
+        type: { type: string, const: digital, description: "Fulfillment type discriminator" }
+        id: { type: string, description: "Unique identifier for this fulfillment option" }
+        title: { type: string, description: "Display title for this digital delivery option" }
+        description: { type: string, description: "Additional details about digital delivery method" }
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+          description: "Cost breakdown for this fulfillment option"
       required: [type, id, title, totals]
+      example:
+        type: "digital"
+        id: "digital_001"
+        title: "Instant Download"
+        description: "Available immediately after purchase"
+        totals:
+          - type: "fulfillment"
+            display_text: "Digital Delivery"
+            amount: 0
 
     SelectedFulfillmentOption:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [shipping, digital, pickup, local_delivery] }
-        option_id: { type: string }
+        type: { type: string, enum: [shipping, digital, pickup, local_delivery], description: "Type of fulfillment option selected" }
+        option_id: { type: string, description: "ID of the selected fulfillment option" }
         item_ids:
           type: array
           items: { type: string }
+          description: "List of line item IDs associated with this fulfillment option"
       required: [type, option_id, item_ids]
+      example:
+        type: "shipping"
+        option_id: "ship_standard"
+        item_ids: ["li_001", "li_002"]
 
     MessageInfo:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: info }
-        severity: { type: string, enum: [info, low, medium, high, critical] }
-        param: { type: string, description: "RFC 9535 JSONPath" }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
+        type: { type: string, const: info, description: "Message type discriminator" }
+        severity: { type: string, enum: [info, low, medium, high, critical], description: "Severity level of this informational message" }
+        param: { type: string, description: "RFC 9535 JSONPath to the related field" }
+        content_type: { type: string, enum: [plain, markdown], description: "Format of the message content" }
+        content: { type: string, description: "Informational message text" }
       required: [type, content_type, content]
+      example:
+        type: "info"
+        severity: "info"
+        content_type: "plain"
+        content: "Free shipping on orders over $50"
 
     MessageWarning:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: warning }
+        type: { type: string, const: warning, description: "Message type discriminator" }
         code:
           {
             type: string,
@@ -963,12 +1236,20 @@ components:
                 discount_code_user_ineligible,
                 discount_code_usage_limit_reached,
               ],
+            description: "Warning code indicating the type of warning"
           }
-        severity: { type: string, enum: [info, low, medium, high, critical] }
-        param: { type: string, description: "RFC 9535 JSONPath" }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
+        severity: { type: string, enum: [info, low, medium, high, critical], description: "Severity level of this warning" }
+        param: { type: string, description: "RFC 9535 JSONPath to the related field" }
+        content_type: { type: string, enum: [plain, markdown], description: "Format of the warning message content" }
+        content: { type: string, description: "Warning message text" }
       required: [type, code, content_type, content]
+      example:
+        type: "warning"
+        code: "low_stock"
+        severity: "medium"
+        param: "$.line_items[0]"
+        content_type: "plain"
+        content: "Only 3 items left in stock"
 
     MessageError:
       type: object
@@ -982,7 +1263,7 @@ components:
         invalid email → code "invalid" and param "$.buyer.email"; out of stock →
         code "out_of_stock" and param "$.items[0]").
       properties:
-        type: { type: string, const: error }
+        type: { type: string, const: error, description: "Message type discriminator" }
         code:
           {
             type: string,
@@ -1010,22 +1291,34 @@ components:
                 expired,
                 intervention_required,
               ],
+            description: "Error code indicating the type of error"
           }
-        severity: { type: string, enum: [info, low, medium, high, critical] }
+        severity: { type: string, enum: [info, low, medium, high, critical], description: "Severity level of this error" }
         param:
           { type: string, description: "RFC 9535 JSONPath", nullable: true }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
+        content_type: { type: string, enum: [plain, markdown], description: "Format of the error message content" }
+        content: { type: string, description: "Error message text" }
       required: [type, code, content_type, content]
+      example:
+        type: "error"
+        code: "out_of_stock"
+        severity: "medium"
+        param: "$.line_items[0]"
+        content_type: "plain"
+        content: "The item is out of stock"
 
     GiftWrap:
       type: object
       additionalProperties: false
       properties:
-        enabled: { type: boolean }
-        style: { type: string, enum: [birthday, holiday, elegant] }
-        charge: { type: integer }
+        enabled: { type: boolean, description: "Whether gift wrapping is enabled for this order" }
+        style: { type: string, enum: [birthday, holiday, elegant], description: "Gift wrap style selected" }
+        charge: { type: integer, description: "Additional charge for gift wrapping in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       required: [enabled]
+      example:
+        enabled: true
+        style: "elegant"
+        charge: 500
 
     Link:
       type: object
@@ -1045,17 +1338,24 @@ components:
                 faq,
                 support,
               ],
+            description: "Type of link"
           }
-        title: { type: string }
-        url: { type: string, format: uri }
+        title: { type: string, description: "Display text for the link" }
+        url: { type: string, format: uri, description: "URL destination" }
       required: [type, url]
+      example:
+        type: "return_policy"
+        title: "Return Policy"
+        url: "https://example.com/returns"
 
     SplitPayment:
       type: object
       additionalProperties: false
       properties:
-        amount: { type: integer }
+        amount: { type: integer, description: "Payment amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100) for this split" }
       required: [amount]
+      example:
+        amount: 5000
 
     PaymentData:
       type: object
@@ -1083,73 +1383,120 @@ components:
                   description: Credential token value
               required: [type, token]
           required: [type, credential]
-        billing_address: { $ref: "#/components/schemas/Address" }
-        purchase_order_number: { type: string }
+        billing_address: { $ref: "#/components/schemas/Address", description: "Billing address for the payment" }
+        purchase_order_number: { type: string, description: "Purchase order number" }
         payment_terms:
-          { type: string, enum: [immediate, net_15, net_30, net_60, net_90] }
-        due_date: { type: string, format: date-time }
-        approval_required: { type: boolean }
+          { type: string, enum: [immediate, net_15, net_30, net_60, net_90], description: "Payment terms for B2B transactions" }
+        due_date: { type: string, format: date-time, description: "RFC 3339 timestamp when payment is due" }
+        approval_required: { type: boolean, description: "Whether this payment requires approval" }
       anyOf:
         - required: [handler_id, instrument]
         - required: [purchase_order_number]
+      example:
+        handler_id: "handler_stripe_card"
+        instrument:
+          type: "card"
+          credential:
+            type: "spt"
+            token: "spt_1234567890"
+        billing_address:
+          name: "John Smith"
+          line_one: "123 Main Street"
+          city: "New York"
+          state: "NY"
+          country: "US"
+          postal_code: "10001"
 
     FulfillmentGroup:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
+        id: { type: string, description: "Unique identifier for this fulfillment group" }
         item_ids:
           type: array
           items: { type: string }
+          description: "List of line item IDs in this fulfillment group"
         destination_type:
           {
             type: string,
             enum: [shipping, pickup, local_delivery, digital],
+            description: "Type of fulfillment for this group"
           }
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
-        location_id: { type: string }
-        instructions: { type: string }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails", description: "Fulfillment contact and address details" }
+        location_id: { type: string, description: "Location identifier for pickup or local delivery" }
+        instructions: { type: string, description: "Special fulfillment instructions" }
       required: [id, item_ids, destination_type]
+      example:
+        id: "fg_001"
+        item_ids: ["li_001", "li_002"]
+        destination_type: "shipping"
+        instructions: "Leave package at front door"
 
     EstimatedDelivery:
       type: object
       additionalProperties: false
       properties:
-        earliest: { type: string, format: date-time }
-        latest: { type: string, format: date-time }
+        earliest: { type: string, format: date-time, description: "RFC 3339 timestamp for earliest expected delivery" }
+        latest: { type: string, format: date-time, description: "RFC 3339 timestamp for latest expected delivery" }
       required: [earliest, latest]
+      example:
+        earliest: "2026-02-14T00:00:00Z"
+        latest: "2026-02-18T23:59:59Z"
 
     OrderConfirmation:
       type: object
       additionalProperties: false
       properties:
-        confirmation_number: { type: string }
-        confirmation_email_sent: { type: boolean }
-        receipt_url: { type: string, format: uri }
-        invoice_number: { type: string }
+        confirmation_number: { type: string, description: "Order confirmation number" }
+        confirmation_email_sent: { type: boolean, description: "Whether a confirmation email has been sent" }
+        receipt_url: { type: string, format: uri, description: "URL to the order receipt" }
+        invoice_number: { type: string, description: "Invoice number if generated" }
+      example:
+        confirmation_number: "ORD-2026-02-11-001"
+        confirmation_email_sent: true
+        receipt_url: "https://example.com/receipts/ord_123"
+        invoice_number: "INV-2026-001"
 
     SupportInfo:
       type: object
       additionalProperties: false
       properties:
-        email: { type: string, format: email }
-        phone: { type: string }
-        hours: { type: string }
-        help_center_url: { type: string, format: uri }
+        email: { type: string, format: email, description: "Support contact email" }
+        phone: { type: string, description: "Support contact phone number" }
+        hours: { type: string, description: "Support hours of operation" }
+        help_center_url: { type: string, format: uri, description: "URL to merchant's help center" }
+      example:
+        email: "support@example.com"
+        phone: "18005551234"
+        hours: "Mon-Fri 9am-5pm PST"
+        help_center_url: "https://example.com/help"
 
     Order:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        checkout_session_id: { type: string }
-        order_number: { type: string }
-        permalink_url: { type: string, format: uri }
-        status: { type: string, enum: [confirmed, processing, shipped, delivered] }
-        estimated_delivery: { $ref: "#/components/schemas/EstimatedDelivery" }
-        confirmation: { $ref: "#/components/schemas/OrderConfirmation" }
-        support: { $ref: "#/components/schemas/SupportInfo" }
+        id: { type: string, description: "Unique identifier for the order" }
+        checkout_session_id: { type: string, description: "ID of the checkout session that created this order" }
+        order_number: { type: string, description: "Human-readable order number" }
+        permalink_url: { type: string, format: uri, description: "Permanent URL where the customer can view order details" }
+        status: { type: string, enum: [confirmed, processing, shipped, delivered], description: "Current order status" }
+        estimated_delivery: { $ref: "#/components/schemas/EstimatedDelivery", description: "Estimated delivery time range" }
+        confirmation: { $ref: "#/components/schemas/OrderConfirmation", description: "Order confirmation details" }
+        support: { $ref: "#/components/schemas/SupportInfo", description: "Customer support contact information" }
       required: [id, checkout_session_id, permalink_url]
+      example:
+        id: "ord_123456"
+        checkout_session_id: "cs_abc123"
+        order_number: "ORD-2026-001"
+        permalink_url: "https://example.com/orders/ord_123456"
+        status: "confirmed"
+        estimated_delivery:
+          earliest: "2026-02-14T00:00:00Z"
+          latest: "2026-02-18T23:59:59Z"
+        confirmation:
+          confirmation_number: "ORD-2026-02-11-001"
+          confirmation_email_sent: true
+          receipt_url: "https://example.com/receipts/ord_123456"
 
     ProtocolVersion:
       type: object
@@ -1162,6 +1509,8 @@ components:
           example: "2026-01-30"
           description: ACP protocol version in YYYY-MM-DD format.
       required: [version]
+      example:
+        version: "2026-01-30"
 
     DiscountAllocation:
       type: object
@@ -1176,6 +1525,9 @@ components:
           type: integer
           minimum: 0
           description: Amount allocated to this target in minor (cents) currency units.
+      example:
+        path: "$.line_items[0]"
+        amount: 500
 
     Coupon:
       type: object
@@ -1222,6 +1574,13 @@ components:
           type: object
           additionalProperties: { type: string }
           description: Arbitrary key-value metadata attached to the coupon.
+      example:
+        id: "coupon_summer2026"
+        name: "Summer Sale 20% Off"
+        percent_off: 20
+        duration: "once"
+        max_redemptions: 1000
+        times_redeemed: 145
 
     AppliedDiscount:
       type: object
@@ -1265,6 +1624,21 @@ components:
           type: array
           items: { $ref: "#/components/schemas/DiscountAllocation" }
           description: Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount.
+      example:
+        id: "applied_discount_001"
+        code: "SAVE20"
+        coupon:
+          id: "coupon_summer2026"
+          name: "Summer Sale 20% Off"
+          percent_off: 20
+          duration: "once"
+        amount: 1600
+        automatic: false
+        method: "across"
+        priority: 1
+        allocations:
+          - path: "$.line_items[0]"
+            amount: 1600
 
     RejectedDiscount:
       type: object
@@ -1275,11 +1649,16 @@ components:
         code: { type: string, description: "The discount code that was rejected." }
         reason: { $ref: "#/components/schemas/DiscountErrorCode", description: "Error code indicating why the discount was rejected." }
         message: { type: string, description: "Human-readable explanation of why the code was rejected." }
+      example:
+        code: "EXPIRED10"
+        reason: "discount_code_expired"
+        message: "This discount code expired on January 31, 2026"
 
     DiscountErrorCode:
       type: string
       enum: [discount_code_expired, discount_code_invalid, discount_code_already_applied, discount_code_combination_disallowed, discount_code_minimum_not_met, discount_code_user_not_logged_in, discount_code_user_ineligible, discount_code_usage_limit_reached]
       description: Error codes for rejected discount codes, used in messages[].code.
+      example: "discount_code_expired"
 
     DiscountsRequest:
       type: object
@@ -1290,6 +1669,8 @@ components:
           type: array
           items: { type: string }
           description: Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear.
+      example:
+        codes: ["SAVE20", "FREESHIP"]
 
     DiscountsResponse:
       type: object
@@ -1308,31 +1689,51 @@ components:
           type: array
           items: { $ref: "#/components/schemas/RejectedDiscount" }
           description: Discount codes that could not be applied, with reasons.
+      example:
+        codes: ["SAVE20"]
+        applied:
+          - id: "applied_discount_001"
+            code: "SAVE20"
+            coupon:
+              id: "coupon_summer2026"
+              name: "Summer Sale 20% Off"
+              percent_off: 20
+              duration: "once"
+            amount: 1600
+            automatic: false
+            method: "across"
+        rejected: []
 
     PaymentResponse:
       type: object
       additionalProperties: false
       properties:
-        provider: { type: string }
+        provider: { type: string, description: "Payment provider identifier" }
         instruments:
           type: array
           items:
             type: object
             additionalProperties: true
+          description: "Available payment instruments"
         handlers:
           type: array
           items:
             type: object
             additionalProperties: true
+          description: "Available payment handlers"
+      example:
+        provider: "stripe"
+        instruments: []
+        handlers: []
 
     CheckoutSessionBase:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        protocol: { $ref: "#/components/schemas/ProtocolVersion" }
-        capabilities: { $ref: "#/components/schemas/Capabilities" }
-        buyer: { $ref: "#/components/schemas/Buyer" }
+        id: { type: string, description: "Unique identifier for the checkout session" }
+        protocol: { $ref: "#/components/schemas/ProtocolVersion", description: "Protocol version metadata" }
+        capabilities: { $ref: "#/components/schemas/Capabilities", description: "Negotiated capabilities between agent and seller" }
+        buyer: { $ref: "#/components/schemas/Buyer", description: "Buyer information" }
         status:
           {
             type: string,
@@ -1350,17 +1751,19 @@ components:
                 in_progress,
                 expired,
               ],
+            description: "Current status of the checkout session"
           }
-        currency: { type: string }
-        presentment_currency: { type: string }
-        exchange_rate: { type: number }
-        exchange_rate_timestamp: { type: string, format: date-time }
-        locale: { type: string }
-        timezone: { type: string }
+        currency: { type: string, description: "ISO 4217 settlement currency code" }
+        presentment_currency: { type: string, description: "ISO 4217 presentment currency code if different from settlement currency" }
+        exchange_rate: { type: number, description: "Exchange rate from presentment to settlement currency" }
+        exchange_rate_timestamp: { type: string, format: date-time, description: "RFC 3339 timestamp when exchange rate was determined" }
+        locale: { type: string, description: "Locale code (e.g., 'en-US') for localizing content" }
+        timezone: { type: string, description: "IANA timezone identifier (e.g., 'America/New_York')" }
         line_items:
           type: array
           items: { $ref: "#/components/schemas/LineItem" }
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+          description: "Line items in the checkout session"
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails", description: "Fulfillment contact and address details" }
         fulfillment_options:
           type: array
           items:
@@ -1369,15 +1772,19 @@ components:
               - $ref: "#/components/schemas/FulfillmentOptionDigital"
               - $ref: "#/components/schemas/FulfillmentOptionPickup"
               - $ref: "#/components/schemas/FulfillmentOptionLocalDelivery"
+          description: "Available fulfillment options"
         selected_fulfillment_options:
           type: array
           items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+          description: "Currently selected fulfillment options"
         fulfillment_groups:
           type: array
           items: { $ref: "#/components/schemas/FulfillmentGroup" }
+          description: "Grouping of line items by fulfillment method"
         totals:
           type: array
           items: { $ref: "#/components/schemas/Total" }
+          description: "Cart-level totals breakdown"
         messages:
           type: array
           items:
@@ -1385,20 +1792,24 @@ components:
               - $ref: "#/components/schemas/MessageInfo"
               - $ref: "#/components/schemas/MessageWarning"
               - $ref: "#/components/schemas/MessageError"
+          description: "Messages to communicate with the buyer (info, warnings, errors)"
         links:
           type: array
           items: { $ref: "#/components/schemas/Link" }
+          description: "Relevant links (terms, policies, support)"
         authentication_metadata:
           $ref: "#/components/schemas/AuthenticationMetadata"
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
-        expires_at: { type: string, format: date-time }
-        continue_url: { type: string, format: uri }
+          description: "Authentication metadata for payment interventions (e.g., 3DS)"
+        created_at: { type: string, format: date-time, description: "RFC 3339 timestamp when the session was created" }
+        updated_at: { type: string, format: date-time, description: "RFC 3339 timestamp of last update" }
+        expires_at: { type: string, format: date-time, description: "RFC 3339 timestamp when the session expires" }
+        continue_url: { type: string, format: uri, description: "URL to continue or resume the checkout session" }
         metadata:
           type: object
           additionalProperties: true
-        quote_id: { type: string }
-        quote_expires_at: { type: string, format: date-time }
+          description: "Arbitrary metadata for merchant use"
+        quote_id: { type: string, description: "Quote identifier if this session is based on a quote" }
+        quote_expires_at: { type: string, format: date-time, description: "RFC 3339 timestamp when the quote expires" }
         discounts:
           $ref: "#/components/schemas/DiscountsResponse"
           description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
@@ -1414,6 +1825,73 @@ components:
           links,
           capabilities,
         ]
+      example:
+        id: "cs_abc123"
+        protocol:
+          version: "2026-01-30"
+        capabilities:
+          payment:
+            handlers:
+              - id: "handler_stripe_card"
+                name: "dev.acp.tokenized.card"
+                version: "2026-01-30"
+                spec: "https://example.com/payment-handlers/tokenized-card"
+                requires_delegate_payment: true
+                requires_pci_compliance: false
+                psp: "stripe"
+                config_schema: "https://example.com/schemas/card-config.json"
+                instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+                config: {}
+          interventions:
+            supported: ["3ds"]
+          extensions:
+            - name: "discount@2026-01-30"
+              extends: ["$.CheckoutSession.discounts"]
+              schema: "https://example.com/extensions/discount/schema.json"
+              spec: "https://example.com/extensions/discount/spec"
+        status: "ready_for_payment"
+        currency: "usd"
+        line_items:
+          - id: "li_001"
+            item:
+              id: "item_123"
+              name: "Wireless Headphones"
+              unit_amount: 7999
+            quantity: 2
+            name: "Premium Wireless Headphones"
+            unit_amount: 7999
+            availability_status: "in_stock"
+            totals:
+              - type: "subtotal"
+                display_text: "Subtotal"
+                amount: 15998
+        totals:
+          - type: "subtotal"
+            display_text: "Subtotal"
+            amount: 15998
+          - type: "tax"
+            display_text: "Sales Tax"
+            amount: 1400
+          - type: "total"
+            display_text: "Total"
+            amount: 17398
+        fulfillment_options:
+          - type: "shipping"
+            id: "ship_standard"
+            title: "Standard Shipping"
+            carrier: "USPS"
+            totals:
+              - type: "fulfillment"
+                display_text: "Shipping"
+                amount: 599
+        messages: []
+        links:
+          - type: "return_policy"
+            title: "Return Policy"
+            url: "https://example.com/returns"
+        created_at: "2026-02-11T10:00:00Z"
+        updated_at: "2026-02-11T10:05:00Z"
+        expires_at: "2026-02-11T22:00:00Z"
 
     CheckoutSession:
       allOf:
@@ -1426,24 +1904,98 @@ components:
           properties:
             order: { $ref: "#/components/schemas/Order" }
           required: [order]
+      example:
+        id: "cs_abc123"
+        protocol:
+          version: "2026-01-30"
+        capabilities:
+          payment:
+            handlers:
+              - id: "handler_stripe_card"
+                name: "dev.acp.tokenized.card"
+                version: "2026-01-30"
+                spec: "https://example.com/payment-handlers/tokenized-card"
+                requires_delegate_payment: true
+                requires_pci_compliance: false
+                psp: "stripe"
+                config_schema: "https://example.com/schemas/card-config.json"
+                instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+                config: {}
+          interventions:
+            supported: ["3ds"]
+          extensions:
+            - name: "discount@2026-01-30"
+              extends: ["$.CheckoutSession.discounts"]
+              schema: "https://example.com/extensions/discount/schema.json"
+              spec: "https://example.com/extensions/discount/spec"
+        status: "completed"
+        currency: "usd"
+        line_items:
+          - id: "li_001"
+            item:
+              id: "item_123"
+              name: "Wireless Headphones"
+              unit_amount: 7999
+            quantity: 2
+            name: "Premium Wireless Headphones"
+            unit_amount: 7999
+            availability_status: "in_stock"
+            totals:
+              - type: "subtotal"
+                display_text: "Subtotal"
+                amount: 15998
+        totals:
+          - type: "subtotal"
+            display_text: "Subtotal"
+            amount: 15998
+          - type: "tax"
+            display_text: "Sales Tax"
+            amount: 1400
+          - type: "total"
+            display_text: "Total"
+            amount: 17398
+        fulfillment_options:
+          - type: "shipping"
+            id: "ship_standard"
+            title: "Standard Shipping"
+            carrier: "USPS"
+            totals:
+              - type: "fulfillment"
+                display_text: "Shipping"
+                amount: 599
+        messages: []
+        links:
+          - type: "return_policy"
+            title: "Return Policy"
+            url: "https://example.com/returns"
+        created_at: "2026-02-11T10:00:00Z"
+        updated_at: "2026-02-11T10:30:00Z"
+        order:
+          id: "ord_123456"
+          checkout_session_id: "cs_abc123"
+          order_number: "ORD-2026-001"
+          permalink_url: "https://example.com/orders/ord_123456"
+          status: "confirmed"
 
     CheckoutSessionCreateRequest:
       type: object
       additionalProperties: false
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
+        buyer: { $ref: "#/components/schemas/Buyer", description: "Buyer information" }
         line_items:
           type: array
           items: { $ref: "#/components/schemas/Item" }
           minItems: 1
+          description: "Items to add to the checkout session"
         currency: { type: string, description: "ISO 4217 currency code" }
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
-        capabilities: { $ref: "#/components/schemas/Capabilities" }
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails", description: "Fulfillment contact and address details" }
+        capabilities: { $ref: "#/components/schemas/Capabilities", description: "Agent capabilities and supported features" }
         fulfillment_groups:
           type: array
           items: { $ref: "#/components/schemas/FulfillmentGroup" }
+          description: "Grouping of items by fulfillment method"
         affiliate_attribution:
-          { $ref: "#/components/schemas/AffiliateAttribution" }
+          { $ref: "#/components/schemas/AffiliateAttribution", description: "Affiliate attribution data for first-touch tracking" }
         coupons:
           type: array
           items: { type: string }
@@ -1451,29 +2003,55 @@ components:
         discounts:
           $ref: "#/components/schemas/DiscountsRequest"
           description: Discount codes to apply to the checkout session.
-        locale: { type: string }
-        timezone: { type: string }
-        quote_id: { type: string }
+        locale: { type: string, description: "Locale code for localizing content (e.g., 'en-US')" }
+        timezone: { type: string, description: "IANA timezone identifier (e.g., 'America/New_York')" }
+        quote_id: { type: string, description: "Quote identifier if this session is based on a quote" }
         metadata:
           type: object
           additionalProperties: true
+          description: "Arbitrary metadata for merchant use"
       required: [line_items, currency, capabilities]
+      example:
+        line_items:
+          - id: "item_123"
+            name: "Wireless Headphones"
+            unit_amount: 7999
+        currency: "usd"
+        capabilities:
+          payment:
+            handlers:
+              - id: "handler_stripe_card"
+                name: "dev.acp.tokenized.card"
+                version: "2026-01-30"
+                spec: "https://example.com/payment-handlers/tokenized-card"
+                requires_delegate_payment: true
+                requires_pci_compliance: false
+                psp: "stripe"
+                config_schema: "https://example.com/schemas/card-config.json"
+                instrument_schemas: ["https://example.com/schemas/card-instrument.json"]
+                config: {}
+          interventions:
+            supported: ["3ds"]
+          extensions: ["discount"]
 
     CheckoutSessionUpdateRequest:
       type: object
       additionalProperties: false
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
+        buyer: { $ref: "#/components/schemas/Buyer", description: "Updated buyer information" }
         line_items:
           type: array
           items: { $ref: "#/components/schemas/Item" }
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+          description: "Items to update in the checkout session"
+        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails", description: "Updated fulfillment contact and address" }
         fulfillment_groups:
           type: array
           items: { $ref: "#/components/schemas/FulfillmentGroup" }
+          description: "Updated fulfillment groupings"
         selected_fulfillment_options:
           type: array
           items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+          description: "Fulfillment option selected by the buyer"
         coupons:
           type: array
           items: { type: string }
@@ -1481,29 +2059,52 @@ components:
         discounts:
           $ref: "#/components/schemas/DiscountsRequest"
           description: Discount codes to apply. Replaces previously submitted codes.
+      example:
+        selected_fulfillment_options:
+          - type: "shipping"
+            option_id: "ship_standard"
+            item_ids: ["li_001"]
 
     RiskSignals:
       type: object
       additionalProperties: false
       properties:
-        ip_address: { type: string }
-        user_agent: { type: string }
-        accept_language: { type: string }
-        session_id: { type: string }
-        device_fingerprint: { type: string }
+        ip_address: { type: string, description: "IP address of the buyer" }
+        user_agent: { type: string, description: "User agent string of the buyer's browser" }
+        accept_language: { type: string, description: "Accept-Language header from the buyer's browser" }
+        session_id: { type: string, description: "Session identifier for the buyer" }
+        device_fingerprint: { type: string, description: "Device fingerprint for fraud detection" }
+      example:
+        ip_address: "203.0.113.45"
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+        accept_language: "en-US,en;q=0.9"
+        session_id: "sess_abc123"
+        device_fingerprint: "fp_xyz789"
 
     CheckoutSessionCompleteRequest:
       type: object
       additionalProperties: false
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
-        payment_data: { $ref: "#/components/schemas/PaymentData" }
+        buyer: { $ref: "#/components/schemas/Buyer", description: "Final buyer information" }
+        payment_data: { $ref: "#/components/schemas/PaymentData", description: "Payment method and details" }
         authentication_result:
-          { $ref: "#/components/schemas/AuthenticationResult" }
+          { $ref: "#/components/schemas/AuthenticationResult", description: "Authentication result for 3DS flows" }
         affiliate_attribution:
-          { $ref: "#/components/schemas/AffiliateAttribution" }
-        risk_signals: { $ref: "#/components/schemas/RiskSignals" }
+          { $ref: "#/components/schemas/AffiliateAttribution", description: "Affiliate attribution data for last-touch tracking" }
+        risk_signals: { $ref: "#/components/schemas/RiskSignals", description: "Risk and fraud signals" }
       required: [payment_data]
+      example:
+        buyer:
+          first_name: "John"
+          last_name: "Smith"
+          email: "johnsmith@mail.com"
+        payment_data:
+          handler_id: "handler_stripe_card"
+          instrument:
+            type: "card"
+            credential:
+              type: "spt"
+              token: "spt_123"
 
     AuthenticationMetadata:
       type: object
@@ -1659,6 +2260,26 @@ components:
                       - screen_height
                       - screen_width
                       - timezone_offset
+      example:
+        channel:
+          type: "browser"
+          browser:
+            accept_header: "text/html,application/xhtml+xml"
+            ip_address: "203.0.113.45"
+            javascript_enabled: true
+            language: "en-US"
+            user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+            color_depth: 24
+            java_enabled: false
+            screen_height: 1080
+            screen_width: 1920
+            timezone_offset: -480
+        acquirer_details:
+          acquirer_bin: "123456"
+          acquirer_country: "US"
+          acquirer_merchant_id: "merchant_123"
+          merchant_name: "Example Store"
+        directory_server: "visa"
 
     AuthenticationResult:
       type: object
@@ -1727,6 +2348,13 @@ components:
                 enum: [authenticated, informational, attempt_acknowledged]
           then:
             required: [outcome_details]
+      example:
+        outcome: "authenticated"
+        outcome_details:
+          three_ds_cryptogram: "AbCdEfGhIjKlMnOpQrStUvWxY0="
+          electronic_commerce_indicator: "05"
+          transaction_id: "dsTransId_abc123"
+          version: "2.2.0"
 
     IntentTrace:
       type: object
@@ -1757,11 +2385,20 @@ components:
           additionalProperties:
             type: [string, number, boolean]
       required: [reason_code]
+      example:
+        reason_code: "price_sensitivity"
+        trace_summary: "Customer mentioned the price was higher than expected and wanted to compare with other options"
+        metadata:
+          compared_sites: 3
 
     CancelSessionRequest:
       type: object
       properties:
         intent_trace: { $ref: "#/components/schemas/IntentTrace" }
+      example:
+        intent_trace:
+          reason_code: "price_sensitivity"
+          trace_summary: "Customer mentioned the price was higher than expected"
 
     Error:
       type: object
@@ -1785,8 +2422,14 @@ components:
                 processing_error,
                 service_unavailable,
               ],
+            description: "Error type indicating the category of protocol-level error"
           }
         code: { type: string, description: "Implementation-defined error code" }
-        message: { type: string }
+        message: { type: string, description: "Human-readable error message" }
         param: { type: string, description: "RFC 9535 JSONPath (optional)" }
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "missing_required_field"
+        message: "The 'currency' field is required"
+        param: "$.currency"

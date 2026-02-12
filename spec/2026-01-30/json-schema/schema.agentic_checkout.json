@@ -7,8 +7,8 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
-        "value": { "type": "string" }
+        "name": { "type": "string", "description": "Variant attribute name (e.g., 'Size', 'Color')" },
+        "value": { "type": "string", "description": "Variant attribute value (e.g., 'Large', 'Blue')" }
       },
       "required": ["name", "value"]
     },
@@ -16,8 +16,8 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "type": "number" },
-        "unit": { "type": "string", "enum": ["g", "kg", "oz", "lb"] }
+        "value": { "type": "number", "description": "Numeric weight value" },
+        "unit": { "type": "string", "enum": ["g", "kg", "oz", "lb"], "description": "Unit of measurement for weight" }
       },
       "required": ["value", "unit"]
     },
@@ -25,10 +25,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "length": { "type": "number" },
-        "width": { "type": "number" },
-        "height": { "type": "number" },
-        "unit": { "type": "string", "enum": ["cm", "in"] }
+        "length": { "type": "number", "description": "Length dimension" },
+        "width": { "type": "number", "description": "Width dimension" },
+        "height": { "type": "number", "description": "Height dimension" },
+        "unit": { "type": "string", "enum": ["cm", "in"], "description": "Unit of measurement for dimensions" }
       },
       "required": ["length", "width", "height", "unit"]
     },
@@ -36,11 +36,11 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "code": { "type": "string" },
-        "type": { "type": "string", "enum": ["percentage", "fixed", "bogo", "volume"] },
-        "amount": { "type": "integer" },
-        "description": { "type": "string" },
-        "source": { "type": "string", "enum": ["coupon", "automatic", "loyalty"] }
+        "code": { "type": "string", "description": "Discount code if applicable" },
+        "type": { "type": "string", "enum": ["percentage", "fixed", "bogo", "volume"], "description": "Type of discount" },
+        "amount": { "type": "integer", "description": "Discount amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" },
+        "description": { "type": "string", "description": "Human-readable discount description" },
+        "source": { "type": "string", "enum": ["coupon", "automatic", "loyalty"], "description": "Source of the discount" }
       },
       "required": ["type", "amount"]
     },
@@ -49,25 +49,32 @@
       "additionalProperties": false,
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Recipient name for this address"
         },
         "line_one": {
-          "type": "string"
+          "type": "string",
+          "description": "Primary street address line"
         },
         "line_two": {
-          "type": "string"
+          "type": "string",
+          "description": "Secondary address line (apartment, suite, etc.)"
         },
         "city": {
-          "type": "string"
+          "type": "string",
+          "description": "City name"
         },
         "state": {
-          "type": "string"
+          "type": "string",
+          "description": "State or province code"
         },
         "country": {
-          "type": "string"
+          "type": "string",
+          "description": "ISO 3166-1 alpha-2 country code"
         },
         "postal_code": {
-          "type": "string"
+          "type": "string",
+          "description": "Postal or ZIP code"
         }
       },
       "required": [
@@ -110,7 +117,7 @@
     },
     "AffiliateAttribution": {
       "type": "object",
-      "description": "Optional affiliate attribution data for crediting third-party publishers. Write-only: not returned in responses. Forward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).",
+      "description": "Optional affiliate attribution data for crediting third-party publishers. Write-only: not returned in responses. See RFC: Affiliate Attribution.\n\nForward compatibility: Servers SHOULD ignore unknown fields to support future extensions (per RFC §8.2).",
       "properties": {
         "provider": {
           "type": "string",
@@ -166,17 +173,21 @@
       "additionalProperties": false,
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Full name for fulfillment contact"
         },
         "phone_number": {
-          "type": "string"
+          "type": "string",
+          "description": "Contact phone number"
         },
         "email": {
           "type": "string",
-          "format": "email"
+          "format": "email",
+          "description": "Contact email address"
         },
         "address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/Address",
+          "description": "Fulfillment address"
         }
       }
     },
@@ -184,10 +195,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
-        "tax_id": { "type": "string" },
-        "department": { "type": "string" },
-        "cost_center": { "type": "string" }
+        "name": { "type": "string", "description": "Company or organization name" },
+        "tax_id": { "type": "string", "description": "Business tax identification number" },
+        "department": { "type": "string", "description": "Department within the organization" },
+        "cost_center": { "type": "string", "description": "Cost center code for internal accounting" }
       },
       "required": ["name"]
     },
@@ -195,22 +206,23 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "tier": { "type": "string" },
-        "points_balance": { "type": "integer" },
-        "member_since": { "type": "string", "format": "date-time" }
+        "tier": { "type": "string", "description": "Loyalty program tier level" },
+        "points_balance": { "type": "integer", "description": "Current loyalty points balance" },
+        "member_since": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when the customer joined the loyalty program" }
       }
     },
     "TaxExemption": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "certificate_id": { "type": "string" },
-        "certificate_type": { "type": "string", "enum": ["resale", "exempt_organization", "government"] },
+        "certificate_id": { "type": "string", "description": "Unique identifier for the tax exemption certificate" },
+        "certificate_type": { "type": "string", "enum": ["resale", "exempt_organization", "government"], "description": "Type of tax exemption certificate" },
         "exempt_regions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "List of regions where the exemption applies (e.g., state codes)"
         },
-        "expires_at": { "type": "string", "format": "date-time" }
+        "expires_at": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when the exemption certificate expires" }
       },
       "required": ["certificate_id", "certificate_type"]
     },
@@ -219,27 +231,32 @@
       "additionalProperties": false,
       "properties": {
         "first_name": {
-          "type": "string"
+          "type": "string",
+          "description": "Buyer's first name"
         },
         "last_name": {
-          "type": "string"
+          "type": "string",
+          "description": "Buyer's last name"
         },
         "full_name": {
-          "type": "string"
+          "type": "string",
+          "description": "Buyer's full name"
         },
         "email": {
           "type": "string",
-          "format": "email"
+          "format": "email",
+          "description": "Buyer's email address"
         },
         "phone_number": {
-          "type": "string"
+          "type": "string",
+          "description": "Buyer's phone number"
         },
-        "customer_id": { "type": "string" },
-        "account_type": { "type": "string", "enum": ["guest", "registered", "business"] },
-        "authentication_status": { "type": "string", "enum": ["authenticated", "guest", "requires_signin"] },
-        "company": { "$ref": "#/$defs/CompanyInfo" },
-        "loyalty": { "$ref": "#/$defs/LoyaltyInfo" },
-        "tax_exemption": { "$ref": "#/$defs/TaxExemption" }
+        "customer_id": { "type": "string", "description": "Merchant's internal customer identifier" },
+        "account_type": { "type": "string", "enum": ["guest", "registered", "business"], "description": "Type of buyer account" },
+        "authentication_status": { "type": "string", "enum": ["authenticated", "guest", "requires_signin"], "description": "Buyer's authentication status" },
+        "company": { "$ref": "#/$defs/CompanyInfo", "description": "Company information for business buyers" },
+        "loyalty": { "$ref": "#/$defs/LoyaltyInfo", "description": "Loyalty program information" },
+        "tax_exemption": { "$ref": "#/$defs/TaxExemption", "description": "Tax exemption details" }
       },
       "required": ["email"]
     },
@@ -393,13 +410,16 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique identifier for the item"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Display name of the item"
         },
         "unit_amount": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)"
         }
       },
       "required": ["id"]
@@ -410,14 +430,17 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["disclaimer"]
+          "enum": ["disclaimer"],
+          "description": "Type of disclosure"
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": ["plain", "markdown"],
+          "description": "Format of the disclosure content"
         },
         "content": {
-          "type": "string"
+          "type": "string",
+          "description": "The disclosure text content"
         }
       },
       "required": ["type", "content_type", "content"]
@@ -427,10 +450,12 @@
       "additionalProperties": false,
       "properties": {
         "display_name": {
-          "type": "string"
+          "type": "string",
+          "description": "Human-readable label for the attribute"
         },
         "value": {
-          "type": "string"
+          "type": "string",
+          "description": "Attribute value"
         }
       },
       "required": ["display_name", "value"]
@@ -440,7 +465,8 @@
       "additionalProperties": false,
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the marketplace seller or vendor"
         }
       },
       "required": ["name"]
@@ -520,74 +546,87 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique identifier for the line item"
         },
         "item": {
-          "$ref": "#/$defs/Item"
+          "$ref": "#/$defs/Item",
+          "description": "Reference to the item being purchased"
         },
         "quantity": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "Number of units for this line item"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Display name of the line item"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Detailed description of the line item"
         },
         "images": {
           "type": "array",
           "items": {
             "type": "string",
             "format": "uri"
-          }
+          },
+          "description": "Array of image URLs for this line item"
         },
         "unit_amount": {
           "type": "integer",
-          "description": "The unit price of the line item in the smallest currency unit (e.g., cents for USD)"
+          "description": "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)"
         },
         "disclosures": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Disclosure"
-          }
+          },
+          "description": "Legal disclosures or disclaimers for this item"
         },
         "custom_attributes": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/CustomAttribute"
-          }
+          },
+          "description": "Custom attributes specific to this line item"
         },
         "marketplace_seller_details": {
-          "$ref": "#/$defs/MarketplaceSellerDetails"
+          "$ref": "#/$defs/MarketplaceSellerDetails",
+          "description": "Seller details for marketplace items"
         },
-        "product_id": { "type": "string" },
-        "sku": { "type": "string" },
-        "variant_id": { "type": "string" },
-        "category": { "type": "string" },
+        "product_id": { "type": "string", "description": "Merchant's product identifier" },
+        "sku": { "type": "string", "description": "Stock keeping unit identifier" },
+        "variant_id": { "type": "string", "description": "Product variant identifier" },
+        "category": { "type": "string", "description": "Product category" },
         "tags": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "Product tags or labels"
         },
-        "weight": { "$ref": "#/$defs/WeightInfo" },
-        "dimensions": { "$ref": "#/$defs/DimensionsInfo" },
+        "weight": { "$ref": "#/$defs/WeightInfo", "description": "Weight information for the item" },
+        "dimensions": { "$ref": "#/$defs/DimensionsInfo", "description": "Dimensions for the item" },
         "availability_status": {
           "type": "string",
-          "enum": ["in_stock", "low_stock", "out_of_stock", "backorder", "pre_order"]
+          "enum": ["in_stock", "low_stock", "out_of_stock", "backorder", "pre_order"],
+          "description": "Current availability status of the item"
         },
-        "available_quantity": { "type": "integer", "minimum": 0 },
-        "max_quantity_per_order": { "type": "integer", "minimum": 1 },
-        "fulfillable_on": { "type": "string", "format": "date-time" },
+        "available_quantity": { "type": "integer", "minimum": 0, "description": "Quantity currently available for purchase" },
+        "max_quantity_per_order": { "type": "integer", "minimum": 1, "description": "Maximum quantity allowed per order" },
+        "fulfillable_on": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when item becomes available for fulfillment" },
         "variant_options": {
           "type": "array",
-          "items": { "$ref": "#/$defs/VariantOption" }
+          "items": { "$ref": "#/$defs/VariantOption" },
+          "description": "Selected product variant options (e.g., size, color)"
         },
         "discount_details": {
           "type": "array",
-          "items": { "$ref": "#/$defs/DiscountDetail" }
+          "items": { "$ref": "#/$defs/DiscountDetail" },
+          "description": "Line-item level discount details"
         },
-        "tax_exempt": { "type": "boolean" },
-        "tax_exemption_reason": { "type": "string" },
+        "tax_exempt": { "type": "boolean", "description": "Whether this line item is tax exempt" },
+        "tax_exemption_reason": { "type": "string", "description": "Reason for tax exemption if applicable" },
         "parent_id": { "type": "string", "description": "Reference to parent line item for bundled products" },
         "totals": {
           "type": "array",
@@ -606,9 +645,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "jurisdiction": { "type": "string" },
-        "rate": { "type": "number" },
-        "amount": { "type": "integer" }
+        "jurisdiction": { "type": "string", "description": "Tax jurisdiction name (e.g., 'California State Tax', 'City of San Francisco')" },
+        "rate": { "type": "number", "description": "Tax rate as a decimal (e.g., 0.0875 for 8.75%)" },
+        "amount": { "type": "integer", "description": "Tax amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       },
       "required": ["jurisdiction", "rate", "amount"]
     },
@@ -630,21 +669,26 @@
             "tip",
             "store_credit",
             "total"
-          ]
+          ],
+          "description": "Type of total line item"
         },
         "display_text": {
-          "type": "string"
+          "type": "string",
+          "description": "Localized display text for this total"
         },
         "amount": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)"
         },
-        "presentment_amount": { "type": "integer" },
+        "presentment_amount": { "type": "integer", "description": "Amount in presentment currency minor units if different from settlement currency" },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Additional descriptive text for this total"
         },
         "breakdown": {
           "type": "array",
-          "items": { "$ref": "#/$defs/TaxBreakdownItem" }
+          "items": { "$ref": "#/$defs/TaxBreakdownItem" },
+          "description": "Detailed breakdown for tax totals"
         }
       },
       "required": ["type", "display_text", "amount"]
@@ -653,26 +697,28 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": { "type": "string", "const": "pickup" },
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
+        "type": { "type": "string", "const": "pickup", "description": "Fulfillment type discriminator" },
+        "id": { "type": "string", "description": "Unique identifier for this fulfillment option" },
+        "title": { "type": "string", "description": "Display title for this pickup option" },
+        "description": { "type": "string", "description": "Additional details about this pickup option" },
         "location": {
           "type": "object",
+          "description": "Pickup location details",
           "properties": {
-            "name": { "type": "string" },
-            "address": { "$ref": "#/$defs/Address" },
-            "phone": { "type": "string" },
-            "instructions": { "type": "string" }
+            "name": { "type": "string", "description": "Location name" },
+            "address": { "$ref": "#/$defs/Address", "description": "Pickup address" },
+            "phone": { "type": "string", "description": "Location phone number" },
+            "instructions": { "type": "string", "description": "Special pickup instructions" }
           },
           "required": ["name", "address"]
         },
-        "pickup_type": { "type": "string", "enum": ["in_store", "curbside", "locker"] },
-        "ready_by": { "type": "string", "format": "date-time" },
-        "pickup_by": { "type": "string", "format": "date-time" },
+        "pickup_type": { "type": "string", "enum": ["in_store", "curbside", "locker"], "description": "Type of pickup method" },
+        "ready_by": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when order will be ready for pickup" },
+        "pickup_by": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp by which order must be picked up" },
         "totals": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Total" }
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Cost breakdown for this fulfillment option"
         }
       },
       "required": ["type", "id", "title", "location", "totals"]
@@ -681,28 +727,31 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": { "type": "string", "const": "local_delivery" },
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
+        "type": { "type": "string", "const": "local_delivery", "description": "Fulfillment type discriminator" },
+        "id": { "type": "string", "description": "Unique identifier for this fulfillment option" },
+        "title": { "type": "string", "description": "Display title for this local delivery option" },
+        "description": { "type": "string", "description": "Additional details about this delivery option" },
         "delivery_window": {
           "type": "object",
+          "description": "Expected delivery time window",
           "properties": {
-            "start": { "type": "string", "format": "date-time" },
-            "end": { "type": "string", "format": "date-time" }
+            "start": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp for delivery window start" },
+            "end": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp for delivery window end" }
           },
           "required": ["start", "end"]
         },
         "service_area": {
           "type": "object",
+          "description": "Geographic service area for local delivery",
           "properties": {
-            "radius_miles": { "type": "number" },
-            "center_postal_code": { "type": "string" }
+            "radius_miles": { "type": "number", "description": "Delivery radius in miles" },
+            "center_postal_code": { "type": "string", "description": "Center point postal code for delivery radius" }
           }
         },
         "totals": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Total" }
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Cost breakdown for this fulfillment option"
         }
       },
       "required": ["type", "id", "title", "totals"]
@@ -713,31 +762,39 @@
       "properties": {
         "type": {
           "type": "string",
-          "const": "shipping"
+          "const": "shipping",
+          "description": "Fulfillment type discriminator"
         },
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique identifier for this fulfillment option"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "Display title for this shipping option (e.g., 'Standard Shipping', 'Express')"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Additional details about this shipping option"
         },
         "carrier": {
-          "type": "string"
+          "type": "string",
+          "description": "Shipping carrier name (e.g., 'USPS', 'FedEx')"
         },
         "earliest_delivery_time": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "RFC 3339 timestamp for earliest expected delivery"
         },
         "latest_delivery_time": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "RFC 3339 timestamp for latest expected delivery"
         },
         "totals": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Total" }
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Cost breakdown for this fulfillment option"
         }
       },
       "required": ["type", "id", "title", "totals"]
@@ -748,20 +805,25 @@
       "properties": {
         "type": {
           "type": "string",
-          "const": "digital"
+          "const": "digital",
+          "description": "Fulfillment type discriminator"
         },
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique identifier for this fulfillment option"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "Display title for this digital delivery option"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Additional details about digital delivery method"
         },
         "totals": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Total" }
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Cost breakdown for this fulfillment option"
         }
       },
       "required": ["type", "id", "title", "totals"]
@@ -772,16 +834,19 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["shipping", "digital", "pickup", "local_delivery"]
+          "enum": ["shipping", "digital", "pickup", "local_delivery"],
+          "description": "Type of fulfillment option selected"
         },
         "option_id": {
-          "type": "string"
+          "type": "string",
+          "description": "ID of the selected fulfillment option"
         },
         "item_ids": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "List of line item IDs associated with this fulfillment option"
         }
       },
       "required": ["type", "option_id", "item_ids"]
@@ -790,9 +855,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "enabled": { "type": "boolean" },
-        "style": { "type": "string", "enum": ["birthday", "holiday", "elegant"] },
-        "charge": { "type": "integer" }
+        "enabled": { "type": "boolean", "description": "Whether gift wrapping is enabled for this order" },
+        "style": { "type": "string", "enum": ["birthday", "holiday", "elegant"], "description": "Gift wrap style selected" },
+        "charge": { "type": "integer", "description": "Additional charge for gift wrapping in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)" }
       },
       "required": ["enabled"]
     },
@@ -800,7 +865,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "amount": { "type": "integer" }
+        "amount": { "type": "integer", "description": "Payment amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100) for this split" }
       },
       "required": ["amount"]
     },
@@ -808,15 +873,16 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "description": "Unique identifier for this fulfillment group" },
         "item_ids": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "List of line item IDs in this fulfillment group"
         },
-        "destination_type": { "type": "string", "enum": ["shipping", "pickup", "local_delivery", "digital"] },
-        "fulfillment_details": { "$ref": "#/$defs/FulfillmentDetails" },
-        "location_id": { "type": "string" },
-        "instructions": { "type": "string" }
+        "destination_type": { "type": "string", "enum": ["shipping", "pickup", "local_delivery", "digital"], "description": "Type of fulfillment for this group" },
+        "fulfillment_details": { "$ref": "#/$defs/FulfillmentDetails", "description": "Fulfillment contact and address details" },
+        "location_id": { "type": "string", "description": "Location identifier for pickup or local delivery" },
+        "instructions": { "type": "string", "description": "Special fulfillment instructions" }
       },
       "required": ["id", "item_ids", "destination_type"]
     },
@@ -824,8 +890,8 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "earliest": { "type": "string", "format": "date-time" },
-        "latest": { "type": "string", "format": "date-time" }
+        "earliest": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp for earliest expected delivery" },
+        "latest": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp for latest expected delivery" }
       },
       "required": ["earliest", "latest"]
     },
@@ -833,38 +899,40 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "confirmation_number": { "type": "string" },
-        "confirmation_email_sent": { "type": "boolean" },
-        "receipt_url": { "type": "string", "format": "uri" },
-        "invoice_number": { "type": "string" }
+        "confirmation_number": { "type": "string", "description": "Order confirmation number" },
+        "confirmation_email_sent": { "type": "boolean", "description": "Whether a confirmation email has been sent" },
+        "receipt_url": { "type": "string", "format": "uri", "description": "URL to the order receipt" },
+        "invoice_number": { "type": "string", "description": "Invoice number if generated" }
       }
     },
     "SupportInfo": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "hours": { "type": "string" },
-        "help_center_url": { "type": "string", "format": "uri" }
+        "email": { "type": "string", "format": "email", "description": "Support contact email" },
+        "phone": { "type": "string", "description": "Support contact phone number" },
+        "hours": { "type": "string", "description": "Support hours of operation" },
+        "help_center_url": { "type": "string", "format": "uri", "description": "URL to merchant's help center" }
       }
     },
     "MessageInfo": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": { "type": "string", "const": "info" },
-        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "type": { "type": "string", "const": "info", "description": "Message type discriminator" },
+        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"], "description": "Severity level of this informational message" },
         "param": {
           "type": "string",
-          "description": "RFC 9535 JSONPath"
+          "description": "RFC 9535 JSONPath to the related field"
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": ["plain", "markdown"],
+          "description": "Format of the message content"
         },
         "content": {
-          "type": "string"
+          "type": "string",
+          "description": "Informational message text"
         }
       },
       "required": ["type", "content_type", "content"]
@@ -873,7 +941,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": { "type": "string", "const": "warning" },
+        "type": { "type": "string", "const": "warning", "description": "Message type discriminator" },
         "code": {
           "type": "string",
           "enum": [
@@ -891,19 +959,22 @@
             "discount_code_user_not_logged_in",
             "discount_code_user_ineligible",
             "discount_code_usage_limit_reached"
-          ]
+          ],
+          "description": "Warning code indicating the type of warning"
         },
-        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"], "description": "Severity level of this warning" },
         "param": {
           "type": "string",
-          "description": "RFC 9535 JSONPath"
+          "description": "RFC 9535 JSONPath to the related field"
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": ["plain", "markdown"],
+          "description": "Format of the warning message content"
         },
         "content": {
-          "type": "string"
+          "type": "string",
+          "description": "Warning message text"
         }
       },
       "required": ["type", "code", "content_type", "content"]
@@ -915,7 +986,8 @@
       "properties": {
         "type": {
           "type": "string",
-          "const": "error"
+          "const": "error",
+          "description": "Message type discriminator"
         },
         "code": {
           "type": "string",
@@ -941,19 +1013,22 @@
             "rate_limited",
             "expired",
             "intervention_required"
-          ]
+          ],
+          "description": "Error code indicating the type of error"
         },
-        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"], "description": "Severity level of this error" },
         "param": {
           "type": "string",
           "description": "RFC 9535 JSONPath"
         },
         "content_type": {
           "type": "string",
-          "enum": ["plain", "markdown"]
+          "enum": ["plain", "markdown"],
+          "description": "Format of the error message content"
         },
         "content": {
-          "type": "string"
+          "type": "string",
+          "description": "Error message text"
         }
       },
       "required": ["type", "code", "content_type", "content"]
@@ -964,12 +1039,14 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["terms_of_use", "privacy_policy", "return_policy", "shipping_policy", "contact_us", "about_us", "faq", "support"]
+          "enum": ["terms_of_use", "privacy_policy", "return_policy", "shipping_policy", "contact_us", "about_us", "faq", "support"],
+          "description": "Type of link"
         },
-        "title": { "type": "string" },
+        "title": { "type": "string", "description": "Display text for the link" },
         "url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "URL destination"
         }
       },
       "required": ["type", "url"]
@@ -1009,12 +1086,13 @@
           "required": ["type", "credential"]
         },
         "billing_address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/Address",
+          "description": "Billing address for the payment"
         },
-        "purchase_order_number": { "type": "string" },
-        "payment_terms": { "type": "string", "enum": ["immediate", "net_15", "net_30", "net_60", "net_90"] },
-        "due_date": { "type": "string", "format": "date-time" },
-        "approval_required": { "type": "boolean" }
+        "purchase_order_number": { "type": "string", "description": "Purchase order number" },
+        "payment_terms": { "type": "string", "enum": ["immediate", "net_15", "net_30", "net_60", "net_90"], "description": "Payment terms for B2B transactions" },
+        "due_date": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when payment is due" },
+        "approval_required": { "type": "boolean", "description": "Whether this payment requires approval" }
       },
       "anyOf": [
         { "required": ["handler_id", "instrument"] },
@@ -1164,6 +1242,22 @@
         }
       }
     },
+    "RejectedDiscount": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A discount code that could not be applied, with the reason.",
+      "required": ["code", "reason"],
+      "properties": {
+        "code": { "type": "string", "description": "The discount code that was rejected." },
+        "reason": { "$ref": "#/$defs/DiscountErrorCode", "description": "Error code indicating why the discount was rejected." },
+        "message": { "type": "string", "description": "Human-readable explanation of why the code was rejected." }
+      }
+    },
+    "DiscountErrorCode": {
+      "type": "string",
+      "enum": ["discount_code_expired", "discount_code_invalid", "discount_code_already_applied", "discount_code_combination_disallowed", "discount_code_minimum_not_met", "discount_code_user_not_logged_in", "discount_code_user_ineligible", "discount_code_usage_limit_reached"],
+      "description": "Error codes for rejected discount codes, used in messages[].code."
+    },
     "DiscountsRequest": {
       "type": "object",
       "additionalProperties": false,
@@ -1190,6 +1284,11 @@
           "type": "array",
           "items": { "$ref": "#/$defs/AppliedDiscount" },
           "description": "Discounts successfully applied (code-based and automatic)."
+        },
+        "rejected": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/RejectedDiscount" },
+          "description": "Discount codes that could not be applied, with reasons."
         }
       }
     },
@@ -1197,20 +1296,22 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "provider": { "type": "string" },
+        "provider": { "type": "string", "description": "Payment provider identifier" },
         "instruments": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": true
-          }
+          },
+          "description": "Available payment instruments"
         },
         "handlers": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": true
-          }
+          },
+          "description": "Available payment handlers"
         }
       }
     },
@@ -1218,11 +1319,11 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "ip_address": { "type": "string" },
-        "user_agent": { "type": "string" },
-        "accept_language": { "type": "string" },
-        "session_id": { "type": "string" },
-        "device_fingerprint": { "type": "string" }
+        "ip_address": { "type": "string", "description": "IP address of the buyer" },
+        "user_agent": { "type": "string", "description": "User agent string of the buyer's browser" },
+        "accept_language": { "type": "string", "description": "Accept-Language header from the buyer's browser" },
+        "session_id": { "type": "string", "description": "Session identifier for the buyer" },
+        "device_fingerprint": { "type": "string", "description": "Device fingerprint for fraud detection" }
       }
     },
     "Order": {
@@ -1230,20 +1331,23 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique identifier for the order"
         },
         "checkout_session_id": {
-          "type": "string"
+          "type": "string",
+          "description": "ID of the checkout session that created this order"
         },
-        "order_number": { "type": "string" },
+        "order_number": { "type": "string", "description": "Human-readable order number" },
         "permalink_url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Permanent URL where the customer can view order details"
         },
-        "status": { "type": "string", "enum": ["confirmed", "processing", "shipped", "delivered"] },
-        "estimated_delivery": { "$ref": "#/$defs/EstimatedDelivery" },
-        "confirmation": { "$ref": "#/$defs/OrderConfirmation" },
-        "support": { "$ref": "#/$defs/SupportInfo" }
+        "status": { "type": "string", "enum": ["confirmed", "processing", "shipped", "delivered"], "description": "Current order status" },
+        "estimated_delivery": { "$ref": "#/$defs/EstimatedDelivery", "description": "Estimated delivery time range" },
+        "confirmation": { "$ref": "#/$defs/OrderConfirmation", "description": "Order confirmation details" },
+        "support": { "$ref": "#/$defs/SupportInfo", "description": "Customer support contact information" }
       },
       "required": ["id", "checkout_session_id", "permalink_url"]
     },
@@ -1556,14 +1660,17 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique identifier for the checkout session"
         },
-        "protocol": { "$ref": "#/$defs/ProtocolVersion" },
+        "protocol": { "$ref": "#/$defs/ProtocolVersion", "description": "Protocol version metadata" },
         "capabilities": {
-          "$ref": "#/$defs/Capabilities"
+          "$ref": "#/$defs/Capabilities",
+          "description": "Negotiated capabilities between agent and seller"
         },
         "buyer": {
-          "$ref": "#/$defs/Buyer"
+          "$ref": "#/$defs/Buyer",
+          "description": "Buyer information"
         },
         "status": {
           "type": "string",
@@ -1579,24 +1686,28 @@
             "canceled",
             "in_progress",
             "expired"
-          ]
+          ],
+          "description": "Current status of the checkout session"
         },
         "currency": {
-          "type": "string"
+          "type": "string",
+          "description": "ISO 4217 settlement currency code"
         },
-        "presentment_currency": { "type": "string" },
-        "exchange_rate": { "type": "number" },
-        "exchange_rate_timestamp": { "type": "string", "format": "date-time" },
-        "locale": { "type": "string" },
-        "timezone": { "type": "string" },
+        "presentment_currency": { "type": "string", "description": "ISO 4217 presentment currency code if different from settlement currency" },
+        "exchange_rate": { "type": "number", "description": "Exchange rate from presentment to settlement currency" },
+        "exchange_rate_timestamp": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when exchange rate was determined" },
+        "locale": { "type": "string", "description": "Locale code (e.g., 'en-US') for localizing content" },
+        "timezone": { "type": "string", "description": "IANA timezone identifier (e.g., 'America/New_York')" },
         "line_items": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/LineItem"
-          }
+          },
+          "description": "Line items in the checkout session"
         },
         "fulfillment_details": {
-          "$ref": "#/$defs/FulfillmentDetails"
+          "$ref": "#/$defs/FulfillmentDetails",
+          "description": "Fulfillment contact and address details"
         },
         "fulfillment_options": {
           "type": "array",
@@ -1615,19 +1726,22 @@
                 "$ref": "#/$defs/FulfillmentOptionLocalDelivery"
               }
             ]
-          }
+          },
+          "description": "Available fulfillment options"
         },
         "selected_fulfillment_options": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/SelectedFulfillmentOption"
-          }
+          },
+          "description": "Currently selected fulfillment options"
         },
         "fulfillment_groups": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/FulfillmentGroup"
-          }
+          },
+          "description": "Grouping of line items by fulfillment method"
         },
         "fulfillment_groups": {
           "type": "array",
@@ -1639,7 +1753,8 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/Total"
-          }
+          },
+          "description": "Cart-level totals breakdown"
         },
         "messages": {
           "type": "array",
@@ -1655,28 +1770,32 @@
                 "$ref": "#/$defs/MessageError"
               }
             ]
-          }
+          },
+          "description": "Messages to communicate with the buyer (info, warnings, errors)"
         },
         "links": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Link"
-          }
+          },
+          "description": "Relevant links (terms, policies, support)"
         },
         "authentication_metadata": {
-          "$ref": "#/$defs/AuthenticationMetadata"
+          "$ref": "#/$defs/AuthenticationMetadata",
+          "description": "Authentication metadata for payment interventions (e.g., 3DS)"
         },
-        "created_at": { "type": "string", "format": "date-time" },
-        "updated_at": { "type": "string", "format": "date-time" },
-        "expires_at": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when the session was created" },
+        "updated_at": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp of last update" },
+        "expires_at": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when the session expires" },
         "order": { "$ref": "#/$defs/Order" },
-        "continue_url": { "type": "string", "format": "uri" },
+        "continue_url": { "type": "string", "format": "uri", "description": "URL to continue or resume the checkout session" },
         "metadata": {
           "type": "object",
-          "additionalProperties": true
+          "additionalProperties": true,
+          "description": "Arbitrary metadata for merchant use"
         },
-        "quote_id": { "type": "string" },
-        "quote_expires_at": { "type": "string", "format": "date-time" },
+        "quote_id": { "type": "string", "description": "Quote identifier if this session is based on a quote" },
+        "quote_expires_at": { "type": "string", "format": "date-time", "description": "RFC 3339 timestamp when the quote expires" },
         "discounts": {
           "$ref": "#/$defs/DiscountsResponse",
           "description": "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
@@ -1710,7 +1829,8 @@
           "type": "object",
           "properties": {
             "order": {
-              "$ref": "#/$defs/Order"
+              "$ref": "#/$defs/Order",
+              "description": "Order created when checkout is completed"
             }
           },
           "required": ["order"]
@@ -1722,28 +1842,34 @@
       "additionalProperties": false,
       "properties": {
         "buyer": {
-          "$ref": "#/$defs/Buyer"
+          "$ref": "#/$defs/Buyer",
+          "description": "Buyer information"
         },
         "line_items": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Item"
           },
-          "minItems": 1
+          "minItems": 1,
+          "description": "Items to add to the checkout session"
         },
         "currency": { "type": "string", "description": "ISO 4217 currency code" },
         "fulfillment_details": {
-          "$ref": "#/$defs/FulfillmentDetails"
+          "$ref": "#/$defs/FulfillmentDetails",
+          "description": "Fulfillment contact and address details"
         },
         "capabilities": {
-          "$ref": "#/$defs/Capabilities"
+          "$ref": "#/$defs/Capabilities",
+          "description": "Agent capabilities and supported features"
         },
         "fulfillment_groups": {
           "type": "array",
-          "items": { "$ref": "#/$defs/FulfillmentGroup" }
+          "items": { "$ref": "#/$defs/FulfillmentGroup" },
+          "description": "Grouping of items by fulfillment method"
         },
         "affiliate_attribution": {
-          "$ref": "#/$defs/AffiliateAttribution"
+          "$ref": "#/$defs/AffiliateAttribution",
+          "description": "Affiliate attribution data for first-touch tracking"
         },
         "coupons": {
           "type": "array",
@@ -1754,12 +1880,13 @@
           "$ref": "#/$defs/DiscountsRequest",
           "description": "Discount codes to apply to the checkout session."
         },
-        "locale": { "type": "string" },
-        "timezone": { "type": "string" },
-        "quote_id": { "type": "string" },
+        "locale": { "type": "string", "description": "Locale code for localizing content (e.g., 'en-US')" },
+        "timezone": { "type": "string", "description": "IANA timezone identifier (e.g., 'America/New_York')" },
+        "quote_id": { "type": "string", "description": "Quote identifier if this session is based on a quote" },
         "metadata": {
           "type": "object",
-          "additionalProperties": true
+          "additionalProperties": true,
+          "description": "Arbitrary metadata for merchant use"
         }
       },
       "required": ["line_items", "currency", "capabilities"]
@@ -1769,26 +1896,31 @@
       "additionalProperties": false,
       "properties": {
         "buyer": {
-          "$ref": "#/$defs/Buyer"
+          "$ref": "#/$defs/Buyer",
+          "description": "Updated buyer information"
         },
         "line_items": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Item"
-          }
+          },
+          "description": "Items to update in the checkout session"
         },
         "fulfillment_details": {
-          "$ref": "#/$defs/FulfillmentDetails"
+          "$ref": "#/$defs/FulfillmentDetails",
+          "description": "Updated fulfillment contact and address"
         },
         "fulfillment_groups": {
           "type": "array",
-          "items": { "$ref": "#/$defs/FulfillmentGroup" }
+          "items": { "$ref": "#/$defs/FulfillmentGroup" },
+          "description": "Updated fulfillment groupings"
         },
         "selected_fulfillment_options": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/SelectedFulfillmentOption"
-          }
+          },
+          "description": "Fulfillment option selected by the buyer"
         },
         "coupons": {
           "type": "array",
@@ -1806,18 +1938,22 @@
       "additionalProperties": false,
       "properties": {
         "buyer": {
-          "$ref": "#/$defs/Buyer"
+          "$ref": "#/$defs/Buyer",
+          "description": "Final buyer information"
         },
         "payment_data": {
-          "$ref": "#/$defs/PaymentData"
+          "$ref": "#/$defs/PaymentData",
+          "description": "Payment method and details"
         },
         "authentication_result": {
-          "$ref": "#/$defs/AuthenticationResult"
+          "$ref": "#/$defs/AuthenticationResult",
+          "description": "Authentication result for 3DS flows"
         },
         "affiliate_attribution": {
-          "$ref": "#/$defs/AffiliateAttribution"
+          "$ref": "#/$defs/AffiliateAttribution",
+          "description": "Affiliate attribution data for last-touch tracking"
         },
-        "risk_signals": { "$ref": "#/$defs/RiskSignals" }
+        "risk_signals": { "$ref": "#/$defs/RiskSignals", "description": "Risk and fraud signals" }
       },
       "required": ["payment_data"]
     },
@@ -1874,14 +2010,16 @@
             "request_not_idempotent",
             "processing_error",
             "service_unavailable"
-          ]
+          ],
+          "description": "Error type indicating the category of protocol-level error"
         },
         "code": {
           "type": "string",
           "description": "Implementation-defined error code"
         },
         "message": {
-          "type": "string"
+          "type": "string",
+          "description": "Human-readable error message"
         },
         "param": {
           "type": "string",
