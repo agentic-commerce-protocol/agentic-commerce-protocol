@@ -11,4 +11,5 @@
 ### Files changed
 
 - `spec/unreleased/json-schema/schema.agentic_checkout.json`
-- `examples/unreleased/examples.agentic_checkout.json` — added `display_name` on handler examples
+- `spec/unreleased/openapi/openapi.agentic_checkout.yaml` — added `display_name` on PaymentHandler and `capture_method` on PaymentData
+- `examples/unreleased/examples.agentic_checkout.json` — added `display_name` on handler examples and `capture_method` on complete request
