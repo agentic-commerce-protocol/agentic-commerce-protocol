@@ -3658,6 +3658,108 @@
         }
       }
     },
+    "DiscoveryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Platform-level capability declaration returned by GET /capabilities. Describes what the ACP platform supports at a high level. This is stable, deterministic information that does not vary per merchant or per session. Merchant-specific capabilities (payment methods, payment handlers) are negotiated inline via the capabilities object on POST /checkout_sessions.",
+      "properties": {
+        "protocol": {
+          "$ref": "#/$defs/DiscoveryProtocol"
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DiscoveryExtension"
+          },
+          "description": "Extensions the platform supports. These are high-level declarations of available extensions. Whether a specific extension is active for a given merchant or session is determined during checkout session creation."
+        },
+        "intervention_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds", "biometric", "address_verification"]
+          },
+          "uniqueItems": true,
+          "description": "Intervention types the platform supports. Actual availability for a specific session is negotiated via the capabilities object on POST /checkout_sessions."
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["checkout", "orders", "delegate_payment"]
+          },
+          "uniqueItems": true,
+          "description": "High-level services available on this platform. Indicates which ACP operations are implemented."
+        },
+        "supported_currencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{3}$"
+          },
+          "uniqueItems": true,
+          "description": "ISO 4217 currency codes supported by the platform. Individual merchants may support a subset of these currencies."
+        },
+        "supported_locales": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "BCP 47 locale tags supported by the platform for localized responses."
+        }
+      },
+      "required": ["protocol", "services"]
+    },
+    "DiscoveryProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Protocol identification and version information.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "acp",
+          "description": "Protocol identifier. Always \"acp\"."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The current (latest) API version supported by the platform, in YYYY-MM-DD format."
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "uniqueItems": true,
+          "description": "All API versions the platform currently supports. Agents SHOULD use the API-Version header to request a specific version."
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the platform's ACP documentation."
+        }
+      },
+      "required": ["name", "version", "supported_versions"]
+    },
+    "DiscoveryExtension": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "High-level extension declaration in a discovery response. Lighter than ExtensionDeclaration — identifies the extension and provides a spec URL, but does not include session-level details like schema or extends fields.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Extension identifier (e.g., \"discount\", \"fulfillment\")."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension's specification document."
+        }
+      },
+      "required": ["name"]
+    },
     "Error": {
       "type": "object",
       "additionalProperties": false,

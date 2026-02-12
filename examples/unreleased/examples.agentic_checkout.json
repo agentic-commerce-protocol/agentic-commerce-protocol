@@ -1458,6 +1458,61 @@
       }
     ]
   },
+  "discovery_response_full": {
+    "protocol": {
+      "name": "acp",
+      "version": "2026-01-30",
+      "supported_versions": [
+        "2025-09-29",
+        "2025-12-12",
+        "2026-01-16",
+        "2026-01-30"
+      ],
+      "documentation_url": "https://agenticcommerce.dev"
+    },
+    "extensions": [
+      {
+        "name": "discount",
+        "spec": "https://agenticcommerce.dev/specs/discount"
+      },
+      {
+        "name": "fulfillment",
+        "spec": "https://agenticcommerce.dev/specs/fulfillment"
+      }
+    ],
+    "intervention_types": [
+      "3ds",
+      "biometric",
+      "address_verification"
+    ],
+    "services": [
+      "checkout",
+      "orders",
+      "delegate_payment"
+    ],
+    "supported_currencies": [
+      "usd",
+      "eur",
+      "gbp"
+    ],
+    "supported_locales": [
+      "en-US",
+      "fr-FR",
+      "de-DE"
+    ]
+  },
+  "discovery_response_minimal": {
+    "protocol": {
+      "name": "acp",
+      "version": "2025-09-29",
+      "supported_versions": [
+        "2025-09-29"
+      ]
+    },
+    "services": [
+      "checkout"
+    ]
+  },
   "error_400_idempotency_key_required": {
     "type": "invalid_request",
     "code": "idempotency_key_required",

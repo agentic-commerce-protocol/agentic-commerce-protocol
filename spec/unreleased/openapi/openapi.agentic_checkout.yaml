@@ -10,9 +10,95 @@ servers:
 security:
   - bearerAuth: []
 tags:
+  - name: Discovery
+    description: Platform-level capability discovery
   - name: CheckoutSessions
     description: Create and manage checkout sessions
 paths:
+  /capabilities:
+    get:
+      tags: [Discovery]
+      summary: Discover platform capabilities
+      operationId: getCapabilities
+      security: []
+      description: |
+        Returns the platform's supported ACP capabilities at a high level. This endpoint
+        enables agents to determine whether a merchant supports ACP, which API version is
+        in use, and which extensions and services are available — before creating a checkout
+        session.
+
+        This endpoint does not require authentication. Agents MAY call this endpoint without
+        a Bearer token.
+
+        Responses SHOULD include Cache-Control headers. Agents SHOULD cache responses
+        according to those directives.
+
+        This endpoint returns platform-level information that is stable and deterministic.
+        Merchant-specific and session-specific capabilities (such as payment methods and
+        payment handlers) are negotiated inline via the capabilities object on
+        POST /checkout_sessions.
+      parameters:
+        - $ref: "#/components/parameters/APIVersion"
+      responses:
+        "200":
+          description: Platform capabilities
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: Cache directive for the response. Agents SHOULD respect this value.
+              example: "public, max-age=3600"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryResponse"
+              examples:
+                full:
+                  summary: Full platform capabilities
+                  value:
+                    protocol:
+                      name: "acp"
+                      version: "2026-01-30"
+                      supported_versions:
+                        - "2025-09-29"
+                        - "2025-12-12"
+                        - "2026-01-16"
+                        - "2026-01-30"
+                      documentation_url: "https://agenticcommerce.dev"
+                    extensions:
+                      - name: "discount"
+                        spec: "https://agenticcommerce.dev/specs/discount"
+                      - name: "fulfillment"
+                        spec: "https://agenticcommerce.dev/specs/fulfillment"
+                    intervention_types:
+                      - "3ds"
+                      - "biometric"
+                      - "address_verification"
+                    services:
+                      - "checkout"
+                      - "orders"
+                      - "delegate_payment"
+                    supported_currencies:
+                      - "usd"
+                      - "eur"
+                      - "gbp"
+                    supported_locales:
+                      - "en-US"
+                      - "fr-FR"
+                      - "de-DE"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /checkout_sessions:
     post:
       tags:
