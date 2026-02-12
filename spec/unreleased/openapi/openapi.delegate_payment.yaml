@@ -43,6 +43,7 @@ paths:
                   payment_method:
                     type: card
                     card_number_type: fpan
+                    virtual: false
                     number: "4242424242424242"
                     exp_month: "11"
                     exp_year: "2026"
@@ -61,6 +62,7 @@ paths:
                     checkout_session_id: "csn_01HV3P3..."
                     merchant_id: "acme"
                     expires_at: "2025-10-09T07:20:50.52Z"
+                    order_id: "ord_abc123"
                   billing_address:
                     name: "John Doe"
                     line_one: "123 Fake St."
@@ -69,6 +71,8 @@ paths:
                     state: "CA"
                     country: "US"
                     postal_code: "12345"
+                    email: "johndoe@example.com"
+                    phone: "+14155551234"
                   risk_signals:
                     - type: card_testing
                       score: 10
@@ -90,6 +94,7 @@ paths:
                   value:
                     id: "vt_01J8Z3WXYZ9ABC"
                     created: "2025-09-29T11:00:00Z"
+                    expires_at: "2025-10-09T07:20:50.52Z"
                     metadata:
                       source: "agent_checkout"
                       merchant_id: "acme"
@@ -328,7 +333,7 @@ components:
           additionalProperties: { type: string }
         virtual:
           type: boolean
-      required: [type, card_number_type, number, display_card_funding_type, metadata]
+      required: [type, card_number_type, number, display_card_funding_type, metadata, virtual]
 
     Address:
       type: object
@@ -347,6 +352,15 @@ components:
             description: "ISO-3166-1 alpha-2",
           }
         postal_code: { type: string, maxLength: 20 }
+        email:
+          type: string
+          format: email
+          maxLength: 256
+          description: "Optional billing email (receipts, 3DS, fraud)."
+        phone:
+          type: string
+          maxLength: 32
+          description: "Optional billing phone (fraud, 3DS)."
       required: [name, line_one, city, state, country, postal_code]
 
     Allowance:
@@ -371,6 +385,9 @@ components:
         expires_at:
           type: string
           format: date-time
+        order_id:
+          type: string
+          description: "Optional merchant order identifier for correlation."
       required:
         [
           reason,
@@ -405,6 +422,10 @@ components:
         created:
           type: string
           format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          description: "When the token becomes invalid; echoes allowance.expires_at."
         metadata:
           type: object
           additionalProperties: { type: string }
@@ -425,10 +446,22 @@ components:
             ]
         code:
           type: string
-          enum: [invalid_card, duplicate_request, idempotency_conflict, too_many_requests]
+          enum:
+            [
+              invalid_card,
+              duplicate_request,
+              idempotency_conflict,
+              too_many_requests,
+              unsupported_api_version,
+              missing_api_version,
+            ]
         message:
           type: string
         param:
           type: string
           description: "JSONPath of offending field"
+        supported_versions:
+          type: array
+          items: { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$" }
+          description: "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
       required: [type, code, message]

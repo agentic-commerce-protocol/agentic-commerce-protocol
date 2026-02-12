@@ -8,10 +8,7 @@
     ],
     "capabilities": {
       "interventions": {
-        "supported": [
-          "3ds",
-          "address_verification"
-        ],
+        "supported": ["3ds", "address_verification"],
         "display_context": "webview",
         "redirect_context": "in_app",
         "max_redirects": 1,
@@ -44,10 +41,7 @@
     ],
     "capabilities": {
       "interventions": {
-        "supported": [
-          "3ds",
-          "address_verification"
-        ],
+        "supported": ["3ds", "address_verification"],
         "display_context": "webview",
         "redirect_context": "in_app",
         "max_redirects": 1,
@@ -84,21 +78,10 @@
             "config": {
               "merchant_id": "acct_1234567890",
               "psp": "stripe",
-              "accepted_brands": [
-                "visa",
-                "mastercard",
-                "amex",
-                "discover"
-              ],
-              "accepted_funding_types": [
-                "credit",
-                "debit"
-              ],
+              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+              "accepted_funding_types": ["credit", "debit"],
               "supports_3ds": true,
-              "3ds_versions": [
-                "2.1.0",
-                "2.2.0"
-              ],
+              "3ds_versions": ["2.1.0", "2.2.0"],
               "environment": "production"
             }
           },
@@ -124,10 +107,7 @@
         ]
       },
       "interventions": {
-        "supported": [
-          "3ds",
-          "address_verification"
-        ],
+        "supported": ["3ds", "address_verification"],
         "required": [],
         "enforcement": "conditional"
       }
@@ -214,9 +194,7 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": [
-          "item_123"
-        ]
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -262,11 +240,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       },
       {
@@ -278,11 +252,7 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Express Shipping",
-            "amount": 500
-          }
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
         ]
       }
     ],
@@ -303,9 +273,7 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_456",
-        "item_ids": [
-          "item_123"
-        ]
+        "item_ids": ["item_123"]
       }
     ]
   },
@@ -315,14 +283,8 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": {
-        "handlers": []
-      },
-      "interventions": {
-        "supported": [],
-        "required": [],
-        "enforcement": "conditional"
-      }
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -382,9 +344,7 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_456",
-        "item_ids": [
-          "item_123"
-        ]
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -424,11 +384,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       },
       {
@@ -440,11 +396,7 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Express Shipping",
-            "amount": 500
-          }
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
         ]
       }
     ],
@@ -548,14 +500,8 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": {
-        "handlers": []
-      },
-      "interventions": {
-        "supported": [],
-        "required": [],
-        "enforcement": "conditional"
-      }
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "buyer": {
       "first_name": "John",
@@ -629,10 +575,8 @@
     "selected_fulfillment_options": [
       {
         "type": "shipping",
-        "option_id": "fulfillment_option_456",
-        "item_ids": [
-          "item_123"
-        ]
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -654,12 +598,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 500
+        "amount": 100
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 830
+        "amount": 430
       }
     ],
     "fulfillment_options": [
@@ -672,11 +616,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       },
       {
@@ -688,11 +628,7 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Express Shipping",
-            "amount": 500
-          }
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
         ]
       }
     ],
@@ -719,14 +655,8 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": {
-        "handlers": []
-      },
-      "interventions": {
-        "supported": [],
-        "required": [],
-        "enforcement": "conditional"
-      }
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -786,9 +716,7 @@
       {
         "type": "shipping",
         "option_id": "fulfillment_option_123",
-        "item_ids": [
-          "item_123"
-        ]
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -828,11 +756,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       },
       {
@@ -844,11 +768,7 @@
         "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
         "latest_delivery_time": "2025-10-10T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Express Shipping",
-            "amount": 500
-          }
+          { "type": "total", "display_text": "Express Shipping", "amount": 500 }
         ]
       }
     ],
@@ -890,14 +810,8 @@
       "version": "2026-01-30"
     },
     "capabilities": {
-      "payment": {
-        "handlers": []
-      },
-      "interventions": {
-        "supported": [],
-        "required": [],
-        "enforcement": "conditional"
-      }
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "canceled",
     "currency": "usd",
@@ -956,10 +870,8 @@
     "selected_fulfillment_options": [
       {
         "type": "shipping",
-        "option_id": "fulfillment_option_456",
-        "item_ids": [
-          "item_123"
-        ]
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_123"]
       }
     ],
     "totals": [
@@ -981,12 +893,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 500
+        "amount": 100
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 830
+        "amount": 430
       }
     ],
     "fulfillment_options": [
@@ -999,11 +911,7 @@
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
         "totals": [
-          {
-            "type": "total",
-            "display_text": "Shipping",
-            "amount": 100
-          }
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
       }
     ],
@@ -1073,21 +981,10 @@
             "config": {
               "merchant_id": "acct_1234567890",
               "psp": "stripe",
-              "accepted_brands": [
-                "visa",
-                "mastercard",
-                "amex",
-                "discover"
-              ],
-              "accepted_funding_types": [
-                "credit",
-                "debit"
-              ],
+              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+              "accepted_funding_types": ["credit", "debit"],
               "supports_3ds": true,
-              "3ds_versions": [
-                "2.1.0",
-                "2.2.0"
-              ],
+              "3ds_versions": ["2.1.0", "2.2.0"],
               "environment": "production"
             }
           }
@@ -1154,9 +1051,7 @@
       {
         "type": "shipping",
         "option_id": "ful_overnight_01",
-        "item_ids": [
-          "item_3ds_001"
-        ]
+        "item_ids": ["item_3ds_001"]
       }
     ],
     "totals": [
@@ -1196,21 +1091,9 @@
         "earliest_delivery_time": "2026-01-13T08:00:00Z",
         "latest_delivery_time": "2026-01-13T20:00:00Z",
         "totals": [
-          {
-            "type": "subtotal",
-            "display_text": "Shipping Fee",
-            "amount": 2500
-          },
-          {
-            "type": "tax",
-            "display_text": "Tax",
-            "amount": 0
-          },
-          {
-            "type": "total",
-            "display_text": "Total",
-            "amount": 2500
-          }
+          { "type": "subtotal", "display_text": "Shipping Fee", "amount": 2500 },
+          { "type": "tax", "display_text": "Tax", "amount": 0 },
+          { "type": "total", "display_text": "Total", "amount": 2500 }
         ]
       }
     ],
@@ -1222,6 +1105,21 @@
       }
     ],
     "authentication_metadata": {
+      "channel": {
+        "type": "browser",
+        "browser": {
+          "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "ip_address": "203.0.113.42",
+          "javascript_enabled": true,
+          "language": "en-US",
+          "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+          "color_depth": 24,
+          "java_enabled": false,
+          "screen_height": 1440,
+          "screen_width": 900,
+          "timezone_offset": -480
+        }
+      },
       "acquirer_details": {
         "acquirer_bin": "123456",
         "acquirer_country": "US",
@@ -1305,42 +1203,6 @@
       "transaction_id": "dsTransId_frictionless_456",
       "version": "2.2.0"
     }
-  },
-  "complete_session_with_denied_authentication_request": {
-    "buyer": {
-      "first_name": "Marie",
-      "last_name": "Dupont",
-      "email": "marie.dupont@example.fr"
-    },
-    "payment_data": {
-      "handler_id": "card_tokenized",
-      "instrument": {
-        "type": "card",
-        "credential": {
-          "type": "spt",
-          "token": "spt_3ds_denied_001"
-        }
-      },
-      "billing_address": {
-        "name": "Marie Dupont",
-        "line_one": "12 Rue de la Paix",
-        "city": "Paris",
-        "state": "IDF",
-        "country": "FR",
-        "postal_code": "75002",
-        "email": "johndoe@example.com",
-        "phone": "+15551234567"
-      }
-    },
-    "authentication_result": {
-      "outcome": "denied"
-    }
-  },
-  "error_400_invalid_item": {
-    "type": "invalid_request",
-    "code": "invalid_item_id",
-    "message": "The item ID 'invalid_item' does not exist.",
-    "param": "$.line_items[0].item.id"
   },
   "checkout_session_with_out_of_stock": {
     "id": "checkout_session_oos_001",
@@ -1599,5 +1461,41 @@
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
     ]
+  },
+  "complete_session_with_denied_authentication_request": {
+    "buyer": {
+      "first_name": "Marie",
+      "last_name": "Dupont",
+      "email": "marie.dupont@example.fr"
+    },
+    "payment_data": {
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_denied_001"
+        }
+      },
+      "billing_address": {
+        "name": "Marie Dupont",
+        "line_one": "12 Rue de la Paix",
+        "city": "Paris",
+        "state": "IDF",
+        "country": "FR",
+        "postal_code": "75002",
+        "email": "johndoe@example.com",
+        "phone": "+33612345678"
+      }
+    },
+    "authentication_result": {
+      "outcome": "denied"
+    }
+  },
+  "error_400_invalid_item": {
+    "type": "invalid_request",
+    "code": "invalid_item_id",
+    "message": "The item ID 'invalid_item' does not exist.",
+    "param": "$.line_items[0].item.id"
   }
 }

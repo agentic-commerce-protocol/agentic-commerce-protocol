@@ -49,33 +49,25 @@
       "additionalProperties": false,
       "properties": {
         "name": {
-          "type": "string",
-          "maxLength": 256
+          "type": "string"
         },
         "line_one": {
-          "type": "string",
-          "maxLength": 60
+          "type": "string"
         },
         "line_two": {
-          "type": "string",
-          "maxLength": 60
+          "type": "string"
         },
         "city": {
-          "type": "string",
-          "maxLength": 60
+          "type": "string"
         },
         "state": {
           "type": "string"
         },
         "country": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 2,
-          "description": "ISO-3166-1 alpha-2"
+          "type": "string"
         },
         "postal_code": {
-          "type": "string",
-          "maxLength": 20
+          "type": "string"
         },
         "email": {
           "type": "string",
