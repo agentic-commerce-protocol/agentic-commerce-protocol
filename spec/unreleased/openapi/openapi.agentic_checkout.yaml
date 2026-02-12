@@ -342,10 +342,10 @@ components:
     Timestamp:
       name: Timestamp
       in: header
-      description: "Unix timestamp for request timing validation"
+      description: "RFC 3339 date-time string for request timing validation"
       required: false
       schema:
-        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+        { type: string, format: date-time, example: "2026-01-30T10:30:00Z" }
     APIVersion:
       name: API-Version
       in: header
