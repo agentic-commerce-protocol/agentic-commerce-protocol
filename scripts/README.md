@@ -37,12 +37,14 @@ This directory contains automated validation scripts that ensure consistency acr
 - Enum values match
 
 ### ✅ Field Descriptions (unreleased only)
-- All data models have a description at the top level
-- All fields within models have descriptions
+- **JSON Schema**: All data models have a description at the top level
+- **JSON Schema**: All fields within models have descriptions
+- **OpenAPI**: Schema descriptions are validated but some fields may use compact syntax
 - Ensures documentation completeness
 
 ### ✅ Model Examples (unreleased only)
-- Every data model has at least one example
+- **JSON Schema**: Every data model has at least one example
+- **OpenAPI**: Top-level schemas have examples
 - Examples use the `example` or `examples` field
 - Helps developers understand expected data formats
 
@@ -95,8 +97,9 @@ const CRITICAL_FIELDS = [
 - Prohibited schemas in wrong files
 - Critical fields with incorrect types
 - Examples that don't validate against schemas
-- Missing field descriptions in unreleased schemas
-- Missing model examples in unreleased schemas
+- Missing field descriptions in unreleased JSON schemas
+- Missing model examples in unreleased JSON schemas
+- Missing OpenAPI schema descriptions and examples in unreleased (partial validation)
 
 ### Warnings (Don't fail CI)
 - Missing optional files
@@ -109,8 +112,9 @@ const CRITICAL_FIELDS = [
 ✅ **Missing schemas**: Schemas referenced but not defined  
 ✅ **Architectural violations**: Schemas in wrong specification files  
 ✅ **Schema mismatches**: Referenced schemas that don't exist  
-✅ **Missing descriptions**: Data models or fields without descriptions (unreleased)  
-✅ **Missing examples**: Data models without usage examples (unreleased)  
+✅ **Missing descriptions**: Data models or fields without descriptions in JSON schemas (unreleased)  
+✅ **Missing examples**: Data models without usage examples in JSON schemas (unreleased)  
+✅ **OpenAPI completeness**: OpenAPI schemas missing examples or critical descriptions (unreleased)  
 
 ## Contributing
 
