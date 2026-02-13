@@ -22,7 +22,7 @@ const addFormats = require('ajv-formats');
 const yaml = require('js-yaml');
 
 const VERSIONS = ['2025-09-29', '2025-12-12', '2026-01-16', '2026-01-30', 'unreleased'];
-const SPECS = ['agentic_checkout', 'delegate_payment'];
+// SPECS is now dynamically discovered per version/directory
 const PROHIBITED_SCHEMAS = {
   'agentic_checkout': ['Refund'] // Refund should only be in webhook spec
 };
@@ -34,6 +34,28 @@ const CRITICAL_AMOUNT_FIELDS = [
 
 let errors = [];
 let warnings = [];
+
+// Helper function to get all JSON schema files in a directory
+function getJsonSchemaFiles(version) {
+  const schemaDir = path.join(__dirname, '..', 'spec', version, 'json-schema');
+  if (!fs.existsSync(schemaDir)) {
+    return [];
+  }
+  return fs.readdirSync(schemaDir)
+    .filter(file => file.endsWith('.json') && file.startsWith('schema.'))
+    .map(file => file.replace('schema.', '').replace('.json', ''));
+}
+
+// Helper function to get all OpenAPI files in a directory
+function getOpenApiFiles(version) {
+  const openApiDir = path.join(__dirname, '..', 'spec', version, 'openapi');
+  if (!fs.existsSync(openApiDir)) {
+    return [];
+  }
+  return fs.readdirSync(openApiDir)
+    .filter(file => file.endsWith('.yaml') && file.startsWith('openapi.'))
+    .map(file => file.replace('openapi.', '').replace('.yaml', ''));
+}
 
 function error(message, context = {}) {
   errors.push({ message, ...context });
@@ -60,7 +82,9 @@ function validateJsonSchemaSyntax() {
   console.log('\n📋 Validating JSON Schema Syntax...\n');
 
   VERSIONS.forEach(version => {
-    SPECS.forEach(spec => {
+    const specs = getJsonSchemaFiles(version);
+    
+    specs.forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
 
       if (!fs.existsSync(schemaPath)) {
@@ -90,16 +114,13 @@ function validateOpenApiSyntax() {
   console.log('\n📋 Validating OpenAPI Syntax...\n');
 
   VERSIONS.forEach(version => {
-    const specs = ['agentic_checkout', 'delegate_payment', 'agentic_checkout_webhook'];
+    const specs = getOpenApiFiles(version);
 
     specs.forEach(spec => {
       const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
 
       if (!fs.existsSync(openApiPath)) {
-        // Webhook might not exist in all versions
-        if (spec !== 'agentic_checkout_webhook') {
-          warn(`OpenAPI not found: ${openApiPath}`, { version, spec });
-        }
+        warn(`OpenAPI not found: ${openApiPath}`, { version, spec });
         return;
       }
 
@@ -160,7 +181,9 @@ function validateFieldTypes() {
   console.log('\n🔢 Validating Field Types (amounts must be integers)...\n');
 
   VERSIONS.forEach(version => {
-    SPECS.forEach(spec => {
+    const specs = getJsonSchemaFiles(version);
+    
+    specs.forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
 
       if (!fs.existsSync(schemaPath)) return;
@@ -179,6 +202,10 @@ function validateFieldTypes() {
 
                 // Check if this is an amount field
                 if (CRITICAL_AMOUNT_FIELDS.includes(propName)) {
+                  // Skip if property uses $ref, allOf, oneOf, anyOf (composition patterns)
+                  if (prop.$ref || prop.allOf || prop.oneOf || prop.anyOf) {
+                    return;
+                  }
                   if (prop.type !== 'integer') {
                     error(
                       `Amount field "${propName}" in ${defName} has type "${prop.type}" instead of "integer"`,
@@ -200,7 +227,7 @@ function validateFieldTypes() {
 
   // Also check OpenAPI
   VERSIONS.forEach(version => {
-    const specs = ['agentic_checkout', 'delegate_payment'];
+    const specs = getOpenApiFiles(version);
 
     specs.forEach(spec => {
       const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
@@ -220,6 +247,10 @@ function validateFieldTypes() {
                 const prop = schemaDef.properties[propName];
 
                 if (CRITICAL_AMOUNT_FIELDS.includes(propName)) {
+                  // Skip if property uses $ref, allOf, oneOf, anyOf (composition patterns)
+                  if (prop.$ref || prop.allOf || prop.oneOf || prop.anyOf) {
+                    return;
+                  }
                   if (prop.type !== 'integer') {
                     error(
                       `Amount field "${propName}" in ${schemaName} (OpenAPI) has type "${prop.type}" instead of "integer"`,
@@ -245,7 +276,9 @@ function validateFieldDescriptions() {
   console.log('\n📖 Validating Field Descriptions in unreleased specs...\n');
 
   const version = 'unreleased';
-  SPECS.forEach(spec => {
+  const specs = getJsonSchemaFiles(version);
+  
+  specs.forEach(spec => {
     const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
 
     if (!fs.existsSync(schemaPath)) {
@@ -336,7 +369,9 @@ function validateModelExamples() {
   console.log('\n📝 Validating Model Examples in unreleased specs...\n');
 
   const version = 'unreleased';
-  SPECS.forEach(spec => {
+  const specs = getJsonSchemaFiles(version);
+  
+  specs.forEach(spec => {
     const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
 
     if (!fs.existsSync(schemaPath)) {
@@ -483,7 +518,7 @@ function validateOpenApiDescriptions() {
   console.log('\n📖 Validating OpenAPI Schema Descriptions in unreleased specs...\n');
 
   const version = 'unreleased';
-  const openApiSpecs = ['agentic_checkout', 'delegate_payment', 'agentic_checkout_webhook'];
+  const openApiSpecs = getOpenApiFiles(version);
 
   openApiSpecs.forEach(spec => {
     const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
@@ -574,7 +609,7 @@ function validateOpenApiExamples() {
   console.log('\n📝 Validating OpenAPI Schema Examples in unreleased specs...\n');
 
   const version = 'unreleased';
-  const openApiSpecs = ['agentic_checkout', 'delegate_payment', 'agentic_checkout_webhook'];
+  const openApiSpecs = getOpenApiFiles(version);
 
   openApiSpecs.forEach(spec => {
     const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
@@ -630,7 +665,9 @@ function validateExamples() {
   console.log('\n📝 Validating Examples Against Schemas...\n');
 
   VERSIONS.forEach(version => {
-    SPECS.forEach(spec => {
+    const specs = getJsonSchemaFiles(version);
+    
+    specs.forEach(spec => {
       const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
       const examplesPath = path.join(__dirname, '..', 'examples', version, `examples.${spec}.json`);
 
