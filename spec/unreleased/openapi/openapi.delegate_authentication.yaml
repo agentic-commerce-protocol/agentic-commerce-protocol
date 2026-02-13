@@ -1,0 +1,794 @@
+openapi: 3.1.0
+info:
+  title: Agentic Commerce — Delegate Authentication API
+  version: "2026-01-28"
+  description: |
+    Delegate consumer authentication (3D Secure) to merchant-specified providers.
+    Implements create, authenticate, and retrieve endpoints for 3DS2 browser-based flows.
+servers:
+  - url: https://authentication-provider.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: DelegateAuthentication
+    description: Create and manage 3DS authentication sessions
+
+paths:
+  /delegate_authentication:
+    post:
+      tags: [DelegateAuthentication]
+      summary: Create an authentication session
+      operationId: createAuthenticationSession
+      description: |
+        Initializes a 3DS authentication session with merchant, card, and amount details.
+        Returns fingerprint action if supported, `pending` if no fingerprint needed, or `not_supported` if card not enrolled.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/Signature"
+        - $ref: "#/components/parameters/Timestamp"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DelegateAuthenticationCreateRequest"
+            examples:
+              minimal:
+                summary: Minimal request
+                value:
+                  merchant_id: "merchant_abc123"
+                  acquirer_bin: "123456"
+                  acquirer_merchant_id: "merchant_789"
+                  acquirer_details:
+                    acquirer_bin: "412345"
+                    acquirer_country: "US"
+                    acquirer_merchant_id: "123456789012345"
+                    merchant_name: "Example Merchant Inc"
+                    requestor_id: "REQ_12345"
+                  payment_method:
+                    type: "card"
+                    number: "4917610000000000"
+                    exp_month: "03"
+                    exp_year: "2030"
+                    name: "Jane Doe"
+                  amount:
+                    value: 1000
+                    currency: "EUR"
+              with_channel:
+                summary: With channel and shopper details
+                value:
+                  merchant_id: "merchant_abc123"
+                  payment_method:
+                    type: "card"
+                    number: "4917610000000000"
+                    exp_month: "03"
+                    exp_year: "2030"
+                    name: "Jane Doe"
+                  amount:
+                    value: 1000
+                    currency: "EUR"
+                  checkout_session_id: "checkout_session_123"
+                  channel:
+                    type: "browser"
+                    browser:
+                      accept_header: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+                      ip_address: "192.168.1.1"
+                      javascript_enabled: true
+                      language: "en-US"
+                      user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
+                      color_depth: 24
+                      java_enabled: false
+                      screen_height: 1080
+                      screen_width: 1920
+                      timezone_offset: 0
+                  flow_preference:
+                    type: "challenge"
+                    challenge:
+                      type: "preferred"
+                  challenge_notification_url: "https://agent.example.com/3ds/challenge-callback"
+                  shopper_details:
+                    name: "Jane Doe"
+                    email: "shopper@example.com"
+                    phone_number: "15551234567"
+                    address:
+                      name: "Jane Doe"
+                      line_one: "123 Main Street"
+                      line_two: "Apt 4B"
+                      city: "Amsterdam"
+                      state: "NH"
+                      country: "NL"
+                      postal_code: "1012 AB"
+      responses:
+        "201":
+          description: Created
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema: { type: string }
+            Request-Id:
+              description: Echo of the request correlation id
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DelegateAuthenticationSession"
+              examples:
+                fingerprint_required:
+                  summary: Fingerprint action required
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "action_required"
+                    action:
+                      type: "fingerprint"
+                      fingerprint:
+                        three_ds_method_url: "https://acs.issuer.com/3dsmethod"
+                        three_ds_server_trans_id: "abc-123-def"
+                pending:
+                  summary: No fingerprint needed
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "pending"
+                not_supported:
+                  summary: Card not enrolled
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "not_supported"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /delegate_authentication/{authentication_session_id}/authenticate:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/ContentType"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: authentication_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [DelegateAuthentication]
+      summary: Submit fingerprint result and trigger authentication
+      operationId: authenticateSession
+      description: |
+        Submits the result of the fingerprint action and triggers the Authentication Request (AReq).
+        Returns challenge action if required, or frictionless result.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DelegateAuthenticationAuthenticateRequest"
+            examples:
+              fingerprint_success:
+                summary: Fingerprint completed successfully
+                value:
+                  fingerprint_completion: "Y"
+              with_deferred_channel:
+                summary: With deferred channel data
+                value:
+                  fingerprint_completion: "Y"
+                  channel:
+                    type: "browser"
+                    browser:
+                      accept_header: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+                      ip_address: "192.168.1.1"
+                      javascript_enabled: true
+                      language: "en-US"
+                      user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
+                      color_depth: 24
+                      java_enabled: false
+                      screen_height: 1080
+                      screen_width: 1920
+                      timezone_offset: 0
+                  challenge_notification_url: "https://agent.example.com/3ds/challenge-callback"
+      responses:
+        "200":
+          description: Authentication result
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema: { type: string }
+            Request-Id:
+              description: Echo of the request correlation id
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DelegateAuthenticationSession"
+              examples:
+                frictionless:
+                  summary: Frictionless authentication successful
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "authenticated"
+                challenge_required:
+                  summary: Challenge required
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "action_required"
+                    action:
+                      type: "challenge"
+                      challenge:
+                        acs_url: "https://acs.issuer.com/challenge"
+                        acs_trans_id: "xyz-789"
+                        three_ds_server_trans_id: "abc-123-def"
+                        message_version: "2.2.0"
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /delegate_authentication/{authentication_session_id}:
+    parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/AcceptLanguage"
+      - $ref: "#/components/parameters/UserAgent"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/Signature"
+      - $ref: "#/components/parameters/Timestamp"
+      - $ref: "#/components/parameters/APIVersion"
+      - name: authentication_session_id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [DelegateAuthentication]
+      summary: Retrieve authentication session
+      operationId: getAuthenticationSession
+      description: |
+        Retrieves the current session state including the final 3DS authentication result (cryptogram, ECI, transaction IDs) when available.
+      responses:
+        "200":
+          description: Current session state
+          headers:
+            Request-Id:
+              description: Echo of the request correlation id
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DelegateAuthenticationSessionWithResult"
+              examples:
+                authenticated:
+                  summary: Authentication successful
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "authenticated"
+                    authentication_result:
+                      trans_status: "Y"
+                      electronic_commerce_indicator: "05"
+                      three_ds_cryptogram: "AQIDBAUGBwgJCgsMDQ4PEBESExQ="
+                      transaction_id: "c4e59ceb-a382-4d6a-bc87-385d591fa09d"
+                      three_ds_server_trans_id: "6edcc246-23ee-4e94-ac5d-8ae620bea7d9"
+                      version: "2.2.0"
+                      authentication_value: "CAVV_VALUE"
+                not_authenticated:
+                  summary: Authentication failed
+                  value:
+                    authentication_session_id: "auth_session_abc123"
+                    status: "not_authenticated"
+                    authentication_result:
+                      trans_status: "N"
+                      trans_status_reason: "01"
+                      electronic_commerce_indicator: "07"
+                      transaction_id: "3022b509-391e-4c25-a225-f37e062843a5"
+                      three_ds_server_trans_id: "87a357a1-faee-4cd1-b3cf-ea2c704bf073"
+                      version: "2.2.0"
+                      cardholder_info: "Please contact your bank's customer support."
+        "4XX":
+          description: Client error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "5XX":
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      schema: { type: string, example: "Bearer api_key_123" }
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      schema: { type: string, example: "application/json" }
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: { type: string, example: "en-US" }
+    UserAgent:
+      name: User-Agent
+      in: header
+      required: false
+      schema:
+        {
+          type: string,
+          example: "ChatGPT/2.0 (Mac OS X 15.0.1; arm64; build 0)",
+        }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, example: "idempotency_key_123" }
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      schema: { type: string, example: "request_id_123" }
+    Signature:
+      name: Signature
+      in: header
+      required: false
+      schema: { type: string, example: "ZXltZX..." }
+    Timestamp:
+      name: Timestamp
+      in: header
+      required: false
+      schema: { type: string, format: date-time, example: "2026-01-28T10:30:00Z" }
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      schema: { type: string, example: "2026-01-28" }
+
+  schemas:
+    # Request Schemas
+    DelegateAuthenticationCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        merchant_id:
+          type: string
+          description: Merchant identifier
+        acquirer_details:
+          type: object
+          additionalProperties: false
+          description: |
+            Object containing acquirer data used for AReq construction. 
+            **Recommended:** To ensure the AReq matches the final Authorization, especially when using different authentication and payment providers.
+          required:
+            - acquirer_bin
+            - acquirer_country
+            - acquirer_merchant_id
+            - merchant_name
+          properties:
+            acquirer_bin:
+              type: string
+              maxLength: 11
+              description: The Acquirer BIN.
+            acquirer_country:
+              type: string
+              minLength: 2
+              maxLength: 2
+              description: Two-letter ISO 3166-1 alpha-2 country code.
+            acquirer_merchant_id:
+              type: string
+              maxLength: 35
+              description: The Merchant ID assigned by the acquirer.
+            merchant_name:
+              type: string
+              maxLength: 40
+              description: Merchant name assigned by the acquirer.
+            requestor_id:
+              type: string
+              maxLength: 35
+              description: 3DS Requestor ID (if required by directory server).
+        payment_method:
+          $ref: "#/components/schemas/PaymentMethod"
+        amount:
+          $ref: "#/components/schemas/Amount"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        checkout_session_id:
+          type: string
+          description: Checkout session identifier
+        flow_preference:
+          $ref: "#/components/schemas/FlowPreference"
+        challenge_notification_url:
+          type: string
+          format: uri
+          description: URL for challenge result callback
+        shopper_details:
+          $ref: "#/components/schemas/ShopperDetails"
+      required: [merchant_id, payment_method, amount]
+
+    DelegateAuthenticationAuthenticateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        fingerprint_completion:
+          type: string
+          enum: [Y, N, U]
+          description: |
+            Result of the 3DS Method fingerprint:
+            - Y: Completed successfully
+            - N: Timeout/not completed
+            - U: Unavailable/not performed
+        channel:
+          $ref: "#/components/schemas/Channel"
+        checkout_session_id:
+          type: string
+          description: Checkout session identifier
+        challenge_notification_url:
+          type: string
+          format: uri
+          description: URL for challenge result callback
+        shopper_details:
+          $ref: "#/components/schemas/ShopperDetails"
+      required: [fingerprint_completion]
+
+    # Response Schemas
+    DelegateAuthenticationSessionBase:
+      type: object
+      additionalProperties: false
+      properties:
+        authentication_session_id:
+          type: string
+          description: Session ID for subsequent requests
+        status:
+          type: string
+          enum:
+            [
+              action_required,
+              pending,
+              not_supported,
+              authenticated,
+              attempted,
+              not_authenticated,
+              rejected,
+              unavailable,
+              expired,
+              challenge_abandoned,
+            ]
+          description: |
+            Create endpoint statuses:
+            - action_required: MUST process the action object (fingerprint), then call /authenticate
+            - pending: No fingerprint needed; MUST call /authenticate directly with fingerprint_completion: U
+            - not_supported: Card not enrolled or issuer not participating; MAY proceed to authorization without 3DS
+
+            Authenticate endpoint statuses:
+            - authenticated: Frictionless authentication successful; MUST call GET /{id} to retrieve result
+            - action_required: Challenge required; MUST process the action object, then call GET /{id}
+            - attempted: Proof of authentication attempt provided; MUST call GET /{id} to retrieve result
+            - not_authenticated: Authentication failed; MUST call GET /{id} to retrieve result
+            - rejected: Issuer rejected; MUST NOT attempt authorization
+            - unavailable: Technical error during authentication
+            - expired: Session has expired; MUST create a new session
+
+            Retrieve (GET) endpoint statuses:
+            - authenticated: Authentication successful; SHOULD use authentication_result for authorization
+            - attempted: Proof of authentication attempt provided; MAY proceed with authorization
+            - not_authenticated: Authentication failed; SHOULD NOT proceed to authorization
+            - rejected: Issuer rejected; MUST NOT attempt authorization
+            - unavailable: Technical error retrieving result
+            - expired: Session has expired
+            - challenge_abandoned: Challenge was presented but shopper did not complete it; SHOULD NOT proceed to authorization
+        action:
+          $ref: "#/components/schemas/Action"
+      required: [authentication_session_id, status]
+
+    DelegateAuthenticationSession:
+      allOf:
+        - $ref: "#/components/schemas/DelegateAuthenticationSessionBase"
+
+    DelegateAuthenticationSessionWithResult:
+      allOf:
+        - $ref: "#/components/schemas/DelegateAuthenticationSessionBase"
+        - type: object
+          properties:
+            authentication_result:
+              $ref: "#/components/schemas/AuthenticationResult"
+
+    # Data Models
+    PaymentMethod:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [card]
+        number:
+          type: string
+          description: Card number (PAN)
+        exp_month:
+          type: string
+          maxLength: 2
+          description: Expiry month (01-12)
+        exp_year:
+          type: string
+          maxLength: 4
+          description: Expiry year (4 digits)
+        name:
+          type: string
+          description: Cardholder name
+      required: [type, number, exp_month, exp_year, name]
+
+    Amount:
+      type: object
+      additionalProperties: false
+      properties:
+        value:
+          type: integer
+          description: Amount in minor units (e.g., 1000 = €10.00)
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          description: ISO 4217 currency code
+      required: [value, currency]
+
+    Channel:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [browser]
+          description: Channel type
+        browser:
+          $ref: "#/components/schemas/BrowserInfo"
+      required: [type, browser]
+
+    BrowserInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        accept_header:
+          type: string
+          description: HTTP Accept header from the browser
+        ip_address:
+          type: string
+          maxLength: 45
+          description: IP address of the browser
+        javascript_enabled:
+          type: boolean
+          description: Whether JavaScript is enabled
+        language:
+          type: string
+          maxLength: 35
+          description: IETF BCP 47 language tag
+        user_agent:
+          type: string
+          description: Browser user agent string
+        color_depth:
+          type: integer
+          description: Screen color depth (required if javascript_enabled is true)
+        java_enabled:
+          type: boolean
+          description: Whether Java is enabled (required if javascript_enabled is true)
+        screen_height:
+          type: integer
+          description: Screen height in pixels (required if javascript_enabled is true)
+        screen_width:
+          type: integer
+          description: Screen width in pixels (required if javascript_enabled is true)
+        timezone_offset:
+          type: integer
+          description: Timezone offset in minutes (required if javascript_enabled is true)
+      required: [accept_header, ip_address, javascript_enabled, language, user_agent]
+      allOf:
+        - if:
+            properties:
+              javascript_enabled:
+                const: true
+          then:
+            required:
+              - color_depth
+              - java_enabled
+              - screen_height
+              - screen_width
+              - timezone_offset
+
+    FlowPreference:
+      type: object
+      additionalProperties: false
+      description: |
+        Preference for the 3DS authentication flow. Clients MAY request a preference,
+        but issuers ultimately decide the actual flow.
+      properties:
+        type:
+          type: string
+          enum: [challenge, frictionless]
+          description: Type of flow requested
+        challenge:
+          type: object
+          additionalProperties: false
+          properties:
+            type:
+              type: string
+              enum: [mandated, preferred]
+              description: Subtype of challenge preference
+        frictionless:
+          type: object
+          additionalProperties: false
+          description: Details about the requested frictionless flow
+      required: [type]
+
+    ShopperDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Shopper name
+        email:
+          type: string
+          format: email
+          description: Shopper email
+        phone_number:
+          type: string
+          description: Shopper phone number
+        address:
+          $ref: "#/components/schemas/Address"
+
+    Address:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 256
+        line_one:
+          type: string
+          maxLength: 60
+        line_two:
+          type: string
+          maxLength: 60
+        city:
+          type: string
+          maxLength: 60
+        state:
+          type: string
+          description: ISO-3166-2 where applicable
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: ISO-3166-1 alpha-2
+        postal_code:
+          type: string
+          maxLength: 20
+      required: [name, line_one, city, state, country, postal_code]
+
+    Action:
+      type: object
+      additionalProperties: false
+      description: Describes browser action required
+      properties:
+        type:
+          type: string
+          enum: [fingerprint, challenge]
+        fingerprint:
+          $ref: "#/components/schemas/FingerprintAction"
+        challenge:
+          $ref: "#/components/schemas/ChallengeAction"
+      required: [type]
+      oneOf:
+        - properties:
+            type:
+              const: fingerprint
+          required: [fingerprint]
+        - properties:
+            type:
+              const: challenge
+          required: [challenge]
+
+    FingerprintAction:
+      type: object
+      additionalProperties: false
+      properties:
+        three_ds_method_url:
+          type: string
+          format: uri
+          description: URL to POST fingerprint data to via hidden iframe
+        three_ds_server_trans_id:
+          type: string
+          description: 3DS Server transaction ID
+      required: [three_ds_method_url, three_ds_server_trans_id]
+
+    ChallengeAction:
+      type: object
+      additionalProperties: false
+      properties:
+        acs_url:
+          type: string
+          format: uri
+          description: URL to POST challenge request to
+        acs_trans_id:
+          type: string
+          description: ACS transaction identifier
+        three_ds_server_trans_id:
+          type: string
+          description: 3DS Server transaction identifier
+        message_version:
+          type: string
+          description: 3DS protocol version (e.g., "2.2.0")
+      required: [acs_url, acs_trans_id, three_ds_server_trans_id, message_version]
+
+    AuthenticationResult:
+      type: object
+      additionalProperties: false
+      properties:
+        trans_status:
+          type: string
+          description: Transaction status (Y, N, A, U, R, etc.)
+        electronic_commerce_indicator:
+          type: string
+          description: Electronic Commerce Indicator (ECI)
+        three_ds_cryptogram:
+          type: string
+          description: Authentication cryptogram (CAVV/AAV)
+        transaction_id:
+          type: string
+          description: Directory Server transaction ID
+        three_ds_server_trans_id:
+          type: string
+          description: 3DS Server transaction ID
+        version:
+          type: string
+          description: 3DS protocol version (e.g., "2.2.0")
+        authentication_value:
+          type: string
+          description: Authentication value (CAVV)
+        trans_status_reason:
+          type: string
+          description: Reason code for trans_status
+        cardholder_info:
+          type: string
+          description: Message to display to cardholder
+      required: [trans_status, transaction_id, three_ds_server_trans_id, version]
+
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [invalid_request, rate_limit_exceeded, processing_error, service_unavailable]
+        code:
+          type: string
+          enum: [invalid_card, duplicate_request, idempotency_conflict]
+        message:
+          type: string
+        param:
+          type: string
+          description: RFC 9535 JSONPath (optional)
+      required: [type, code, message]

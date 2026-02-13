@@ -1,0 +1,501 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/delegate-authentication/bundle.schema.json",
+  "title": "Delegate Authentication - Schema Bundle",
+  "$defs": {
+    "Address": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "line_one": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "line_two": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "state": {
+          "type": "string",
+          "description": "ISO-3166-2 where applicable"
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2,
+          "description": "ISO-3166-1 alpha-2"
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20
+        }
+      },
+      "required": ["name", "line_one", "city", "state", "country", "postal_code"]
+    },
+    "PaymentMethod": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["card"]
+        },
+        "number": {
+          "type": "string",
+          "description": "Card number (PAN)"
+        },
+        "exp_month": {
+          "type": "string",
+          "maxLength": 2,
+          "description": "Expiry month (01-12)"
+        },
+        "exp_year": {
+          "type": "string",
+          "maxLength": 4,
+          "description": "Expiry year (4 digits)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Cardholder name"
+        }
+      },
+      "required": ["type", "number", "exp_month", "exp_year", "name"]
+    },
+    "Amount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "integer",
+          "description": "Amount in minor units (e.g., 1000 = €10.00)"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency code"
+        }
+      },
+      "required": ["value", "currency"]
+    },
+    "BrowserInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "accept_header": {
+          "type": "string",
+          "description": "HTTP Accept header from the browser"
+        },
+        "ip_address": {
+          "type": "string",
+          "maxLength": 45,
+          "description": "IP address of the browser"
+        },
+        "javascript_enabled": {
+          "type": "boolean",
+          "description": "Whether JavaScript is enabled"
+        },
+        "language": {
+          "type": "string",
+          "maxLength": 35,
+          "description": "IETF BCP 47 language tag"
+        },
+        "user_agent": {
+          "type": "string",
+          "description": "Browser user agent string"
+        },
+        "color_depth": {
+          "type": "integer",
+          "description": "Screen color depth (required if javascript_enabled is true)"
+        },
+        "java_enabled": {
+          "type": "boolean",
+          "description": "Whether Java is enabled (required if javascript_enabled is true)"
+        },
+        "screen_height": {
+          "type": "integer",
+          "description": "Screen height in pixels (required if javascript_enabled is true)"
+        },
+        "screen_width": {
+          "type": "integer",
+          "description": "Screen width in pixels (required if javascript_enabled is true)"
+        },
+        "timezone_offset": {
+          "type": "integer",
+          "description": "Timezone offset in minutes (required if javascript_enabled is true)"
+        }
+      },
+      "required": ["accept_header", "ip_address", "javascript_enabled", "language", "user_agent"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "javascript_enabled": { "const": true }
+            }
+          },
+          "then": {
+            "required": ["color_depth", "java_enabled", "screen_height", "screen_width", "timezone_offset"]
+          }
+        }
+      ]
+    },
+    "Channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["browser"],
+          "description": "Channel type"
+        },
+        "browser": {
+          "$ref": "#/$defs/BrowserInfo"
+        }
+      },
+      "required": ["type", "browser"]
+    },
+    "FlowPreference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Preference for the 3DS authentication flow. Clients MAY request a preference, but issuers ultimately decide the actual flow.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["challenge", "frictionless"],
+          "description": "Type of flow requested"
+        },
+        "challenge": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["mandated", "preferred"],
+              "description": "Subtype of challenge preference"
+            }
+          }
+        },
+        "frictionless": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Details about the requested frictionless flow"
+        }
+      },
+      "required": ["type"]
+    },
+    "ShopperDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Shopper name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Shopper email"
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "Shopper phone number"
+        },
+        "address": {
+          "$ref": "#/$defs/Address"
+        }
+      }
+    },
+    "FingerprintAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "three_ds_method_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to POST fingerprint data to via hidden iframe"
+        },
+        "three_ds_server_trans_id": {
+          "type": "string",
+          "description": "3DS Server transaction ID"
+        }
+      },
+      "required": ["three_ds_method_url", "three_ds_server_trans_id"]
+    },
+    "ChallengeAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "acs_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to POST challenge request to"
+        },
+        "acs_trans_id": {
+          "type": "string",
+          "description": "ACS transaction identifier"
+        },
+        "three_ds_server_trans_id": {
+          "type": "string",
+          "description": "3DS Server transaction identifier"
+        },
+        "message_version": {
+          "type": "string",
+          "description": "3DS protocol version (e.g., \"2.2.0\")"
+        }
+      },
+      "required": ["acs_url", "acs_trans_id", "three_ds_server_trans_id", "message_version"]
+    },
+    "Action": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Describes browser action required",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["fingerprint", "challenge"]
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/FingerprintAction"
+        },
+        "challenge": {
+          "$ref": "#/$defs/ChallengeAction"
+        }
+      },
+      "required": ["type"],
+      "oneOf": [
+        {
+          "properties": { "type": { "const": "fingerprint" } },
+          "required": ["fingerprint"]
+        },
+        {
+          "properties": { "type": { "const": "challenge" } },
+          "required": ["challenge"]
+        }
+      ]
+    },
+    "AuthenticationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "3DS authentication result returned by the authentication provider",
+      "properties": {
+        "trans_status": {
+          "type": "string",
+          "description": "Transaction status (Y, N, A, U, R, etc.)"
+        },
+        "electronic_commerce_indicator": {
+          "type": "string",
+          "description": "Electronic Commerce Indicator"
+        },
+        "three_ds_cryptogram": {
+          "type": "string",
+          "description": "Authentication cryptogram (CAVV/AAV)"
+        },
+        "transaction_id": {
+          "type": "string",
+          "description": "Directory Server transaction ID"
+        },
+        "three_ds_server_trans_id": {
+          "type": "string",
+          "description": "3DS Server transaction ID"
+        },
+        "version": {
+          "type": "string",
+          "description": "3DS protocol version"
+        },
+        "authentication_value": {
+          "type": "string",
+          "description": "Authentication value (CAVV)"
+        },
+        "trans_status_reason": {
+          "type": "string",
+          "description": "Reason code for trans_status"
+        },
+        "cardholder_info": {
+          "type": "string",
+          "description": "Message to display to cardholder"
+        }
+      },
+      "required": [
+        "trans_status", "transaction_id", "three_ds_server_trans_id", "version"
+      ]
+    },
+    "DelegateAuthenticationCreateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "merchant_id": {
+          "type": "string",
+          "description": "Merchant identifier"
+        },
+        "acquirer_details": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Object containing acquirer data used for AReq construction. Recommended to ensure the authentication matches the final authorization.",
+          "properties": {
+            "acquirer_bin": {
+              "type": "string",
+              "maxLength": 11,
+              "description": "The Acquirer BIN."
+            },
+            "acquirer_country": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "Two-letter ISO 3166-1 alpha-2 country code."
+            },
+            "acquirer_merchant_id": {
+              "type": "string",
+              "maxLength": 35,
+              "description": "The Merchant ID assigned by the acquirer."
+            },
+            "merchant_name": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Merchant name assigned by the acquirer."
+            },
+            "requestor_id": {
+              "type": "string",
+              "maxLength": 35,
+              "description": "3DS Requestor ID (if required by directory server)."
+            }
+          },
+          "required": [
+            "acquirer_bin",
+            "acquirer_country",
+            "acquirer_merchant_id",
+            "merchant_name"
+          ]
+        },
+        "payment_method": {
+          "$ref": "#/$defs/PaymentMethod"
+        },
+        "amount": {
+          "$ref": "#/$defs/Amount"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "checkout_session_id": {
+          "type": "string",
+          "description": "Checkout session identifier"
+        },
+        "flow_preference": {
+          "$ref": "#/$defs/FlowPreference"
+        },
+        "challenge_notification_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for challenge result callback"
+        },
+        "shopper_details": {
+          "$ref": "#/$defs/ShopperDetails"
+        }
+      },
+      "required": ["merchant_id", "payment_method", "amount"]
+    },
+    "DelegateAuthenticationAuthenticateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fingerprint_completion": {
+          "type": "string",
+          "enum": ["Y", "N", "U"],
+          "description": "Result of the 3DS Method fingerprint: Y = Completed successfully, N = Timeout/not completed, U = Unavailable/not performed"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "checkout_session_id": {
+          "type": "string",
+          "description": "Checkout session identifier"
+        },
+        "challenge_notification_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for challenge result callback"
+        },
+        "shopper_details": {
+          "$ref": "#/$defs/ShopperDetails"
+        }
+      },
+      "required": ["fingerprint_completion"]
+    },
+    "DelegateAuthenticationSessionBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authentication_session_id": {
+          "type": "string",
+          "description": "Session ID for subsequent requests"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "action_required",
+            "pending",
+            "not_supported",
+            "authenticated",
+            "attempted",
+            "not_authenticated",
+            "rejected",
+            "unavailable",
+            "expired",
+            "challenge_abandoned"
+          ],
+          "description": "Session status indicating current state and next action"
+        },
+        "action": {
+          "$ref": "#/$defs/Action"
+        }
+      },
+      "required": ["authentication_session_id", "status"]
+    },
+    "DelegateAuthenticationSession": {
+      "allOf": [
+        { "$ref": "#/$defs/DelegateAuthenticationSessionBase" }
+      ]
+    },
+    "DelegateAuthenticationSessionWithResult": {
+      "allOf": [
+        { "$ref": "#/$defs/DelegateAuthenticationSessionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "authentication_result": {
+              "$ref": "#/$defs/AuthenticationResult"
+            }
+          }
+        }
+      ]
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["invalid_request", "rate_limit_exceeded", "processing_error", "service_unavailable"]
+        },
+        "code": {
+          "type": "string",
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict"]
+        },
+        "message": {
+          "type": "string"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath of offending field"
+        }
+      },
+      "required": ["type", "code", "message"]
+    }
+  }
+}
