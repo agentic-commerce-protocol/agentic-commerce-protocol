@@ -249,7 +249,7 @@
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests"]
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "idempotency_key_required", "idempotency_in_flight"]
         },
         "message": {
           "type": "string"

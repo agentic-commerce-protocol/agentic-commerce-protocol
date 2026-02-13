@@ -36,7 +36,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 
 - Client **MUST** serialize the request using a canonical JSON scheme.
 - Client **MUST** compute a detached signature with its private key, **base64url-encode** it, and place it in the `Signature` header.
-- Client **MUST** include `Timestamp` (RFC 3339) and **SHOULD** include `Idempotency-Key`.
+- Client **MUST** include `Timestamp` (RFC 3339) and **MUST** include `Idempotency-Key`.
 
 ### 2.3 Tokenize Request
 
@@ -48,7 +48,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
   - `Content-Type: application/json` (**REQUIRED**)
   - `Accept-Language: en-us` (OPTIONAL)
   - `User-Agent: <string>` (OPTIONAL)
-  - `Idempotency-Key: <string>` (RECOMMENDED)
+  - `Idempotency-Key: <string>` (**REQUIRED**; opaque string, max 255 characters, UUID v4 recommended)
   - `Request-Id: <string>` (RECOMMENDED)
   - `Signature: <base64url>` (RECOMMENDED; identity verification over canonical request)
   - `Timestamp: <RFC3339>` (RECOMMENDED)
@@ -179,23 +179,93 @@ Exactly **one** credential type is supported today: **card**.
 **Type & Code Guidelines**
 
 - `type` ∈ `invalid_request`, `rate_limit_exceeded`, `processing_error`, `service_unavailable`
-- `code` ∈ `invalid_card`, `duplicate_request`, `idempotency_conflict`
+- `code` ∈ `invalid_card`, `duplicate_request`, `idempotency_conflict`, `idempotency_key_required`, `idempotency_in_flight`
 - `param` **SHOULD** be an RFC 9535 JSONPath (when applicable).
 
 ---
 
 ## 5. Idempotency & Retries
 
-- Clients **SHOULD** provide `Idempotency-Key` for safe retries.
-- If the same key is replayed with **different** parameters, server **MUST** return `409` with:
+> Canonical reference for delegate-payment idempotency. Supersedes prior idempotency rules where they conflict. See SEP #120.
+
+### 5.1 Idempotency-Key Requirement
+
+- Clients **MUST** include an `Idempotency-Key` header on the `POST /agentic_commerce/delegate_payment` request.
+- The key is an **opaque string**, max **255 characters**; UUID v4 is **RECOMMENDED**.
+- Servers **MUST** scope keys to the **authenticated identity + endpoint path**.
+- A request **without** an `Idempotency-Key` header **MUST** be rejected with:
+  ```json
+  {
+    "type": "invalid_request",
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required"
+  }
+  ```
+  HTTP status: **400 Bad Request**.
+
+### 5.2 Request Equivalence
+
+- Equivalence is determined by **semantic JSON equality of the request body only**; headers are excluded.
+- Servers **MUST** treat the following as equivalent:
+  | Variation | Equivalent? |
+  |---|---|
+  | Different key ordering | Yes |
+  | `null` value vs absent key | **Different** — `null` means "clear this field"; absent means "do not modify" |
+  | Trailing zeros in numbers (`1.0` vs `1`) | Yes |
+  | Array element ordering | **No** — arrays are order-sensitive |
+- Monetary values **SHOULD** use **string** or **integer-cent** representations to avoid floating-point ambiguity.
+- _Informative:_ Servers **MAY** implement comparison via RFC 8785 (JCS) canonicalization + SHA-256 fingerprint.
+
+### 5.3 Replay Behavior
+
+- Same key + **identical** body → server **MUST** return the **original response** with the **same HTTP status code**.
+- The replayed response **SHOULD** include the header `Idempotent-Replayed: true`.
+- Servers **MUST NOT** re-execute side effects (e.g., vault token creation, PSP tokenization calls) on replay.
+
+### 5.4 Error Responses
+
+All idempotency errors use `type: "invalid_request"` and the following codes:
+
+| Scenario | HTTP | `code` | Retryable? |
+|---|---|---|---|
+| Missing `Idempotency-Key` header | 400 | `idempotency_key_required` | Yes (add header) |
+| Same key, different body | 422 | `idempotency_conflict` | **No** (permanent) |
+| Same key, original request still in flight | 409 | `idempotency_in_flight` | Yes (honor `Retry-After`) |
+
+- **422 — payload mismatch** example:
   ```json
   {
     "type": "invalid_request",
     "code": "idempotency_conflict",
-    "message": "Same Idempotency-Key used with different parameters"
+    "message": "Idempotency-Key has already been used with a different request body"
   }
   ```
-- Servers **SHOULD** be tolerant of network timeouts and implement at-least-once processing with idempotency.
+- **409 — in-flight collision** example:
+  ```json
+  {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
+  }
+  ```
+  Servers **SHOULD** include a `Retry-After` header (in seconds).
+
+### 5.5 Server Error Caching
+
+- Responses with HTTP **5xx** status codes **MUST NOT** be cached against the idempotency key.
+- A retry with the same key after a 5xx **MUST** be processed as a **fresh request**.
+
+### 5.6 Key Retention
+
+- Servers **MUST** retain idempotency key → response mappings for **at least 24 hours**.
+- After expiry, a reused key is treated as a **new request** (no error).
+
+### 5.7 Implementation Guidance (informative)
+
+- **Gateway / middleware pattern:** Idempotency logic is **RECOMMENDED** to live in a middleware layer in front of business logic.
+- **Atomic transaction boundaries:** The idempotency key record and the tokenization operation **SHOULD** be committed in the **same ACID transaction**.
+- **Recovery points:** When tokenization triggers external PSP calls, servers **SHOULD** implement recovery-point semantics — record intermediate state so that retries can resume rather than restart.
+- **SDK serialization:** Because `null` and absent are semantically distinct (§5.2), SDK authors **SHOULD** ensure their serializers preserve the distinction. Clients **MUST** only include `null` when they intend to clear a field, and **MUST** omit the key when they intend to leave the field unchanged.
 
 ---
 
@@ -302,13 +372,13 @@ Exactly **one** credential type is supported today: **card**.
 
 ### 8.3 Error (idempotency conflict)
 
-**409 Conflict**
+**422 Unprocessable Entity**
 
 ```json
 {
   "type": "invalid_request",
   "code": "idempotency_conflict",
-  "message": "Same Idempotency-Key used with different parameters"
+  "message": "Idempotency-Key has already been used with a different request body"
 }
 ```
 
@@ -320,7 +390,7 @@ Exactly **one** credential type is supported today: **card**.
 - [ ] Verifies `Authorization` (Bearer)
 - [ ] Validates request fields per §3 & §7
 - [ ] Enforces **exactly one** credential type (`card`)
-- [ ] Honors `Idempotency-Key`; returns `409` on conflict
+- [ ] Requires `Idempotency-Key`; returns 400/422/409 per §5
 - [ ] Emits **flat** error object with `type`/`code`/`message`/`param?`
 - [ ] Returns `201` with `id`, `created`, and `metadata`
 - [ ] Enforces `allowance` constraints and expiry
@@ -330,4 +400,5 @@ Exactly **one** credential type is supported today: **card**.
 
 ## 10. Change Log
 
+- **Unreleased**: Rewrote §5 (Idempotency & Retries) with full normative rules: mandatory `Idempotency-Key` on all POST requests, request equivalence semantics, replay behavior with `Idempotent-Replayed` header, IETF-aligned error codes (`idempotency_key_required`, `idempotency_conflict`, `idempotency_in_flight`), 5xx caching prohibition, and 24-hour key retention. Added `idempotency_key_required` and `idempotency_in_flight` to `Error.code` enum. See SEP #120.
 - **2025-09-29**: Initial draft. Errors changed to **flat object** (no envelope). Tightened allowance and card display requirements.

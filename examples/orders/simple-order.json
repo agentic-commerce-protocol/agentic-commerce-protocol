@@ -1,0 +1,8 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json#/$defs/Order",
+  "_description": "Minimal order with only required fields. Backward-compatible with existing implementations.",
+  "id": "ord_minimal_123",
+  "checkout_session_id": "cs_abc789",
+  "permalink_url": "https://merchant.example.com/orders/ord_minimal_123"
+}
+
