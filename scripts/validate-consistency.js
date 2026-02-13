@@ -555,7 +555,7 @@ function validateOpenApiDescriptions() {
 
       if (missingDescriptions.length > 0) {
         missingDescriptions.forEach(fieldPath => {
-          warn(
+          error(
             `OpenAPI field is missing description: ${fieldPath}`,
             { version, spec, field: fieldPath }
           );

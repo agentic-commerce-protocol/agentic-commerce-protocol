@@ -532,6 +532,7 @@ components:
         state: NY
         country: US
         postal_code: "10001"
+      description: Physical address for shipping, billing, or pickup locations
     AffiliateAttributionSource:
       type: object
       additionalProperties: false
@@ -558,8 +559,11 @@ components:
       additionalProperties:
         oneOf:
           - type: string
+            description: String metadata value
           - type: number
+            description: Numeric metadata value
           - type: boolean
+            description: Boolean metadata value
       description: |
         Flat key/value map for additional non-sensitive context.
         Keys must be strings; values must be strings, numbers, or booleans.
@@ -661,6 +665,7 @@ components:
           state: CA
           country: US
           postal_code: "94102"
+      description: Details about how items will be fulfilled (shipping, pickup, or delivery information)
     CompanyInfo:
       type: object
       additionalProperties: false
@@ -684,6 +689,7 @@ components:
         tax_id: 12-3456789
         department: Marketing
         cost_center: CC-2001
+      description: Information about a company or organization associated with the buyer
     LoyaltyInfo:
       type: object
       additionalProperties: false
@@ -702,6 +708,7 @@ components:
         tier: Gold
         points_balance: 5000
         member_since: "2024-01-15T09:00:00Z"
+      description: Loyalty program information including membership details and rewards balance
     TaxExemption:
       type: object
       additionalProperties: false
@@ -720,6 +727,7 @@ components:
           type: array
           items:
             type: string
+            description: Region code where tax exemption applies (e.g., state abbreviation)
           description: List of regions where the exemption applies (e.g., state codes)
         expires_at:
           type: string
@@ -736,6 +744,7 @@ components:
           - NY
           - TX
         expires_at: "2027-12-31T23:59:59Z"
+      description: Tax exemption information including exemption type and applicable regions
     Buyer:
       type: object
       additionalProperties: false
@@ -758,18 +767,21 @@ components:
           description: Buyer's phone number
         customer_id:
           type: string
+          description: Merchant's internal customer identifier
         account_type:
           type: string
           enum:
             - guest
             - registered
             - business
+          description: Type of buyer account
         authentication_status:
           type: string
           enum:
             - authenticated
             - guest
             - requires_signin
+          description: Buyer's authentication status
         company:
           $ref: "#/components/schemas/CompanyInfo"
         loyalty:
@@ -787,6 +799,7 @@ components:
         customer_id: cust_abc123
         account_type: registered
         authentication_status: authenticated
+      description: Information about the buyer including contact details, company info, and loyalty status
     InterventionCapabilities:
       type: object
       additionalProperties: false
@@ -871,6 +884,7 @@ components:
             - type: array
               items:
                 type: string
+                description: Extension identifier string
               uniqueItems: true
               description: Extensions the agent understands (request). Simple identifiers like 'discount'.
             - type: array
@@ -906,6 +920,7 @@ components:
           items:
             type: string
             pattern: ^\$\.[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9_]*)*$
+            description: JSONPath expression identifying a schema field added by this extension
           uniqueItems: true
           description: |
             JSONPath expressions identifying the schema fields added by this extension.
@@ -961,6 +976,7 @@ components:
           type: array
           items:
             type: string
+            description: Payment service provider identifier
           description: Optional PSP routing information
       required:
         - method
@@ -991,6 +1007,7 @@ components:
         id: item_123
         name: Wireless Headphones
         unit_amount: 7999
+      description: A purchasable item with variant options (e.g., size, color) and quantity
     Disclosure:
       type: object
       additionalProperties: false
@@ -1017,6 +1034,7 @@ components:
         type: disclaimer
         content_type: plain
         content: This product contains small parts and is not suitable for children under 3 years.
+      description: Legal disclosure or terms that must be acknowledged by the buyer
     CustomAttribute:
       type: object
       additionalProperties: false
@@ -1033,6 +1051,7 @@ components:
       example:
         display_name: Engraving
         value: Happy Birthday!
+      description: Custom key-value attribute for merchant-specific metadata on line items
     MarketplaceSellerDetails:
       type: object
       additionalProperties: false
@@ -1044,6 +1063,7 @@ components:
         - name
       example:
         name: TechGear Store
+      description: Information about a third-party seller in a marketplace model
     PaymentHandler:
       type: object
       additionalProperties: false
@@ -1081,6 +1101,7 @@ components:
           items:
             type: string
             format: uri
+            description: URL to a JSON Schema defining accepted payment instrument format
           description: URLs to JSON Schemas for payment instruments
         config:
           type: object
@@ -1135,6 +1156,7 @@ components:
       example:
         name: Color
         value: Midnight Blue
+      description: Represents a single variant option for a product (e.g., size, color, material)
     WeightInfo:
       type: object
       additionalProperties: false
@@ -1156,6 +1178,7 @@ components:
       example:
         value: 250
         unit: g
+      description: Product weight with unit of measurement
     DimensionsInfo:
       type: object
       additionalProperties: false
@@ -1185,6 +1208,7 @@ components:
         width: 10.2
         height: 5.8
         unit: cm
+      description: Physical dimensions of a product with unit of measurement
     DiscountDetail:
       type: object
       additionalProperties: false
@@ -1222,50 +1246,66 @@ components:
         amount: 1600
         description: 20% off your order
         source: coupon
+      description: Information about a discount applied to the checkout or a specific item
     LineItem:
       type: object
       additionalProperties: false
       properties:
         id:
           type: string
+          description: Unique identifier for the line item
         item:
           $ref: "#/components/schemas/Item"
         quantity:
           type: integer
           minimum: 1
+          description: Number of units for this line item
         name:
           type: string
+          description: Display name of the line item
         description:
           type: string
+          description: Detailed description of the line item
         images:
           type: array
           items:
             type: string
             format: uri
+            description: Image URL for the product
+          description: Array of image URLs for this line item
         unit_amount:
           type: integer
+          description: The unit price of the line item in the smallest currency unit (e.g., cents for USD)
         disclosures:
           type: array
           items:
             $ref: "#/components/schemas/Disclosure"
+          description: Legal disclosures or disclaimers for this item
         custom_attributes:
           type: array
           items:
             $ref: "#/components/schemas/CustomAttribute"
+          description: Custom attributes specific to this line item
         marketplace_seller_details:
           $ref: "#/components/schemas/MarketplaceSellerDetails"
         product_id:
           type: string
+          description: Merchant's product identifier
         sku:
           type: string
+          description: Stock keeping unit identifier
         variant_id:
           type: string
+          description: Product variant identifier
         category:
           type: string
+          description: Product category
         tags:
           type: array
           items:
             type: string
+            description: Product tag or category
+          description: Product tags or labels
         weight:
           $ref: "#/components/schemas/WeightInfo"
         dimensions:
@@ -1278,27 +1318,35 @@ components:
             - out_of_stock
             - backorder
             - pre_order
+          description: Current availability status of the item
         available_quantity:
           type: integer
           minimum: 0
+          description: Quantity currently available for purchase
         max_quantity_per_order:
           type: integer
           minimum: 1
+          description: Maximum quantity allowed per order
         fulfillable_on:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when item becomes available for fulfillment
         variant_options:
           type: array
           items:
             $ref: "#/components/schemas/VariantOption"
+          description: Selected product variant options (e.g., size, color)
         discount_details:
           type: array
           items:
             $ref: "#/components/schemas/DiscountDetail"
+          description: Line-item level discount details
         tax_exempt:
           type: boolean
+          description: Whether this line item is tax exempt
         tax_exemption_reason:
           type: string
+          description: Reason for tax exemption if applicable
         parent_id:
           type: string
           description: Reference to parent line item for bundled products
@@ -1324,16 +1372,20 @@ components:
         total: 6264
         currency: usd
         image_url: https://example.com/images/tshirt-blue.jpg
+      description: A line item in the checkout representing a product with pricing, discounts, and fulfillment details
     TaxBreakdownItem:
       type: object
       additionalProperties: false
       properties:
         jurisdiction:
           type: string
+          description: Tax jurisdiction name (e.g., 'California State Tax', 'City of San Francisco')
         rate:
           type: number
+          description: Tax rate as a decimal (e.g., 0.0875 for 8.75%)
         amount:
           type: integer
+          description: Tax amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
       required:
         - jurisdiction
         - rate
@@ -1342,6 +1394,7 @@ components:
         name: State Sales Tax
         amount: 464
         rate: 0.08
+      description: Breakdown of tax amounts by type, jurisdiction, or rate
     Total:
       type: object
       additionalProperties: false
@@ -1361,18 +1414,24 @@ components:
             - store_credit
             - total
             - amount_refunded
+          description: Type of total line item
         display_text:
           type: string
+          description: Localized display text for this total
         amount:
           type: integer
+          description: Amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
         presentment_amount:
           type: integer
+          description: Amount in presentment currency minor units if different from settlement currency
         description:
           type: string
+          description: Additional descriptive text for this total
         breakdown:
           type: array
           items:
             $ref: "#/components/schemas/TaxBreakdownItem"
+          description: Detailed breakdown for tax totals
       required:
         - type
         - display_text
@@ -1384,6 +1443,7 @@ components:
         tax: 464
         shipping: 500
         total: 6764
+      description: Total amounts for the checkout including subtotal, discounts, tax, shipping, and final total
     FulfillmentOptionPickup:
       type: object
       additionalProperties: false
@@ -1391,42 +1451,54 @@ components:
         type:
           type: string
           const: pickup
+          description: Fulfillment type discriminator
         id:
           type: string
+          description: Unique identifier for this fulfillment option
         title:
           type: string
+          description: Display title for this pickup option
         description:
           type: string
+          description: Additional details about this pickup option
         location:
           type: object
           properties:
             name:
               type: string
+              description: Location name
             address:
               $ref: "#/components/schemas/Address"
             phone:
               type: string
+              description: Location phone number
             instructions:
               type: string
+              description: Special pickup instructions
           required:
             - name
             - address
+          description: Pickup location details
         pickup_type:
           type: string
           enum:
             - in_store
             - curbside
             - locker
+          description: Type of pickup method
         ready_by:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when order will be ready for pickup
         pickup_by:
           type: string
           format: date-time
+          description: RFC 3339 timestamp by which order must be picked up
         totals:
           type: array
           items:
             $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
       required:
         - type
         - id
@@ -1446,6 +1518,7 @@ components:
           state: CA
           country: US
           postal_code: "94102"
+      description: In-store or curbside pickup fulfillment option with pickup location details
     FulfillmentOptionLocalDelivery:
       type: object
       additionalProperties: false
@@ -1453,35 +1526,46 @@ components:
         type:
           type: string
           const: local_delivery
+          description: Fulfillment type discriminator
         id:
           type: string
+          description: Unique identifier for this fulfillment option
         title:
           type: string
+          description: Display title for this local delivery option
         description:
           type: string
+          description: Additional details about this delivery option
         delivery_window:
           type: object
           properties:
             start:
               type: string
               format: date-time
+              description: RFC 3339 timestamp for delivery window start
             end:
               type: string
               format: date-time
+              description: RFC 3339 timestamp for delivery window end
           required:
             - start
             - end
+          description: Expected delivery time window
         service_area:
           type: object
           properties:
             radius_miles:
               type: number
+              description: Delivery radius in miles
             center_postal_code:
               type: string
+              description: Center point postal code for delivery radius
+          description: Geographic service area for local delivery
         totals:
           type: array
           items:
             $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
       required:
         - type
         - id
@@ -1500,6 +1584,7 @@ components:
           state: CA
           country: US
           postal_code: "94103"
+      description: Local delivery fulfillment option with delivery address and scheduling details
     FulfillmentOptionShipping:
       type: object
       additionalProperties: false
@@ -1507,24 +1592,32 @@ components:
         type:
           type: string
           const: shipping
+          description: Fulfillment type discriminator
         id:
           type: string
+          description: Unique identifier for this fulfillment option
         title:
           type: string
+          description: Display title for this shipping option (e.g., 'Standard Shipping', 'Express')
         description:
           type: string
+          description: Additional details about this shipping option
         carrier:
           type: string
+          description: Shipping carrier name (e.g., 'USPS', 'FedEx')
         earliest_delivery_time:
           type: string
           format: date-time
+          description: RFC 3339 timestamp for earliest expected delivery
         latest_delivery_time:
           type: string
           format: date-time
+          description: RFC 3339 timestamp for latest expected delivery
         totals:
           type: array
           items:
             $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
       required:
         - type
         - id
@@ -1538,6 +1631,7 @@ components:
         currency: usd
         carrier: USPS
         service_level: ground
+      description: Shipping fulfillment option with carrier, service level, and delivery estimates
     FulfillmentOptionDigital:
       type: object
       additionalProperties: false
@@ -1545,16 +1639,21 @@ components:
         type:
           type: string
           const: digital
+          description: Fulfillment type discriminator
         id:
           type: string
+          description: Unique identifier for this fulfillment option
         title:
           type: string
+          description: Display title for this digital delivery option
         description:
           type: string
+          description: Additional details about digital delivery method
         totals:
           type: array
           items:
             $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
       required:
         - type
         - id
@@ -1566,6 +1665,7 @@ components:
         name: Instant Download
         cost: 0
         currency: usd
+      description: Digital delivery fulfillment option for downloadable or streaming content
     SelectedFulfillmentOption:
       type: object
       additionalProperties: false
@@ -1577,12 +1677,16 @@ components:
             - digital
             - pickup
             - local_delivery
+          description: Type of fulfillment option selected
         option_id:
           type: string
+          description: ID of the selected fulfillment option
         item_ids:
           type: array
           items:
             type: string
+            description: Line item identifier
+          description: List of line item IDs associated with this fulfillment option
       required:
         - type
         - option_id
@@ -1593,6 +1697,7 @@ components:
         item_ids:
           - item_001
           - item_002
+      description: Fulfillment option selected by the buyer for specific line items
     MessageInfo:
       type: object
       additionalProperties: false
@@ -1600,6 +1705,7 @@ components:
         type:
           type: string
           const: info
+          description: Message type discriminator
         severity:
           type: string
           enum:
@@ -1608,6 +1714,7 @@ components:
             - medium
             - high
             - critical
+          description: Severity level of this informational message
         resolution:
           type: string
           enum:
@@ -1623,8 +1730,10 @@ components:
           enum:
             - plain
             - markdown
+          description: Format of the message content
         content:
           type: string
+          description: Informational message text
       required:
         - type
         - content_type
@@ -1633,6 +1742,7 @@ components:
         id: msg_info_01
         message: Free shipping on orders over $50
         display_context: banner
+      description: Informational message to display to the buyer during checkout
     MessageWarning:
       type: object
       additionalProperties: false
@@ -1640,6 +1750,7 @@ components:
         type:
           type: string
           const: warning
+          description: Message type discriminator
         code:
           type: string
           enum:
@@ -1657,6 +1768,7 @@ components:
             - discount_code_user_not_logged_in
             - discount_code_user_ineligible
             - discount_code_usage_limit_reached
+          description: Warning code indicating the type of warning
         severity:
           type: string
           enum:
@@ -1665,6 +1777,7 @@ components:
             - medium
             - high
             - critical
+          description: Severity level of this warning
         resolution:
           type: string
           enum:
@@ -1680,8 +1793,10 @@ components:
           enum:
             - plain
             - markdown
+          description: Format of the warning message content
         content:
           type: string
+          description: Warning message text
       required:
         - type
         - code
@@ -1692,6 +1807,7 @@ components:
         message: Only 2 items left in stock
         code: low_stock
         param: $.items[0]
+      description: Warning message to display to the buyer during checkout (non-blocking)
     MessageError:
       type: object
       additionalProperties: false
@@ -1707,6 +1823,7 @@ components:
         type:
           type: string
           const: error
+          description: Message type discriminator
         code:
           type: string
           enum:
@@ -1731,6 +1848,7 @@ components:
             - rate_limited
             - expired
             - intervention_required
+          description: Error code indicating the type of error
         severity:
           type: string
           enum:
@@ -1739,6 +1857,7 @@ components:
             - medium
             - high
             - critical
+          description: Severity level of this error
         resolution:
           type: string
           enum:
@@ -1755,8 +1874,10 @@ components:
           enum:
             - plain
             - markdown
+          description: Format of the error message content
         content:
           type: string
+          description: Error message text
       required:
         - type
         - code
@@ -1773,14 +1894,17 @@ components:
       properties:
         enabled:
           type: boolean
+          description: Whether gift wrapping is enabled for this order
         style:
           type: string
           enum:
             - birthday
             - holiday
             - elegant
+          description: Gift wrap style selected
         charge:
           type: integer
+          description: Additional charge for gift wrapping in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
       required:
         - enabled
       example:
@@ -1788,6 +1912,7 @@ components:
         cost: 500
         currency: usd
         message: Happy Birthday!
+      description: Gift wrapping option with associated cost and customization details
     Link:
       type: object
       additionalProperties: false
@@ -1803,11 +1928,14 @@ components:
             - about_us
             - faq
             - support
+          description: Type of link
         title:
           type: string
+          description: Display text for the link
         url:
           type: string
           format: uri
+          description: URL destination
       required:
         - type
         - url
@@ -1815,12 +1943,14 @@ components:
         url: https://example.com/terms
         text: Terms of Service
         action: view
+      description: Hyperlink with URL, display text, and optional action semantics
     SplitPayment:
       type: object
       additionalProperties: false
       properties:
         amount:
           type: integer
+          description: Payment amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100) for this split
       required:
         - amount
       example:
@@ -1828,6 +1958,7 @@ components:
         methods:
           - card
           - paypal
+      description: Split payment configuration allowing payment across multiple methods or parties
     PaymentData:
       type: object
       additionalProperties: false
@@ -1862,6 +1993,7 @@ components:
           $ref: "#/components/schemas/Address"
         purchase_order_number:
           type: string
+          description: Purchase order number
         payment_terms:
           type: string
           enum:
@@ -1870,11 +2002,14 @@ components:
             - net_30
             - net_60
             - net_90
+          description: Payment terms for B2B transactions
         due_date:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when payment is due
         approval_required:
           type: boolean
+          description: Whether this payment requires approval
       anyOf:
         - required:
             - handler_id
@@ -1884,16 +2019,20 @@ components:
       example:
         type: vault_token
         token: vt_01J8Z3WXYZ9ABC123
+      description: Payment instrument data collected from the buyer (e.g., card details, wallet tokens)
     FulfillmentGroup:
       type: object
       additionalProperties: false
       properties:
         id:
           type: string
+          description: Unique identifier for this fulfillment group
         item_ids:
           type: array
           items:
             type: string
+            description: Line item identifier in this fulfillment group
+          description: List of line item IDs in this fulfillment group
         destination_type:
           type: string
           enum:
@@ -1901,12 +2040,15 @@ components:
             - pickup
             - local_delivery
             - digital
+          description: Type of fulfillment for this group
         fulfillment_details:
           $ref: "#/components/schemas/FulfillmentDetails"
         location_id:
           type: string
+          description: Location identifier for pickup or local delivery
         instructions:
           type: string
+          description: Special fulfillment instructions
       required:
         - id
         - item_ids
@@ -1917,6 +2059,7 @@ components:
         item_ids:
           - item_001
           - item_002
+      description: Group of line items that share the same fulfillment method and destination
     EstimatedDelivery:
       type: object
       additionalProperties: false
@@ -1924,32 +2067,40 @@ components:
         earliest:
           type: string
           format: date-time
+          description: RFC 3339 timestamp for earliest expected delivery
         latest:
           type: string
           format: date-time
+          description: RFC 3339 timestamp for latest expected delivery
       required:
         - earliest
         - latest
       example:
         earliest: "2026-02-15"
         latest: "2026-02-20"
+      description: Estimated delivery date range for a fulfillment option
     OrderConfirmation:
       type: object
       additionalProperties: false
       properties:
         confirmation_number:
           type: string
+          description: Order confirmation number
         confirmation_email_sent:
           type: boolean
+          description: Whether a confirmation email has been sent
         receipt_url:
           type: string
           format: uri
+          description: URL to the order receipt
         invoice_number:
           type: string
+          description: Invoice number if generated
       example:
         order_id: ord_abc123
         order_number: "12345"
         confirmation_url: https://example.com/orders/ord_abc123
+      description: Order confirmation details including order number and tracking information
     SupportInfo:
       type: object
       additionalProperties: false
@@ -1957,17 +2108,22 @@ components:
         email:
           type: string
           format: email
+          description: Support contact email
         phone:
           type: string
+          description: Support contact phone number
         hours:
           type: string
+          description: Support hours of operation
         help_center_url:
           type: string
           format: uri
+          description: URL to merchant's help center
       example:
         email: support@example.com
         phone: +1-800-555-0123
         url: https://example.com/support
+      description: Customer support contact information including email, phone, and URL
     Order:
       type: object
       additionalProperties: false
@@ -1981,14 +2137,17 @@ components:
           description: Discriminator field for webhook payloads. Always 'order' when present.
         id:
           type: string
+          description: Unique identifier for the order
         checkout_session_id:
           type: string
+          description: ID of the checkout session that created this order
         order_number:
           type: string
           description: Human-readable order number for customer reference
         permalink_url:
           type: string
           format: uri
+          description: Permanent URL where the customer can view order details
         status:
           type: string
           enum:
@@ -2400,6 +2559,7 @@ components:
           type: object
           additionalProperties:
             type: string
+            description: Metadata value
           description: Arbitrary key-value metadata attached to the coupon.
       example:
         code: SAVE20
@@ -2498,6 +2658,7 @@ components:
           type: array
           items:
             type: string
+            description: Discount code to apply
           description: Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear.
       example:
         codes:
@@ -2512,6 +2673,7 @@ components:
           type: array
           items:
             type: string
+            description: Discount code submitted
           description: Echo of submitted discount codes.
         applied:
           type: array
@@ -2534,25 +2696,32 @@ components:
       properties:
         provider:
           type: string
+          description: Payment provider identifier
         instruments:
           type: array
           items:
             type: object
             additionalProperties: true
+            description: Payment instrument schema reference
+          description: Available payment instruments
         handlers:
           type: array
           items:
             type: object
             additionalProperties: true
+            description: Payment handler configuration
+          description: Available payment handlers
       example:
         instruments: []
         handlers: []
+      description: Payment configuration returned by the seller including accepted methods and handlers
     CheckoutSessionBase:
       type: object
       additionalProperties: false
       properties:
         id:
           type: string
+          description: Unique identifier for the checkout session
         protocol:
           $ref: "#/components/schemas/ProtocolVersion"
         capabilities:
@@ -2573,23 +2742,31 @@ components:
             - canceled
             - in_progress
             - expired
+          description: Current status of the checkout session
         currency:
           type: string
+          description: ISO 4217 settlement currency code
         presentment_currency:
           type: string
+          description: ISO 4217 presentment currency code if different from settlement currency
         exchange_rate:
           type: number
+          description: Exchange rate from presentment to settlement currency
         exchange_rate_timestamp:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when exchange rate was determined
         locale:
           type: string
+          description: Locale code (e.g., 'en-US') for localizing content
         timezone:
           type: string
+          description: IANA timezone identifier (e.g., 'America/New_York')
         line_items:
           type: array
           items:
             $ref: "#/components/schemas/LineItem"
+          description: Line items in the checkout session
         fulfillment_details:
           $ref: "#/components/schemas/FulfillmentDetails"
         fulfillment_options:
@@ -2600,18 +2777,22 @@ components:
               - $ref: "#/components/schemas/FulfillmentOptionDigital"
               - $ref: "#/components/schemas/FulfillmentOptionPickup"
               - $ref: "#/components/schemas/FulfillmentOptionLocalDelivery"
+          description: Available fulfillment options
         selected_fulfillment_options:
           type: array
           items:
             $ref: "#/components/schemas/SelectedFulfillmentOption"
+          description: Currently selected fulfillment options
         fulfillment_groups:
           type: array
           items:
             $ref: "#/components/schemas/FulfillmentGroup"
+          description: Optional grouping of line items by fulfillment method
         totals:
           type: array
           items:
             $ref: "#/components/schemas/Total"
+          description: Cart-level totals breakdown
         messages:
           type: array
           items:
@@ -2619,32 +2800,41 @@ components:
               - $ref: "#/components/schemas/MessageInfo"
               - $ref: "#/components/schemas/MessageWarning"
               - $ref: "#/components/schemas/MessageError"
+          description: Messages to communicate with the buyer (info, warnings, errors)
         links:
           type: array
           items:
             $ref: "#/components/schemas/Link"
+          description: Relevant links (terms, policies, support)
         authentication_metadata:
           $ref: "#/components/schemas/AuthenticationMetadata"
         created_at:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when the session was created
         updated_at:
           type: string
           format: date-time
+          description: RFC 3339 timestamp of last update
         expires_at:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when the session expires
         continue_url:
           type: string
           format: uri
+          description: URL to continue or resume the checkout session
         metadata:
           type: object
           additionalProperties: true
+          description: Arbitrary metadata for merchant use
         quote_id:
           type: string
+          description: Quote identifier if this session is based on a quote
         quote_expires_at:
           type: string
           format: date-time
+          description: RFC 3339 timestamp when the quote expires
         discounts:
           $ref: "#/components/schemas/DiscountsResponse"
           description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
@@ -2671,6 +2861,7 @@ components:
         messages: []
         links: []
         capabilities: {}
+      description: Base checkout session model containing common fields for all checkout session states
     CheckoutSession:
       allOf:
         - $ref: "#/components/schemas/CheckoutSessionBase"
@@ -2687,6 +2878,7 @@ components:
         messages: []
         links: []
         capabilities: {}
+      description: Checkout session response model
     CheckoutSessionWithOrder:
       allOf:
         - $ref: "#/components/schemas/CheckoutSessionBase"
@@ -2696,6 +2888,7 @@ components:
               $ref: "#/components/schemas/Order"
           required:
             - order
+          description: Order extension for completed checkout sessions
       example:
         id: cs_abc123
         status: completed
@@ -2717,6 +2910,7 @@ components:
           total: 6764
           line_items: []
           created_at: "2026-02-13T10:30:00Z"
+      description: Checkout session response after completion, includes the created order
     CheckoutSessionCreateRequest:
       type: object
       additionalProperties: false
@@ -2728,6 +2922,7 @@ components:
           items:
             $ref: "#/components/schemas/Item"
           minItems: 1
+          description: Items to add to the checkout session
         currency:
           type: string
           description: ISO 4217 currency code
@@ -2739,25 +2934,31 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FulfillmentGroup"
+          description: Grouping of items by fulfillment method
         affiliate_attribution:
           $ref: "#/components/schemas/AffiliateAttribution"
         coupons:
           type: array
           items:
             type: string
+            description: Coupon code to apply
           description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
         discounts:
           $ref: "#/components/schemas/DiscountsRequest"
           description: Discount codes to apply to the checkout session.
         locale:
           type: string
+          description: Locale code for localizing content (e.g., 'en-US')
         timezone:
           type: string
+          description: IANA timezone identifier (e.g., 'America/New_York')
         quote_id:
           type: string
+          description: Quote identifier if this session is based on a quote
         metadata:
           type: object
           additionalProperties: true
+          description: Arbitrary metadata for merchant use
       required:
         - line_items
         - currency
@@ -2768,6 +2969,7 @@ components:
             quantity: 2
         currency: usd
         capabilities: {}
+      description: Request to create a new checkout session
     CheckoutSessionUpdateRequest:
       type: object
       additionalProperties: false
@@ -2778,20 +2980,24 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Item"
+          description: Items to update in the checkout session
         fulfillment_details:
           $ref: "#/components/schemas/FulfillmentDetails"
         fulfillment_groups:
           type: array
           items:
             $ref: "#/components/schemas/FulfillmentGroup"
+          description: Updated fulfillment groupings
         selected_fulfillment_options:
           type: array
           items:
             $ref: "#/components/schemas/SelectedFulfillmentOption"
+          description: Fulfillment option selected by the buyer
         coupons:
           type: array
           items:
             type: string
+            description: Coupon code to apply
           description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
         discounts:
           $ref: "#/components/schemas/DiscountsRequest"
@@ -2799,23 +3005,30 @@ components:
       example:
         buyer:
           email: customer@example.com
+      description: Request to update an existing checkout session
     RiskSignals:
       type: object
       additionalProperties: false
       properties:
         ip_address:
           type: string
+          description: IP address of the buyer
         user_agent:
           type: string
+          description: User agent string of the buyer's browser
         accept_language:
           type: string
+          description: Accept-Language header from the buyer's browser
         session_id:
           type: string
+          description: Session identifier for the buyer
         device_fingerprint:
           type: string
+          description: Device fingerprint for fraud detection
       example:
         ip_country: US
         device_fingerprint: fp_abc123
+      description: Risk and fraud detection signals for the checkout session
     CheckoutSessionCompleteRequest:
       type: object
       additionalProperties: false
@@ -2836,6 +3049,7 @@ components:
         payment_data:
           type: vault_token
           token: vt_01J8Z3WXYZ9ABC123
+      description: Request to complete a checkout session and create an order
     AuthenticationMetadata:
       type: object
       additionalProperties: true
@@ -3032,12 +3246,15 @@ components:
               - string
               - number
               - boolean
+            description: Metadata value
+          description: Additional structured metadata about the intent
       required:
         - reason_code
       example:
         reason_code: buyer_initiated
         description: Customer requested to complete checkout
         metadata: {}
+      description: Structured reason for why a buyer action was taken, used for analytics and debugging
     CancelSessionRequest:
       type: object
       properties:
@@ -3047,6 +3264,7 @@ components:
         intent_trace:
           reason_code: buyer_cancelled
           description: Customer decided not to purchase
+      description: Request to cancel a checkout session
     Error:
       type: object
       additionalProperties: false
@@ -3066,11 +3284,13 @@ components:
             - invalid_request
             - processing_error
             - service_unavailable
+          description: Error type indicating the category of protocol-level error
         code:
           type: string
           description: Implementation-defined error code
         message:
           type: string
+          description: Human-readable error message
         param:
           type: string
           description: RFC 9535 JSONPath (optional)
