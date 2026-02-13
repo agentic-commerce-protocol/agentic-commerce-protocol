@@ -36,6 +36,16 @@ This directory contains automated validation scripts that ensure consistency acr
 - Required fields are consistent
 - Enum values match
 
+### ✅ Field Descriptions (unreleased only)
+- All data models have a description at the top level
+- All fields within models have descriptions
+- Ensures documentation completeness
+
+### ✅ Model Examples (unreleased only)
+- Every data model has at least one example
+- Examples use the `example` or `examples` field
+- Helps developers understand expected data formats
+
 ## Running Locally
 
 ```bash
@@ -85,6 +95,8 @@ const CRITICAL_FIELDS = [
 - Prohibited schemas in wrong files
 - Critical fields with incorrect types
 - Examples that don't validate against schemas
+- Missing field descriptions in unreleased schemas
+- Missing model examples in unreleased schemas
 
 ### Warnings (Don't fail CI)
 - Missing optional files
@@ -97,6 +109,8 @@ const CRITICAL_FIELDS = [
 ✅ **Missing schemas**: Schemas referenced but not defined  
 ✅ **Architectural violations**: Schemas in wrong specification files  
 ✅ **Schema mismatches**: Referenced schemas that don't exist  
+✅ **Missing descriptions**: Data models or fields without descriptions (unreleased)  
+✅ **Missing examples**: Data models without usage examples (unreleased)  
 
 ## Contributing
 

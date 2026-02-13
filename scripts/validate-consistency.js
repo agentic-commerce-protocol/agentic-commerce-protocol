@@ -9,6 +9,8 @@
  * 3. Field type consistency (especially integer vs string for amounts)
  * 4. Prohibited schemas (like Refund in agentic_checkout)
  * 5. Required field consistency
+ * 6. All fields in unreleased schemas have descriptions
+ * 7. All data models in unreleased have at least one example
  */
 
 const fs = require('fs');
@@ -236,7 +238,146 @@ function validateFieldTypes() {
   });
 }
 
-// 5. Validate examples against schemas
+// 5. Validate that all fields in unreleased schemas have descriptions
+function validateFieldDescriptions() {
+  console.log('\n📖 Validating Field Descriptions in unreleased specs...\n');
+
+  const version = 'unreleased';
+  SPECS.forEach(spec => {
+    const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
+
+    if (!fs.existsSync(schemaPath)) {
+      warn(`Schema not found: ${schemaPath}`, { version, spec });
+      return;
+    }
+
+    try {
+      const content = fs.readFileSync(schemaPath, 'utf8');
+      const schema = JSON.parse(content);
+
+      let missingDescriptions = [];
+
+      // Recursive function to check all properties in an object
+      function checkProperties(obj, path = []) {
+        if (!obj || typeof obj !== 'object') return;
+
+        // If this is a property definition with a type, check for description
+        if (obj.type && !obj.description) {
+          // Skip if this is just a simple enum or const value
+          if (!obj.enum && !obj.const && !obj.oneOf && !obj.anyOf && !obj.allOf) {
+            missingDescriptions.push(path.join('.'));
+          }
+        }
+
+        // Check properties object
+        if (obj.properties) {
+          Object.keys(obj.properties).forEach(propName => {
+            checkProperties(obj.properties[propName], [...path, propName]);
+          });
+        }
+
+        // Check array items
+        if (obj.items) {
+          checkProperties(obj.items, [...path, '[items]']);
+        }
+
+        // Check oneOf, anyOf, allOf
+        ['oneOf', 'anyOf', 'allOf'].forEach(key => {
+          if (obj[key] && Array.isArray(obj[key])) {
+            obj[key].forEach((subSchema, idx) => {
+              checkProperties(subSchema, [...path, `[${key}[${idx}]]`]);
+            });
+          }
+        });
+
+        // Check additionalProperties if it's a schema
+        if (obj.additionalProperties && typeof obj.additionalProperties === 'object') {
+          checkProperties(obj.additionalProperties, [...path, '[additionalProperties]']);
+        }
+      }
+
+      // Check all $defs
+      if (schema.$defs) {
+        Object.keys(schema.$defs).forEach(defName => {
+          const def = schema.$defs[defName];
+          
+          // Check if the model itself has a description
+          if (!def.description) {
+            error(
+              `Model "${defName}" is missing a description`,
+              { version, spec, model: defName }
+            );
+          }
+
+          checkProperties(def, [defName]);
+        });
+      }
+
+      if (missingDescriptions.length > 0) {
+        missingDescriptions.forEach(fieldPath => {
+          error(
+            `Field is missing description: ${fieldPath}`,
+            { version, spec, field: fieldPath }
+          );
+        });
+      } else {
+        success(`All fields have descriptions in ${version}/${spec}`);
+      }
+    } catch (err) {
+      error(`Error validating field descriptions for ${version}/${spec}: ${err.message}`, { version, spec });
+    }
+  });
+}
+
+// 6. Validate that all data models in unreleased have at least one example
+function validateModelExamples() {
+  console.log('\n📝 Validating Model Examples in unreleased specs...\n');
+
+  const version = 'unreleased';
+  SPECS.forEach(spec => {
+    const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
+
+    if (!fs.existsSync(schemaPath)) {
+      warn(`Schema not found: ${schemaPath}`, { version, spec });
+      return;
+    }
+
+    try {
+      const content = fs.readFileSync(schemaPath, 'utf8');
+      const schema = JSON.parse(content);
+
+      let missingExamples = [];
+
+      // Check all $defs for examples
+      if (schema.$defs) {
+        Object.keys(schema.$defs).forEach(defName => {
+          const def = schema.$defs[defName];
+          
+          // Check if the model has at least one example
+          // Examples can be in 'example' or 'examples' field
+          if (!def.example && !def.examples) {
+            missingExamples.push(defName);
+          }
+        });
+      }
+
+      if (missingExamples.length > 0) {
+        missingExamples.forEach(modelName => {
+          error(
+            `Model "${modelName}" is missing an example`,
+            { version, spec, model: modelName }
+          );
+        });
+      } else {
+        success(`All models have examples in ${version}/${spec}`);
+      }
+    } catch (err) {
+      error(`Error validating model examples for ${version}/${spec}: ${err.message}`, { version, spec });
+    }
+  });
+}
+
+// 7. Validate examples against schemas
 function validateExamples() {
   console.log('\n📝 Validating Examples Against Schemas...\n');
 
@@ -343,6 +484,8 @@ validateJsonSchemaSyntax();
 validateOpenApiSyntax();
 checkProhibitedSchemas();
 validateFieldTypes();
+validateFieldDescriptions();
+validateModelExamples();
 validateExamples();
 
 console.log('\n' + '='.repeat(60));
