@@ -209,7 +209,7 @@ components:
       name: Accept-Language
       in: header
       required: false
-      description: "	Preferred language for response messages (e.g., en-US)"
+      description: "Preferred language for response messages (e.g., en-US)"
       schema:
         type: string
         example: "en-us"
