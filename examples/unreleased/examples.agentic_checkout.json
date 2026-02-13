@@ -1444,5 +1444,20 @@
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
     ]
+  },
+  "error_400_idempotency_key_required": {
+    "type": "invalid_request",
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required"
+  },
+  "error_422_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Idempotency-Key has already been used with a different request body"
+  },
+  "error_409_idempotency_in_flight": {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
   }
 }

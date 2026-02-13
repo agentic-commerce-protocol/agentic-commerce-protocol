@@ -2972,13 +2972,12 @@
     "Error": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Protocol-level error returned in 4xx/5xx responses when the server cannot return a valid CheckoutSession at all (e.g. malformed request or unexpected failure). Use Error—not MessageError—when there is no valid session state to return. type semantics: invalid_request — malformed request, missing required fields, or invalid JSON; request_not_idempotent — idempotency violation; processing_error — unexpected server-side failure; service_unavailable — temporary unavailability.",
+      "description": "Protocol-level error returned in 4xx/5xx responses when the server cannot return a valid CheckoutSession at all (e.g. malformed request or unexpected failure). Use Error—not MessageError—when there is no valid session state to return. type semantics: invalid_request — malformed request, missing required fields, invalid JSON, or idempotency violations (codes: idempotency_key_required, idempotency_in_flight, idempotency_conflict); processing_error — unexpected server-side failure; service_unavailable — temporary unavailability.",
       "properties": {
         "type": {
           "type": "string",
           "enum": [
             "invalid_request",
-            "request_not_idempotent",
             "processing_error",
             "service_unavailable"
           ],
