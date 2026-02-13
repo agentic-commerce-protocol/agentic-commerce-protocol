@@ -41,14 +41,17 @@ paths:
         - name: Request-Id
           in: header
           required: false
+          description: "Unique identifier for request tracking and debugging"
           schema: { type: string }
         - name: Timestamp
           in: header
           required: false
+          description: "ISO 8601 timestamp for request timing validation"
           schema: { type: string, format: date-time }
         - name: Content-Type
           in: header
           required: true
+          description: "Must be application/json"
           schema: { type: string, example: "application/json" }
       requestBody:
         required: true
@@ -146,8 +149,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  received: { type: boolean }
-                  request_id: { type: string }
+                  received: { type: boolean, description: "Confirms the event was received" }
+                  request_id: { type: string, description: "Echo of the Request-Id header if provided" }
                 required: [received]
         "400":
           description: Bad payload
@@ -184,20 +187,43 @@ components:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [order_create, order_update] }
-        data: { $ref: "#/components/schemas/EventDataOrder" }
+        type: 
+          type: string
+          enum: [order_create, order_update]
+          description: "Event type: order_create for new orders, order_update for changes to existing orders"
+        data: 
+          $ref: "#/components/schemas/EventDataOrder"
+          description: "The order object associated with this event"
       required: [type, data]
+      example:
+        type: "order_update"
+        data:
+          type: "order"
+          checkout_session_id: "cs_01HV3P3ABC123"
+          permalink_url: "https://merchant.example.com/orders/ord_123456"
+          status: "shipped"
+          refunds: []
 
     Error:
       type: object
       additionalProperties: false
       properties:
         type:
-          {
-            type: string,
-            enum: [invalid_request, processing_error, service_unavailable],
-          }
-        code: { type: string }
-        message: { type: string }
-        param: { type: string }
+          type: string
+          enum: [invalid_request, processing_error, service_unavailable]
+          description: "High-level error category"
+        code: 
+          type: string
+          description: "Specific error code for programmatic handling"
+        message: 
+          type: string
+          description: "Human-readable error message"
+        param: 
+          type: string
+          description: "JSONPath of the offending field if applicable"
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "missing_required_field"
+        message: "The 'amount' field is required"
+        param: "$.amount"

@@ -19,7 +19,11 @@
       "required": [
         "name",
         "value"
-      ]
+      ],
+      "example": {
+        "name": "Color",
+        "value": "Midnight Blue"
+      }
     },
     "WeightInfo": {
       "type": "object",
@@ -43,7 +47,11 @@
       "required": [
         "value",
         "unit"
-      ]
+      ],
+      "example": {
+        "value": 250,
+        "unit": "g"
+      }
     },
     "DimensionsInfo": {
       "type": "object",
@@ -75,7 +83,13 @@
         "width",
         "height",
         "unit"
-      ]
+      ],
+      "example": {
+        "length": 15.5,
+        "width": 10.2,
+        "height": 5.8,
+        "unit": "cm"
+      }
     },
     "DiscountDetail": {
       "type": "object",
@@ -116,7 +130,14 @@
       "required": [
         "type",
         "amount"
-      ]
+      ],
+      "example": {
+        "code": "SAVE20",
+        "type": "percentage",
+        "amount": 1600,
+        "description": "20% off your order",
+        "source": "coupon"
+      }
     },
     "Address": {
       "type": "object",
@@ -158,7 +179,16 @@
         "state",
         "country",
         "postal_code"
-      ]
+      ],
+      "example": {
+        "name": "Jane Doe",
+        "line_one": "123 Main Street",
+        "line_two": "Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "country": "US",
+        "postal_code": "10001"
+      }
     },
     "AffiliateAttributionSource": {
       "type": "object",
@@ -182,7 +212,11 @@
       },
       "required": [
         "type"
-      ]
+      ],
+      "example": {
+        "type": "url",
+        "url": "https://example.com/product-review"
+      }
     },
     "AffiliateAttributionMetadata": {
       "type": "object",
@@ -199,7 +233,12 @@
           }
         ]
       },
-      "description": "Flat key/value map for additional non-sensitive context. Keys must be strings; values must be strings, numbers, or booleans. Arrays and nested objects are NOT permitted."
+      "description": "Flat key/value map for additional non-sensitive context. Keys must be strings; values must be strings, numbers, or booleans. Arrays and nested objects are NOT permitted.",
+      "example": {
+        "campaign_type": "influencer",
+        "commission_rate": 0.15,
+        "is_verified": true
+      }
     },
     "AffiliateAttribution": {
       "type": "object",
@@ -268,7 +307,20 @@
             "publisher_id"
           ]
         }
-      ]
+      ],
+      "example": {
+        "provider": "impact.com",
+        "token": "atp_01J8Z3WXYZ9ABC",
+        "publisher_id": "pub_123",
+        "campaign_id": "camp_summer2026",
+        "touchpoint": "first",
+        "source": {
+          "type": "url",
+          "url": "https://example.com/product-review"
+        },
+        "issued_at": "2026-02-11T10:00:00Z",
+        "expires_at": "2026-02-11T11:00:00Z"
+      }
     },
     "FulfillmentDetails": {
       "type": "object",
@@ -290,6 +342,20 @@
         "address": {
           "$ref": "#/$defs/Address",
           "description": "Fulfillment address"
+        }
+      },
+      "example": {
+        "name": "John Smith",
+        "phone_number": "15551234567",
+        "email": "john.smith@example.com",
+        "address": {
+          "name": "John Smith",
+          "line_one": "555 Golden Gate Avenue",
+          "line_two": "Apt 401",
+          "city": "San Francisco",
+          "state": "CA",
+          "country": "US",
+          "postal_code": "94102"
         }
       }
     },
@@ -316,7 +382,13 @@
       },
       "required": [
         "name"
-      ]
+      ],
+      "example": {
+        "name": "Acme Corporation",
+        "tax_id": "12-3456789",
+        "department": "Marketing",
+        "cost_center": "CC-2001"
+      }
     },
     "LoyaltyInfo": {
       "type": "object",
@@ -335,6 +407,11 @@
           "format": "date-time",
           "description": "RFC 3339 timestamp when the customer joined the loyalty program"
         }
+      },
+      "example": {
+        "tier": "Gold",
+        "points_balance": 5000,
+        "member_since": "2024-01-15T09:00:00Z"
       }
     },
     "TaxExemption": {
@@ -370,7 +447,13 @@
       "required": [
         "certificate_id",
         "certificate_type"
-      ]
+      ],
+      "example": {
+        "certificate_id": "cert_12345",
+        "certificate_type": "resale",
+        "exempt_regions": ["CA", "NY", "TX"],
+        "expires_at": "2027-12-31T23:59:59Z"
+      }
     },
     "Buyer": {
       "type": "object",
@@ -642,7 +725,12 @@
       },
       "required": [
         "id"
-      ]
+      ],
+      "example": {
+        "id": "item_123",
+        "name": "Wireless Headphones",
+        "unit_amount": 7999
+      }
     },
     "Disclosure": {
       "type": "object",
@@ -672,7 +760,12 @@
         "type",
         "content_type",
         "content"
-      ]
+      ],
+      "example": {
+        "type": "disclaimer",
+        "content_type": "plain",
+        "content": "This product contains small parts and is not suitable for children under 3 years."
+      }
     },
     "CustomAttribute": {
       "type": "object",
@@ -690,7 +783,11 @@
       "required": [
         "display_name",
         "value"
-      ]
+      ],
+      "example": {
+        "display_name": "Engraving",
+        "value": "Happy Birthday!"
+      }
     },
     "MarketplaceSellerDetails": {
       "type": "object",
@@ -703,7 +800,10 @@
       },
       "required": [
         "name"
-      ]
+      ],
+      "example": {
+        "name": "TechGear Store"
+      }
     },
     "PaymentHandler": {
       "type": "object",
