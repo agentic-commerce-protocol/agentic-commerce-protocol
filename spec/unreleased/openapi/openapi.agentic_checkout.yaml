@@ -918,6 +918,7 @@ components:
               tip,
               store_credit,
               total,
+              amount_refunded,
             ]
         display_text: { type: string }
         amount: { type: integer }
@@ -1241,16 +1242,239 @@ components:
     Order:
       type: object
       additionalProperties: false
+      description: |
+        Order returned after checkout completion. Contains order details and optional
+        rich post-purchase tracking (line items, fulfillments, adjustments).
       properties:
+        type:
+          type: string
+          const: order
+          description: "Discriminator field for webhook payloads. Always 'order' when present."
         id: { type: string }
         checkout_session_id: { type: string }
-        order_number: { type: string }
+        order_number: { type: string, description: "Human-readable order number for customer reference" }
         permalink_url: { type: string, format: uri }
-        status: { type: string, enum: [confirmed, processing, shipped, delivered] }
+        status:
+          type: string
+          enum: [created, confirmed, manual_review, processing, shipped, delivered, canceled]
+          description: "Order-level status. Can be derived from line item and fulfillment statuses."
         estimated_delivery: { $ref: "#/components/schemas/EstimatedDelivery" }
         confirmation: { $ref: "#/components/schemas/OrderConfirmation" }
         support: { $ref: "#/components/schemas/SupportInfo" }
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderLineItem" }
+          description: "What was ordered, with per-item fulfillment tracking"
+        fulfillments:
+          type: array
+          items: { $ref: "#/components/schemas/Fulfillment" }
+          description: "How items are being delivered (shipping, pickup, digital)"
+        adjustments:
+          type: array
+          items: { $ref: "#/components/schemas/Adjustment" }
+          description: "Post-order changes: refunds, credits, returns, disputes"
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+          description: "Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds."
       required: [id, checkout_session_id, permalink_url]
+
+    OrderLineItem:
+      type: object
+      additionalProperties: false
+      description: "Per-line-item tracking of what was ordered and fulfillment progress."
+      properties:
+        id:
+          type: string
+          description: "Line item identifier, used for references in fulfillments and adjustments"
+        title:
+          type: string
+          description: "Product name"
+        product_id:
+          type: string
+          description: "Catalog product ID"
+        description:
+          type: string
+          description: "Product description"
+        image_url:
+          type: string
+          format: uri
+          description: "Product image URL"
+        url:
+          type: string
+          format: uri
+          description: "Product page URL"
+        quantity:
+          $ref: "#/components/schemas/OrderLineItemQuantity"
+        unit_price:
+          type: integer
+          description: "Price per unit in minor currency units (cents)"
+        subtotal:
+          type: integer
+          description: "Line total in minor currency units (quantity.ordered * unit_price)"
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+          description: "Optional line-item level totals breakdown using the same Total schema as checkout. Merchants who can provide richer breakdowns MAY use this alongside or instead of unit_price/subtotal."
+        status:
+          type: string
+          enum: [processing, partial, shipped, delivered, canceled]
+          description: "Derived: processing if shipped=0, partial if 0<shipped<ordered, shipped if shipped=ordered"
+      required: [id, title, quantity]
+
+    OrderLineItemQuantity:
+      type: object
+      additionalProperties: false
+      description: "Quantity tracking for an order line item. 'shipped' is optional and defaults to 0."
+      properties:
+        ordered:
+          type: integer
+          minimum: 1
+          description: "How many the customer ordered"
+        shipped:
+          type: integer
+          minimum: 0
+          description: "How many have been handed to carrier (optional, default 0)"
+      required: [ordered]
+
+    LineItemReference:
+      type: object
+      additionalProperties: false
+      description: "Reference to a line item with quantity, used in fulfillments and adjustments"
+      properties:
+        id:
+          type: string
+          description: "Line item ID reference"
+        quantity:
+          type: integer
+          minimum: 1
+          description: "Quantity in this fulfillment or adjustment"
+      required: [id, quantity]
+
+    Fulfillment:
+      type: object
+      additionalProperties: false
+      description: "A fulfillment represents how items are delivered to the buyer (shipping, pickup, digital)."
+      properties:
+        id:
+          type: string
+          description: "Fulfillment identifier"
+        type:
+          type: string
+          enum: [shipping, pickup, digital]
+          description: "Fulfillment method type"
+        status:
+          type: string
+          enum: [pending, processing, shipped, in_transit, out_for_delivery, ready_for_pickup, delivered, failed, canceled]
+          description: |
+            Current fulfillment status. Not all statuses apply to all types:
+            - shipping: pending, processing, shipped, in_transit, out_for_delivery, delivered, failed, canceled
+            - pickup: pending, processing, ready_for_pickup, delivered, failed, canceled
+            - digital: pending, processing, delivered, failed, canceled
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/LineItemReference" }
+          description: "Which line items and quantities are in this fulfillment"
+        carrier:
+          type: string
+          description: "Carrier name (e.g., 'FedEx', 'UPS', 'USPS'). Applies to type: shipping."
+        tracking_number:
+          type: string
+          description: "Carrier tracking number. Applies to type: shipping."
+        tracking_url:
+          type: string
+          format: uri
+          description: "URL to track this shipment. Applies to type: shipping."
+        destination:
+          $ref: "#/components/schemas/Address"
+        estimated_delivery:
+          $ref: "#/components/schemas/EstimatedDelivery"
+        digital_delivery:
+          type: object
+          description: "Digital delivery details. Applies to type: digital."
+          properties:
+            access_url:
+              type: string
+              format: uri
+              description: "URL to access digital content (download link, streaming page, etc.)"
+            license_key:
+              type: string
+              description: "License or activation key"
+            expires_at:
+              type: string
+              format: date-time
+              description: "When access expires (RFC 3339 timestamp)"
+        description:
+          type: string
+          description: "Human-readable description (e.g., 'Backordered - ships Feb 15')"
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/FulfillmentEvent" }
+          description: "Append-only event log tracking fulfillment progress"
+      required: [id, type]
+
+    FulfillmentEvent:
+      type: object
+      additionalProperties: false
+      description: "A point-in-time event in the fulfillment lifecycle."
+      properties:
+        id:
+          type: string
+          description: "Event identifier"
+        type:
+          type: string
+          enum: [processing, shipped, in_transit, out_for_delivery, ready_for_pickup, delivered, failed_attempt, returned]
+          description: "Event type"
+        occurred_at:
+          type: string
+          format: date-time
+          description: "RFC 3339 timestamp when this event occurred"
+        description:
+          type: string
+          description: "Human-readable description (e.g., 'Left at front door')"
+        location:
+          type: string
+          description: "Location where this event occurred (e.g., 'Memphis, TN')"
+      required: [id, type, occurred_at]
+
+    Adjustment:
+      type: object
+      additionalProperties: false
+      description: "A post-order change such as refund, credit, return, or dispute."
+      properties:
+        id:
+          type: string
+          description: "Adjustment identifier"
+        type:
+          type: string
+          enum: [refund, partial_refund, store_credit, return, exchange, cancellation, dispute, chargeback]
+          description: "Type of adjustment"
+        occurred_at:
+          type: string
+          format: date-time
+          description: "RFC 3339 timestamp when this adjustment occurred"
+        status:
+          type: string
+          enum: [pending, completed, failed]
+          description: "Adjustment status"
+        line_items:
+          type: array
+          items: { $ref: "#/components/schemas/LineItemReference" }
+          description: "Which line items and quantities are affected (optional for order-level adjustments)"
+        amount:
+          type: integer
+          description: "Total amount credited to the buyer in minor currency units, inclusive of any applicable tax"
+        currency:
+          type: string
+          pattern: '^[a-z]{3}$'
+          description: "ISO 4217 currency code"
+        description:
+          type: string
+          description: "Human-readable reason (e.g., 'Defective item')"
+        reason:
+          type: string
+          description: "Structured reason code"
+      required: [id, type, occurred_at, status]
 
     ProtocolVersion:
       type: object
