@@ -4,6 +4,7 @@
   "title": "Agentic Checkout — Schema Bundle",
   "$defs": {
     "VariantOption": {
+      "description": "Represents a single variant option for a product (e.g., size, color, material)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -26,6 +27,7 @@
       }
     },
     "WeightInfo": {
+      "description": "Product weight with unit of measurement",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -54,6 +56,7 @@
       }
     },
     "DimensionsInfo": {
+      "description": "Physical dimensions of a product with unit of measurement",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -92,6 +95,7 @@
       }
     },
     "DiscountDetail": {
+      "description": "Information about a discount applied to the checkout or a specific item",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -140,6 +144,7 @@
       }
     },
     "Address": {
+      "description": "Physical address for shipping, billing, or pickup locations",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -223,13 +228,16 @@
       "additionalProperties": {
         "oneOf": [
           {
-            "type": "string"
+            "type": "string",
+            "description": "String metadata value"
           },
           {
-            "type": "number"
+            "type": "number",
+            "description": "Numeric metadata value"
           },
           {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Boolean metadata value"
           }
         ]
       },
@@ -323,6 +331,7 @@
       }
     },
     "FulfillmentDetails": {
+      "description": "Details about how items will be fulfilled (shipping, pickup, or delivery information)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -360,6 +369,7 @@
       }
     },
     "CompanyInfo": {
+      "description": "Information about a company or organization associated with the buyer",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -391,6 +401,7 @@
       }
     },
     "LoyaltyInfo": {
+      "description": "Loyalty program information including membership details and rewards balance",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -415,6 +426,7 @@
       }
     },
     "TaxExemption": {
+      "description": "Tax exemption information including exemption type and applicable regions",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -434,7 +446,8 @@
         "exempt_regions": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Region code where tax exemption applies (e.g., state abbreviation)"
           },
           "description": "List of regions where the exemption applies (e.g., state codes)"
         },
@@ -451,11 +464,16 @@
       "example": {
         "certificate_id": "cert_12345",
         "certificate_type": "resale",
-        "exempt_regions": ["CA", "NY", "TX"],
+        "exempt_regions": [
+          "CA",
+          "NY",
+          "TX"
+        ],
         "expires_at": "2027-12-31T23:59:59Z"
       }
     },
     "Buyer": {
+      "description": "Information about the buyer including contact details, company info, and loyalty status",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -517,7 +535,17 @@
       },
       "required": [
         "email"
-      ]
+      ],
+      "example": {
+        "first_name": "Sarah",
+        "last_name": "Johnson",
+        "full_name": "Sarah Johnson",
+        "email": "sarah.johnson@example.com",
+        "phone_number": "+1-415-555-0123",
+        "customer_id": "cust_abc123",
+        "account_type": "registered",
+        "authentication_status": "authenticated"
+      }
     },
     "InterventionCapabilities": {
       "type": "object",
@@ -585,6 +613,16 @@
           "minimum": 1,
           "description": "Maximum depth of nested interactions the Agent can handle (agent only)."
         }
+      },
+      "example": {
+        "supported": [
+          "3ds",
+          "address_verification"
+        ],
+        "display_context": "native",
+        "redirect_context": "in_app",
+        "max_redirects": 3,
+        "max_interaction_depth": 2
       }
     },
     "Capabilities": {
@@ -603,7 +641,8 @@
             {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "description": "Extension identifier string"
               },
               "uniqueItems": true,
               "description": "Extensions the agent understands (request). Simple identifiers like 'discount'."
@@ -619,6 +658,18 @@
           ],
           "description": "Extensions supported by the party. Requests: array of extension identifiers. Responses: array of extension declaration objects."
         }
+      },
+      "example": {
+        "interventions": {
+          "supported": [
+            "3ds"
+          ],
+          "display_context": "native"
+        },
+        "extensions": [
+          "discount",
+          "affiliate_attribution"
+        ]
       }
     },
     "ExtensionDeclaration": {
@@ -638,7 +689,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^\\$\\.[A-Za-z][A-Za-z0-9]*(\\.[A-Za-z][A-Za-z0-9_]*)*$"
+            "pattern": "^\\$\\.[A-Za-z][A-Za-z0-9]*(\\.[A-Za-z][A-Za-z0-9_]*)*$",
+            "description": "JSONPath expression identifying a schema field added by this extension"
           },
           "uniqueItems": true,
           "description": "JSONPath expressions identifying the schema fields added by this extension. Format: $.<SchemaName>.<fieldName> (e.g., $.CheckoutSession.discounts)."
@@ -653,6 +705,15 @@
           "format": "uri",
           "description": "URL to the extension's specification document."
         }
+      },
+      "example": {
+        "name": "discount",
+        "extends": [
+          "$.CheckoutSession.discounts",
+          "$.CheckoutSessionCreateRequest.coupons"
+        ],
+        "schema": "https://example.com/schemas/extensions/discount.schema.json",
+        "spec": "https://example.com/specs/extensions/discount"
       }
     },
     "PaymentMethodObject": {
@@ -697,16 +758,29 @@
         "providers": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Payment service provider identifier"
           },
           "description": "Optional PSP routing information"
         }
       },
       "required": [
         "method"
-      ]
+      ],
+      "example": {
+        "method": "card",
+        "brands": [
+          "visa",
+          "mastercard"
+        ],
+        "providers": [
+          "stripe",
+          "adyen"
+        ]
+      }
     },
     "Item": {
+      "description": "A purchasable item with variant options (e.g., size, color) and quantity",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -733,6 +807,7 @@
       }
     },
     "Disclosure": {
+      "description": "Legal disclosure or terms that must be acknowledged by the buyer",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -768,6 +843,7 @@
       }
     },
     "CustomAttribute": {
+      "description": "Custom key-value attribute for merchant-specific metadata on line items",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -790,6 +866,7 @@
       }
     },
     "MarketplaceSellerDetails": {
+      "description": "Information about a third-party seller in a marketplace model",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -849,7 +926,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "description": "URL to a JSON Schema defining accepted payment instrument format"
           },
           "description": "URLs to JSON Schemas for payment instruments"
         },
@@ -873,7 +951,15 @@
         "config_schema",
         "instrument_schemas",
         "config"
-      ]
+      ],
+      "example": {
+        "id": "handler_stripe_01",
+        "name": "Stripe",
+        "type": "direct",
+        "instrument_schemas": [
+          "https://example.com/schemas/payment/card.json"
+        ]
+      }
     },
     "Payment": {
       "type": "object",
@@ -890,9 +976,13 @@
       },
       "required": [
         "handlers"
-      ]
+      ],
+      "example": {
+        "handlers": []
+      }
     },
     "LineItem": {
+      "description": "A line item in the checkout representing a product with pricing, discounts, and fulfillment details",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -921,7 +1011,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "description": "Image URL for the product"
           },
           "description": "Array of image URLs for this line item"
         },
@@ -966,7 +1057,8 @@
         "tags": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Product tag or category"
           },
           "description": "Product tags or labels"
         },
@@ -1043,9 +1135,23 @@
         "item",
         "quantity",
         "totals"
-      ]
+      ],
+      "example": {
+        "id": "item_001",
+        "product_id": "prod_tshirt_blue_m",
+        "name": "Organic Cotton T-Shirt",
+        "quantity": 2,
+        "base_amount": 2900,
+        "discount": 0,
+        "subtotal": 5800,
+        "tax": 464,
+        "total": 6264,
+        "currency": "usd",
+        "image_url": "https://example.com/images/tshirt-blue.jpg"
+      }
     },
     "TaxBreakdownItem": {
+      "description": "Breakdown of tax amounts by type, jurisdiction, or rate",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1066,9 +1172,15 @@
         "jurisdiction",
         "rate",
         "amount"
-      ]
+      ],
+      "example": {
+        "name": "State Sales Tax",
+        "amount": 464,
+        "rate": 0.08
+      }
     },
     "Total": {
+      "description": "Total amounts for the checkout including subtotal, discounts, tax, shipping, and final total",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1118,9 +1230,18 @@
         "type",
         "display_text",
         "amount"
-      ]
+      ],
+      "example": {
+        "currency": "usd",
+        "subtotal": 5800,
+        "discount": 0,
+        "tax": 464,
+        "shipping": 500,
+        "total": 6764
+      }
     },
     "FulfillmentOptionPickup": {
+      "description": "In-store or curbside pickup fulfillment option with pickup location details",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1200,9 +1321,25 @@
         "title",
         "location",
         "totals"
-      ]
+      ],
+      "example": {
+        "id": "pickup_01",
+        "type": "pickup",
+        "name": "Store Pickup",
+        "cost": 0,
+        "currency": "usd",
+        "address": {
+          "name": "Downtown Store",
+          "line_one": "123 Main St",
+          "city": "San Francisco",
+          "state": "CA",
+          "country": "US",
+          "postal_code": "94102"
+        }
+      }
     },
     "FulfillmentOptionLocalDelivery": {
+      "description": "Local delivery fulfillment option with delivery address and scheduling details",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1270,9 +1407,25 @@
         "id",
         "title",
         "totals"
-      ]
+      ],
+      "example": {
+        "id": "delivery_01",
+        "type": "local_delivery",
+        "name": "Same Day Delivery",
+        "cost": 999,
+        "currency": "usd",
+        "address": {
+          "name": "Jane Doe",
+          "line_one": "456 Oak Ave",
+          "city": "San Francisco",
+          "state": "CA",
+          "country": "US",
+          "postal_code": "94103"
+        }
+      }
     },
     "FulfillmentOptionShipping": {
+      "description": "Shipping fulfillment option with carrier, service level, and delivery estimates",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1320,9 +1473,19 @@
         "id",
         "title",
         "totals"
-      ]
+      ],
+      "example": {
+        "id": "ship_01",
+        "type": "shipping",
+        "name": "Standard Shipping",
+        "cost": 500,
+        "currency": "usd",
+        "carrier": "USPS",
+        "service_level": "ground"
+      }
     },
     "FulfillmentOptionDigital": {
+      "description": "Digital delivery fulfillment option for downloadable or streaming content",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1356,9 +1519,17 @@
         "id",
         "title",
         "totals"
-      ]
+      ],
+      "example": {
+        "id": "digital_01",
+        "type": "digital",
+        "name": "Instant Download",
+        "cost": 0,
+        "currency": "usd"
+      }
     },
     "SelectedFulfillmentOption": {
+      "description": "Fulfillment option selected by the buyer for specific line items",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1379,7 +1550,8 @@
         "item_ids": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Line item identifier"
           },
           "description": "List of line item IDs associated with this fulfillment option"
         }
@@ -1388,9 +1560,18 @@
         "type",
         "option_id",
         "item_ids"
-      ]
+      ],
+      "example": {
+        "id": "ship_01",
+        "type": "shipping",
+        "item_ids": [
+          "item_001",
+          "item_002"
+        ]
+      }
     },
     "GiftWrap": {
+      "description": "Gift wrapping option with associated cost and customization details",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1414,9 +1595,16 @@
       },
       "required": [
         "enabled"
-      ]
+      ],
+      "example": {
+        "available": true,
+        "cost": 500,
+        "currency": "usd",
+        "message": "Happy Birthday!"
+      }
     },
     "SplitPayment": {
+      "description": "Split payment configuration allowing payment across multiple methods or parties",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1427,9 +1615,17 @@
       },
       "required": [
         "amount"
-      ]
+      ],
+      "example": {
+        "enabled": true,
+        "methods": [
+          "card",
+          "paypal"
+        ]
+      }
     },
     "FulfillmentGroup": {
+      "description": "Group of line items that share the same fulfillment method and destination",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1440,7 +1636,8 @@
         "item_ids": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Line item identifier in this fulfillment group"
           },
           "description": "List of line item IDs in this fulfillment group"
         },
@@ -1471,9 +1668,18 @@
         "id",
         "item_ids",
         "destination_type"
-      ]
+      ],
+      "example": {
+        "id": "fg_01",
+        "fulfillment_option_id": "ship_01",
+        "item_ids": [
+          "item_001",
+          "item_002"
+        ]
+      }
     },
     "EstimatedDelivery": {
+      "description": "Estimated delivery date range for a fulfillment option",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1491,9 +1697,14 @@
       "required": [
         "earliest",
         "latest"
-      ]
+      ],
+      "example": {
+        "earliest": "2026-02-15",
+        "latest": "2026-02-20"
+      }
     },
     "OrderConfirmation": {
+      "description": "Order confirmation details including order number and tracking information",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1514,9 +1725,15 @@
           "type": "string",
           "description": "Invoice number if generated"
         }
+      },
+      "example": {
+        "order_id": "ord_abc123",
+        "order_number": "12345",
+        "confirmation_url": "https://example.com/orders/ord_abc123"
       }
     },
     "SupportInfo": {
+      "description": "Customer support contact information including email, phone, and URL",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1538,9 +1755,15 @@
           "format": "uri",
           "description": "URL to merchant's help center"
         }
+      },
+      "example": {
+        "email": "support@example.com",
+        "phone": "+1-800-555-0123",
+        "url": "https://example.com/support"
       }
     },
     "MessageInfo": {
+      "description": "Informational message to display to the buyer during checkout",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1590,9 +1813,15 @@
         "type",
         "content_type",
         "content"
-      ]
+      ],
+      "example": {
+        "id": "msg_info_01",
+        "message": "Free shipping on orders over $50",
+        "display_context": "banner"
+      }
     },
     "MessageWarning": {
+      "description": "Warning message to display to the buyer during checkout (non-blocking)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1663,7 +1892,13 @@
         "code",
         "content_type",
         "content"
-      ]
+      ],
+      "example": {
+        "id": "msg_warn_01",
+        "message": "Only 2 items left in stock",
+        "code": "low_stock",
+        "param": "$.items[0]"
+      }
     },
     "MessageError": {
       "type": "object",
@@ -1744,9 +1979,16 @@
         "code",
         "content_type",
         "content"
-      ]
+      ],
+      "example": {
+        "id": "msg_err_01",
+        "message": "Invalid email address format",
+        "code": "invalid",
+        "param": "$.buyer.email"
+      }
     },
     "Link": {
+      "description": "Hyperlink with URL, display text, and optional action semantics",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1777,9 +2019,15 @@
       "required": [
         "type",
         "url"
-      ]
+      ],
+      "example": {
+        "url": "https://example.com/terms",
+        "text": "Terms of Service",
+        "action": "view"
+      }
     },
     "PaymentData": {
+      "description": "Payment instrument data collected from the buyer (e.g., card details, wallet tokens)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1860,7 +2108,11 @@
             "purchase_order_number"
           ]
         }
-      ]
+      ],
+      "example": {
+        "type": "vault_token",
+        "token": "vt_01J8Z3WXYZ9ABC123"
+      }
     },
     "ProtocolVersion": {
       "type": "object",
@@ -1876,7 +2128,10 @@
       },
       "required": [
         "version"
-      ]
+      ],
+      "example": {
+        "version": "2026-01-30"
+      }
     },
     "DiscountAllocation": {
       "type": "object",
@@ -1896,6 +2151,11 @@
           "minimum": 0,
           "description": "Amount allocated to this target in minor (cents) currency units."
         }
+      },
+      "example": {
+        "target": "line_item",
+        "target_id": "item_001",
+        "amount": 500
       }
     },
     "Coupon": {
@@ -1958,10 +2218,15 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "description": "Metadata value"
           },
           "description": "Arbitrary key-value metadata attached to the coupon."
         }
+      },
+      "example": {
+        "code": "SAVE20",
+        "metadata": {}
       }
     },
     "AppliedDiscount": {
@@ -2026,6 +2291,11 @@
           },
           "description": "Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount."
         }
+      },
+      "example": {
+        "code": "SAVE20",
+        "amount": 1000,
+        "allocations": []
       }
     },
     "DiscountsRequest": {
@@ -2036,10 +2306,17 @@
         "codes": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Discount code to apply"
           },
           "description": "Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear."
         }
+      },
+      "example": {
+        "codes": [
+          "SAVE20",
+          "FREESHIP"
+        ]
       }
     },
     "DiscountsResponse": {
@@ -2050,7 +2327,8 @@
         "codes": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Discount code submitted"
           },
           "description": "Echo of submitted discount codes."
         },
@@ -2063,16 +2341,28 @@
         },
         "rejected": {
           "type": "array",
-          "items": { "$ref": "#/$defs/RejectedDiscount" },
+          "items": {
+            "$ref": "#/$defs/RejectedDiscount"
+          },
           "description": "Discount codes that could not be applied, with reasons."
         }
+      },
+      "example": {
+        "codes": [
+          "SAVE20"
+        ],
+        "applied": [],
+        "rejected": []
       }
     },
     "RejectedDiscount": {
       "type": "object",
       "additionalProperties": false,
       "description": "A discount code that could not be applied, with the reason.",
-      "required": ["code", "reason"],
+      "required": [
+        "code",
+        "reason"
+      ],
       "properties": {
         "code": {
           "type": "string",
@@ -2086,6 +2376,10 @@
           "type": "string",
           "description": "Human-readable explanation of why the code was rejected."
         }
+      },
+      "example": {
+        "code": "EXPIRED10",
+        "reason": "discount_code_expired"
       }
     },
     "DiscountErrorCode": {
@@ -2100,9 +2394,11 @@
         "discount_code_user_ineligible",
         "discount_code_usage_limit_reached"
       ],
-      "description": "Error codes for rejected discount codes, used in messages[].code."
+      "description": "Error codes for rejected discount codes, used in messages[].code.",
+      "example": "discount_code_expired"
     },
     "PaymentResponse": {
+      "description": "Payment configuration returned by the seller including accepted methods and handlers",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2114,7 +2410,8 @@
           "type": "array",
           "items": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": true,
+            "description": "Payment instrument schema reference"
           },
           "description": "Available payment instruments"
         },
@@ -2122,13 +2419,19 @@
           "type": "array",
           "items": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": true,
+            "description": "Payment handler configuration"
           },
           "description": "Available payment handlers"
         }
+      },
+      "example": {
+        "instruments": [],
+        "handlers": []
       }
     },
     "RiskSignals": {
+      "description": "Risk and fraud detection signals for the checkout session",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2152,6 +2455,10 @@
           "type": "string",
           "description": "Device fingerprint for fraud detection"
         }
+      },
+      "example": {
+        "ip_country": "US",
+        "device_fingerprint": "fp_abc123"
       }
     },
     "Order": {
@@ -2183,7 +2490,15 @@
         },
         "status": {
           "type": "string",
-          "enum": ["created", "confirmed", "manual_review", "processing", "shipped", "delivered", "canceled"],
+          "enum": [
+            "created",
+            "confirmed",
+            "manual_review",
+            "processing",
+            "shipped",
+            "delivered",
+            "canceled"
+          ],
           "description": "Order-level status. Can be derived from line item and fulfillment statuses."
         },
         "estimated_delivery": {
@@ -2200,22 +2515,30 @@
         },
         "line_items": {
           "type": "array",
-          "items": { "$ref": "#/$defs/OrderLineItem" },
+          "items": {
+            "$ref": "#/$defs/OrderLineItem"
+          },
           "description": "What was ordered, with per-item fulfillment tracking"
         },
         "fulfillments": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Fulfillment" },
+          "items": {
+            "$ref": "#/$defs/Fulfillment"
+          },
           "description": "How items are being delivered (shipping, pickup, digital)"
         },
         "adjustments": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Adjustment" },
+          "items": {
+            "$ref": "#/$defs/Adjustment"
+          },
           "description": "Post-order changes: refunds, credits, returns, disputes"
         },
         "totals": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Total" },
+          "items": {
+            "$ref": "#/$defs/Total"
+          },
           "description": "Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds."
         }
       },
@@ -2223,7 +2546,16 @@
         "id",
         "checkout_session_id",
         "permalink_url"
-      ]
+      ],
+      "example": {
+        "id": "ord_abc123",
+        "order_number": "12345",
+        "status": "confirmed",
+        "currency": "usd",
+        "total": 6764,
+        "line_items": [],
+        "created_at": "2026-02-13T10:30:00Z"
+      }
     },
     "OrderLineItem": {
       "type": "object",
@@ -2256,7 +2588,9 @@
           "format": "uri",
           "description": "Product page URL"
         },
-        "quantity": { "$ref": "#/$defs/OrderLineItemQuantity" },
+        "quantity": {
+          "$ref": "#/$defs/OrderLineItemQuantity"
+        },
         "unit_price": {
           "type": "integer",
           "description": "Price per unit in minor currency units (cents)"
@@ -2267,16 +2601,37 @@
         },
         "totals": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Total" },
+          "items": {
+            "$ref": "#/$defs/Total"
+          },
           "description": "Optional line-item level totals breakdown using the same Total schema as checkout. Merchants who can provide richer breakdowns MAY use this alongside or instead of unit_price/subtotal."
         },
         "status": {
           "type": "string",
-          "enum": ["processing", "partial", "shipped", "delivered", "canceled"],
+          "enum": [
+            "processing",
+            "partial",
+            "shipped",
+            "delivered",
+            "canceled"
+          ],
           "description": "Derived: processing if shipped=0, partial if 0<shipped<ordered, shipped if shipped=ordered"
         }
       },
-      "required": ["id", "title", "quantity"]
+      "required": [
+        "id",
+        "title",
+        "quantity"
+      ],
+      "example": {
+        "id": "oli_001",
+        "line_item_id": "item_001",
+        "status": "fulfilled",
+        "quantity": {
+          "ordered": 2,
+          "fulfilled": 2
+        }
+      }
     },
     "OrderLineItemQuantity": {
       "type": "object",
@@ -2294,7 +2649,15 @@
           "description": "How many have been handed to carrier (optional, default 0)"
         }
       },
-      "required": ["ordered"]
+      "required": [
+        "ordered"
+      ],
+      "example": {
+        "ordered": 2,
+        "fulfilled": 2,
+        "cancelled": 0,
+        "returned": 0
+      }
     },
     "LineItemReference": {
       "type": "object",
@@ -2311,7 +2674,14 @@
           "description": "Quantity in this fulfillment or adjustment"
         }
       },
-      "required": ["id", "quantity"]
+      "required": [
+        "id",
+        "quantity"
+      ],
+      "example": {
+        "line_item_id": "item_001",
+        "quantity": 1
+      }
     },
     "Fulfillment": {
       "type": "object",
@@ -2324,17 +2694,33 @@
         },
         "type": {
           "type": "string",
-          "enum": ["shipping", "pickup", "digital"],
+          "enum": [
+            "shipping",
+            "pickup",
+            "digital"
+          ],
           "description": "Fulfillment method type"
         },
         "status": {
           "type": "string",
-          "enum": ["pending", "processing", "shipped", "in_transit", "out_for_delivery", "ready_for_pickup", "delivered", "failed", "canceled"],
+          "enum": [
+            "pending",
+            "processing",
+            "shipped",
+            "in_transit",
+            "out_for_delivery",
+            "ready_for_pickup",
+            "delivered",
+            "failed",
+            "canceled"
+          ],
           "description": "Current fulfillment status. Not all statuses apply to all types."
         },
         "line_items": {
           "type": "array",
-          "items": { "$ref": "#/$defs/LineItemReference" },
+          "items": {
+            "$ref": "#/$defs/LineItemReference"
+          },
           "description": "Which line items and quantities are in this fulfillment"
         },
         "carrier": {
@@ -2350,8 +2736,12 @@
           "format": "uri",
           "description": "URL to track this shipment. Applies to type: shipping."
         },
-        "destination": { "$ref": "#/$defs/Address" },
-        "estimated_delivery": { "$ref": "#/$defs/EstimatedDelivery" },
+        "destination": {
+          "$ref": "#/$defs/Address"
+        },
+        "estimated_delivery": {
+          "$ref": "#/$defs/EstimatedDelivery"
+        },
         "digital_delivery": {
           "type": "object",
           "description": "Digital delivery details. Applies to type: digital.",
@@ -2378,11 +2768,24 @@
         },
         "events": {
           "type": "array",
-          "items": { "$ref": "#/$defs/FulfillmentEvent" },
+          "items": {
+            "$ref": "#/$defs/FulfillmentEvent"
+          },
           "description": "Append-only event log tracking fulfillment progress"
         }
       },
-      "required": ["id", "type"]
+      "required": [
+        "id",
+        "type"
+      ],
+      "example": {
+        "id": "ful_001",
+        "type": "shipping",
+        "status": "shipped",
+        "line_items": [],
+        "tracking_number": "1Z999AA10123456784",
+        "carrier": "UPS"
+      }
     },
     "FulfillmentEvent": {
       "type": "object",
@@ -2395,7 +2798,16 @@
         },
         "type": {
           "type": "string",
-          "enum": ["processing", "shipped", "in_transit", "out_for_delivery", "ready_for_pickup", "delivered", "failed_attempt", "returned"],
+          "enum": [
+            "processing",
+            "shipped",
+            "in_transit",
+            "out_for_delivery",
+            "ready_for_pickup",
+            "delivered",
+            "failed_attempt",
+            "returned"
+          ],
           "description": "Event type"
         },
         "occurred_at": {
@@ -2412,7 +2824,16 @@
           "description": "Location where this event occurred (e.g., 'Memphis, TN')"
         }
       },
-      "required": ["id", "type", "occurred_at"]
+      "required": [
+        "id",
+        "type",
+        "occurred_at"
+      ],
+      "example": {
+        "status": "shipped",
+        "timestamp": "2026-02-13T14:00:00Z",
+        "location": "San Francisco, CA"
+      }
     },
     "Adjustment": {
       "type": "object",
@@ -2425,7 +2846,16 @@
         },
         "type": {
           "type": "string",
-          "enum": ["refund", "partial_refund", "store_credit", "return", "exchange", "cancellation", "dispute", "chargeback"],
+          "enum": [
+            "refund",
+            "partial_refund",
+            "store_credit",
+            "return",
+            "exchange",
+            "cancellation",
+            "dispute",
+            "chargeback"
+          ],
           "description": "Type of adjustment"
         },
         "occurred_at": {
@@ -2435,12 +2865,18 @@
         },
         "status": {
           "type": "string",
-          "enum": ["pending", "completed", "failed"],
+          "enum": [
+            "pending",
+            "completed",
+            "failed"
+          ],
           "description": "Adjustment status"
         },
         "line_items": {
           "type": "array",
-          "items": { "$ref": "#/$defs/LineItemReference" },
+          "items": {
+            "$ref": "#/$defs/LineItemReference"
+          },
           "description": "Which line items and quantities are affected"
         },
         "amount": {
@@ -2461,7 +2897,20 @@
           "description": "Structured reason code"
         }
       },
-      "required": ["id", "type", "occurred_at", "status"]
+      "required": [
+        "id",
+        "type",
+        "occurred_at",
+        "status"
+      ],
+      "example": {
+        "id": "adj_001",
+        "type": "refund",
+        "amount": 1000,
+        "currency": "usd",
+        "reason": "Customer request",
+        "created_at": "2026-02-14T10:00:00Z"
+      }
     },
     "AuthenticationMetadata": {
       "type": "object",
@@ -2567,6 +3016,10 @@
             "type"
           ]
         }
+      },
+      "example": {
+        "three_ds_version": "2.1.0",
+        "merchant_name": "Example Store"
       }
     },
     "AuthenticationResult": {
@@ -2654,9 +3107,15 @@
             ]
           }
         }
-      ]
+      ],
+      "example": {
+        "status": "authenticated",
+        "transaction_id": "3ds_abc123",
+        "eci": "05"
+      }
     },
     "CheckoutSessionBase": {
+      "description": "Base checkout session model containing common fields for all checkout session states",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2760,7 +3219,8 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/FulfillmentGroup"
-          }
+          },
+          "description": "Optional grouping of line items by fulfillment method"
         },
         "totals": {
           "type": "array",
@@ -2849,21 +3309,54 @@
         "messages",
         "links",
         "capabilities"
-      ]
+      ],
+      "example": {
+        "id": "cs_abc123",
+        "status": "ready_for_payment",
+        "currency": "usd",
+        "line_items": [],
+        "totals": {
+          "currency": "usd",
+          "subtotal": 5800,
+          "total": 6764
+        },
+        "fulfillment_options": [],
+        "messages": [],
+        "links": [],
+        "capabilities": {}
+      }
     },
     "CheckoutSession": {
+      "description": "Checkout session response model",
       "allOf": [
         {
           "$ref": "#/$defs/CheckoutSessionBase"
         }
-      ]
+      ],
+      "example": {
+        "id": "cs_abc123",
+        "status": "ready_for_payment",
+        "currency": "usd",
+        "line_items": [],
+        "totals": {
+          "currency": "usd",
+          "subtotal": 5800,
+          "total": 6764
+        },
+        "fulfillment_options": [],
+        "messages": [],
+        "links": [],
+        "capabilities": {}
+      }
     },
     "CheckoutSessionWithOrder": {
+      "description": "Checkout session response after completion, includes the created order",
       "allOf": [
         {
           "$ref": "#/$defs/CheckoutSessionBase"
         },
         {
+          "description": "Order extension for completed checkout sessions",
           "type": "object",
           "properties": {
             "order": {
@@ -2875,9 +3368,34 @@
             "order"
           ]
         }
-      ]
+      ],
+      "example": {
+        "id": "cs_abc123",
+        "status": "completed",
+        "currency": "usd",
+        "line_items": [],
+        "totals": {
+          "currency": "usd",
+          "subtotal": 5800,
+          "total": 6764
+        },
+        "fulfillment_options": [],
+        "messages": [],
+        "links": [],
+        "capabilities": {},
+        "order": {
+          "id": "ord_abc123",
+          "order_number": "12345",
+          "status": "confirmed",
+          "currency": "usd",
+          "total": 6764,
+          "line_items": [],
+          "created_at": "2026-02-13T10:30:00Z"
+        }
+      }
     },
     "CheckoutSessionCreateRequest": {
+      "description": "Request to create a new checkout session",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2919,7 +3437,8 @@
         "coupons": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Coupon code to apply"
           },
           "description": "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
         },
@@ -2949,9 +3468,20 @@
         "line_items",
         "currency",
         "capabilities"
-      ]
+      ],
+      "example": {
+        "items": [
+          {
+            "product_id": "prod_tshirt_blue_m",
+            "quantity": 2
+          }
+        ],
+        "currency": "usd",
+        "capabilities": {}
+      }
     },
     "CheckoutSessionUpdateRequest": {
+      "description": "Request to update an existing checkout session",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -2987,7 +3517,8 @@
         "coupons": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Coupon code to apply"
           },
           "description": "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
         },
@@ -2995,9 +3526,15 @@
           "$ref": "#/$defs/DiscountsRequest",
           "description": "Discount codes to apply. Replaces previously submitted codes."
         }
+      },
+      "example": {
+        "buyer": {
+          "email": "customer@example.com"
+        }
       }
     },
     "CheckoutSessionCompleteRequest": {
+      "description": "Request to complete a checkout session and create an order",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -3024,9 +3561,16 @@
       },
       "required": [
         "payment_data"
-      ]
+      ],
+      "example": {
+        "payment_data": {
+          "type": "vault_token",
+          "token": "vt_01J8Z3WXYZ9ABC123"
+        }
+      }
     },
     "IntentTrace": {
+      "description": "Structured reason for why a buyer action was taken, used for analytics and debugging",
       "type": "object",
       "properties": {
         "reason_code": {
@@ -3057,19 +3601,33 @@
               "string",
               "number",
               "boolean"
-            ]
-          }
+            ],
+            "description": "Metadata value"
+          },
+          "description": "Additional structured metadata about the intent"
         }
       },
       "required": [
         "reason_code"
-      ]
+      ],
+      "example": {
+        "reason_code": "buyer_initiated",
+        "description": "Customer requested to complete checkout",
+        "metadata": {}
+      }
     },
     "CancelSessionRequest": {
+      "description": "Request to cancel a checkout session",
       "type": "object",
       "properties": {
         "intent_trace": {
           "$ref": "#/$defs/IntentTrace"
+        }
+      },
+      "example": {
+        "intent_trace": {
+          "reason_code": "buyer_cancelled",
+          "description": "Customer decided not to purchase"
         }
       }
     },
@@ -3103,7 +3661,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Supported API version in YYYY-MM-DD format"
           },
           "description": "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
         }
@@ -3112,7 +3671,13 @@
         "type",
         "code",
         "message"
-      ]
+      ],
+      "example": {
+        "type": "invalid_request",
+        "code": "invalid_email",
+        "message": "The email address format is invalid",
+        "param": "$.buyer.email"
+      }
     }
   }
 }
