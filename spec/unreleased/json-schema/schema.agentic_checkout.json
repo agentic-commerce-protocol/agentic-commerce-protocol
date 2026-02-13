@@ -818,6 +818,10 @@
           "type": "string",
           "description": "Handler name in reverse-DNS format (e.g., dev.acp.tokenized.card)"
         },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name for UI (e.g., Credit Card). Use when showing payment options to the buyer."
+        },
         "version": {
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -1846,6 +1850,11 @@
         "approval_required": {
           "type": "boolean",
           "description": "Whether this payment requires approval"
+        },
+        "capture_method": {
+          "type": "string",
+          "enum": ["capture", "authorize"],
+          "description": "When to charge: 'capture' = charge immediately (default); 'authorize' = reserve only, capture later (e.g. when order ships; on guest checkout). Aligns with Stripe intent."
         }
       },
       "anyOf": [
