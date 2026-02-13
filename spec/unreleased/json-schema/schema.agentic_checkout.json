@@ -170,6 +170,10 @@
         "postal_code": {
           "type": "string",
           "description": "Postal or ZIP code"
+        },
+        "company": {
+          "type": "string",
+          "description": "Postal or ZIP code"
         }
       },
       "required": [
@@ -332,7 +336,7 @@
         },
         "phone_number": {
           "type": "string",
-          "description": "Contact phone number"
+          "description": "Contact phone number. E.164 format recommended (e.g., +15551234567) for global interoperability and SMS/delivery carrier systems."
         },
         "email": {
           "type": "string",
@@ -1513,6 +1517,10 @@
         "invoice_number": {
           "type": "string",
           "description": "Invoice number if generated"
+        },
+        "order_notes": {
+          "type": "string",
+          "description": "Echo of order_notes attached to the order."
         }
       }
     },
@@ -2175,6 +2183,10 @@
         "order_number": {
           "type": "string",
           "description": "Human-readable order number for customer reference"
+        },
+        "client_reference_id": {
+          "type": "string",
+          "description": "Reference from the client (agent/platform) stored on the order for reconciliation (e.g. platform transaction id, PO number, ERP id)."
         },
         "permalink_url": {
           "type": "string",
@@ -2943,6 +2955,11 @@
           "type": "object",
           "additionalProperties": true,
           "description": "Arbitrary metadata for merchant use"
+        },
+        "order_notes": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Optional customer/order notes (e.g., delivery instructions, gift message)."
         }
       },
       "required": [
@@ -2994,6 +3011,11 @@
         "discounts": {
           "$ref": "#/$defs/DiscountsRequest",
           "description": "Discount codes to apply. Replaces previously submitted codes."
+        },
+        "order_notes": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Optional customer/order notes."
         }
       }
     },
@@ -3020,6 +3042,11 @@
         "risk_signals": {
           "$ref": "#/$defs/RiskSignals",
           "description": "Risk and fraud signals"
+        },
+        "order_notes": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Optional customer/order notes (delivery instructions, gift message)."
         }
       },
       "required": [
