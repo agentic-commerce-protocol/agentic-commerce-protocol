@@ -134,7 +134,7 @@
       "properties": {
         "reason": {
           "type": "string",
-          "enum": ["one_time"]
+          "enum": ["one_time", "recurring", "subscription"]
         },
         "max_amount": {
           "type": "integer",
@@ -155,6 +155,47 @@
         "expires_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "billing_cycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "interval": {
+              "type": "string",
+              "enum": ["day", "week", "month", "year"]
+            },
+            "interval_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "anchor_date": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": ["interval", "interval_count"]
+        },
+        "amount_per_cycle": {
+          "type": "integer",
+          "description": "Amount per billing cycle in minor units"
+        },
+        "max_cycles": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "trial_period_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trial_amount": {
+          "type": "integer",
+          "description": "Trial amount in minor units"
+        },
+        "usage_based": {
+          "type": "boolean"
+        },
+        "proration_enabled": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -164,6 +205,20 @@
         "checkout_session_id",
         "merchant_id",
         "expires_at"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "reason": {
+                "enum": ["recurring", "subscription"]
+              }
+            }
+          },
+          "then": {
+            "required": ["billing_cycle", "amount_per_cycle"]
+          }
+        }
       ]
     },
     "RiskSignal": {
