@@ -2730,6 +2730,19 @@ components:
           $ref: "#/components/schemas/Buyer"
         status:
           type: string
+          description: |
+            Session lifecycle state.
+            - incomplete: Missing required fields, server cannot compute totals.
+            - not_ready_for_payment: Has items but not payable (missing address, fulfillment, or has errors).
+            - in_progress: Server is processing (computing totals, validating inventory).
+            - requires_escalation: Needs intervention the agent cannot perform programmatically.
+            - authentication_required: Authentication (e.g., 3DS) must complete before finalization.
+            - ready_for_payment: All requirements met, agent may call complete.
+            - pending_approval: Completion requested, awaiting async approval.
+            - complete_in_progress: Completion requested, payment/order processing underway.
+            - completed: Finalized, order created. Terminal.
+            - canceled: Canceled via cancel endpoint. Terminal.
+            - expired: Server-enforced timeout. Terminal.
           enum:
             - incomplete
             - not_ready_for_payment
@@ -2742,7 +2755,6 @@ components:
             - canceled
             - in_progress
             - expired
-          description: Current status of the checkout session
         currency:
           type: string
           description: ISO 4217 settlement currency code
