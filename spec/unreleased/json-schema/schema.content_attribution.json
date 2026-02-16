@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openattribution.org/acp/schemas/content_attribution.json",
+  "title": "Content Attribution Extension for ACP",
+  "description": "Content citation attribution data for ACP checkout sessions.",
+  "type": "object",
+  "properties": {
+    "content_scope": {
+      "type": "string",
+      "description": "Opaque identifier for the content collection used by the agent."
+    },
+    "prior_session_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "Previous session IDs (UUIDs) in the user's purchase journey."
+    },
+    "content_retrieved": {
+      "type": "array",
+      "description": "Content URLs fetched during the session.",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": ["content_url", "timestamp"],
+        "properties": {
+          "content_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI of content retrieved."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC timestamp of retrieval (ISO 8601)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "content_cited": {
+      "type": "array",
+      "description": "Content explicitly referenced in agent responses.",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": ["content_url", "timestamp"],
+        "properties": {
+          "content_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI of content cited."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC timestamp of citation (ISO 8601)."
+          },
+          "citation_type": {
+            "type": "string",
+            "enum": ["direct_quote", "paraphrase", "reference", "contradiction"],
+            "description": "How the content was used in the response."
+          },
+          "excerpt_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Token count of the cited excerpt."
+          },
+          "position": {
+            "type": "string",
+            "enum": ["primary", "supporting", "mentioned"],
+            "description": "Prominence of the citation in the response."
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "description": "SHA-256 hash for content verification (format: 'sha256:abc123...')."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "conversation_summary": {
+      "type": "object",
+      "description": "Privacy-preserving conversation aggregate.",
+      "properties": {
+        "turn_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of conversation turns."
+        },
+        "primary_intent": {
+          "type": "string",
+          "enum": [
+            "product_research",
+            "comparison",
+            "how_to",
+            "troubleshooting",
+            "general_question",
+            "purchase_intent",
+            "price_check",
+            "availability_check",
+            "review_seeking",
+            "chitchat",
+            "other"
+          ],
+          "description": "Most frequent query intent across turns."
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "De-duplicated topic list from the conversation."
+        },
+        "total_content_retrieved": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of content items retrieved."
+        },
+        "total_content_cited": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of content items cited."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

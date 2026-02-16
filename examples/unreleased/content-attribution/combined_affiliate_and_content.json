@@ -1,0 +1,55 @@
+{
+  "$comment": "ACP CheckoutSessionCreateRequest with both affiliate_attribution and content_attribution. The affiliate network can use content_attribution URLs to verify the affiliate_attribution claim by matching content URLs against its publisher registry.",
+  "items": [
+    {
+      "id": "sku_breville_barista_express",
+      "title": "Breville Barista Express Espresso Machine",
+      "price": {
+        "amount": 69995,
+        "currency": "USD"
+      },
+      "quantity": 1
+    }
+  ],
+  "affiliate_attribution": {
+    "network": "coffee-affiliates",
+    "network_token": "ntk_abc123def456",
+    "publisher_id": "pub_coffee_reviews_456",
+    "click_id": "clk_789xyz"
+  },
+  "content_attribution": {
+    "content_scope": "coffee-equipment-reviews",
+    "content_retrieved": [
+      {
+        "content_url": "https://www.jameshoffmann.co.uk/reviews/breville-barista-express",
+        "timestamp": "2026-02-14T09:15:00Z"
+      },
+      {
+        "content_url": "https://www.home-barista.com/espresso-machines/breville-barista-express-review.html",
+        "timestamp": "2026-02-14T09:15:03Z"
+      }
+    ],
+    "content_cited": [
+      {
+        "content_url": "https://www.jameshoffmann.co.uk/reviews/breville-barista-express",
+        "timestamp": "2026-02-14T09:15:12Z",
+        "citation_type": "paraphrase",
+        "excerpt_tokens": 95,
+        "position": "primary"
+      },
+      {
+        "content_url": "https://www.home-barista.com/espresso-machines/breville-barista-express-review.html",
+        "timestamp": "2026-02-14T09:15:15Z",
+        "citation_type": "reference",
+        "position": "supporting"
+      }
+    ],
+    "conversation_summary": {
+      "turn_count": 4,
+      "primary_intent": "comparison",
+      "topics": ["espresso-machine", "grinder", "home-barista"],
+      "total_content_retrieved": 2,
+      "total_content_cited": 2
+    }
+  }
+}
