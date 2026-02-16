@@ -82,7 +82,8 @@
               "supports_3ds": true,
               "3ds_versions": ["2.1.0", "2.2.0"],
               "environment": "production"
-            }
+            },
+            "display_order": 1
           },
           {
             "id": "seller_pm_123",
@@ -101,7 +102,8 @@
               "display_name": "Visa ending in 4242",
               "display_metadata": { "brand": "visa", "last4": "4242" },
               "supports_3ds": true
-            }
+            },
+            "display_order": 0
           }
         ]
       },
@@ -1446,5 +1448,20 @@
         "url": "https://www.testshop.com/legal/terms-of-use"
       }
     ]
+  },
+  "error_400_idempotency_key_required": {
+    "type": "invalid_request",
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required"
+  },
+  "error_422_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Idempotency-Key has already been used with a different request body"
+  },
+  "error_409_idempotency_in_flight": {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
   }
 }
