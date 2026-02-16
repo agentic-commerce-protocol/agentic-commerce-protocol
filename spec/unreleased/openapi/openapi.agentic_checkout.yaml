@@ -1291,10 +1291,6 @@ components:
           { type: string, enum: [immediate, net_15, net_30, net_60, net_90] }
         due_date: { type: string, format: date-time }
         approval_required: { type: boolean }
-        capture_method:
-          type: string
-          enum: [capture, authorize]
-          description: When to charge; capture = immediately (default), authorize = reserve only, capture later (e.g. when order ships; on guest checkout). Aligns with Stripe capture_method.
       anyOf:
         - required: [handler_id, instrument]
         - required: [purchase_order_number]

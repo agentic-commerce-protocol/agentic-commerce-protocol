@@ -1850,11 +1850,6 @@
         "approval_required": {
           "type": "boolean",
           "description": "Whether this payment requires approval"
-        },
-        "capture_method": {
-          "type": "string",
-          "enum": ["capture", "authorize"],
-          "description": "When to charge: 'capture' = charge immediately (default); 'authorize' = reserve only, capture later (e.g. when order ships; on guest checkout). Aligns with Stripe intent."
         }
       },
       "anyOf": [
