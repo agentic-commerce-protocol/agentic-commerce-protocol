@@ -19,7 +19,11 @@
       "required": [
         "name",
         "value"
-      ]
+      ],
+      "example": {
+        "name": "Color",
+        "value": "Midnight Blue"
+      }
     },
     "WeightInfo": {
       "type": "object",
@@ -43,7 +47,11 @@
       "required": [
         "value",
         "unit"
-      ]
+      ],
+      "example": {
+        "value": 250,
+        "unit": "g"
+      }
     },
     "DimensionsInfo": {
       "type": "object",
@@ -75,7 +83,13 @@
         "width",
         "height",
         "unit"
-      ]
+      ],
+      "example": {
+        "length": 15.5,
+        "width": 10.2,
+        "height": 5.8,
+        "unit": "cm"
+      }
     },
     "DiscountDetail": {
       "type": "object",
@@ -116,7 +130,14 @@
       "required": [
         "type",
         "amount"
-      ]
+      ],
+      "example": {
+        "code": "SAVE20",
+        "type": "percentage",
+        "amount": 1600,
+        "description": "20% off your order",
+        "source": "coupon"
+      }
     },
     "Address": {
       "type": "object",
@@ -169,7 +190,16 @@
         "state",
         "country",
         "postal_code"
-      ]
+      ],
+      "example": {
+        "name": "Jane Doe",
+        "line_one": "123 Main Street",
+        "line_two": "Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "country": "US",
+        "postal_code": "10001"
+      }
     },
     "AffiliateAttributionSource": {
       "type": "object",
@@ -193,7 +223,11 @@
       },
       "required": [
         "type"
-      ]
+      ],
+      "example": {
+        "type": "url",
+        "url": "https://example.com/product-review"
+      }
     },
     "AffiliateAttributionMetadata": {
       "type": "object",
@@ -210,7 +244,12 @@
           }
         ]
       },
-      "description": "Flat key/value map for additional non-sensitive context. Keys must be strings; values must be strings, numbers, or booleans. Arrays and nested objects are NOT permitted."
+      "description": "Flat key/value map for additional non-sensitive context. Keys must be strings; values must be strings, numbers, or booleans. Arrays and nested objects are NOT permitted.",
+      "example": {
+        "campaign_type": "influencer",
+        "commission_rate": 0.15,
+        "is_verified": true
+      }
     },
     "AffiliateAttribution": {
       "type": "object",
@@ -279,7 +318,20 @@
             "publisher_id"
           ]
         }
-      ]
+      ],
+      "example": {
+        "provider": "impact.com",
+        "token": "atp_01J8Z3WXYZ9ABC",
+        "publisher_id": "pub_123",
+        "campaign_id": "camp_summer2026",
+        "touchpoint": "first",
+        "source": {
+          "type": "url",
+          "url": "https://example.com/product-review"
+        },
+        "issued_at": "2026-02-11T10:00:00Z",
+        "expires_at": "2026-02-11T11:00:00Z"
+      }
     },
     "FulfillmentDetails": {
       "type": "object",
@@ -301,6 +353,20 @@
         "address": {
           "$ref": "#/$defs/Address",
           "description": "Fulfillment address"
+        }
+      },
+      "example": {
+        "name": "John Smith",
+        "phone_number": "15551234567",
+        "email": "john.smith@example.com",
+        "address": {
+          "name": "John Smith",
+          "line_one": "555 Golden Gate Avenue",
+          "line_two": "Apt 401",
+          "city": "San Francisco",
+          "state": "CA",
+          "country": "US",
+          "postal_code": "94102"
         }
       }
     },
@@ -327,7 +393,13 @@
       },
       "required": [
         "name"
-      ]
+      ],
+      "example": {
+        "name": "Acme Corporation",
+        "tax_id": "12-3456789",
+        "department": "Marketing",
+        "cost_center": "CC-2001"
+      }
     },
     "LoyaltyInfo": {
       "type": "object",
@@ -346,6 +418,11 @@
           "format": "date-time",
           "description": "RFC 3339 timestamp when the customer joined the loyalty program"
         }
+      },
+      "example": {
+        "tier": "Gold",
+        "points_balance": 5000,
+        "member_since": "2024-01-15T09:00:00Z"
       }
     },
     "TaxExemption": {
@@ -381,7 +458,13 @@
       "required": [
         "certificate_id",
         "certificate_type"
-      ]
+      ],
+      "example": {
+        "certificate_id": "cert_12345",
+        "certificate_type": "resale",
+        "exempt_regions": ["CA", "NY", "TX"],
+        "expires_at": "2027-12-31T23:59:59Z"
+      }
     },
     "Buyer": {
       "type": "object",
@@ -653,7 +736,12 @@
       },
       "required": [
         "id"
-      ]
+      ],
+      "example": {
+        "id": "item_123",
+        "name": "Wireless Headphones",
+        "unit_amount": 7999
+      }
     },
     "Disclosure": {
       "type": "object",
@@ -683,7 +771,12 @@
         "type",
         "content_type",
         "content"
-      ]
+      ],
+      "example": {
+        "type": "disclaimer",
+        "content_type": "plain",
+        "content": "This product contains small parts and is not suitable for children under 3 years."
+      }
     },
     "CustomAttribute": {
       "type": "object",
@@ -701,7 +794,11 @@
       "required": [
         "display_name",
         "value"
-      ]
+      ],
+      "example": {
+        "display_name": "Engraving",
+        "value": "Happy Birthday!"
+      }
     },
     "MarketplaceSellerDetails": {
       "type": "object",
@@ -714,7 +811,10 @@
       },
       "required": [
         "name"
-      ]
+      ],
+      "example": {
+        "name": "TechGear Store"
+      }
     },
     "PaymentHandler": {
       "type": "object",
@@ -767,6 +867,10 @@
         "config": {
           "type": "object",
           "description": "Handler-specific configuration"
+        },
+        "display_order": {
+          "type": "integer",
+          "description": "Optional merchant-suggested display order (lower = higher preference). Suggestive only; platform/agent MAY reorder."
         }
       },
       "required": [
@@ -992,7 +1096,8 @@
             "gift_wrap",
             "tip",
             "store_credit",
-            "total"
+            "total",
+            "amount_refunded"
           ],
           "description": "Type of total line item"
         },
@@ -2063,7 +2168,13 @@
     "Order": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Order returned after checkout completion. Contains order details and optional rich post-purchase tracking.",
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "order",
+          "description": "Discriminator field for webhook payloads. Always 'order' when present."
+        },
         "id": {
           "type": "string",
           "description": "Unique identifier for the order"
@@ -2074,7 +2185,7 @@
         },
         "order_number": {
           "type": "string",
-          "description": "Human-readable order number"
+          "description": "Human-readable order number for customer reference"
         },
         "permalink_url": {
           "type": "string",
@@ -2083,13 +2194,8 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "confirmed",
-            "processing",
-            "shipped",
-            "delivered"
-          ],
-          "description": "Current order status"
+          "enum": ["created", "confirmed", "manual_review", "processing", "shipped", "delivered", "canceled"],
+          "description": "Order-level status. Can be derived from line item and fulfillment statuses."
         },
         "estimated_delivery": {
           "$ref": "#/$defs/EstimatedDelivery",
@@ -2102,6 +2208,26 @@
         "support": {
           "$ref": "#/$defs/SupportInfo",
           "description": "Customer support contact information"
+        },
+        "line_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OrderLineItem" },
+          "description": "What was ordered, with per-item fulfillment tracking"
+        },
+        "fulfillments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Fulfillment" },
+          "description": "How items are being delivered (shipping, pickup, digital)"
+        },
+        "adjustments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Adjustment" },
+          "description": "Post-order changes: refunds, credits, returns, disputes"
+        },
+        "totals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds."
         }
       },
       "required": [
@@ -2109,6 +2235,244 @@
         "checkout_session_id",
         "permalink_url"
       ]
+    },
+    "OrderLineItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-line-item tracking of what was ordered and fulfillment progress.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Line item identifier, used for references in fulfillments and adjustments"
+        },
+        "title": {
+          "type": "string",
+          "description": "Product name"
+        },
+        "product_id": {
+          "type": "string",
+          "description": "Catalog product ID"
+        },
+        "description": {
+          "type": "string",
+          "description": "Product description"
+        },
+        "image_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Product image URL"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Product page URL"
+        },
+        "quantity": { "$ref": "#/$defs/OrderLineItemQuantity" },
+        "unit_price": {
+          "type": "integer",
+          "description": "Price per unit in minor currency units (cents)"
+        },
+        "subtotal": {
+          "type": "integer",
+          "description": "Line total in minor currency units"
+        },
+        "totals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Total" },
+          "description": "Optional line-item level totals breakdown using the same Total schema as checkout. Merchants who can provide richer breakdowns MAY use this alongside or instead of unit_price/subtotal."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["processing", "partial", "shipped", "delivered", "canceled"],
+          "description": "Derived: processing if shipped=0, partial if 0<shipped<ordered, shipped if shipped=ordered"
+        }
+      },
+      "required": ["id", "title", "quantity"]
+    },
+    "OrderLineItemQuantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Quantity tracking for an order line item.",
+      "properties": {
+        "ordered": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many the customer ordered"
+        },
+        "shipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many have been handed to carrier (optional, default 0)"
+        }
+      },
+      "required": ["ordered"]
+    },
+    "LineItemReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Reference to a line item with quantity, used in fulfillments and adjustments",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Line item ID reference"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Quantity in this fulfillment or adjustment"
+        }
+      },
+      "required": ["id", "quantity"]
+    },
+    "Fulfillment": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A fulfillment represents how items are delivered to the buyer (shipping, pickup, digital).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Fulfillment identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["shipping", "pickup", "digital"],
+          "description": "Fulfillment method type"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "shipped", "in_transit", "out_for_delivery", "ready_for_pickup", "delivered", "failed", "canceled"],
+          "description": "Current fulfillment status. Not all statuses apply to all types."
+        },
+        "line_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LineItemReference" },
+          "description": "Which line items and quantities are in this fulfillment"
+        },
+        "carrier": {
+          "type": "string",
+          "description": "Carrier name (e.g., 'FedEx', 'UPS', 'USPS'). Applies to type: shipping."
+        },
+        "tracking_number": {
+          "type": "string",
+          "description": "Carrier tracking number. Applies to type: shipping."
+        },
+        "tracking_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to track this shipment. Applies to type: shipping."
+        },
+        "destination": { "$ref": "#/$defs/Address" },
+        "estimated_delivery": { "$ref": "#/$defs/EstimatedDelivery" },
+        "digital_delivery": {
+          "type": "object",
+          "description": "Digital delivery details. Applies to type: digital.",
+          "properties": {
+            "access_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL to access digital content (download link, streaming page, etc.)"
+            },
+            "license_key": {
+              "type": "string",
+              "description": "License or activation key"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When access expires (RFC 3339 timestamp)"
+            }
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description (e.g., 'Backordered - ships Feb 15')"
+        },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FulfillmentEvent" },
+          "description": "Append-only event log tracking fulfillment progress"
+        }
+      },
+      "required": ["id", "type"]
+    },
+    "FulfillmentEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A point-in-time event in the fulfillment lifecycle.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Event identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["processing", "shipped", "in_transit", "out_for_delivery", "ready_for_pickup", "delivered", "failed_attempt", "returned"],
+          "description": "Event type"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when this event occurred"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description (e.g., 'Left at front door')"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location where this event occurred (e.g., 'Memphis, TN')"
+        }
+      },
+      "required": ["id", "type", "occurred_at"]
+    },
+    "Adjustment": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A post-order change such as refund, credit, return, or dispute.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Adjustment identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["refund", "partial_refund", "store_credit", "return", "exchange", "cancellation", "dispute", "chargeback"],
+          "description": "Type of adjustment"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when this adjustment occurred"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "completed", "failed"],
+          "description": "Adjustment status"
+        },
+        "line_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LineItemReference" },
+          "description": "Which line items and quantities are affected"
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Total amount credited to the buyer in minor currency units, inclusive of any applicable tax"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$",
+          "description": "ISO 4217 currency code"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable reason (e.g., 'Defective item')"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Structured reason code"
+        }
+      },
+      "required": ["id", "type", "occurred_at", "status"]
     },
     "AuthenticationMetadata": {
       "type": "object",
@@ -2723,13 +3087,12 @@
     "Error": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Protocol-level error returned in 4xx/5xx responses when the server cannot return a valid CheckoutSession at all (e.g. malformed request or unexpected failure). Use Error—not MessageError—when there is no valid session state to return. type semantics: invalid_request — malformed request, missing required fields, or invalid JSON; request_not_idempotent — idempotency violation; processing_error — unexpected server-side failure; service_unavailable — temporary unavailability.",
+      "description": "Protocol-level error returned in 4xx/5xx responses when the server cannot return a valid CheckoutSession at all (e.g. malformed request or unexpected failure). Use Error—not MessageError—when there is no valid session state to return. type semantics: invalid_request — malformed request, missing required fields, invalid JSON, or idempotency violations (codes: idempotency_key_required, idempotency_in_flight, idempotency_conflict); processing_error — unexpected server-side failure; service_unavailable — temporary unavailability.",
       "properties": {
         "type": {
           "type": "string",
           "enum": [
             "invalid_request",
-            "request_not_idempotent",
             "processing_error",
             "service_unavailable"
           ],

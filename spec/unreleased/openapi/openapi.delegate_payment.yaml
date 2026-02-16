@@ -85,6 +85,10 @@ paths:
             Request-Id:
               description: Echo of the request correlation ID
               schema: { type: string }
+            Idempotent-Replayed:
+              description: "true when the response is a cached replay of a previous request with the same Idempotency-Key"
+              required: false
+              schema: { type: string, enum: ["true"] }
           content:
             application/json:
               schema:
@@ -98,7 +102,7 @@ paths:
                     metadata:
                       source: "agent_checkout"
                       merchant_id: "acme"
-                      idempotency_key: "idem_abc123"
+                      idempotency_key: "550e8400-e29b-41d4-a716-446655440000"
         "400":
           description: Bad Request
           content:
@@ -112,6 +116,12 @@ paths:
                       code: invalid_card
                       message: "card field is required when payment_method.type=card"
                       param: "payment_method.number"
+                idempotency_key_required:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: idempotency_key_required
+                      message: "Idempotency-Key header is required"
         "401":
           description: Unauthorized
           content:
@@ -125,17 +135,22 @@ paths:
                       code: unauthorized
                       message: "Unauthorized"
         "409":
-          description: Idempotency conflict
+          description: In-flight collision — original request still processing
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              required: true
+              schema: { type: integer }
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
               examples:
-                idem_conflict:
+                idempotency_in_flight:
                   value:
                     error:
                       type: invalid_request
-                      code: idempotency_conflict
-                      message: "Same Idempotency-Key used with different parameters"
+                      code: idempotency_in_flight
+                      message: "A request with this Idempotency-Key is currently being processed"
         "422":
           description: Semantic validation error
           content:
@@ -149,6 +164,12 @@ paths:
                       code: invalid_card
                       message: "Invalid card expiration month"
                       param: "payment_method.exp_month"
+                idempotency_conflict:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: idempotency_conflict
+                      message: "Idempotency-Key has already been used with a different request body"
         "429":
           description: Rate limit exceeded
           content:
@@ -198,6 +219,7 @@ components:
       name: Authorization
       in: header
       required: true
+      description: 	Bearer token for API authentication (e.g., Bearer sk_live_123)
       schema:
         type: string
         example: "Bearer api_key_123"
@@ -205,6 +227,7 @@ components:
       name: Content-Type
       in: header
       required: true
+      description: "Must be application/json"
       schema:
         type: string
         example: "application/json"
@@ -212,6 +235,7 @@ components:
       name: Accept-Language
       in: header
       required: false
+      description: "Preferred language for response messages (e.g., en-US)"
       schema:
         type: string
         example: "en-us"
@@ -219,20 +243,25 @@ components:
       name: User-Agent
       in: header
       required: false
+      description: "Client application identifier"
       schema:
         type: string
         example: "ChatGPT/2.0"
     IdempotencyKey:
       name: Idempotency-Key
       in: header
-      required: false
+      required: true
+      description: "Idempotency key. MUST be present on all POST requests. Opaque string, max 255 characters. UUID v4 recommended. Scoped to authenticated identity + endpoint."
       schema:
         type: string
-        example: "idem_abc123"
+        minLength: 1
+        maxLength: 255
+        example: "550e8400-e29b-41d4-a716-446655440000"
     RequestId:
       name: Request-Id
       in: header
       required: false
+      description: "Unique identifier for request tracking and debugging"
       schema:
         type: string
         example: "req_123"
@@ -240,6 +269,7 @@ components:
       name: Signature
       in: header
       required: false
+      description: "Detached JSON signature for request verification"
       schema:
         type: string
         example: "ZXltZX..." # detached signature over canonical JSON
@@ -247,6 +277,7 @@ components:
       name: Timestamp
       in: header
       required: false
+      description: "ISO 8601 timestamp for request timing validation"
       schema:
         type: string
         format: date-time
@@ -255,6 +286,7 @@ components:
       name: API-Version
       in: header
       required: true
+      description: "API version date in format YYYY-MM-DD (e.g., 2026-01-30)"
       schema:
         type: string
         example: "2025-09-29"
@@ -266,18 +298,60 @@ components:
       properties:
         payment_method:
           $ref: "#/components/schemas/PaymentMethodCard"
+          description: "The card payment method to tokenize for delegated use"
         allowance:
           $ref: "#/components/schemas/Allowance"
+          description: "Constraints on how the payment method can be used"
         billing_address:
           $ref: "#/components/schemas/Address"
+          description: "Billing address associated with the payment method"
         risk_signals:
           type: array
           minItems: 1
+          description: "List of risk assessment signals from fraud detection"
           items: { $ref: "#/components/schemas/RiskSignal" }
         metadata:
           type: object
+          description: "Additional metadata for the request"
           additionalProperties: { type: string }
       required: [payment_method, allowance, risk_signals, metadata]
+      example:
+        payment_method:
+          type: "card"
+          card_number_type: "fpan"
+          number: "4242424242424242"
+          exp_month: "11"
+          exp_year: "2026"
+          name: "Jane Doe"
+          cvc: "223"
+          checks_performed: ["avs", "cvv"]
+          iin: "424242"
+          display_card_funding_type: "credit"
+          display_brand: "visa"
+          display_last4: "4242"
+          metadata: {}
+        allowance:
+          reason: "one_time"
+          max_amount: 5000
+          currency: "usd"
+          checkout_session_id: "cs_01HV3P3ABC123"
+          merchant_id: "acme_corp"
+          expires_at: "2026-02-13T12:00:00Z"
+        billing_address:
+          name: "Jane Doe"
+          line_one: "185 Berry Street"
+          line_two: "Suite 550"
+          city: "San Francisco"
+          state: "CA"
+          country: "US"
+          postal_code: "94107"
+        risk_signals:
+          - type: "card_testing"
+            score: 5
+            action: "authorized"
+        metadata:
+          session_id: "sess_abc123"
+          user_agent: "ChatGPT/2.0"
 
     PaymentMethodCard:
       type: object
@@ -286,72 +360,118 @@ components:
         type:
           type: string
           enum: [card]
+          description: "Payment method type, always 'card'"
         card_number_type:
           type: string
           enum: [fpan, network_token]
+          description: "Whether the number is a raw card number (fpan) or a network token"
         number:
           type: string
           description: "network token or fallback fpan value"
         exp_month:
           type: string
           maxLength: 2
+          description: "Two-digit expiration month (01-12)"
         exp_year:
           type: string
           maxLength: 4
+          description: "Four-digit expiration year (e.g., 2026)"
         name:
           type: string
+          description: "Cardholder name as it appears on the card"
         cvc:
           type: string
           maxLength: 4
+          description: "Card verification code (3 or 4 digits)"
         cryptogram:
           type: string
+          description: "Dynamic cryptogram for tokenized card transactions"
         eci_value:
           type: string
           maxLength: 2
+          description: "Electronic Commerce Indicator for 3DS authentication status"
         checks_performed:
           type: array
+          description: "List of verification checks performed on the card"
           items:
             type: string
             enum: [avs, cvv, ani, auth0]
         iin:
           type: string
           maxLength: 8
+          description: "Issuer Identification Number (first 6 digits of card)"
         display_card_funding_type:
           type: string
           enum: [credit, debit, prepaid]
+          description: "Card funding type for display purposes"
         display_wallet_type:
           type: string
+          description: "Digital wallet provider if card is from a wallet (e.g., Apple Pay, Google Pay)"
         display_brand:
           type: string
+          description: "Card brand for display purposes (e.g., visa, mastercard)"
         display_last4:
           type: string
           minLength: 4
           maxLength: 4
           pattern: "^[0-9]{4}$"
+          description: "Last 4 digits of card number for display purposes"
         metadata:
           type: object
+          description: "Additional metadata about the payment method"
           additionalProperties: { type: string }
         virtual:
           type: boolean
+          description: "Whether this is a virtual card number"
       required: [type, card_number_type, number, display_card_funding_type, metadata, virtual]
+      example:
+        type: "card"
+        card_number_type: "fpan"
+        number: "4242424242424242"
+        exp_month: "12"
+        exp_year: "2027"
+        name: "John Smith"
+        cvc: "123"
+        checks_performed: ["avs", "cvv"]
+        iin: "424242"
+        display_card_funding_type: "credit"
+        display_brand: "visa"
+        display_last4: "4242"
+        metadata:
+          card_origin: "manual_entry"
 
     Address:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string, maxLength: 256 }
-        line_one: { type: string, maxLength: 60 }
-        line_two: { type: string, maxLength: 60 }
-        city: { type: string, maxLength: 60 }
-        state: { type: string }
+        name:
+          type: string
+          maxLength: 256
+          description: "Full name of the person at this address"
+        line_one:
+          type: string
+          maxLength: 60
+          description: "Street address line 1 (e.g., street and number)"
+        line_two:
+          type: string
+          maxLength: 60
+          description: "Street address line 2 (e.g., apartment, suite, unit)"
+        city:
+          type: string
+          maxLength: 60
+          description: "City or locality"
+        state:
+          type: string
+          description: "State, province, or region"
         country:
-          {
-            type: string,
-            minLength: 2,
-            maxLength: 2,
-            description: "ISO-3166-1 alpha-2",
-          }
-        postal_code: { type: string, maxLength: 20 }
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: "ISO-3166-1 alpha-2 country code"
+        postal_code:
+          type: string
+          maxLength: 20
+          description: "ZIP or postal code"
         email:
           type: string
           format: email
@@ -362,6 +482,14 @@ components:
           maxLength: 32
           description: "Optional billing phone (fraud, 3DS)."
       required: [name, line_one, city, state, country, postal_code]
+      example:
+        name: "John Smith"
+        line_one: "555 Golden Gate Avenue"
+        line_two: "Apt 401"
+        city: "San Francisco"
+        state: "CA"
+        country: "US"
+        postal_code: "94102"
 
     Allowance:
       type: object
@@ -370,21 +498,25 @@ components:
         reason:
           type: string
           enum: [one_time]
+          description: "Usage pattern for this allowance; currently only one_time is supported"
         max_amount:
           type: integer
-          description: "Minor units (e.g., $20 → 2000)"
+          description: "Maximum charge amount in minor units (e.g. 100 cents for $1.00 or 100 for ¥100)"
         currency:
           type: string
           pattern: "^[a-z]{3}$"
-          description: "ISO-4217 lowercase (e.g., usd)"
+          description: "ISO-4217 three-letter lowercase currency code (e.g., usd)"
         checkout_session_id:
           type: string
+          description: "Identifier of the checkout session this payment is for"
         merchant_id:
           type: string
           maxLength: 256
+          description: "Unique identifier for the merchant authorized to use this token"
         expires_at:
           type: string
           format: date-time
+          description: "ISO 8601 timestamp when this allowance expires"
         order_id:
           type: string
           description: "Optional merchant order identifier for correlation."
@@ -397,6 +529,13 @@ components:
           merchant_id,
           expires_at,
         ]
+      example:
+        reason: "one_time"
+        max_amount: 100000
+        currency: "usd"
+        checkout_session_id: "csn_01HV3P3XYZ789"
+        merchant_id: "merchant_12345"
+        expires_at: "2026-02-15T18:30:00Z"
 
     RiskSignal:
       type: object
@@ -405,12 +544,19 @@ components:
         type:
           type: string
           enum: [card_testing]
+          description: "Type of risk signal detected"
         score:
           type: integer
+          description: "Risk score indicating severity level"
         action:
           type: string
           enum: [blocked, manual_review, authorized]
+          description: "Recommended action based on risk assessment"
       required: [type, score, action]
+      example:
+        type: "card_testing"
+        score: 15
+        action: "manual_review"
 
     DelegatePaymentResponse:
       type: object
@@ -422,14 +568,23 @@ components:
         created:
           type: string
           format: date-time
+          description: "ISO 8601 timestamp when the token was created"
         expires_at:
           type: string
           format: date-time
           description: "When the token becomes invalid; echoes allowance.expires_at."
         metadata:
           type: object
+          description: "Metadata echoed from the request plus system-added fields"
           additionalProperties: { type: string }
       required: [id, created, metadata]
+      example:
+        id: "vt_01J8Z3WXYZ9ABC123"
+        created: "2026-02-12T14:30:00Z"
+        metadata:
+          source: "agent_checkout"
+          merchant_id: "acme_corp"
+          idempotency_key: "idem_xyz789"
 
     Error:
       type: object
@@ -444,6 +599,7 @@ components:
               processing_error,
               service_unavailable,
             ]
+          description: "High-level error category"
         code:
           type: string
           enum:
@@ -454,9 +610,13 @@ components:
               too_many_requests,
               unsupported_api_version,
               missing_api_version,
+              idempotency_key_required,
+              idempotency_in_flight
             ]
+          description: "Specific error code for programmatic handling"
         message:
           type: string
+          description: "Human-readable error message"
         param:
           type: string
           description: "JSONPath of offending field"
@@ -465,3 +625,8 @@ components:
           items: { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$" }
           description: "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "invalid_card"
+        message: "Invalid card expiration year"
+        param: "$.payment_method.exp_year"

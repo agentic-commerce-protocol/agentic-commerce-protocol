@@ -70,11 +70,21 @@
   "delegate_payment_error_idempotency_conflict": {
     "type": "invalid_request",
     "code": "idempotency_conflict",
-    "message": "Same Idempotency-Key used with different parameters"
+    "message": "Idempotency-Key has already been used with a different request body"
   },
   "delegate_payment_error_rate_limit": {
     "type": "rate_limit_exceeded",
     "code": "too_many_requests",
     "message": "Too many requests, please retry later"
+  },
+  "delegate_payment_error_idempotency_key_required": {
+    "type": "invalid_request",
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required"
+  },
+  "delegate_payment_error_idempotency_in_flight": {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
   }
 }
