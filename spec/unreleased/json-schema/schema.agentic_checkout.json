@@ -531,7 +531,10 @@
             "enum": [
               "3ds",
               "biometric",
-              "address_verification"
+              "address_verification",
+              "redirect",
+              "webview",
+              "otp"
             ]
           },
           "description": "Intervention types supported. Agent request: Interventions the agent can handle. Seller response: Intersection of supported interventions."
@@ -542,7 +545,10 @@
             "type": "string",
             "enum": [
               "3ds",
-              "biometric"
+              "biometric",
+              "redirect",
+              "webview",
+              "otp"
             ]
           },
           "description": "Intervention methods required for this session (seller only)."
@@ -2656,6 +2662,78 @@
         }
       ]
     },
+    "InterventionContext": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Context for a pending buyer intervention. Present on the session when an intervention_required message is active. The intervention_type field is always present; other fields depend on the type.",
+      "properties": {
+        "intervention_type": {
+          "type": "string",
+          "enum": [
+            "3ds",
+            "biometric",
+            "address_verification",
+            "redirect",
+            "webview",
+            "otp"
+          ],
+          "description": "The type of intervention the buyer needs to complete."
+        },
+        "redirect_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL the buyer should be directed to (redirect and webview types)."
+        },
+        "callback_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL the buyer returns to after completing the redirect flow."
+        },
+        "challenge_hint": {
+          "type": "string",
+          "description": "Human-readable hint about where the challenge was sent (e.g., 'Code sent to k***@gmail.com'). For otp type."
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this intervention context expires."
+        },
+        "provider": {
+          "type": "string",
+          "description": "The payment handler or provider that triggered this intervention."
+        }
+      },
+      "required": [
+        "intervention_type"
+      ]
+    },
+    "InterventionResponse": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Agent's response to a pending intervention. Submitted via update_checkout_session when the buyer completes an intervention flow.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "otp",
+            "redirect_complete",
+            "webview_complete"
+          ],
+          "description": "The intervention type being responded to."
+        },
+        "code": {
+          "type": "string",
+          "description": "One-time code entered by the buyer (otp type)."
+        },
+        "callback_data": {
+          "type": "string",
+          "description": "Data received from the redirect callback (redirect_complete type)."
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
     "CheckoutSessionBase": {
       "type": "object",
       "additionalProperties": false,
@@ -2796,6 +2874,10 @@
         "authentication_metadata": {
           "$ref": "#/$defs/AuthenticationMetadata",
           "description": "Authentication metadata for payment interventions (e.g., 3DS)"
+        },
+        "intervention_context": {
+          "$ref": "#/$defs/InterventionContext",
+          "description": "Context for a pending buyer intervention. Present when an intervention is needed to proceed."
         },
         "created_at": {
           "type": "string",
@@ -2994,6 +3076,10 @@
         "discounts": {
           "$ref": "#/$defs/DiscountsRequest",
           "description": "Discount codes to apply. Replaces previously submitted codes."
+        },
+        "intervention_response": {
+          "$ref": "#/$defs/InterventionResponse",
+          "description": "Agent's response to a pending intervention (e.g., OTP code, redirect completion signal)."
         }
       }
     },
