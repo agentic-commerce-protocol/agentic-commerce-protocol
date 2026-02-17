@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://openattribution.org/acp/schemas/content_attribution.json",
+  "$id": "https://agentic-commerce-protocol.com/schemas/content_attribution.json",
+  "$comment": "ACP binding of OpenAttribution Telemetry v0.4. Canonical specification: https://openattribution.org/telemetry",
   "title": "Content Attribution Extension for ACP",
   "description": "Content citation attribution data for ACP checkout sessions.",
   "type": "object",
@@ -9,17 +10,10 @@
       "type": "string",
       "description": "Opaque identifier for the content collection used by the agent."
     },
-    "prior_session_ids": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "description": "Previous session IDs (UUIDs) in the user's purchase journey."
-    },
     "content_retrieved": {
       "type": "array",
       "description": "Content URLs fetched during the session.",
+      "minItems": 1,
       "maxItems": 100,
       "items": {
         "type": "object",
@@ -35,8 +29,7 @@
             "format": "date-time",
             "description": "UTC timestamp of retrieval (ISO 8601)."
           }
-        },
-        "additionalProperties": false
+        }
       }
     },
     "content_cited": {
@@ -74,59 +67,31 @@
           },
           "content_hash": {
             "type": "string",
-            "pattern": "^sha256:[a-f0-9]{64}$",
-            "description": "SHA-256 hash for content verification (format: 'sha256:abc123...')."
+            "pattern": "^sha256:[a-fA-F0-9]{64}$",
+            "description": "SHA-256 hash of the content the agent processed from this URL, for integrity audit trail in dispute resolution (format: 'sha256:abc123...')."
           }
-        },
-        "additionalProperties": false
+        }
       }
     },
     "conversation_summary": {
       "type": "object",
-      "description": "Privacy-preserving conversation aggregate.",
+      "description": "Lightweight conversation context. All fields are agent-reported hints.",
       "properties": {
         "turn_count": {
           "type": "integer",
           "minimum": 1,
-          "description": "Number of conversation turns."
-        },
-        "primary_intent": {
-          "type": "string",
-          "enum": [
-            "product_research",
-            "comparison",
-            "how_to",
-            "troubleshooting",
-            "general_question",
-            "purchase_intent",
-            "price_check",
-            "availability_check",
-            "review_seeking",
-            "chitchat",
-            "other"
-          ],
-          "description": "Most frequent query intent across turns."
+          "description": "Number of conversation turns before checkout."
         },
         "topics": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "De-duplicated topic list from the conversation."
-        },
-        "total_content_retrieved": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Total number of content items retrieved."
-        },
-        "total_content_cited": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Total number of content items cited."
+          "description": "De-duplicated free-form topic tags from the conversation."
         }
-      },
-      "additionalProperties": false
+      }
     }
   },
+  "required": ["content_retrieved"],
   "additionalProperties": true
 }

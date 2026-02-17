@@ -13,9 +13,6 @@
   ],
   "content_attribution": {
     "content_scope": "coffee-equipment-reviews",
-    "prior_session_ids": [
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-    ],
     "content_retrieved": [
       {
         "content_url": "https://www.jameshoffmann.co.uk/reviews/breville-barista-express",
@@ -48,10 +45,7 @@
     ],
     "conversation_summary": {
       "turn_count": 4,
-      "primary_intent": "comparison",
-      "topics": ["espresso-machine", "grinder", "home-barista"],
-      "total_content_retrieved": 3,
-      "total_content_cited": 2
+      "topics": ["espresso-machine", "grinder", "home-barista"]
     }
   }
 }

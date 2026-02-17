@@ -1,5 +1,5 @@
 {
-  "$comment": "ACP CheckoutSessionCreateRequest with both affiliate_attribution and content_attribution. The affiliate network can use content_attribution URLs to verify the affiliate_attribution claim by matching content URLs against its publisher registry.",
+  "$comment": "ACP CheckoutSessionCreateRequest with both affiliate_attribution and content_attribution. The affiliate network can use content_attribution URLs to verify the affiliate_attribution claim by matching content URLs against its publisher registry. This enables the network to confirm that the claimed publisher (pub_coffee_reviews_456) did indeed publish the content that the agent retrieved and cited during the shopping conversation.",
   "items": [
     {
       "id": "sku_breville_barista_express",
@@ -46,10 +46,7 @@
     ],
     "conversation_summary": {
       "turn_count": 4,
-      "primary_intent": "comparison",
-      "topics": ["espresso-machine", "grinder", "home-barista"],
-      "total_content_retrieved": 2,
-      "total_content_cited": 2
+      "topics": ["espresso-machine", "grinder", "home-barista"]
     }
   }
 }

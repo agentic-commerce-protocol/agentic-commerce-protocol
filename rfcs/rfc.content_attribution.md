@@ -1,13 +1,4 @@
----
-sep: 148
-title: Content Citation Attribution Extension
-author: OpenAttribution Project <standards@openattribution.org>
-status: Proposal
-type: Standards Track
-created: 2026-02-15
----
-
-# Content Citation Attribution Extension
+# RFC: Content Citation Attribution Extension
 
 ## Abstract
 
@@ -15,7 +6,7 @@ This SEP defines a `content_attribution` extension for ACP checkout sessions. Wh
 
 The mechanism is URL-based: agents record the URIs of content they fetched and cited, and merchants forward these to their affiliate networks for publisher resolution. This complements the existing `affiliate_attribution` RFC, which handles network-level attribution through pre-wired publisher mappings. Where `affiliate_attribution` requires prior relationship setup, `content_attribution` bootstraps attribution from raw URLs -- no pre-configuration needed. The two layers can coexist in a single checkout session.
 
-The extension follows a strict write-only, privacy-preserving model. Attribution data flows from agent to merchant and is never echoed in read responses. No personally identifiable information is collected; `content_scope` values are opaque identifiers and the optional `conversation_summary` provides only aggregate signals. This design allows attribution to function without exposing the agent's reasoning or the buyer's browsing behaviour.
+The extension follows a strict write-only, privacy-preserving model. Attribution data flows from agent to merchant and is never echoed in read responses. No personally identifiable information is collected; `content_scope` values are opaque identifiers. This design allows attribution to function without exposing the agent's reasoning or the buyer's browsing behaviour.
 
 ## Motivation
 
@@ -46,8 +37,8 @@ These are complementary layers, not competing ones. A single checkout can includ
 ```json
 {
   "name": "content_attribution",
-  "schema": "https://openattribution.org/acp/schemas/content_attribution.json",
-  "spec": "https://openattribution.org/acp/rfc/content_attribution",
+  "schema": "https://agentic-commerce-protocol.com/schemas/content_attribution.json",
+  "spec": "https://agentic-commerce-protocol.com/rfcs/content_attribution",
   "extends": [
     "$.CheckoutSessionCreateRequest.content_attribution",
     "$.CheckoutSessionCompleteRequest.content_attribution"
@@ -55,7 +46,7 @@ These are complementary layers, not competing ones. A single checkout can includ
 }
 ```
 
-The extension name follows ACP convention (short names, matching `affiliate_attribution`). The schema and spec URLs are hosted under `openattribution.org` as the reference implementation provider.
+The extension name follows ACP convention (short names, matching `affiliate_attribution`). The schema and spec URLs use the ACP-controlled `agentic-commerce-protocol.com` namespace. This schema is the ACP binding of [OpenAttribution Telemetry v0.4](https://openattribution.org/telemetry); the canonical specification is protocol-independent and maintained by the OpenAttribution Project.
 
 ### The `content_attribution` Object
 
@@ -66,10 +57,9 @@ The `content_attribution` object is included in `CheckoutSessionCreateRequest` a
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `content_scope` | string | No | Opaque identifier for the content collection used by the agent |
-| `prior_session_ids` | array of UUID strings | No | Previous session IDs (UUIDs) in the user's purchase journey |
-| `content_retrieved` | array | No | Content URLs fetched during the session |
+| `content_retrieved` | array | Yes | Content URLs fetched during the session |
 | `content_cited` | array | No | Content explicitly referenced in agent responses |
-| `conversation_summary` | object | No | Privacy-preserving conversation aggregate |
+| `conversation_summary` | object | No | Lightweight conversation context (agent-reported hints) |
 
 #### `content_retrieved` Array Items
 
@@ -87,19 +77,16 @@ The `content_attribution` object is included in `CheckoutSessionCreateRequest` a
 | `citation_type` | string | No | How the content was used: `direct_quote`, `paraphrase`, `reference`, or `contradiction` |
 | `excerpt_tokens` | integer | No | Token count of the cited excerpt |
 | `position` | string | No | Prominence in the response: `primary`, `supporting`, or `mentioned` |
-| `content_hash` | string | No | SHA-256 hash for content verification (format: `sha256:{hex}`) |
+| `content_hash` | string | No | SHA-256 hash of the content the agent processed from this URL (format: `sha256:{hex}`) |
 
 #### `conversation_summary` Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `turn_count` | integer | Number of conversation turns (minimum 1) |
-| `primary_intent` | enum | Most frequent query intent across turns (see below) |
-| `topics` | array of strings | De-duplicated topic list from the conversation |
-| `total_content_retrieved` | integer | Total number of content items retrieved |
-| `total_content_cited` | integer | Total number of content items cited |
+| `turn_count` | integer | Number of conversation turns before checkout (minimum 1) |
+| `topics` | array of strings | De-duplicated free-form topic tags from the conversation |
 
-**`primary_intent` values:** `product_research`, `comparison`, `how_to`, `troubleshooting`, `general_question`, `purchase_intent`, `price_check`, `availability_check`, `review_seeking`, `chitchat`, `other`
+Both fields are agent-reported hints. `turn_count` provides a signal of conversation depth that is not derivable from the citation arrays. `topics` provides lightweight category tags that help merchants route attribution internally without needing to crawl the cited URLs.
 
 ### Write-Only Semantics
 
@@ -153,7 +140,7 @@ Attribution-specific errors MUST NOT prevent checkout completion. If `content_at
 
 **Field alignment with `affiliate_attribution`.** The extension intentionally mirrors the structural patterns of `affiliate_attribution` so that merchants can process both through similar pipelines. The additional fields (`citation_type`, `excerpt_tokens`, `position`, `content_hash`) provide quality signals specific to content citation that have no analogue in network-level affiliate tracking.
 
-**Conversation summary.** The `conversation_summary` provides useful aggregate signals (intent, topics, turn count) without exposing raw conversation text. This enables attribution analysis while respecting user privacy.
+**Minimal conversation context.** `conversation_summary` is limited to `turn_count` and `topics` — two signals that are genuinely not derivable from the citation arrays. Conversation depth and topic tags help merchants route attribution internally without requiring them to crawl cited URLs. Subjective classification fields were excluded to avoid inconsistency across agent implementations.
 
 ## Backward Compatibility
 
@@ -178,7 +165,7 @@ The JSON Schema for the `content_attribution` object is published alongside this
 ## Security Considerations
 
 - **Citation quality signals are agent-reported, not trusted assertions.** The `citation_type`, `position`, and `excerpt_tokens` fields reflect the agent's self-report of how it used content. Merchants and attribution systems should treat these as hints, not verified facts.
-- **`content_hash` enables content verification.** When provided, the SHA-256 hash allows the merchant or attribution system to verify that the cited content matches what was actually published at the given URL.
+- **`content_hash` provides an integrity audit trail.** The hash is a SHA-256 of the content the agent processed from the cited URL. It ties the citation to a specific version of the content the agent saw, which is useful for dispute resolution when attribution involves commission payments. The spec does not prescribe the extraction method — agents hash whatever content they fed into their context. Agents SHOULD use a consistent hashing method across citations within a session.
 - **`content_scope` MUST NOT contain PII.** Implementations must use opaque, non-identifying values for this field.
 - **Rate limiting.** Merchants should apply rate limiting to prevent abuse of the attribution channel (e.g. an agent flooding `content_retrieved` with spurious URLs to game attribution).
 - **Write-only semantics prevent data leakage.** By never echoing `content_attribution` in read responses, the extension prevents third parties from discovering which content influenced a purchase.
