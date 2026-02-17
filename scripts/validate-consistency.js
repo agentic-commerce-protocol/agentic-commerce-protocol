@@ -22,7 +22,6 @@ const addFormats = require('ajv-formats');
 const yaml = require('js-yaml');
 
 const VERSIONS = ['2025-09-29', '2025-12-12', '2026-01-16', '2026-01-30', 'unreleased'];
-// SPECS is now dynamically discovered per version/directory
 const PROHIBITED_SCHEMAS = {
   'agentic_checkout': ['Refund'] // Refund should only be in webhook spec
 };
@@ -34,6 +33,60 @@ const CRITICAL_AMOUNT_FIELDS = [
 
 let errors = [];
 let warnings = [];
+
+// Helper function to recursively check properties for descriptions
+// Used by both JSON Schema and OpenAPI validation
+function checkProperties(obj, path = [], options = {}) {
+  const { skipTopLevel = false, skipRefs = false } = options;
+  
+  if (!obj || typeof obj !== 'object') return [];
+  
+  let missingDescriptions = [];
+
+  // If this is a property definition with a type, check for description
+  if (obj.type && !obj.description) {
+    // Skip $refs if requested (OpenAPI)
+    if (skipRefs && obj.$ref) {
+      // Do nothing
+    }
+    // Skip top-level if requested (OpenAPI schemas at path length <= 1)
+    else if (skipTopLevel && path.length <= 1) {
+      // Do nothing
+    }
+    // Skip if this is just a simple enum or const value
+    else if (!obj.enum && !obj.const && !obj.oneOf && !obj.anyOf && !obj.allOf) {
+      missingDescriptions.push(path.join('.'));
+    }
+  }
+
+  // Check properties object
+  if (obj.properties) {
+    Object.keys(obj.properties).forEach(propName => {
+      missingDescriptions.push(...checkProperties(obj.properties[propName], [...path, propName], options));
+    });
+  }
+
+  // Check array items
+  if (obj.items) {
+    missingDescriptions.push(...checkProperties(obj.items, [...path, '[items]'], options));
+  }
+
+  // Check oneOf, anyOf, allOf
+  ['oneOf', 'anyOf', 'allOf'].forEach(key => {
+    if (obj[key] && Array.isArray(obj[key])) {
+      obj[key].forEach((subSchema, idx) => {
+        missingDescriptions.push(...checkProperties(subSchema, [...path, `[${key}[${idx}]]`], options));
+      });
+    }
+  });
+
+  // Check additionalProperties if it's a schema
+  if (obj.additionalProperties && typeof obj.additionalProperties === 'object') {
+    missingDescriptions.push(...checkProperties(obj.additionalProperties, [...path, '[additionalProperties]'], options));
+  }
+  
+  return missingDescriptions;
+}
 
 // Helper function to get all JSON schema files in a directory
 function getJsonSchemaFiles(version) {
@@ -292,45 +345,6 @@ function validateFieldDescriptions() {
 
       let missingDescriptions = [];
 
-      // Recursive function to check all properties in an object
-      function checkProperties(obj, path = []) {
-        if (!obj || typeof obj !== 'object') return;
-
-        // If this is a property definition with a type, check for description
-        if (obj.type && !obj.description) {
-          // Skip if this is just a simple enum or const value
-          if (!obj.enum && !obj.const && !obj.oneOf && !obj.anyOf && !obj.allOf) {
-            missingDescriptions.push(path.join('.'));
-          }
-        }
-
-        // Check properties object
-        if (obj.properties) {
-          Object.keys(obj.properties).forEach(propName => {
-            checkProperties(obj.properties[propName], [...path, propName]);
-          });
-        }
-
-        // Check array items
-        if (obj.items) {
-          checkProperties(obj.items, [...path, '[items]']);
-        }
-
-        // Check oneOf, anyOf, allOf
-        ['oneOf', 'anyOf', 'allOf'].forEach(key => {
-          if (obj[key] && Array.isArray(obj[key])) {
-            obj[key].forEach((subSchema, idx) => {
-              checkProperties(subSchema, [...path, `[${key}[${idx}]]`]);
-            });
-          }
-        });
-
-        // Check additionalProperties if it's a schema
-        if (obj.additionalProperties && typeof obj.additionalProperties === 'object') {
-          checkProperties(obj.additionalProperties, [...path, '[additionalProperties]']);
-        }
-      }
-
       // Check all $defs
       if (schema.$defs) {
         Object.keys(schema.$defs).forEach(defName => {
@@ -344,7 +358,8 @@ function validateFieldDescriptions() {
             );
           }
 
-          checkProperties(def, [defName]);
+          // Check properties using shared function
+          missingDescriptions.push(...checkProperties(def, [defName]));
         });
       }
 
@@ -414,104 +429,6 @@ function validateModelExamples() {
   });
 }
 
-// 7. Validate examples against schemas
-function validateExamples() {
-  console.log('\n📝 Validating Examples Against Schemas...\n');
-
-  VERSIONS.forEach(version => {
-    SPECS.forEach(spec => {
-      const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
-      const examplesPath = path.join(__dirname, '..', 'examples', version, `examples.${spec}.json`);
-
-      if (!fs.existsSync(schemaPath) || !fs.existsSync(examplesPath)) {
-        return;
-      }
-
-      try {
-        const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-        const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf8'));
-
-        // Create new AJV instance per schema to avoid ID conflicts
-        const ajv = new Ajv({
-          strict: false,
-          allErrors: true,
-          validateSchema: false  // Don't validate the metaschema
-        });
-        addFormats(ajv);
-
-        // Add the full schema (with $defs) to AJV
-        ajv.addSchema(schema);
-
-        // Examples file is an object with named examples
-        Object.keys(examples).forEach(exampleName => {
-          const example = examples[exampleName];
-
-          // Try to infer which schema this example should validate against
-          // agentic_checkout: checkout_session_*, create*request, complete*request
-          // delegate_payment: delegate_payment_request, delegate_payment_success_response, delegate_payment_error_*
-          let schemaRef = null;
-
-          if (spec === 'agentic_checkout') {
-            if (exampleName === 'complete_checkout_session_response') {
-              schemaRef = '#/$defs/CheckoutSessionWithOrder';
-            } else if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
-              schemaRef = '#/$defs/CheckoutSession';
-            } else if (exampleName.includes('create') && exampleName.includes('request')) {
-              schemaRef = '#/$defs/CheckoutSessionCreateRequest';
-            } else if (exampleName.includes('complete') && exampleName.includes('request')) {
-              schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
-            }
-          } else if (spec === 'delegate_payment') {
-            if (exampleName === 'delegate_payment_request') {
-              schemaRef = '#/$defs/DelegatePaymentRequest';
-            } else if (exampleName === 'delegate_payment_success_response') {
-              schemaRef = '#/$defs/DelegatePaymentResponse';
-            } else if (exampleName.startsWith('delegate_payment_error_')) {
-              schemaRef = '#/$defs/Error';
-            }
-          }
-
-          // Skip validation if we can't determine the schema
-          if (!schemaRef) {
-            // Don't warn - many examples are just documentation snippets
-            return;
-          }
-
-          // Validate using the schema reference (full URI when schema has $id so AJV can resolve)
-          try {
-            const schemaKey = schema.$id ? schema.$id + schemaRef : schemaRef;
-            const validate = ajv.getSchema(schemaKey);
-            if (!validate) {
-              // Schema reference not found, skip silently
-              return;
-            }
-
-            const valid = validate(example);
-
-            if (!valid) {
-              error(
-                `Example "${exampleName}" does not validate against schema`,
-                {
-                  version,
-                  spec,
-                  example: exampleName,
-                  errors: validate.errors
-                }
-              );
-            }
-          } catch (validateErr) {
-            // Skip validation errors silently - examples might be partial
-            return;
-          }
-        });
-
-        success(`Examples validated for ${version}/${spec}`);
-      } catch (err) {
-        error(`Error validating examples for ${version}/${spec}: ${err.message}`, { version, spec });
-      }
-    });
-  });
-}
 
 // 8. Validate OpenAPI schema descriptions in unreleased
 function validateOpenApiDescriptions() {
@@ -537,55 +454,17 @@ function validateOpenApiDescriptions() {
 
       let missingDescriptions = [];
 
-      // Recursive function to check all properties in an object
-      function checkProperties(obj, path = []) {
-        if (!obj || typeof obj !== 'object') return;
-
-        // If this is a property definition with a type, check for description
-        if (obj.type && !obj.description && !obj.$ref) {
-          // Skip if this is just a simple enum or const value
-          // Skip if this is a top-level schema object (path length <= 1)
-          // because OpenAPI schemas often don't have descriptions at the schema level
-          if (!obj.enum && !obj.const && !obj.oneOf && !obj.anyOf && !obj.allOf && path.length > 1) {
-            missingDescriptions.push(path.join('.'));
-          }
-        }
-
-        // Check properties object
-        if (obj.properties) {
-          Object.keys(obj.properties).forEach(propName => {
-            checkProperties(obj.properties[propName], [...path, propName]);
-          });
-        }
-
-        // Check array items
-        if (obj.items) {
-          checkProperties(obj.items, [...path, '[items]']);
-        }
-
-        // Check oneOf, anyOf, allOf
-        ['oneOf', 'anyOf', 'allOf'].forEach(key => {
-          if (obj[key] && Array.isArray(obj[key])) {
-            obj[key].forEach((subSchema, idx) => {
-              checkProperties(subSchema, [...path, `[${key}[${idx}]]`]);
-            });
-          }
-        });
-
-        // Check additionalProperties if it's a schema
-        if (obj.additionalProperties && typeof obj.additionalProperties === 'object') {
-          checkProperties(obj.additionalProperties, [...path, '[additionalProperties]']);
-        }
-      }
-
-      // Check all schemas
+      // Check all schemas using shared function with OpenAPI-specific options
       Object.keys(openapi.components.schemas).forEach(schemaName => {
         const schemaDef = openapi.components.schemas[schemaName];
 
         // Check if the schema itself has a description (optional for OpenAPI)
         // Many OpenAPI schemas are inline and don't need top-level descriptions
         
-        checkProperties(schemaDef, [schemaName]);
+        missingDescriptions.push(...checkProperties(schemaDef, [schemaName], {
+          skipTopLevel: true,  // OpenAPI schemas often don't have descriptions at the schema level
+          skipRefs: true       // Skip properties that only have $ref
+        }));
       });
 
       if (missingDescriptions.length > 0) {
