@@ -1,0 +1,389 @@
+{
+  "otp_flow_create_request": {
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_sneakers_001"
+      }
+    ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["3ds", "otp"],
+        "display_context": "native",
+        "redirect_context": "none",
+        "max_redirects": 0,
+        "max_interaction_depth": 2
+      }
+    },
+    "fulfillment_details": {
+      "name": "Jane Smith",
+      "phone_number": "15559876543",
+      "email": "jane@example.com",
+      "address": {
+        "name": "Jane Smith",
+        "line_one": "456 Commerce Ave",
+        "line_two": "Apt 12",
+        "city": "Austin",
+        "state": "TX",
+        "country": "US",
+        "postal_code": "78701"
+      }
+    }
+  },
+
+  "otp_flow_session_response_intervention_required": {
+    "id": "checkout_session_otp_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "status": "authentication_required",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_sneakers_001",
+        "name": "Running Sneakers",
+        "description": "Lightweight running shoes, size 10",
+        "quantity": "1",
+        "unit_price": 12999,
+        "images": [
+          {
+            "url": "https://shop.example.com/images/sneakers-001.jpg",
+            "alt_text": "Running sneakers"
+          }
+        ]
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "label": "Subtotal",
+        "amount": 12999
+      },
+      {
+        "type": "shipping",
+        "label": "Standard Shipping",
+        "amount": 599
+      },
+      {
+        "type": "tax",
+        "label": "Sales Tax",
+        "amount": 1072
+      },
+      {
+        "type": "total",
+        "label": "Total",
+        "amount": 14670
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "standard_shipping",
+        "name": "Standard Shipping",
+        "description": "5-7 business days",
+        "price": 599
+      }
+    ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["otp"],
+        "required": ["otp"],
+        "enforcement": "always"
+      }
+    },
+    "messages": [
+      {
+        "type": "error",
+        "code": "intervention_required",
+        "severity": "medium",
+        "resolution": "requires_buyer_input",
+        "content_type": "plain",
+        "content": "Please enter the verification code sent to your email to authenticate with Stripe Link."
+      }
+    ],
+    "intervention_context": {
+      "intervention_type": "otp",
+      "challenge_hint": "Code sent to j***@example.com",
+      "expires_at": "2026-02-17T15:35:00Z",
+      "provider": "com.stripe.link"
+    },
+    "links": [
+      {
+        "rel": "terms",
+        "href": "https://shop.example.com/terms",
+        "type": "text/html"
+      }
+    ]
+  },
+
+  "otp_flow_update_request_with_code": {
+    "intervention_response": {
+      "type": "otp",
+      "code": "847293"
+    }
+  },
+
+  "otp_flow_session_response_after_verification": {
+    "id": "checkout_session_otp_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_sneakers_001",
+        "name": "Running Sneakers",
+        "description": "Lightweight running shoes, size 10",
+        "quantity": "1",
+        "unit_price": 12999,
+        "images": [
+          {
+            "url": "https://shop.example.com/images/sneakers-001.jpg",
+            "alt_text": "Running sneakers"
+          }
+        ]
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "label": "Subtotal",
+        "amount": 12999
+      },
+      {
+        "type": "shipping",
+        "label": "Standard Shipping",
+        "amount": 599
+      },
+      {
+        "type": "tax",
+        "label": "Sales Tax",
+        "amount": 1072
+      },
+      {
+        "type": "total",
+        "label": "Total",
+        "amount": 14670
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "standard_shipping",
+        "name": "Standard Shipping",
+        "description": "5-7 business days",
+        "price": 599
+      }
+    ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["otp"],
+        "required": ["otp"],
+        "enforcement": "always"
+      }
+    },
+    "messages": [],
+    "links": [
+      {
+        "rel": "terms",
+        "href": "https://shop.example.com/terms",
+        "type": "text/html"
+      }
+    ]
+  },
+
+  "redirect_flow_create_request": {
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_tablet_001"
+      }
+    ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["3ds", "redirect", "otp"],
+        "display_context": "native",
+        "redirect_context": "external_browser",
+        "max_redirects": 2,
+        "max_interaction_depth": 3
+      }
+    },
+    "fulfillment_details": {
+      "name": "Alex Rivera",
+      "phone_number": "15551112222",
+      "email": "alex@example.com",
+      "address": {
+        "name": "Alex Rivera",
+        "line_one": "789 Tech Blvd",
+        "line_two": "",
+        "city": "Seattle",
+        "state": "WA",
+        "country": "US",
+        "postal_code": "98101"
+      }
+    }
+  },
+
+  "redirect_flow_session_response_intervention_required": {
+    "id": "checkout_session_redirect_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "status": "authentication_required",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_tablet_001",
+        "name": "Tablet Pro 12",
+        "description": "12-inch tablet with stylus",
+        "quantity": "1",
+        "unit_price": 49999,
+        "images": [
+          {
+            "url": "https://electronics.example.com/images/tablet-001.jpg",
+            "alt_text": "Tablet Pro 12"
+          }
+        ]
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "label": "Subtotal",
+        "amount": 49999
+      },
+      {
+        "type": "shipping",
+        "label": "Express Shipping",
+        "amount": 1499
+      },
+      {
+        "type": "tax",
+        "label": "Sales Tax",
+        "amount": 5150
+      },
+      {
+        "type": "total",
+        "label": "Total",
+        "amount": 56648
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "express_shipping",
+        "name": "Express Shipping",
+        "description": "2-3 business days",
+        "price": 1499
+      }
+    ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["redirect"],
+        "required": ["redirect"],
+        "enforcement": "always"
+      }
+    },
+    "messages": [
+      {
+        "type": "error",
+        "code": "intervention_required",
+        "severity": "medium",
+        "resolution": "requires_buyer_review",
+        "content_type": "plain",
+        "content": "Please authenticate with Google Pay to continue. You will be redirected to Google's sign-in page."
+      }
+    ],
+    "intervention_context": {
+      "intervention_type": "redirect",
+      "redirect_url": "https://pay.google.com/authenticate?session=gpay_sess_abc123&merchant=electronics_example",
+      "callback_url": "https://electronics.example.com/checkout/callback?session=checkout_session_redirect_001",
+      "expires_at": "2026-02-17T15:40:00Z",
+      "provider": "com.google.pay"
+    },
+    "links": [
+      {
+        "rel": "terms",
+        "href": "https://electronics.example.com/terms",
+        "type": "text/html"
+      }
+    ]
+  },
+
+  "redirect_flow_update_request_complete": {
+    "intervention_response": {
+      "type": "redirect_complete",
+      "callback_data": "auth_token=gpay_auth_xyz789&status=success"
+    }
+  },
+
+  "capability_negotiation_mismatch_error": {
+    "id": "checkout_session_mismatch_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "status": "not_ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_headphones_001",
+        "name": "Wireless Headphones",
+        "description": "Noise-canceling wireless headphones",
+        "quantity": "1",
+        "unit_price": 29999,
+        "images": [
+          {
+            "url": "https://audio.example.com/images/headphones-001.jpg",
+            "alt_text": "Wireless headphones"
+          }
+        ]
+      }
+    ],
+    "totals": [
+      {
+        "type": "subtotal",
+        "label": "Subtotal",
+        "amount": 29999
+      },
+      {
+        "type": "total",
+        "label": "Total",
+        "amount": 29999
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "free_shipping",
+        "name": "Free Shipping",
+        "description": "5-7 business days",
+        "price": 0
+      }
+    ],
+    "capabilities": {
+      "interventions": {
+        "supported": [],
+        "required": ["webview"],
+        "enforcement": "always"
+      }
+    },
+    "messages": [
+      {
+        "type": "error",
+        "code": "unsupported",
+        "severity": "high",
+        "resolution": "recoverable",
+        "content_type": "plain",
+        "content": "This payment method requires webview intervention support, which is not declared in agent capabilities. Use a different payment method or update agent capabilities."
+      }
+    ],
+    "links": [
+      {
+        "rel": "terms",
+        "href": "https://audio.example.com/terms",
+        "type": "text/html"
+      }
+    ]
+  }
+}
