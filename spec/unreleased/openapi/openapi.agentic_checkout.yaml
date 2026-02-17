@@ -2704,6 +2704,8 @@ components:
         lowest_recent_period_days:
           type: integer
           minimum: 1
+          # JSON Schema enforces this via dependentRequired: lowest_recent_amount → lowest_recent_period_days.
+          # OpenAPI 3.0 has no equivalent; the constraint is documented in the description.
           description: "Days covered by lowest_recent_amount (default: 30). Required when lowest_recent_amount is present."
 
     RejectedDiscount:

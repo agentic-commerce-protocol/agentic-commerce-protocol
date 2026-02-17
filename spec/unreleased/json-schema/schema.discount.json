@@ -167,26 +167,7 @@
         },
         "excluded_items": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["path", "reason"],
-            "properties": {
-              "path": {
-                "type": "string",
-                "description": "JSONPath to the excluded item."
-              },
-              "reason": {
-                "type": "string",
-                "enum": ["sale_item", "map_restricted", "limited_edition", "pre_order", "other"],
-                "description": "Machine-readable reason for exclusion."
-              },
-              "message": {
-                "type": "string",
-                "description": "Human-readable explanation of why the item was excluded."
-              }
-            },
-            "additionalProperties": false
-          },
+          "items": { "$ref": "schema.agentic_checkout.json#/$defs/ExcludedItem" },
           "description": "Items excluded from this discount, with reasons."
         }
       },
