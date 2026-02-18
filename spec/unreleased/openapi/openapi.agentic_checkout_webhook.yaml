@@ -117,6 +117,66 @@ paths:
                       - { type: fulfillment, display_text: "Shipping", amount: 500 }
                       - { type: tax, display_text: "Tax", amount: 860 }
                       - { type: total, display_text: "Total", amount: 11260 }
+              order_created_a2a:
+                summary: A2A order created — awaiting bank transfer
+                value:
+                  type: order_create
+                  data:
+                    type: order
+                    id: "ord_a2a_123"
+                    checkout_session_id: "checkout_session_a2a"
+                    permalink_url: "https://example.com/orders/a2a_123"
+                    status: created
+                    line_items:
+                      - id: "li_laptop"
+                        title: "Laptop Stand"
+                        quantity: { ordered: 1, shipped: 0 }
+                        unit_price: 5000
+                        subtotal: 5000
+                    bank_instructions:
+                      account_address: "DE89370400440532013000"
+                      bank_identifier: "37040044"
+                      bic: "COBADEFFXXX"
+                      bank_name: "Example Bank"
+                      reference: "ORDER-A2A-123456"
+                      expires_at: "2026-03-01T00:00:00Z"
+                    bank_transfer_confirmation:
+                      status: pending
+                    totals:
+                      - { type: subtotal, display_text: "Subtotal", amount: 5000 }
+                      - { type: tax, display_text: "Tax", amount: 400 }
+                      - { type: total, display_text: "Total", amount: 5400 }
+              order_updated_a2a_received:
+                summary: A2A bank transfer confirmed
+                value:
+                  type: order_update
+                  data:
+                    type: order
+                    id: "ord_a2a_123"
+                    checkout_session_id: "checkout_session_a2a"
+                    permalink_url: "https://example.com/orders/a2a_123"
+                    status: confirmed
+                    line_items:
+                      - id: "li_laptop"
+                        title: "Laptop Stand"
+                        quantity: { ordered: 1, shipped: 0 }
+                        unit_price: 5000
+                        subtotal: 5000
+                    bank_instructions:
+                      account_address: "DE89370400440532013000"
+                      bank_identifier: "37040044"
+                      bic: "COBADEFFXXX"
+                      bank_name: "Example Bank"
+                      reference: "ORDER-A2A-123456"
+                      expires_at: "2026-03-01T00:00:00Z"
+                    bank_transfer_confirmation:
+                      status: received
+                      received_at: "2026-02-19T12:01:00Z"
+                      reference: "ORDER-A2A-123456"
+                    totals:
+                      - { type: subtotal, display_text: "Subtotal", amount: 5000 }
+                      - { type: tax, display_text: "Tax", amount: 400 }
+                      - { type: total, display_text: "Total", amount: 5400 }
               order_with_refund:
                 summary: Order with a completed refund
                 value:

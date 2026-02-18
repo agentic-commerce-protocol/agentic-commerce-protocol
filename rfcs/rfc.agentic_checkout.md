@@ -36,7 +36,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-16`).
   - When rejecting a request due to missing or unsupported `API-Version` header, servers **SHOULD** return HTTP `400 Bad Request` with a `supported_versions` array listing all versions the server accepts. Servers **MAY** use `unsupported_api_version` or `missing_api_version` as well-known `code` values.
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
-- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
+- **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`, `account_to_account`) and fulfillment types (`shipping`, `digital`). Push payment handlers (e.g., account-to-account) declare `requires_delegate_payment: false` since the buyer initiates the transfer externally.
 
 ### 2.2 Session Lifecycle
 
@@ -151,9 +151,12 @@ Returns the full authoritative session state.
 
 ### 4.4 Complete Session
 
-`POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success  
-Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`, and conditional `authentication_result`. 
-Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
+`POST /checkout_sessions/{checkout_session_id}/complete` → **200 OK** on success
+Body includes `payment_data` (e.g., delegated token + optional billing address) and optional `buyer`, and conditional `authentication_result`.
+
+For **pull payment handlers** (e.g., tokenized card), the agent sends `payment_data` with `handler_id` and `instrument`. Response **MUST** include `status: completed` and an `order` with `id`, `checkout_session_id`, and `permalink_url`.
+
+For **push payment handlers** (e.g., account-to-account bank transfer), the agent sends `payment_data` with only `handler_id` (no instrument). The merchant **MUST** return `status: complete_in_progress` and an `order` containing `bank_instructions` (destination account, bank name, payment reference, expiry) and `bank_transfer_confirmation` with `status: pending`. The buyer completes the transfer externally using the provided instructions. Settlement is confirmed asynchronously via `order_update` webhooks, at which point `bank_transfer_confirmation.status` transitions to `received`.
 
 Authentication flows and additional fields:
 - Server MUST set `session.status` to `authentication_required` when authentication (e.g., 3DS) is required.
@@ -185,8 +188,10 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **FulfillmentOption (local_delivery)**: `id`, `title`, `description?`, `delivery_window?`, `service_area?`, `totals` (array of **Total**)
 - **SelectedFulfillmentOption**: `type` (`shipping|digital|pickup|local_delivery`), `option_id`, `item_ids[]` (simple object mapping fulfillment option to items)
 - **PaymentHandler**: `id`, `name`, `version`, `spec`, `requires_delegate_payment`, `requires_pci_compliance`, `psp`, `config_schema`, `instrument_schemas[]`, `config` (handler-specific configuration)
-- **PaymentData**: `handler_id`, `instrument` (with `type` and `credential`), `billing_address?`
-- **Order**: `id`, `checkout_session_id`, `permalink_url`
+- **PaymentData**: `handler_id`, `instrument` (with `type` and `credential`), `billing_address?`. For push payment handlers (A2A), only `handler_id` is required (no instrument).
+- **BankInstructions**: `account_address` (IBAN or local account), `bank_identifier?` (domestic clearing code), `bic?` (SWIFT/BIC), `bank_name`, `reference`, `expires_at?`
+- **BankTransferConfirmation**: `status` (`pending|received|expired|failed`), `received_at?`, `reference?`
+- **Order**: `id`, `checkout_session_id`, `permalink_url`, `bank_instructions?` (for A2A orders), `bank_transfer_confirmation?` (settlement tracking)
 - **Message (info)**: `type: "info"`, `severity?`, `resolution?`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (warning)**: `type: "warning"`, `code`, `severity?`, `resolution?`, `param?`, `content_type`, `content`
 - **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `severity?`, `resolution?`, `param?`, `content_type`, `content`
@@ -691,6 +696,71 @@ If the session is in `authentication_required` state, a client MUST include `aut
 }
 ```
 
+### 9.6.1 Complete — Account-to-Account Request
+
+```json
+{
+  "buyer": {
+    "first_name": "Ada",
+    "last_name": "Lovelace",
+    "email": "ada@example.com"
+  },
+  "payment_data": {
+    "handler_id": "a2a_bank_transfer"
+  }
+}
+```
+
+### 9.6.2 Complete — Account-to-Account Response (200, pending transfer)
+
+```json
+{
+  "id": "checkout_session_a2a",
+  "status": "complete_in_progress",
+  "currency": "eur",
+  "line_items": [
+    {
+      "id": "line_item_456",
+      "item": { "id": "item_456", "quantity": 1 },
+      "base_amount": 5000,
+      "discount": 0,
+      "subtotal": 5000,
+      "tax": 400,
+      "total": 5400
+    }
+  ],
+  "totals": [
+    { "type": "subtotal", "display_text": "Subtotal", "amount": 5000 },
+    { "type": "tax", "display_text": "Tax", "amount": 400 },
+    { "type": "total", "display_text": "Total", "amount": 5400 }
+  ],
+  "messages": [
+    {
+      "type": "info",
+      "content_type": "plain",
+      "content": "Please transfer EUR 54.00 to Example Bank IBAN DE89 3704 0044 0532 0130 00 with reference ORDER-A2A-123456."
+    }
+  ],
+  "order": {
+    "id": "ord_a2a_123",
+    "checkout_session_id": "checkout_session_a2a",
+    "permalink_url": "https://example.com/orders/a2a_123",
+    "status": "created",
+    "bank_instructions": {
+      "account_address": "DE89370400440532013000",
+      "bank_identifier": "37040044",
+      "bic": "COBADEFFXXX",
+      "bank_name": "Example Bank",
+      "reference": "ORDER-A2A-123456",
+      "expires_at": "2026-03-01T00:00:00Z"
+    },
+    "bank_transfer_confirmation": {
+      "status": "pending"
+    }
+  }
+}
+```
+
 ### 9.7 Complete — 400 Example (requires authentication_result)
 
 If a client calls `POST /checkout_sessions/{id}/complete` while `session.status == "authentication_required"` and does not provide `authentication_result`, servers MUST return a 4XX response using the Error schema. Example:
@@ -769,6 +839,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **Unreleased**: Added account-to-account push payment handler support. Added `BankInstructions` and `BankTransferConfirmation` schemas to Order. Updated `PaymentData.anyOf` to allow handler-only references for push payments. Added A2A complete flow examples (§9.6.1, §9.6.2).
 - **Unreleased**: Rewrote §6 (Idempotency, Retries & Concurrency) with full normative rules: mandatory `Idempotency-Key` on all POST requests, request equivalence semantics, replay behavior with `Idempotent-Replayed` header, IETF-aligned error codes (`idempotency_key_required`, `idempotency_conflict`, `idempotency_in_flight`), 5xx caching prohibition, 24-hour key retention, and extension field participation. Removed `request_not_idempotent` from `Error.type` enum. See SEP #120.
 - **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:

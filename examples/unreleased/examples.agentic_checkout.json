@@ -1447,6 +1447,145 @@
       }
     ]
   },
+  "complete_checkout_session_request_account_to_account": {
+    "buyer": {
+      "first_name": "Ada",
+      "last_name": "Lovelace",
+      "email": "ada@example.com"
+    },
+    "payment_data": {
+      "handler_id": "a2a_bank_transfer"
+    }
+  },
+  "complete_checkout_session_response_account_to_account": {
+    "id": "checkout_session_a2a",
+    "status": "complete_in_progress",
+    "currency": "eur",
+    "capabilities": {
+      "payment": {
+        "handlers": [
+          {
+            "id": "a2a_bank_transfer",
+            "name": "dev.acp.account_to_account",
+            "version": "2026-01-30",
+            "spec": "https://acp.dev/handlers/account_to_account",
+            "requires_delegate_payment": false,
+            "requires_pci_compliance": false,
+            "psp": "bank_transfer",
+            "config_schema": "https://acp.dev/schemas/handlers/account_to_account/config.json",
+            "instrument_schemas": [],
+            "config": {}
+          }
+        ]
+      }
+    },
+    "line_items": [
+      {
+        "id": "line_item_456",
+        "item": { "id": "item_456", "quantity": 1 },
+        "base_amount": 5000,
+        "discount": 0,
+        "subtotal": 5000,
+        "tax": 400,
+        "total": 5400
+      }
+    ],
+    "totals": [
+      { "type": "subtotal", "display_text": "Subtotal", "amount": 5000 },
+      { "type": "tax", "display_text": "Tax", "amount": 400 },
+      { "type": "total", "display_text": "Total", "amount": 5400 }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Please transfer EUR 54.00 to Example Bank IBAN DE89 3704 0044 0532 0130 00 with reference ORDER-A2A-123456. The transfer must be completed before 2026-03-01."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ],
+    "order": {
+      "id": "ord_a2a_123",
+      "checkout_session_id": "checkout_session_a2a",
+      "permalink_url": "https://example.com/orders/a2a_123",
+      "status": "created",
+      "bank_instructions": {
+        "account_address": "DE89370400440532013000",
+        "bank_identifier": "37040044",
+        "bic": "COBADEFFXXX",
+        "bank_name": "Example Bank",
+        "reference": "ORDER-A2A-123456",
+        "expires_at": "2026-03-01T00:00:00Z"
+      },
+      "bank_transfer_confirmation": {
+        "status": "pending"
+      },
+      "totals": [
+        { "type": "subtotal", "display_text": "Subtotal", "amount": 5000 },
+        { "type": "tax", "display_text": "Tax", "amount": 400 },
+        { "type": "total", "display_text": "Total", "amount": 5400 }
+      ]
+    }
+  },
+  "webhook_order_create_account_to_account": {
+    "type": "order_create",
+    "data": {
+      "type": "order",
+      "id": "ord_a2a_123",
+      "checkout_session_id": "checkout_session_a2a",
+      "permalink_url": "https://example.com/orders/a2a_123",
+      "status": "created",
+      "bank_instructions": {
+        "account_address": "DE89370400440532013000",
+        "bank_identifier": "37040044",
+        "bic": "COBADEFFXXX",
+        "bank_name": "Example Bank",
+        "reference": "ORDER-A2A-123456",
+        "expires_at": "2026-03-01T00:00:00Z"
+      },
+      "bank_transfer_confirmation": {
+        "status": "pending"
+      },
+      "totals": [
+        { "type": "subtotal", "display_text": "Subtotal", "amount": 5000 },
+        { "type": "tax", "display_text": "Tax", "amount": 400 },
+        { "type": "total", "display_text": "Total", "amount": 5400 }
+      ]
+    }
+  },
+  "webhook_order_update_account_to_account_settled": {
+    "type": "order_update",
+    "data": {
+      "type": "order",
+      "id": "ord_a2a_123",
+      "checkout_session_id": "checkout_session_a2a",
+      "permalink_url": "https://example.com/orders/a2a_123",
+      "status": "confirmed",
+      "bank_instructions": {
+        "account_address": "DE89370400440532013000",
+        "bank_identifier": "37040044",
+        "bic": "COBADEFFXXX",
+        "bank_name": "Example Bank",
+        "reference": "ORDER-A2A-123456",
+        "expires_at": "2026-03-01T00:00:00Z"
+      },
+      "bank_transfer_confirmation": {
+        "status": "received",
+        "received_at": "2026-02-19T12:01:00Z",
+        "reference": "ORDER-A2A-123456"
+      },
+      "totals": [
+        { "type": "subtotal", "display_text": "Subtotal", "amount": 5000 },
+        { "type": "tax", "display_text": "Tax", "amount": 400 },
+        { "type": "total", "display_text": "Total", "amount": 5400 }
+      ]
+    }
+  },
   "error_400_idempotency_key_required": {
     "type": "invalid_request",
     "code": "idempotency_key_required",
