@@ -222,6 +222,14 @@ paths:
       description: |
         Finalizes the checkout by applying a payment method. MUST create an order and return completed state on success.
 
+        For pull payment handlers (e.g., tokenized card), the agent submits an instrument with credentials
+        and the merchant processes the payment synchronously, returning `status: completed` with an order.
+
+        For push payment handlers (e.g., account-to-account bank transfer), the agent references only the
+        `handler_id` without an instrument. The merchant returns bank transfer instructions in the order's
+        `bank_instructions` field and sets `status: complete_in_progress` until the buyer completes the
+        external transfer. Settlement is confirmed asynchronously via `order_update` webhooks.
+
         Agents MAY include `affiliate_attribution` to ensure the merchant receives final attribution context.
         Attribution is stored alongside the resulting order but not returned in the response.
       requestBody:
@@ -241,6 +249,15 @@ paths:
                   payment_data:
                     token: "spt_123"
                     provider: "stripe"
+              account_to_account:
+                summary: Complete with account-to-account bank transfer
+                value:
+                  buyer:
+                    first_name: "Ada"
+                    last_name: "Lovelace"
+                    email: "ada@example.com"
+                  payment_data:
+                    handler_id: "a2a_bank_transfer"
               with_affiliate_attribution:
                 summary: Complete with last-touch affiliate attribution
                 value:
@@ -1291,6 +1308,57 @@ components:
       anyOf:
         - required: [handler_id, instrument]
         - required: [purchase_order_number]
+        - description: "Push payment handler (e.g., account-to-account) — no instrument required"
+          required: [handler_id]
+
+    BankInstructions:
+      type: object
+      additionalProperties: false
+      description: |
+        Bank transfer instructions for account-to-account push payments.
+        Returned by the merchant when a checkout is completed with a push payment handler.
+        The buyer must initiate the transfer externally using these details.
+      properties:
+        account_address:
+          type: string
+          description: "Destination account identifier (e.g., IBAN, local account number)"
+        bank_identifier:
+          type: string
+          description: "Domestic clearing code (e.g., ABA routing number, UK sort code)"
+        bic:
+          type: string
+          description: "SWIFT/BIC (ISO 9362) identifier"
+        bank_name:
+          type: string
+          description: "Name of the destination bank"
+        reference:
+          type: string
+          description: "Payment reference the buyer must include with the transfer"
+        expires_at:
+          type: string
+          format: date-time
+          description: "Deadline for the buyer to complete the transfer (RFC 3339)"
+      required: [account_address, bank_name, reference]
+
+    BankTransferConfirmation:
+      type: object
+      additionalProperties: false
+      description: |
+        Settlement confirmation for account-to-account payments.
+        Tracks the status of the buyer-initiated bank transfer.
+      properties:
+        status:
+          type: string
+          enum: [pending, received, expired, failed]
+          description: "Current settlement status"
+        received_at:
+          type: string
+          format: date-time
+          description: "Timestamp when the transfer was confirmed received (RFC 3339)"
+        reference:
+          type: string
+          description: "Bank-assigned reference for the completed transfer"
+      required: [status]
 
     FulfillmentGroup:
       type: object
@@ -1374,6 +1442,12 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Total" }
           description: "Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds."
+        bank_instructions:
+          $ref: "#/components/schemas/BankInstructions"
+          description: "Bank transfer instructions for account-to-account push payments. Present when the order was placed via a push payment handler."
+        bank_transfer_confirmation:
+          $ref: "#/components/schemas/BankTransferConfirmation"
+          description: "Settlement confirmation for account-to-account payments. Tracks transfer status from pending to received."
       required: [id, checkout_session_id, permalink_url]
 
     OrderLineItem:

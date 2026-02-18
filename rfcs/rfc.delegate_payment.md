@@ -14,7 +14,7 @@ This RFC defines a **single, MUST-implement** HTTP endpoint that issues a **dele
 - Preserve merchant PSP flows, idempotency, auditability, and risk controls.
 - Provide a **stable, versioned** surface (API-Version = `2025-09-29`).
 
-**Out of scope:** PSP-specific authorization/capture, multi-use tokens beyond allowance, refund semantics.
+**Out of scope:** PSP-specific authorization/capture, multi-use tokens beyond allowance, refund semantics, push payment methods (e.g., account-to-account bank transfers). Push payments do not require credential delegation because the buyer initiates the transfer externally; they are handled via the payment handler model in the Agentic Checkout spec.
 
 ### 1.1 Terminology & Normative Language
 

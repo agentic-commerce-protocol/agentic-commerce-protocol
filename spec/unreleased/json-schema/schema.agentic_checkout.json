@@ -1859,8 +1859,73 @@
           "required": [
             "purchase_order_number"
           ]
+        },
+        {
+          "description": "Push payment handler (e.g., account-to-account) — no instrument required",
+          "required": [
+            "handler_id"
+          ]
         }
       ]
+    },
+    "BankInstructions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Bank transfer instructions for account-to-account push payments. Returned by the merchant when a checkout is completed with a push payment handler.",
+      "properties": {
+        "account_address": {
+          "type": "string",
+          "description": "Destination account identifier (e.g., IBAN, local account number)"
+        },
+        "bank_identifier": {
+          "type": "string",
+          "description": "Domestic clearing code (e.g., ABA routing number, UK sort code)"
+        },
+        "bic": {
+          "type": "string",
+          "description": "SWIFT/BIC (ISO 9362) identifier"
+        },
+        "bank_name": {
+          "type": "string",
+          "description": "Name of the destination bank"
+        },
+        "reference": {
+          "type": "string",
+          "description": "Payment reference the buyer must include with the transfer"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Deadline for the buyer to complete the transfer (RFC 3339)"
+        }
+      },
+      "required": [
+        "account_address",
+        "bank_name",
+        "reference"
+      ]
+    },
+    "BankTransferConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Settlement confirmation for account-to-account payments. Tracks the status of the buyer-initiated bank transfer.",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "received", "expired", "failed"],
+          "description": "Current settlement status"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the transfer was confirmed received (RFC 3339)"
+        },
+        "reference": {
+          "type": "string",
+          "description": "Bank-assigned reference for the completed transfer"
+        }
+      },
+      "required": ["status"]
     },
     "ProtocolVersion": {
       "type": "object",
@@ -2217,6 +2282,14 @@
           "type": "array",
           "items": { "$ref": "#/$defs/Total" },
           "description": "Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds."
+        },
+        "bank_instructions": {
+          "$ref": "#/$defs/BankInstructions",
+          "description": "Bank transfer instructions for account-to-account push payments. Present when the order was placed via a push payment handler."
+        },
+        "bank_transfer_confirmation": {
+          "$ref": "#/$defs/BankTransferConfirmation",
+          "description": "Settlement confirmation for account-to-account payments. Tracks transfer status from pending to received."
         }
       },
       "required": [
