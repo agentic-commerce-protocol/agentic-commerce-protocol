@@ -11,66 +11,6 @@
     }
   },
 
-  "cancel_with_price_sensitivity_checkout_session_response": {
-    "id": "cs_price_001",
-    "protocol": {
-      "version": "2026-01-30"
-    },
-    "capabilities": {
-      "payment": { "handlers": [] },
-      "interventions": { "supported": [], "required": [], "enforcement": "optional" }
-    },
-    "status": "canceled",
-    "currency": "usd",
-    "line_items": [
-      {
-        "id": "li_headphones_001",
-        "item": { "id": "item_headphones_001" },
-        "quantity": 1,
-        "name": "Wireless Noise-Canceling Headphones",
-        "description": "Over-ear headphones with ANC and 30hr battery",
-        "images": [
-          "https://audio-shop.example.com/products/headphones-001/main.jpg"
-        ],
-        "unit_amount": 19999,
-        "totals": [
-          { "type": "items_base_amount", "display_text": "Base Amount", "amount": 19999 },
-          { "type": "subtotal", "display_text": "Subtotal", "amount": 19999 },
-          { "type": "tax", "display_text": "Tax", "amount": 1650 },
-          { "type": "total", "display_text": "Total", "amount": 21649 }
-        ]
-      }
-    ],
-    "totals": [
-      { "type": "subtotal", "display_text": "Subtotal", "amount": 19999 },
-      { "type": "fulfillment", "display_text": "Shipping", "amount": 799 },
-      { "type": "tax", "display_text": "Tax", "amount": 1650 },
-      { "type": "total", "display_text": "Total", "amount": 22448 }
-    ],
-    "fulfillment_options": [
-      {
-        "type": "shipping",
-        "id": "ship_standard",
-        "title": "Standard Shipping",
-        "description": "5-7 business days",
-        "totals": [
-          { "type": "total", "display_text": "Shipping", "amount": 799 }
-        ]
-      }
-    ],
-    "messages": [
-      {
-        "type": "info",
-        "content_type": "plain",
-        "content": "Session canceled."
-      }
-    ],
-    "links": [
-      { "type": "terms_of_use", "url": "https://audio-shop.example.com/terms" },
-      { "type": "return_policy", "url": "https://audio-shop.example.com/returns" }
-    ]
-  },
-
   "cancel_with_shipping_cost_request": {
     "intent_trace": {
       "reason_code": "shipping_cost",
