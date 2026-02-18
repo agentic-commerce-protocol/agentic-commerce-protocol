@@ -24,7 +24,7 @@
         "type": "object",
         "description": "Protocol metadata mapped from ACP HTTP headers. Authentication is handled at the MCP server level and is not included here.",
         "required": ["api_version"],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "api_version": {
             "type": "string",

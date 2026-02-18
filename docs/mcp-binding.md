@@ -14,7 +14,9 @@ protocol semantics are unchanged.
 All domain schemas are reused from the existing JSON Schema bundle
 (`schema.agentic_checkout.json`). The OpenRPC schema at
 `spec/unreleased/openrpc/openrpc.agentic_checkout.json` references these via
-`$ref`. No domain types are duplicated.
+`$ref`. No domain types are duplicated. These references use relative file
+paths for spec-time validation. Implementers **MUST** resolve and bundle all
+`$ref` targets before serving tool schemas to MCP clients.
 
 ### Transport
 
@@ -31,6 +33,12 @@ merchant responds with the negotiated set), so there is no pre-session
 discovery phase. The MCP endpoint URL is communicated out-of-band, the same
 way REST endpoint URLs are communicated today (documentation, onboarding, API
 configuration).
+
+The required `meta.api_version` field presumes the agent knows a compatible
+API version before its first tool call. Agents may obtain this from merchant
+documentation, or via the Discovery Capabilities mechanism
+([SEP #135](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/135))
+once available.
 
 ## Tool Definitions
 
@@ -67,6 +75,9 @@ Every tool call uses a consistent three-field argument structure:
 | `meta`    | Protocol metadata (from HTTP headers)| All tools (required)                          |
 | `id`      | Resource identifier (from path param)| get, update, complete, cancel (required)      |
 | `payload` | Domain data (from request body)      | create, update, complete (required); cancel (optional); get (absent) |
+
+When `payload` is marked optional (e.g., `cancel_checkout_session`), omitting
+the field entirely is valid. Servers **MUST NOT** require `payload: null`.
 
 ### Why `payload`?
 
@@ -106,6 +117,9 @@ handle authentication at the connection level (via server configuration or
 OAuth), not per tool call. Including bearer tokens in tool arguments would
 expose them in tool schemas visible to LLMs.
 
+The `meta` object is extensible (`additionalProperties: true` in the OpenRPC
+schema). Servers **SHOULD** ignore unrecognized `meta` fields to allow
+forward-compatible header additions without requiring a schema version bump.
 If future ACP versions introduce new protocol-level headers, corresponding
 `meta` fields SHOULD be added to the MCP binding.
 
@@ -154,10 +168,13 @@ schema (`type`, `code`, `message`, `param`) is placed in the JSON-RPC error's
 }
 ```
 
-All ACP errors use JSON-RPC error code `-32000` (server error). The useful
-error semantics are in ACP's `Error` object in `data` — consumers should
-inspect `data.type` and `data.code` to understand the error, not the JSON-RPC
-error code.
+All ACP errors use JSON-RPC error code `-32000` (server error) uniformly. The
+useful error semantics are in ACP's `Error` object in `data` -- consumers
+**MUST** inspect `data.type` and `data.code` to understand the error, not the
+JSON-RPC error code. Clients that display or log JSON-RPC error codes without
+inspecting `data` will see a uniform `-32000` for all ACP errors. This is a
+known tradeoff: the JSON-RPC error code layer is intentionally thin, and the
+ACP error model in `data` carries the actionable semantics.
 
 The exception is `-32602` (Invalid params), which is reserved for malformed
 requests that fail at the JSON-RPC level before reaching ACP business logic
@@ -171,6 +188,34 @@ requests that fail at the JSON-RPC level before reaching ACP business logic
 | `request_not_idempotent` | Idempotency violation                              |
 | `processing_error`       | Unexpected server-side failure                     |
 | `service_unavailable`    | Temporary unavailability                           |
+
+### Authentication and Authorization Errors
+
+Authentication and authorization failures from the upstream merchant REST API
+(HTTP 401, 403) are surfaced as JSON-RPC errors with code `-32000`. The
+`data.type` will be `invalid_request` until ACP introduces dedicated
+authentication/authorization error types in the core `Error` schema. For
+example, a 403 from the merchant propagates as:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32000,
+    "message": "Unauthorized access to checkout session",
+    "data": {
+      "type": "invalid_request",
+      "code": "forbidden",
+      "message": "Unauthorized access to checkout session"
+    }
+  }
+}
+```
+
+MCP server-level auth failures (e.g., invalid OAuth token to the MCP endpoint
+itself) are outside the ACP error model and should use standard MCP/JSON-RPC
+error handling.
 
 ## Capability Negotiation
 
@@ -199,3 +244,27 @@ Delegate Payment API (`POST /agentic_commerce/delegate_payment`) that agents
 use to obtain payment tokens from payment providers. Since delegate payment is
 a separate API surface served by a different party (payment provider, not
 merchant), it should be addressed in a follow-up SEP.
+
+This is the first MCP binding for ACP. A follow-up SEP will define the MCP
+binding for the Delegate Payment API to complete the full agent checkout flow
+over MCP.
+
+## Security Considerations
+
+Authentication tokens are not included in tool arguments by design. MCP tool
+schemas are visible to the LLM during planning, so keeping authentication at
+the MCP server configuration level avoids token exposure in context windows.
+
+Request signing (`meta.signature`, `meta.timestamp`) and idempotency
+(`meta.idempotency_key`) are preserved from the REST binding with identical
+semantics.
+
+### Proxy Trust Boundary
+
+When an MCP server operates as a proxy to a merchant's REST API, the proxy
+processes all tool arguments including payment instrument tokens in
+`complete_checkout_session`. Proxy operators that handle payment data
+**SHOULD** evaluate PCI DSS scope requirements. Co-locating the MCP server
+with the REST backend avoids introducing a new intermediary in the payment
+data flow. Third-party hosted proxies that inspect or log payment payloads may
+be in PCI scope even if they do not store card data.
