@@ -19,7 +19,7 @@ paths:
       operationId: delegatePayment
       description: |
         Tokenizes a credential for controlled usage by the merchant's PSP per the **Allowance** constraints.
-        Supported credential types: **card** and **crypto** (x402-based). For crypto, the request includes a signed x402 PaymentPayload; the PSP delegates verification to a facilitator and issues an SPT, storing the PaymentPayload until settlement.
+        Supported credential types: **card** and **crypto** (x402-based).
       parameters:
         - $ref: "#/components/parameters/Authorization"
         - $ref: "#/components/parameters/ContentType"
@@ -327,10 +327,15 @@ components:
       additionalProperties: false
       properties:
         payment_method:
+          description: "Payment method to tokenize. oneOf card | crypto; Use discriminator.type for codegen dispatch."
           oneOf:
             - $ref: "#/components/schemas/PaymentMethodCard"
             - $ref: "#/components/schemas/PaymentMethodCrypto"
-          description: "The card payment method to tokenize for delegated use"
+          discriminator:
+            propertyName: type
+            mapping:
+              card: PaymentMethodCard
+              crypto: PaymentMethodCrypto
         allowance:
           $ref: "#/components/schemas/Allowance"
           description: "Constraints on how the payment method can be used"
@@ -399,8 +404,8 @@ components:
 
     X402PaymentRequirements:
       type: object
-      description: "x402 PaymentRequirements (accepted)."
-      additionalProperties: false
+      description: "x402 PaymentRequirements (accepted). additionalProperties: true for forward compat with x402 evolution."
+      additionalProperties: true
       properties:
         scheme:
           type: string
@@ -410,7 +415,7 @@ components:
           description: "Network in CAIP-2 format."
         amount:
           type: integer
-          description: "Payment amount in atomic token units."
+          description: "Payment amount in atomic token units. Integer per ACP amount conventions; must match the semantic value in payload.authorization.value (which is string there for EIP-3009/uint256 range)."
         asset:
           type: string
           description: "Token contract address or asset identifier."
@@ -427,8 +432,8 @@ components:
 
     X402Authorization:
       type: object
-      description: "x402 authorization (payload.authorization)."
-      additionalProperties: false
+      description: "x402 authorization (payload.authorization). additionalProperties: true for forward compat with x402 evolution."
+      additionalProperties: true
       properties:
         from:
           type: string
@@ -438,7 +443,7 @@ components:
           description: "Recipient's wallet address."
         value:
           type: string
-          description: "Payment amount in atomic units."
+          description: "Payment amount in atomic units. String (not integer) because EIP-3009 and chain APIs use uint256, which can exceed JSON safe integer range (2^53); string avoids precision loss and matches on-chain representation."
         validAfter:
           type: string
           description: "Unix timestamp when authorization becomes valid."
@@ -452,8 +457,8 @@ components:
 
     X402Payload:
       type: object
-      description: "x402 payload (signature and authorization)."
-      additionalProperties: false
+      description: "x402 payload (signature and authorization). additionalProperties: true for forward compat with x402 evolution."
+      additionalProperties: true
       properties:
         signature:
           type: string
@@ -470,7 +475,7 @@ components:
       properties:
         x402Version:
           type: integer
-          description: "Protocol version (must be 2)."
+          description: "Protocol version (currently 2; schema allows other values for forward compatibility)."
         accepted:
           $ref: "#/components/schemas/X402PaymentRequirements"
         payload:
@@ -716,7 +721,7 @@ components:
           description: "High-level error category"
         code:
           type: string
-          enum: [invalid_card, duplicate_request, idempotency_conflict, too_many_requests, idempotency_key_required, idempotency_in_flight, invalid_x402_payload, x402_signature_invalid, x402_expired, x402_nonce_reused, x402_amount_mismatch, x402_network_unsupported, x402_verification_failed, x402_settlement_failed]
+          enum: [invalid_card, duplicate_request, idempotency_conflict, too_many_requests, idempotency_key_required, idempotency_in_flight, x402_invalid, x402_rejected, x402_network_unsupported, x402_settlement_failed]
           description: "Specific error code for programmatic handling"
         message:
           type: string

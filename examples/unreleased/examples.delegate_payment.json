@@ -116,8 +116,8 @@
   },
   "delegate_payment_error_x402": {
     "type": "invalid_request",
-    "code": "x402_signature_invalid",
-    "message": "x402 signature verification failed",
+    "code": "x402_rejected",
+    "message": "x402 verification rejected",
     "param": "payment_method.x402_payload"
   },
   "delegate_payment_error_idempotency_key_required": {
