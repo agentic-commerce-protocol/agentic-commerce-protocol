@@ -1,5 +1,5 @@
 <!-- 
-  This template is for Administrative changes by project admins (Founding Maintainers).
+  This template is for Administrative changes by admins.
   
   Use this for:
   - Adding newly signed Corporate CLA parties to SIGNATORIES.md
@@ -7,7 +7,7 @@
   - Other corporate/administrative housekeeping
   
   This template requires the PR title to start with "ADMIN:".
-  Only Founding Maintainers should use this template.
+  Only admins should use this template.
 -->
 
 # ADMIN: [Short Description of Admin Action]
@@ -40,7 +40,7 @@ Related: #[issue or discussion number]
 
 ## ✅ Admin Checklist
 
-- [ ] I am a Founding Maintainer or authorized representative
+- [ ] I am an admin or authorized representative
 - [ ] The Corporate CLA issue has been reviewed and the signatory's authority verified
 - [ ] GitHub usernames in Schedule A have been validated as real accounts
 - [ ] SIGNATORIES.md is updated to reflect this change
@@ -48,4 +48,4 @@ Related: #[issue or discussion number]
 
 ---
 
-**Process**: Admin PRs require approval from a Founding Maintainer (other than the author). See [governance.md](../../docs/governance.md) and [CORPORATE_PROCESS.md](../../legal/cla/CORPORATE_PROCESS.md) for the full maintainer workflow.
+**Process**: Admin PRs require approval from another admin. See [governance.md](../../docs/governance.md) and [CORPORATE_PROCESS.md](../../legal/cla/CORPORATE_PROCESS.md) for the full maintainer workflow.

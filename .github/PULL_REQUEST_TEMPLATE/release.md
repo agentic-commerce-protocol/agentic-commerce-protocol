@@ -1,5 +1,5 @@
 <!-- 
-  This template is for cutting a new spec release (Founding Maintainers only).
+  This template is for cutting a new spec release (admins only).
   
   Use this for:
   - Promoting unreleased specs, examples, and changelog entries to a dated version
@@ -36,4 +36,4 @@
 
 ---
 
-**Process**: Release PRs require approval from a Founding Maintainer (other than the author). See [governance.md](../../docs/governance.md) for details.
+**Process**: Release PRs require approval from another admin. See [governance.md](../../docs/governance.md) for details.
