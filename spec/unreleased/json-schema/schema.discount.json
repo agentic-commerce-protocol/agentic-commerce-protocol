@@ -3,12 +3,14 @@
   "$id": "https://agentic-commerce-protocol.com/schemas/discount.json",
   "title": "Discount Extension",
   "description": "Extends Checkout with discount code support, enabling agents to apply promotional, loyalty, referral, and other discount codes. Version: 2026-01-27.",
-
   "$defs": {
     "allocation": {
       "type": "object",
       "description": "Breakdown of how a discount amount was allocated to a specific target.",
-      "required": ["path", "amount"],
+      "required": [
+        "path",
+        "amount"
+      ],
       "properties": {
         "path": {
           "type": "string",
@@ -20,13 +22,19 @@
           "description": "Amount allocated to this target in minor (cents) currency units."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "path": "$.line_items[0]",
+        "amount": 500
+      }
     },
-
     "coupon": {
       "type": "object",
       "description": "Coupon details describing the discount terms.",
-      "required": ["id", "name"],
+      "required": [
+        "id",
+        "name"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -54,7 +62,11 @@
         },
         "duration": {
           "type": "string",
-          "enum": ["once", "repeating", "forever"],
+          "enum": [
+            "once",
+            "repeating",
+            "forever"
+          ],
           "description": "How long the discount applies. 'once' = single use, 'repeating' = multiple billing periods, 'forever' = indefinitely."
         },
         "duration_in_months": {
@@ -75,18 +87,31 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "description": "Metadata value"
           },
           "description": "Arbitrary key-value metadata attached to the coupon."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "id": "coupon_abc123",
+        "name": "Summer Sale 20% Off",
+        "percent_off": 20,
+        "duration": "once",
+        "metadata": {
+          "campaign": "summer_2026"
+        }
+      }
     },
-
     "applied_discount": {
       "type": "object",
       "description": "A discount that was successfully applied to the checkout session.",
-      "required": ["id", "coupon", "amount"],
+      "required": [
+        "id",
+        "coupon",
+        "amount"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -122,7 +147,10 @@
         },
         "method": {
           "type": "string",
-          "enum": ["each", "across"],
+          "enum": [
+            "each",
+            "across"
+          ],
           "description": "Allocation method. 'each' = applied independently per item (allocations typically included). 'across' = applied to order total (allocations typically omitted)."
         },
         "priority": {
@@ -132,17 +160,32 @@
         },
         "allocations": {
           "type": "array",
-          "items": { "$ref": "#/$defs/allocation" },
+          "items": {
+            "$ref": "#/$defs/allocation"
+          },
           "description": "Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "id": "disc_123",
+        "code": "SAVE20",
+        "coupon": {
+          "id": "coupon_abc",
+          "name": "20% Off Summer Sale",
+          "percent_off": 20
+        },
+        "amount": 1000,
+        "automatic": false
+      }
     },
-
     "rejected_discount": {
       "type": "object",
       "description": "A discount code that could not be applied, with the reason.",
-      "required": ["code", "reason"],
+      "required": [
+        "code",
+        "reason"
+      ],
       "properties": {
         "code": {
           "type": "string",
@@ -157,45 +200,81 @@
           "description": "Human-readable explanation of why the code was rejected."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "code": "EXPIRED10",
+        "reason": "discount_code_expired",
+        "message": "This discount code has expired"
+      }
     },
-
     "discounts_request": {
       "type": "object",
       "description": "Discount codes input for checkout create/update requests.",
       "properties": {
         "codes": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string",
+            "description": "Discount code to apply"
+          },
           "description": "Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "codes": [
+          "SAVE20",
+          "FREESHIP"
+        ]
+      }
     },
-
     "discounts_response": {
       "type": "object",
       "description": "Discount codes input, applied discounts, and rejected codes in checkout responses.",
       "properties": {
         "codes": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string",
+            "description": "Discount code submitted"
+          },
           "description": "Echo of submitted discount codes."
         },
         "applied": {
           "type": "array",
-          "items": { "$ref": "#/$defs/applied_discount" },
+          "items": {
+            "$ref": "#/$defs/applied_discount"
+          },
           "description": "Discounts successfully applied (code-based and automatic)."
         },
         "rejected": {
           "type": "array",
-          "items": { "$ref": "#/$defs/rejected_discount" },
+          "items": {
+            "$ref": "#/$defs/rejected_discount"
+          },
           "description": "Discount codes that could not be applied, with reasons."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "codes": [
+          "SAVE20"
+        ],
+        "applied": [
+          {
+            "id": "disc_123",
+            "code": "SAVE20",
+            "coupon": {
+              "id": "coupon_abc",
+              "name": "20% Off Summer Sale",
+              "percent_off": 20
+            },
+            "amount": 1000
+          }
+        ],
+        "rejected": []
+      }
     },
-
     "discount_error_codes": {
       "type": "string",
       "enum": [
@@ -208,14 +287,16 @@
         "discount_code_user_ineligible",
         "discount_code_usage_limit_reached"
       ],
-      "description": "Error codes for rejected discount codes, used in messages[].code."
+      "description": "Error codes for rejected discount codes, used in messages[].code.",
+      "example": "discount_code_expired"
     },
-
     "checkout_with_discount": {
       "title": "Checkout with Discount Extension",
       "description": "Checkout session extended with discount capability.",
       "allOf": [
-        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionBase" },
+        {
+          "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionBase"
+        },
         {
           "type": "object",
           "properties": {
@@ -223,16 +304,50 @@
               "$ref": "#/$defs/discounts_response",
               "description": "Discount codes and applied discounts for this checkout session."
             }
-          }
+          },
+          "description": "Discount extension fields"
         }
-      ]
+      ],
+      "example": {
+        "id": "cs_abc123",
+        "status": "ready_for_payment",
+        "currency": "usd",
+        "line_items": [],
+        "totals": {
+          "currency": "usd",
+          "total": 5000
+        },
+        "fulfillment_options": [],
+        "messages": [],
+        "links": [],
+        "capabilities": {},
+        "discounts": {
+          "codes": [
+            "SAVE20"
+          ],
+          "applied": [
+            {
+              "id": "disc_123",
+              "code": "SAVE20",
+              "coupon": {
+                "id": "coupon_abc",
+                "name": "20% Off",
+                "percent_off": 20
+              },
+              "amount": 1000
+            }
+          ],
+          "rejected": []
+        }
+      }
     },
-
     "checkout_create_request_with_discount": {
       "title": "Checkout Create Request with Discount Extension",
       "description": "Checkout session create request extended with discount codes.",
       "allOf": [
-        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionCreateRequest" },
+        {
+          "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionCreateRequest"
+        },
         {
           "type": "object",
           "properties": {
@@ -240,16 +355,33 @@
               "$ref": "#/$defs/discounts_request",
               "description": "Discount codes to apply to the new checkout session."
             }
-          }
+          },
+          "description": "Discount extension fields for create request"
         }
-      ]
+      ],
+      "example": {
+        "items": [
+          {
+            "product_id": "prod_123",
+            "quantity": 1
+          }
+        ],
+        "currency": "usd",
+        "capabilities": {},
+        "discounts": {
+          "codes": [
+            "SAVE20"
+          ]
+        }
+      }
     },
-
     "checkout_update_request_with_discount": {
       "title": "Checkout Update Request with Discount Extension",
       "description": "Checkout session update request extended with discount codes.",
       "allOf": [
-        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionUpdateRequest" },
+        {
+          "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionUpdateRequest"
+        },
         {
           "type": "object",
           "properties": {
@@ -257,9 +389,21 @@
               "$ref": "#/$defs/discounts_request",
               "description": "Discount codes to apply. Replaces previously submitted codes."
             }
-          }
+          },
+          "description": "Discount extension fields for update request"
         }
-      ]
+      ],
+      "example": {
+        "buyer": {
+          "email": "customer@example.com"
+        },
+        "discounts": {
+          "codes": [
+            "SAVE20",
+            "FREESHIP"
+          ]
+        }
+      }
     }
   }
 }

@@ -36,6 +36,18 @@ This directory contains automated validation scripts that ensure consistency acr
 - Required fields are consistent
 - Enum values match
 
+### ✅ Field Descriptions (unreleased only)
+- **JSON Schema**: All data models have a description at the top level
+- **JSON Schema**: All fields within models have descriptions
+- **OpenAPI**: All schema fields have descriptions (enforced)
+- Ensures documentation completeness
+
+### ✅ Model Examples (unreleased only)
+- **JSON Schema**: Every data model has at least one example
+- **OpenAPI**: Top-level schemas have examples (enforced)
+- Examples use the `example` or `examples` field
+- Helps developers understand expected data formats
+
 ## Running Locally
 
 ```bash
@@ -85,6 +97,10 @@ const CRITICAL_FIELDS = [
 - Prohibited schemas in wrong files
 - Critical fields with incorrect types
 - Examples that don't validate against schemas
+- Missing field descriptions in unreleased JSON schemas
+- Missing model examples in unreleased JSON schemas
+- Missing field descriptions in unreleased OpenAPI schemas
+- Missing schema examples in unreleased OpenAPI specs
 
 ### Warnings (Don't fail CI)
 - Missing optional files
@@ -97,6 +113,9 @@ const CRITICAL_FIELDS = [
 ✅ **Missing schemas**: Schemas referenced but not defined  
 ✅ **Architectural violations**: Schemas in wrong specification files  
 ✅ **Schema mismatches**: Referenced schemas that don't exist  
+✅ **Missing descriptions**: Data models or fields without descriptions in JSON schemas and OpenAPI (unreleased)  
+✅ **Missing examples**: Data models without usage examples in JSON schemas and OpenAPI (unreleased)  
+✅ **OpenAPI completeness**: OpenAPI schemas missing examples or field descriptions (unreleased)  
 
 ## Contributing
 
