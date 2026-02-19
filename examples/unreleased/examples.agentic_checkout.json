@@ -3,10 +3,7 @@
     "currency": "usd",
     "line_items": [
       {
-        "item": {
-          "id": "item_123"
-        },
-        "quantity": 1
+        "id": "item_123"
       }
     ],
     "capabilities": {
@@ -37,12 +34,18 @@
     "currency": "usd",
     "line_items": [
       {
-        "item": {
-          "id": "item_123"
-        },
-        "quantity": 1
+        "id": "item_123"
       }
     ],
+    "capabilities": {
+      "interventions": {
+        "supported": ["3ds", "address_verification"],
+        "display_context": "webview",
+        "redirect_context": "in_app",
+        "max_redirects": 1,
+        "max_interaction_depth": 1
+      }
+    },
     "affiliate_attribution": {
       "provider": "impact.com",
       "token": "atp_01J8Z3WXYZ9ABC",
@@ -53,8 +56,7 @@
   "create_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
     },
     "capabilities": {
       "payment": {
@@ -79,7 +81,28 @@
               "supports_3ds": true,
               "3ds_versions": ["2.1.0", "2.2.0"],
               "environment": "production"
-            }
+            },
+            "display_order": 1
+          },
+          {
+            "id": "seller_pm_123",
+            "name": "dev.acp.seller_backed.saved_card",
+            "version": "2026-02-05",
+            "spec": "https://acp.dev/handlers/seller_backed/saved_card",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "seller_managed",
+            "config_schema": "https://acp.dev/schemas/handlers/seller_backed/saved_card/config.json",
+            "instrument_schemas": ["https://acp.dev/schemas/handlers/seller_backed/saved_card/instrument.json"],
+            "config": {
+              "merchant_id": "acct_seller_123",
+              "psp": "seller_managed",
+              "payment_method_id": "pm_saved_4242",
+              "display_name": "Visa ending in 4242",
+              "display_metadata": { "brand": "visa", "last4": "4242" },
+              "supports_3ds": true
+            },
+            "display_order": 0
           }
         ]
       },
@@ -124,7 +147,7 @@
         ],
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -255,8 +278,11 @@
   "update_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -269,7 +295,7 @@
         "quantity": 1,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -409,6 +435,24 @@
       }
     }
   },
+  "complete_checkout_session_request_seller_backed": {
+    "buyer": {
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "johnsmith@mail.com",
+      "phone_number": "15552003434"
+    },
+    "payment_data": {
+      "handler_id": "seller_pm_123",
+      "instrument": {
+        "type": "seller_backed_saved_card",
+        "credential": {
+          "type": "spt",
+          "token": "vt_01J8Z3WXYZ9ABC"
+        }
+      }
+    }
+  },
   "complete_checkout_session_request_with_last_touch_attribution": {
     "buyer": {
       "first_name": "John",
@@ -445,8 +489,11 @@
   "complete_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "buyer": {
       "first_name": "John",
@@ -474,7 +521,7 @@
         },
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -518,7 +565,7 @@
     "selected_fulfillment_options": [
       {
         "type": "shipping",
-        "option_id": "fulfillment_option_123",
+        "option_id": "fulfillment_option_456",
         "item_ids": ["item_123"]
       }
     ],
@@ -541,12 +588,12 @@
       {
         "type": "fulfillment",
         "display_text": "Fulfillment",
-        "amount": 100
+        "amount": 500
       },
       {
         "type": "total",
         "display_text": "Total",
-        "amount": 430
+        "amount": 830
       }
     ],
     "fulfillment_options": [
@@ -595,8 +642,11 @@
   "get_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "ready_for_payment",
     "currency": "usd",
@@ -609,7 +659,7 @@
         "quantity": 1,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -745,8 +795,11 @@
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
     },
     "status": "canceled",
     "currency": "usd",
@@ -759,7 +812,538 @@
         "quantity": 1,
         "totals": [
           {
-            "type": "base_amount",
+            "type": "items_base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "John Doe",
+      "phone_number": "15551234567",
+      "email": "johndoe@example.com",
+      "address": {
+        "name": "John Doe",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "fulfillment_option_456",
+        "item_ids": ["item_123"]
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 830
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "description": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
+      }
+    ],
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Checkout session has been canceled."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
+      }
+    ]
+  },
+  "webhook_order_create_event": {
+    "type": "order_create",
+    "data": {
+      "type": "order",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/checkout_session_123",
+      "status": "created",
+      "refunds": []
+    }
+  },
+  "webhook_order_update_event": {
+    "type": "order_update",
+    "data": {
+      "type": "order",
+      "checkout_session_id": "checkout_session_123",
+      "permalink_url": "https://www.testshop.com/orders/checkout_session_123",
+      "status": "shipped",
+      "refunds": [
+        {
+          "type": "original_payment",
+          "amount": 100
+        }
+      ]
+    }
+  },
+  "checkout_session_authentication_required": {
+    "id": "checkout_session_3ds_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "capabilities": {
+      "payment": {
+        "handlers": [
+          {
+            "id": "card_tokenized",
+            "name": "dev.acp.tokenized.card",
+            "version": "2026-01-22",
+            "spec": "https://acp.dev/handlers/tokenized.card",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "stripe",
+            "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+            "instrument_schemas": [
+              "https://acp.dev/schemas/handlers/tokenized.card/instrument.json"
+            ],
+            "config": {
+              "merchant_id": "acct_1234567890",
+              "psp": "stripe",
+              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+              "accepted_funding_types": ["credit", "debit"],
+              "supports_3ds": true,
+              "3ds_versions": ["2.1.0", "2.2.0"],
+              "environment": "production"
+            }
+          }
+        ]
+      }
+    },
+    "status": "authentication_required",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_3ds_001",
+        "item": {
+          "id": "item_3ds_001"
+        },
+        "quantity": 1,
+        "name": "Premium Leather Boots",
+        "unit_amount": 5000,
+        "totals": [
+          {
+            "type": "items_base_amount",
+            "display_text": "Base Amount",
+            "amount": 5000
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 5000
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 375
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 5375
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "Alice Example",
+      "phone_number": "15551234567",
+      "email": "alice@example.com",
+      "address": {
+        "name": "Alice Example",
+        "line_one": "1 Example St",
+        "line_two": "Unit 2",
+        "city": "Oakland",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94607"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "ful_overnight_01",
+        "item_ids": ["item_3ds_001"]
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 5000
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 5000
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 375
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 2500
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 7875
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "ful_overnight_01",
+        "title": "Overnight",
+        "description": "Next-business-day delivery",
+        "carrier": "UPS",
+        "earliest_delivery_time": "2026-01-13T08:00:00Z",
+        "latest_delivery_time": "2026-01-13T20:00:00Z",
+        "totals": [
+          { "type": "subtotal", "display_text": "Shipping Fee", "amount": 2500 },
+          { "type": "tax", "display_text": "Tax", "amount": 0 },
+          { "type": "total", "display_text": "Total", "amount": 2500 }
+        ]
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ],
+    "authentication_metadata": {
+      "acquirer_details": {
+        "acquirer_bin": "123456",
+        "acquirer_country": "US",
+        "acquirer_merchant_id": "merchant_789",
+        "merchant_name": "Test Merchant",
+        "requestor_id": "requestor_42"
+      },
+      "directory_server": "visa",
+      "flow_preference": {
+        "type": "challenge",
+        "challenge": {
+          "type": "preferred"
+        }
+      }
+    }
+  },
+  "complete_session_with_authentication_result_request": {
+    "buyer": {
+      "first_name": "Alice",
+      "last_name": "Example",
+      "email": "alice@example.com"
+    },
+    "payment_data": {
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_token_001"
+        }
+      },
+      "billing_address": {
+        "name": "Alice Example",
+        "line_one": "1 Example St",
+        "line_two": "Unit 2",
+        "city": "Oakland",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94607"
+      }
+    },
+    "authentication_result": {
+      "outcome": "authenticated",
+      "outcome_details": {
+        "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
+        "electronic_commerce_indicator": "05",
+        "transaction_id": "dsTransId_12345",
+        "version": "2.2.0"
+      }
+    }
+  },
+  "authentication_result_example": {
+    "outcome": "authenticated",
+    "outcome_details": {
+      "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
+      "electronic_commerce_indicator": "05",
+      "transaction_id": "dsTransId_12345",
+      "version": "2.2.0"
+    }
+  },
+  "error_400_requires_3ds": {
+    "type": "invalid_request",
+    "code": "requires_3ds",
+    "message": "This checkout session requires issuer authentication. The request must include 'authentication_result' as provided by the issuer authentication flow.",
+    "param": "$.authentication_result"
+  },
+  "authentication_result_denied_example": {
+    "outcome": "denied",
+    "outcome_details": {
+      "transaction_id": "dsTransId_denied_789",
+      "version": "2.2.0"
+    }
+  },
+  "authentication_result_frictionless_example": {
+    "outcome": "attempt_acknowledged",
+    "outcome_details": {
+      "three_ds_cryptogram": "XYZ123FRICTIONLESS456789==",
+      "electronic_commerce_indicator": "06",
+      "transaction_id": "dsTransId_frictionless_456",
+      "version": "2.2.0"
+    }
+  },
+  "complete_session_with_denied_authentication_request": {
+    "buyer": {
+      "first_name": "Marie",
+      "last_name": "Dupont",
+      "email": "marie.dupont@example.fr"
+    },
+    "payment_data": {
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "type": "card",
+        "credential": {
+          "type": "spt",
+          "token": "spt_3ds_denied_001"
+        }
+      },
+      "billing_address": {
+        "name": "Marie Dupont",
+        "line_one": "12 Rue de la Paix",
+        "city": "Paris",
+        "state": "IDF",
+        "country": "FR",
+        "postal_code": "75002"
+      }
+    },
+    "authentication_result": {
+      "outcome": "denied"
+    }
+  },
+  "error_400_invalid_item": {
+    "type": "invalid_request",
+    "code": "invalid_item_id",
+    "message": "The item ID 'invalid_item' does not exist.",
+    "param": "$.line_items[0].item.id"
+  },
+  "checkout_session_with_out_of_stock": {
+    "id": "checkout_session_oos_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "capabilities": {},
+    "status": "not_ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_oos_001",
+        "item": {
+          "id": "item_123"
+        },
+        "quantity": 1,
+        "name": "Vintage Denim Jacket",
+        "unit_amount": 300,
+        "totals": [
+          {
+            "type": "items_base_amount",
+            "display_text": "Base Amount",
+            "amount": 300
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 300
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 30
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 330
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "John Doe",
+      "phone_number": "15551234567",
+      "email": "johndoe@example.com",
+      "address": {
+        "name": "John Doe",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "fulfillment_option_123",
+        "item_ids": ["item_123"]
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 300
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 300
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 30
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 330
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_123",
+        "title": "Standard",
+        "description": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 100 }
+        ]
+      }
+    ],
+    "messages": [
+      {
+        "type": "error",
+        "code": "out_of_stock",
+        "param": "$.line_items[0].item.id",
+        "content_type": "plain",
+        "content": "The item 'Vintage Denim Jacket' is currently out of stock. Please select a different item."
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      }
+    ]
+  },
+  "checkout_session_with_payment_declined": {
+    "id": "checkout_session_pd_001",
+    "protocol": {
+      "version": "2026-01-30"
+    },
+    "capabilities": {},
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_pd_001",
+        "item": {
+          "id": "item_123"
+        },
+        "quantity": 1,
+        "name": "Vintage Denim Jacket",
+        "unit_amount": 300,
+        "totals": [
+          {
+            "type": "items_base_amount",
             "display_text": "Base Amount",
             "amount": 300
           },
@@ -850,240 +1434,32 @@
     ],
     "messages": [
       {
-        "type": "info",
+        "type": "error",
+        "code": "payment_declined",
         "content_type": "plain",
-        "content": "Checkout session has been canceled."
+        "content": "Your payment was declined. Please try a different payment method."
       }
     ],
     "links": [
       {
         "type": "terms_of_use",
         "url": "https://www.testshop.com/legal/terms-of-use"
-      },
-      {
-        "type": "return_policy",
-        "url": "https://www.testshop.com/legal/return-policy"
       }
     ]
   },
-  "webhook_order_create_event": {
-    "type": "order_create",
-    "data": {
-      "type": "order",
-      "checkout_session_id": "checkout_session_123",
-      "permalink_url": "https://www.testshop.com/orders/checkout_session_123",
-      "status": "created",
-      "refunds": []
-    }
-  },
-  "webhook_order_update_event": {
-    "type": "order_update",
-    "data": {
-      "type": "order",
-      "checkout_session_id": "checkout_session_123",
-      "permalink_url": "https://www.testshop.com/orders/checkout_session_123",
-      "status": "shipped",
-      "refunds": [
-        {
-          "type": "original_payment",
-          "amount": 100
-        }
-      ]
-    }
-  },
-  "checkout_session_authentication_required": {
-    "id": "checkout_session_3ds_001",
-    "protocol": {
-      "version": "2026-01-22",
-      "capabilities": []
-    },
-    "capabilities": {
-      "payment": {
-        "handlers": [
-          {
-            "id": "card_tokenized",
-            "name": "dev.acp.tokenized.card",
-            "version": "2026-01-22",
-            "spec": "https://acp.dev/handlers/tokenized.card",
-            "requires_delegate_payment": true,
-            "requires_pci_compliance": false,
-            "psp": "stripe",
-            "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
-            "instrument_schemas": [
-              "https://acp.dev/schemas/handlers/tokenized.card/instrument.json"
-            ],
-            "config": {
-              "merchant_id": "acct_1234567890",
-              "psp": "stripe",
-              "accepted_brands": ["visa", "mastercard", "amex", "discover"],
-              "accepted_funding_types": ["credit", "debit"],
-              "supports_3ds": true,
-              "3ds_versions": ["2.1.0", "2.2.0"],
-              "environment": "production"
-            }
-          }
-        ]
-      }
-    },
-    "status": "authentication_required",
-    "currency": "usd",
-    "line_items": [
-      {
-        "id": "line_item_3ds_001",
-        "item": {
-          "id": "item_3ds_001"
-        },
-        "quantity": 1,
-        "name": "Premium Leather Boots",
-        "unit_amount": 5000,
-        "totals": [
-          {
-            "type": "base_amount",
-            "display_text": "Base Amount",
-            "amount": 5000
-          },
-          {
-            "type": "discount",
-            "display_text": "Discount",
-            "amount": 0
-          },
-          {
-            "type": "subtotal",
-            "display_text": "Subtotal",
-            "amount": 5000
-          },
-          {
-            "type": "tax",
-            "display_text": "Tax",
-            "amount": 375
-          },
-          {
-            "type": "total",
-            "display_text": "Total",
-            "amount": 5375
-          }
-        ]
-      }
-    ],
-    "fulfillment_address": {
-      "name": "Alice Example",
-      "line_one": "1 Example St",
-      "line_two": "Unit 2",
-      "city": "Oakland",
-      "state": "CA",
-      "country": "US",
-      "postal_code": "94607"
-    },
-    "fulfillment_option_id": "ful_overnight_01",
-    "totals": [
-      {
-        "type": "items_base_amount",
-        "display_text": "Item(s) total",
-        "amount": 5000
-      },
-      {
-        "type": "subtotal",
-        "display_text": "Subtotal",
-        "amount": 5000
-      },
-      {
-        "type": "tax",
-        "display_text": "Tax",
-        "amount": 375
-      },
-      {
-        "type": "fulfillment",
-        "display_text": "Fulfillment",
-        "amount": 2500
-      },
-      {
-        "type": "total",
-        "display_text": "Total",
-        "amount": 7875
-      }
-    ],
-    "fulfillment_options": [
-      {
-        "type": "shipping",
-        "id": "ful_overnight_01",
-        "title": "Overnight",
-        "description": "Next-business-day delivery",
-        "carrier": "UPS",
-        "earliest_delivery_time": "2026-01-13T08:00:00Z",
-        "latest_delivery_time": "2026-01-13T20:00:00Z",
-        "totals": [
-          { "type": "subtotal", "display_text": "Shipping Fee", "amount": 2500 },
-          { "type": "tax", "display_text": "Tax", "amount": 0 },
-          { "type": "total", "display_text": "Total", "amount": 2500 }
-        ]
-      }
-    ],
-    "messages": [],
-    "links": [
-      {
-        "type": "terms_of_use",
-        "url": "https://www.testshop.com/legal/terms-of-use"
-      }
-    ],
-    "authentication_metadata": {
-      "acquirer_details": {
-        "acquirer_bin": "123456",
-        "acquirer_country": "US",
-        "acquirer_merchant_id": "merchant_789",
-        "merchant_name": "Test Merchant",
-        "requestor_id": "requestor_42"
-      },
-      "directory_server": "visa",
-      "flow_preference": {
-        "type": "challenge",
-        "challenge": {
-          "type": "preferred"
-        }
-      }
-    }
-  },
-  "complete_session_with_authentication_result_request": {
-    "buyer": {
-      "first_name": "Alice",
-      "last_name": "Example",
-      "email": "alice@example.com"
-    },
-    "payment_data": {
-      "token": "spt_3ds_token_001",
-      "provider": "stripe",
-      "billing_address": {
-        "name": "Alice Example",
-        "line_one": "1 Example St",
-        "line_two": "Unit 2",
-        "city": "Oakland",
-        "state": "CA",
-        "country": "US",
-        "postal_code": "94607"
-      }
-    },
-    "authentication_result": {
-      "outcome": "authenticated",
-      "outcome_details": {
-        "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
-        "electronic_commerce_indicator": "05",
-        "transaction_id": "dsTransId_12345",
-        "version": "2.2.0"
-      }
-    }
-  },
-  "authentication_result_example": {
-    "outcome": "authenticated",
-    "outcome_details": {
-      "three_ds_cryptogram": "ABCDEFGHIJKLMNOPQRSTUVWX==",
-      "electronic_commerce_indicator": "05",
-      "transaction_id": "dsTransId_12345",
-      "version": "2.2.0"
-    }
-  },
-  "error_400_requires_3ds": {
+  "error_400_idempotency_key_required": {
     "type": "invalid_request",
-    "code": "requires_3ds",
-    "message": "This checkout session requires issuer authentication. The request must include 'authentication_result' as provided by the issuer authentication flow.",
-    "param": "$.authentication_result"
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required"
+  },
+  "error_422_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Idempotency-Key has already been used with a different request body"
+  },
+  "error_409_idempotency_in_flight": {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
   }
 }

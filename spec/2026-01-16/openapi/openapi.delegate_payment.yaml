@@ -326,6 +326,8 @@ components:
         metadata:
           type: object
           additionalProperties: { type: string }
+        virtual:
+          type: boolean
       required: [type, card_number_type, number, display_card_funding_type, metadata]
 
     Address:
@@ -423,7 +425,7 @@ components:
             ]
         code:
           type: string
-          enum: [invalid_card, duplicate_request, idempotency_conflict]
+          enum: [invalid_card, duplicate_request, idempotency_conflict, too_many_requests]
         message:
           type: string
         param:

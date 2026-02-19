@@ -159,7 +159,8 @@ Each handler in `capabilities.payment.handlers[]` follows this structure:
   "instrument_schemas": ["https://example.com/instrument-schema.json"],
   "config": {
     // Handler-specific configuration
-  }
+  },
+  "display_order": 0
 }
 ```
 
@@ -177,6 +178,7 @@ Each handler in `capabilities.payment.handlers[]` follows this structure:
 | `config_schema` | URI | ✅ | URL to JSON Schema for validating the `config` object. |
 | `instrument_schemas` | array of URIs | ✅ | URLs to JSON Schemas defining valid payment instrument structures for this handler. |
 | `config` | object | ✅ | Handler-specific configuration (structure validated by `config_schema`). |
+| `display_order` | integer | ❌ | Optional. Merchant-suggested display order (lower = higher preference). Suggestive only; platform/agent MAY reorder. Sellers can use this to express fraud/conversion preferences. |
 
 ### 5.2 Payment Instrument Structure
 
@@ -609,6 +611,10 @@ Specific handlers may require additional fields (e.g., `accepted_brands` for `de
   "type": "object",
   "required": ["id", "name", "version", "spec", "requires_delegate_payment", "requires_pci_compliance", "psp", "config_schema", "instrument_schemas", "config"],
   "properties": {
+    "display_order": {
+      "type": "integer",
+      "description": "Optional. Merchant-suggested display order (lower = higher preference). Suggestive only; platform/agent MAY reorder."
+    },
     "id": {
       "type": "string",
       "description": "Unique identifier for this handler instance within the session",

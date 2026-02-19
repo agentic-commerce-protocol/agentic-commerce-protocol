@@ -167,7 +167,7 @@ For substantial changes to the protocol, you may need to submit a SEP:
 
 Every PR **must** include, as appropriate:
 
-- [ ] **OpenAPI / JSON Schema**: Update or add to `spec/openapi/` and `spec/json-schema/` as needed.
+- [ ] **OpenAPI / JSON Schema**: Update or add under `spec/unreleased/openapi/` and `spec/unreleased/json-schema/` (or the appropriate version directory) as needed.
 - [ ] **Examples**: Add or update sample requests/responses in `examples/`.
 - [ ] **Changelog**: Add a changelog entry file to `changelog/unreleased/` describing your change.
   - Create a new file: `changelog/unreleased/your-change-description.md`

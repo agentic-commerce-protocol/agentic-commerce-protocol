@@ -494,11 +494,13 @@ components:
         provider:
           type: string
           enum: [stripe]
+        merchant_id:
+          type: string
         supported_payment_methods:
           type: array
           items:
             $ref: "#/components/schemas/PaymentMethod"
-      required: [provider, supported_payment_methods]
+      required: [provider, merchant_id, supported_payment_methods]
 
     PaymentMethod:
       type: object
@@ -772,6 +774,22 @@ components:
         permalink_url: { type: string, format: uri }
       required: [id, checkout_session_id, permalink_url]
 
+    AuthenticationProvider:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          enum: [stripe, adyen]
+        merchant_id:
+          type: string
+        supported_authentication_methods:
+          type: array
+          items:
+            type: string
+            enum: [3ds]
+      required: [provider, merchant_id, supported_authentication_methods]
+
     CheckoutSessionBase:
       type: object
       additionalProperties: false
@@ -779,6 +797,7 @@ components:
         id: { type: string }
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_provider: { $ref: "#/components/schemas/PaymentProvider" }
+        authentication_provider: { $ref: "#/components/schemas/AuthenticationProvider" }
         status:
           {
             type: string,

@@ -24,6 +24,7 @@ rfcs/
 ├── rfc.agentic_checkout.md
 ├── rfc.capability_negotiation.md
 ├── rfc.payment_handlers.md
+├── rfc.seller_backed_payment_handler.md
 ├── rfc.extensions.md
 ├── rfc.discount_extension.md
 └── ...
@@ -45,7 +46,6 @@ examples/
 changelog/
 ├── 2025-09-29.md
 ├── 2025-12-12.md
-├── 2026-01-16.md
 ├── 2026-01-30.md
 └── unreleased/              # Individual changelog entries (current development)
 
@@ -84,7 +84,6 @@ ACP uses **date-based versioning** in `YYYY-MM-DD` format. Each version represen
 | --------- | ------- |
 | `spec/<version>/` | Complete spec snapshot for a released version |
 | `spec/unreleased/` | Current development (not yet released) |
-| `spec/draft/` | Experimental specifications under review |
 | `examples/<version>/` | Examples matching each spec version |
 | `changelog/<version>.md` | Release notes for each version |
 

@@ -34,6 +34,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 ### 2.1 Initialization
 
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-16`).
+  - When rejecting a request due to missing or unsupported `API-Version` header, servers **SHOULD** return HTTP `400 Bad Request` with a `supported_versions` array listing all versions the server accepts. Servers **MAY** use `unsupported_api_version` or `missing_api_version` as well-known `code` values.
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
 
@@ -63,7 +64,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Content-Type: application/json` (**REQUIRED** on requests with body)
 - `Accept-Language: <locale>` (e.g., `en-US`) (**RECOMMENDED**)
 - `User-Agent: <string>` (**RECOMMENDED**)
-- `Idempotency-Key: <string>` (**RECOMMENDED**; required for create/complete in certification)
+- `Idempotency-Key: <string>` (**REQUIRED** on all POST requests; opaque string, max 255 characters, UUID v4 recommended)
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
@@ -71,7 +72,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 
 **Response Headers:**
 
-- `Idempotency-Key` — echo if provided
+- `Idempotency-Key` — echo on all POST responses
 - `Request-Id` — echo if provided
 
 **Error Shape (flat):**
@@ -85,7 +86,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 }
 ```
 
-Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | service_unavailable`. `param` is an RFC 9535 JSONPath (optional).
+Where `type` ∈ `invalid_request | processing_error | service_unavailable`. `param` is an RFC 9535 JSONPath (optional).
 
 ---
 
@@ -211,17 +212,91 @@ All money fields are **integers (minor units)**.
 
 ## 6. Idempotency, Retries & Concurrency
 
-- Clients **SHOULD** set `Idempotency-Key` on **create** and **complete** requests.
-- Replays with the **same** key and **identical** parameters **MUST** return the original result.
-- Replays with the **same** key and **different** parameters **MUST** return **409** with:
+> Canonical reference for ACP idempotency. Supersedes prior idempotency rules where they conflict. See SEP #120.
+
+### 6.1 Idempotency-Key Requirement
+
+- Clients **MUST** include an `Idempotency-Key` header on **every POST** request (create, update, complete, cancel).
+- The key is an **opaque string**, max **255 characters**; UUID v4 is **RECOMMENDED**.
+- Servers **MUST** scope keys to the **authenticated identity + endpoint path**; the same key on different endpoints is treated independently.
+- A POST request **without** an `Idempotency-Key` header **MUST** be rejected with:
+  ```json
+  {
+    "type": "invalid_request",
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required on all POST requests"
+  }
+  ```
+  HTTP status: **400 Bad Request**.
+
+### 6.2 Request Equivalence
+
+- Equivalence is determined by **semantic JSON equality of the request body only**; headers are excluded.
+- Servers **MUST** treat the following as equivalent:
+  | Variation | Equivalent? |
+  |---|---|
+  | Different key ordering | Yes |
+  | `null` value vs absent key | **Different** — `null` means "clear this field"; absent means "do not modify" |
+  | Trailing zeros in numbers (`1.0` vs `1`) | Yes |
+  | Array element ordering | **No** — arrays are order-sensitive |
+- Monetary values **SHOULD** use **string** or **integer-cent** representations to avoid floating-point ambiguity.
+- _Informative:_ Servers **MAY** implement comparison via RFC 8785 (JCS) canonicalization + SHA-256 fingerprint.
+
+### 6.3 Replay Behavior
+
+- Same key + **identical** body → server **MUST** return the **original response** with the **same HTTP status code**.
+- The replayed response **SHOULD** include the header `Idempotent-Replayed: true`.
+- **Update endpoints** (`POST /checkout_sessions/{id}`) follow the same replay semantics as create: same key + same body returns the stored response.
+- Servers **MUST NOT** re-execute side effects (e.g., payment capture, inventory reservation) on replay.
+
+### 6.4 Error Responses
+
+All idempotency errors use `type: "invalid_request"` and the following codes:
+
+| Scenario | HTTP | `code` | Retryable? |
+|---|---|---|---|
+| Missing `Idempotency-Key` header | 400 | `idempotency_key_required` | Yes (add header) |
+| Same key, different body | 422 | `idempotency_conflict` | **No** (permanent) |
+| Same key, original request still in flight | 409 | `idempotency_in_flight` | Yes (honor `Retry-After`) |
+
+- **422 — payload mismatch** example:
   ```json
   {
     "type": "invalid_request",
     "code": "idempotency_conflict",
-    "message": "Same Idempotency-Key used with different parameters"
+    "message": "Idempotency-Key has already been used with a different request body"
   }
   ```
-- Servers **SHOULD** implement at‑least‑once processing and be resilient to network timeouts.
+- **409 — in-flight collision** example:
+  ```json
+  {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
+  }
+  ```
+  Servers **SHOULD** include a `Retry-After` header (in seconds).
+
+### 6.5 Server Error Caching
+
+- Responses with HTTP **5xx** status codes **MUST NOT** be cached against the idempotency key.
+- A retry with the same key after a 5xx **MUST** be processed as a **fresh request**.
+
+### 6.6 Key Retention
+
+- Servers **MUST** retain idempotency key → response mappings for **at least 24 hours**.
+- After expiry, a reused key is treated as a **new request** (no error).
+
+### 6.7 Extension Fields
+
+- When an ACP extension is active, extension-defined fields in the request body **MUST** participate in body comparison (§6.2).
+
+### 6.8 Implementation Guidance (informative)
+
+- **Gateway / middleware pattern:** Idempotency logic is **RECOMMENDED** to live in a middleware layer in front of business logic, so all endpoints gain consistent behavior.
+- **Atomic transaction boundaries:** The idempotency key record and the business operation **SHOULD** be committed in the **same ACID transaction** to prevent ghost keys (key stored, operation failed) or lost keys (operation succeeded, key not stored).
+- **Recovery points:** When an operation triggers foreign state mutations (e.g., PSP authorization), servers **SHOULD** implement recovery-point semantics — record intermediate state so that retries can resume rather than restart.
+- **SDK serialization:** Because `null` and absent are semantically distinct (§6.2), SDK authors **SHOULD** ensure their serializers preserve the distinction. Clients **MUST** only include `null` when they intend to clear a field, and **MUST** omit the key when they intend to leave the field unchanged.
 
 ---
 
@@ -560,7 +635,7 @@ If the session is in `authentication_required` state, a client MUST include `aut
   "selected_fulfillment_options": [
     {
       "type": "shipping",
-      "option_id": "fulfillment_option_123",
+      "option_id": "fulfillment_option_456",
       "item_ids": ["item_456"]
     }
   ],
@@ -572,8 +647,8 @@ If the session is in `authentication_required` state, a client MUST include `aut
     },
     { "type": "subtotal", "display_text": "Subtotal", "amount": 300 },
     { "type": "tax", "display_text": "Tax", "amount": 30 },
-    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 100 },
-    { "type": "total", "display_text": "Total", "amount": 430 }
+    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 500 },
+    { "type": "total", "display_text": "Total", "amount": 830 }
   ],
   "fulfillment_options": [
     {
@@ -655,8 +730,8 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
     },
     { "type": "subtotal", "display_text": "Subtotal", "amount": 300 },
     { "type": "tax", "display_text": "Tax", "amount": 30 },
-    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 100 },
-    { "type": "total", "display_text": "Total", "amount": 430 }
+    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 500 },
+    { "type": "total", "display_text": "Total", "amount": 830 }
   ],
   "messages": [
     {
@@ -682,7 +757,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
-- [ ] Implements idempotency semantics and conflict detection
+- [ ] Requires `Idempotency-Key` on all POST; returns 400/422/409 per §6
 - [ ] Emits flat error objects with `type/code/message/param?`
 - [ ] Verifies auth; signs/verifies requests where applicable
 - [ ] Emits order webhooks per the Webhooks RFC (separate spec)
@@ -694,6 +769,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **Unreleased**: Rewrote §6 (Idempotency, Retries & Concurrency) with full normative rules: mandatory `Idempotency-Key` on all POST requests, request equivalence semantics, replay behavior with `Idempotent-Replayed` header, IETF-aligned error codes (`idempotency_key_required`, `idempotency_conflict`, `idempotency_in_flight`), 5xx caching prohibition, 24-hour key retention, and extension field participation. Removed `request_not_idempotent` from `Error.type` enum. See SEP #120.
 - **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:
   - Renamed `fulfillment_address` to `fulfillment_details` with nested structure (`name`, `phone_number`, `email`, `address`)
