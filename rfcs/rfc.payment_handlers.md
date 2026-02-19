@@ -1,7 +1,7 @@
 # RFC: Agentic Commerce — Payment Handlers
 
-**Status:** Draft
-**Version:** 2026-01-22
+**Status:** Draft  
+**Version:** 2026-01-22  
 **Scope:** Payment handler framework for standardized payment method integration and credential delegation
 
 This RFC introduces a **payment handler framework** for ACP that enables standardized, extensible payment method integration. Payment handlers consolidate payment method capabilities, credential flows, and security controls into a unified discovery and negotiation mechanism.
@@ -72,7 +72,7 @@ Payment handlers address these limitations by making each payment method a **ric
 
 The term "handler" reflects that each payment method defines:
 - How to **handle** credential acquisition (agent's responsibility)
-- How to **handle** credential processing (seller's responsibility)
+- How to **handle** credential processing (seller's responsibility)  
 - How to **handle** delegation and security
 - Complete **handler** specifications that can evolve independently
 
@@ -223,9 +223,9 @@ All payment instruments extend this base schema:
            "id": "card_tokenized",
            "name": "dev.acp.tokenized.card",
            "requires_delegate_payment": true,
-           "config": {
+           "config": { 
              "accepted_types": ["card"],
-             "accepted_brands": ["visa", "mastercard"]
+             "accepted_brands": ["visa", "mastercard"] 
            }
          },
          {
@@ -246,7 +246,7 @@ All payment instruments extend this base schema:
    ```json
    {
      "handler_id": "card_tokenized",
-     "credential": {
+     "credential": { 
        "type": "agentic_token",
        "token": "tok_visa_abc123",
        "network": "visa",
