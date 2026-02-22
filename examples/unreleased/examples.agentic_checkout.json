@@ -30,7 +30,8 @@
         "email": "johndoe@example.com",
         "phone": "+15551234567"
       }
-    }
+    },
+    "order_notes": "Leave at front door if I'm not home."
   },
   "create_checkout_session_request_with_first_touch_attribution": {
     "currency": "usd",
@@ -277,7 +278,8 @@
         "option_id": "fulfillment_option_456",
         "item_ids": ["item_123"]
       }
-    ]
+    ],
+    "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
   },
   "update_checkout_session_response": {
     "id": "checkout_session_123",
@@ -441,7 +443,8 @@
         "email": "johndoe@example.com",
         "phone": "+15551234567"
       }
-    }
+    },
+    "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
   },
   "complete_checkout_session_request_seller_backed": {
     "buyer": {
@@ -494,7 +497,8 @@
       "token": "atp_01J8Z3WXYZ9ABC",
       "publisher_id": "pub_123",
       "touchpoint": "last"
-    }
+    },
+    "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
   },
   "complete_checkout_session_response": {
     "id": "checkout_session_123",
@@ -648,7 +652,14 @@
     "order": {
       "id": "ord_abc123",
       "checkout_session_id": "checkout_session_123",
-      "permalink_url": "https://www.testshop.com/orders/ord_abc123"
+      "order_number": "#1001",
+      "client_reference_id": "chatgpt_txn_abc789",
+      "permalink_url": "https://www.testshop.com/orders/ord_abc123",
+      "confirmation": {
+        "confirmation_number": "CNF-1001",
+        "confirmation_email_sent": true,
+        "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
+      }
     }
   },
   "get_checkout_session_response": {

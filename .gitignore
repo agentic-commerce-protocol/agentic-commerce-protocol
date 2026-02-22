@@ -1,2 +1,11 @@
-node_modules
+# IDE
+.cursor/
+.vscode/
+.idea/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Node
+node_modules/
