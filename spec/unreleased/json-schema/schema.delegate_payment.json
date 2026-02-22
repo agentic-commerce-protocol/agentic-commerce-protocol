@@ -4,6 +4,7 @@
   "title": "Delegate Payment \u2014 Schema Bundle",
   "$defs": {
     "Address": {
+      "description": "Physical address for billing or shipping purposes",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -74,7 +75,32 @@
           "$ref": "#/$defs/X402PaymentPayload"
         }
       },
-      "required": ["type", "x402_payload"]
+      "required": ["type", "x402_payload"],
+      "example": {
+        "type": "crypto",
+        "x402_payload": {
+          "x402Version": 2,
+          "accepted": {
+            "scheme": "exact",
+            "network": "eip155:8453",
+            "amount": 1000000,
+            "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+            "maxTimeoutSeconds": 3600
+          },
+          "payload": {
+            "signature": "0x...",
+            "authorization": {
+              "from": "0x...",
+              "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+              "value": "1000000",
+              "validAfter": "1770103150",
+              "validBefore": "1770362350",
+              "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+            }
+          }
+        }
+      }
     },
     "X402PaymentRequirements": {
       "type": "object",
@@ -89,7 +115,15 @@
         "maxTimeoutSeconds": { "type": "integer", "description": "Maximum time allowed for payment." },
         "extra": { "type": "object", "description": "Scheme-specific data (optional)." }
       },
-      "required": ["scheme", "network", "amount", "asset", "payTo", "maxTimeoutSeconds"]
+      "required": ["scheme", "network", "amount", "asset", "payTo", "maxTimeoutSeconds"],
+      "example": {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": 1000000,
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+        "maxTimeoutSeconds": 3600
+      }
     },
     "X402Authorization": {
       "type": "object",
@@ -103,7 +137,15 @@
         "validBefore": { "type": "string", "description": "Unix timestamp when authorization expires." },
         "nonce": { "type": "string", "description": "32-byte nonce (hex) for replay protection." }
       },
-      "required": ["from", "to", "value", "validAfter", "validBefore", "nonce"]
+      "required": ["from", "to", "value", "validAfter", "validBefore", "nonce"],
+      "example": {
+        "from": "0x...",
+        "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+        "value": "1000000",
+        "validAfter": "1770103150",
+        "validBefore": "1770362350",
+        "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
     },
     "X402Payload": {
       "type": "object",
@@ -113,7 +155,18 @@
         "signature": { "type": "string", "description": "EIP-712 or Ed25519 signature." },
         "authorization": { "$ref": "#/$defs/X402Authorization" }
       },
-      "required": ["signature", "authorization"]
+      "required": ["signature", "authorization"],
+      "example": {
+        "signature": "0x...",
+        "authorization": {
+          "from": "0x...",
+          "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+          "value": "1000000",
+          "validAfter": "1770103150",
+          "validBefore": "1770362350",
+          "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+        }
+      }
     },
     "X402PaymentPayload": {
       "type": "object",
@@ -126,9 +179,32 @@
         "resource": { "type": "object", "description": "ResourceInfo describing the resource being paid for (optional)." },
         "extensions": { "type": "object", "description": "Protocol extensions (optional)." }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "example": {
+        "x402Version": 2,
+        "accepted": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": 1000000,
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+          "maxTimeoutSeconds": 3600
+        },
+        "payload": {
+          "signature": "0x...",
+          "authorization": {
+            "from": "0x...",
+            "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+            "value": "1000000",
+            "validAfter": "1770103150",
+            "validBefore": "1770362350",
+            "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+          }
+        }
+      }
     },
     "PaymentMethodCard": {
+      "description": "Card payment method details including card number, expiration, and verification data",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -211,7 +287,8 @@
           "type": "object",
           "description": "Additional metadata about the payment method",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "description": "Metadata value"
           }
         },
         "virtual": {
@@ -245,6 +322,7 @@
       }
     },
     "Allowance": {
+      "description": "Constraints on how the delegated payment method can be used (amount limit, expiration, merchant)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -295,6 +373,7 @@
       }
     },
     "RiskSignal": {
+      "description": "Fraud detection signal indicating detected risk patterns and recommended actions",
       "type": "object",
       "additionalProperties": false,
       "description": "Risk signal from agent/upstream. type indicates the risk category; score and action guide PSP handling. card_testing = card fraud/testing; crypto_wallet_risk = wallet/replay/amount risk for crypto (e.g. nonce reuse, wallet reputation).",
@@ -322,6 +401,7 @@
       }
     },
     "DelegatePaymentRequest": {
+      "description": "Request to tokenize a payment method for delegated use by a merchant",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -352,7 +432,8 @@
           "type": "object",
           "description": "Additional metadata for the request",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "description": "Metadata value"
           }
         }
       },
@@ -404,6 +485,7 @@
       }
     },
     "DelegatePaymentResponse": {
+      "description": "Response containing the vault token identifier for the delegated payment method",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -420,7 +502,8 @@
           "type": "object",
           "description": "Metadata echoed from the request plus system-added fields",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "description": "Metadata value"
           }
         }
       },
@@ -436,6 +519,7 @@
       }
     },
     "Error": {
+      "description": "Error response for delegate payment API requests",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -477,7 +561,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
           },
           "description": "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
         }
