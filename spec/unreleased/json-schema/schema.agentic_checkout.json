@@ -3684,7 +3684,19 @@
           "$ref": "#/$defs/DiscoveryCapabilities"
         }
       },
-      "required": ["protocol", "api_base_url", "transports", "capabilities"]
+      "required": ["protocol", "api_base_url", "transports", "capabilities"],
+      "example": {
+        "protocol": {
+          "name": "acp",
+          "version": "2026-01-30",
+          "supported_versions": ["2025-09-29", "2026-01-30"]
+        },
+        "api_base_url": "https://acp.stripe.com/api",
+        "transports": ["rest"],
+        "capabilities": {
+          "services": ["checkout"]
+        }
+      }
     },
     "DiscoveryCapabilities": {
       "type": "object",
@@ -3720,7 +3732,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^[a-z]{3}$"
+            "pattern": "^[a-z]{3}$",
+            "description": "ISO 4217 currency code in lowercase (e.g., \"usd\", \"eur\")"
           },
           "uniqueItems": true,
           "description": "ISO 4217 currency codes supported by the platform. Individual merchants may support a subset of these currencies."
@@ -3728,13 +3741,21 @@
         "supported_locales": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "BCP 47 locale tag (e.g., \"en-US\", \"fr-FR\")"
           },
           "uniqueItems": true,
           "description": "BCP 47 locale tags supported by the platform for localized responses."
         }
       },
-      "required": ["services"]
+      "required": ["services"],
+      "example": {
+        "services": ["checkout", "orders", "delegate_payment"],
+        "extensions": [{ "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount" }],
+        "intervention_types": ["3ds"],
+        "supported_currencies": ["usd", "eur"],
+        "supported_locales": ["en-US"]
+      }
     },
     "DiscoveryProtocol": {
       "type": "object",
@@ -3755,7 +3776,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
           },
           "uniqueItems": true,
           "description": "All API versions the platform currently supports, in chronological order (oldest first). Agents SHOULD use the API-Version header to request a specific version. The last element is always the latest supported version."
@@ -3766,7 +3788,13 @@
           "description": "URL to the platform's ACP documentation."
         }
       },
-      "required": ["name", "version", "supported_versions"]
+      "required": ["name", "version", "supported_versions"],
+      "example": {
+        "name": "acp",
+        "version": "2026-01-30",
+        "supported_versions": ["2025-09-29", "2026-01-30"],
+        "documentation_url": "https://agenticcommerce.dev"
+      }
     },
     "DiscoveryExtension": {
       "type": "object",
@@ -3783,7 +3811,11 @@
           "description": "URL to the extension's specification document."
         }
       },
-      "required": ["name"]
+      "required": ["name"],
+      "example": {
+        "name": "discount",
+        "spec": "https://agenticcommerce.dev/specs/discount"
+      }
     },
     "Error": {
       "type": "object",
