@@ -2,21 +2,22 @@
 
 **Status:** Proposal  
 **Version:** unreleased  
-**Scope:** Platform-level capability discovery endpoint for the Agentic Commerce Protocol
+**Scope:** Platform-level discovery document for the Agentic Commerce Protocol
 
-This RFC introduces a lightweight `GET /capabilities` endpoint to the **Agentic Commerce Protocol (ACP)**. The endpoint allows agents to determine whether a merchant supports ACP, which protocol version is available, and what high-level features the platform offers — all before creating a checkout session and without requiring authentication.
+This RFC introduces a well-known discovery document (`/.well-known/acp.json`) for the **Agentic Commerce Protocol (ACP)**. The document allows agents to determine whether a platform supports ACP, which protocol version is available, what transports are offered, and what high-level capabilities the platform provides, all before creating a checkout session and without requiring authentication.
 
 ---
 
 ## 1. Motivation
 
-The Agentic Commerce Protocol's capability negotiation (see `rfc.capability_negotiation.md`) enables rich, session-level negotiation between agents and sellers during checkout session creation. However, agents currently have no way to answer a more fundamental question: **"Does this merchant support ACP at all?"**
+The Agentic Commerce Protocol's capability negotiation (see `rfc.capability_negotiation.md`) enables rich, session-level negotiation between agents and sellers during checkout session creation. However, agents currently have no way to answer a more fundamental question: **"Does this platform support ACP at all?"**
 
 Without a discovery mechanism:
 
-- **Blind first requests**: Agents must attempt `POST /checkout_sessions` and interpret failure responses to determine if a merchant even supports ACP. This creates unnecessary sessions and wastes API calls.
+- **Blind first requests**: Agents must attempt `POST /checkout_sessions` and interpret failure responses to determine if a platform even supports ACP. This creates unnecessary sessions and wastes API calls.
 - **Version ambiguity**: Agents have no way to determine the supported API version before making a request, potentially leading to version mismatch errors on the first call.
 - **No feature overview**: Agents cannot know which high-level extensions or services a platform supports (e.g., orders, discounts, delegate payment) without starting a transaction.
+- **No base URL bootstrapping**: Agents need the full API base URL to make any ACP call. Without discovery, the base URL must be communicated entirely out-of-band.
 - **No caching opportunity**: Every new checkout session re-discovers the same platform-level information that rarely changes.
 
 ### Why not use inline capabilities alone?
@@ -36,18 +37,19 @@ Discovery addresses a different concern: **platform-level** information that is 
 ### 2.1 Goals
 
 1. **Pre-flight compatibility check**: Enable agents to determine ACP support and version compatibility before creating sessions.
-2. **No authentication required**: The endpoint MUST be publicly accessible without a Bearer token.
-3. **Cacheability**: Responses SHOULD be cacheable to avoid redundant requests for stable information.
-4. **Platform-scoped**: Return information that is consistent across all merchants on the platform.
-5. **Simplicity**: Keep the response schema minimal and focused on information that helps agents decide whether and how to interact with the platform.
+2. **Base URL bootstrapping**: Allow agents to discover the API base URL from just a domain name.
+3. **No authentication required**: The document MUST be publicly accessible without a Bearer token.
+4. **Cacheability**: Responses SHOULD be cacheable to avoid redundant requests for stable information.
+5. **Platform-scoped**: Return information that is consistent across all merchants on the platform.
+6. **Simplicity**: Keep the document schema minimal and focused on information that helps agents decide whether and how to interact with the platform.
 
 ### 2.2 Non-Goals
 
 - **Merchant-specific discovery**: Capabilities that vary per merchant (payment methods, payment handlers, PSP configurations) are out of scope. These are negotiated via the `capabilities` object on `POST /checkout_sessions`.
-- **Session-level negotiation**: This endpoint does not replace or duplicate the inline capability exchange. It provides a higher-level overview.
-- **Transport negotiation**: ACP currently supports REST only. Transport selection is not a concern for this endpoint.
+- **Session-level negotiation**: This document does not replace or duplicate the inline capability exchange. It provides a higher-level overview.
 - **Product or catalog discovery**: Discovering what a merchant sells (products, inventory, pricing) is out of scope.
 - **Agent registration or whitelisting**: Agent identity and authorization are separate concerns (see GitHub Issue #15).
+- **Merchant identification**: The discovery document is platform-scoped. It MUST NOT accept or return `merchant_id` or any merchant-specific identifiers. Because the document is unauthenticated, exposing merchant identity would allow anyone to enumerate which merchants exist on a platform, creating a fingerprinting and enumeration risk.
 
 ---
 
@@ -59,13 +61,17 @@ ACP is typically deployed through a platform intermediary (e.g., Stripe) that ho
 
 - **One base URL serves many merchants** with heterogeneous capabilities.
 - **Merchant identity is established through authentication** (Bearer token), which is unavailable at discovery time.
-- **Merchant-specific capabilities are not deterministic** — they may be subject to feature flags, gradual rollouts, A/B testing, or session-context rules.
+- **Merchant-specific capabilities are not deterministic**: they may be subject to feature flags, gradual rollouts, A/B testing, or session-context rules.
 
-Platform-level information (protocol version, supported extensions, available services) is stable and shared across all merchants. This is the appropriate scope for an unauthenticated discovery endpoint.
+Platform-level information (protocol version, supported extensions, available services) is stable and shared across all merchants. This is the appropriate scope for an unauthenticated discovery document.
 
-### 3.2 Why a dedicated endpoint instead of .well-known?
+### 3.2 Why `.well-known` instead of a dedicated API endpoint?
 
-ACP's existing API surface uses flat paths on the merchant's base URL (`/checkout_sessions`, `/delegate_payment`). Adding `/capabilities` follows this convention. A `/.well-known` path would introduce a new convention with no practical benefit for ACP's deployment model.
+Discovery solves a bootstrapping problem: agents need to learn the API base URL before they can call any endpoint. A `/.well-known/acp.json` document at the origin root solves this because:
+
+1. **Agents only need a domain**: Given `acp.stripe.com`, an agent fetches `https://acp.stripe.com/.well-known/acp.json` and discovers the API base URL, supported versions, and capabilities in a single request. No prior knowledge of the API path structure is needed.
+2. **RFC 8615 precedent**: Well-known URIs are the established standard for protocol-level discovery. OpenID Connect (`/.well-known/openid-configuration`), OAuth 2.0 Authorization Server Metadata (`/.well-known/oauth-authorization-server`), and Matrix (`/.well-known/matrix/server`) all use this pattern.
+3. **Static document**: The content is platform-level metadata that changes infrequently. It can be served as a static file by a CDN or web server with no application logic required.
 
 ### 3.3 Why not include payment methods?
 
@@ -75,34 +81,36 @@ Payment method availability is:
 2. **Feature-flagged**: A merchant may be rolling out a new payment method at 10% of transactions.
 3. **Context-dependent**: Available payment methods may vary based on order amount, buyer location, or item type.
 
-Including payment methods in a platform-level, unauthenticated response would be either inaccurate (showing the union) or misleading (showing a subset). Session-level negotiation is the correct mechanism.
+Including payment methods in a platform-level, unauthenticated document would be either inaccurate (showing the union) or misleading (showing a subset). Session-level negotiation is the correct mechanism.
 
 ---
 
 ## 4. Specification
 
-### 4.1 Endpoint
+### 4.1 Document Location
 
 ```
-GET /capabilities
+/.well-known/acp.json
 ```
 
-**Authentication**: None required. Implementations MUST NOT require a Bearer token. Implementations MAY accept an optional `API-Version` header.
+The document MUST be served at the origin root per RFC 8615. For a platform hosted at `https://acp.stripe.com`, the document URL is `https://acp.stripe.com/.well-known/acp.json`.
 
-**Caching**: Implementations SHOULD include a `Cache-Control` response header (e.g., `public, max-age=3600`). Agents SHOULD respect cache directives.
+**Content-Type**: `application/json`
+
+**Authentication**: None required. The document MUST be publicly accessible without a Bearer token.
+
+**Caching**: Implementations SHOULD include a `Cache-Control` response header with a minimum of `public, max-age=3600`. Platform capabilities do not change frequently; without cache guidance, agents will either re-fetch on every checkout flow (unnecessary load) or cache too aggressively (stale data after version upgrades). Implementations SHOULD NOT update the document more frequently than once per hour.
 
 ### 4.2 Response Schema
 
-The response is a `DiscoveryResponse` object containing the following fields:
+The document is a `DiscoveryResponse` object containing the following fields:
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `protocol` | `DiscoveryProtocol` | Yes | Protocol identification and version information. |
-| `extensions` | `DiscoveryExtension[]` | No | Extensions the platform supports at a high level. |
-| `intervention_types` | `string[]` | No | Intervention types available on the platform. |
-| `services` | `string[]` | Yes | High-level ACP services implemented by the platform. |
-| `supported_currencies` | `string[]` | No | ISO 4217 currency codes supported by the platform. |
-| `supported_locales` | `string[]` | No | BCP 47 locale tags supported for localized responses. |
+| `api_base_url` | `string` (URI) | Yes | Base URL for the ACP REST API. Agents append resource paths to this URL. |
+| `transports` | `string[]` | Yes | Transport bindings supported by this platform (e.g., `["rest"]` or `["rest", "mcp"]`). See [SEP #135](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/135) for the MCP transport binding. |
+| `capabilities` | `DiscoveryCapabilities` | Yes | Platform-level capabilities. |
 
 #### DiscoveryProtocol
 
@@ -110,8 +118,18 @@ The response is a `DiscoveryResponse` object containing the following fields:
 |---|---|---|---|
 | `name` | `string` | Yes | Protocol identifier. Always `"acp"`. |
 | `version` | `string` | Yes | Current (latest) API version, in `YYYY-MM-DD` format. |
-| `supported_versions` | `string[]` | Yes | All API versions the platform supports. |
+| `supported_versions` | `string[]` | Yes | All API versions the platform supports, in chronological order (oldest first). The last element is always the latest supported version. |
 | `documentation_url` | `string` (URI) | No | URL to the platform's ACP documentation. |
+
+#### DiscoveryCapabilities
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `services` | `string[]` | Yes | High-level ACP services implemented by the platform. |
+| `extensions` | `DiscoveryExtension[]` | No | Extensions the platform supports at a high level. |
+| `intervention_types` | `string[]` | No | Intervention types available on the platform. |
+| `supported_currencies` | `string[]` | No | ISO 4217 currency codes supported by the platform. |
+| `supported_locales` | `string[]` | No | BCP 47 locale tags supported for localized responses. |
 
 #### DiscoveryExtension
 
@@ -128,6 +146,17 @@ The response is a `DiscoveryResponse` object containing the following fields:
 | `orders` | Post-purchase order lifecycle management. |
 | `delegate_payment` | Payment credential delegation (`POST /delegate_payment`). |
 
+The `services` enum is closed per API version. New values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version.
+
+#### Transports Enum Values
+
+| Value | Description |
+|---|---|
+| `rest` | REST API at the URL specified by `api_base_url`. |
+| `mcp` | Model Context Protocol server (see [SEP #135](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/135)). |
+
+The `transports` enum is closed per API version. New values are introduced in new API versions.
+
 #### Intervention Types Enum Values
 
 | Value | Description |
@@ -136,30 +165,32 @@ The response is a `DiscoveryResponse` object containing the following fields:
 | `biometric` | Biometric verification (fingerprint, Face ID, etc.). |
 | `address_verification` | Address verification service. |
 
+The `intervention_types` enum is closed per API version. New values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version.
+
 ### 4.3 HTTP Status Codes
 
 | Code | Description |
 |---|---|
 | `200 OK` | Success. Returns `DiscoveryResponse`. |
+| `404 Not Found` | Platform does not support ACP. |
 | `429 Too Many Requests` | Rate limit exceeded. |
 | `503 Service Unavailable` | Temporary unavailability. |
 
 ### 4.4 Error Handling
 
-Rate limiting and service unavailability errors use the standard `Error` schema. The endpoint SHOULD NOT return `401 Unauthorized` or `403 Forbidden` since no authentication is required.
+Rate limiting and service unavailability responses SHOULD include a `Retry-After` header. A `404` response indicates the platform does not support ACP; agents SHOULD NOT retry.
 
 ---
 
 ## 5. Example Interactions
 
-### 5.1 Full Platform Capabilities
+### 5.1 Full Platform Discovery
 
 **Request:**
 
 ```http
-GET /capabilities HTTP/1.1
-Host: merchant.example.com
-API-Version: 2026-01-30
+GET /.well-known/acp.json HTTP/1.1
+Host: acp.stripe.com
 ```
 
 **Response:**
@@ -176,20 +207,22 @@ Cache-Control: public, max-age=3600
     "supported_versions": ["2025-09-29", "2025-12-12", "2026-01-16", "2026-01-30"],
     "documentation_url": "https://agenticcommerce.dev"
   },
-  "extensions": [
-    { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount" },
-    { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment" }
-  ],
-  "intervention_types": ["3ds", "biometric", "address_verification"],
-  "services": ["checkout", "orders", "delegate_payment"],
-  "supported_currencies": ["usd", "eur", "gbp"],
-  "supported_locales": ["en-US", "fr-FR", "de-DE"]
+  "api_base_url": "https://acp.stripe.com/api",
+  "transports": ["rest", "mcp"],
+  "capabilities": {
+    "services": ["checkout", "orders", "delegate_payment"],
+    "extensions": [
+      { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount" },
+      { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment" }
+    ],
+    "intervention_types": ["3ds", "biometric", "address_verification"],
+    "supported_currencies": ["usd", "eur", "gbp"],
+    "supported_locales": ["en-US", "fr-FR", "de-DE"]
+  }
 }
 ```
 
 ### 5.2 Minimal Response (Checkout Only)
-
-**Response:**
 
 ```json
 {
@@ -198,22 +231,29 @@ Cache-Control: public, max-age=3600
     "version": "2025-09-29",
     "supported_versions": ["2025-09-29"]
   },
-  "services": ["checkout"]
+  "api_base_url": "https://merchant.example.com/api",
+  "transports": ["rest"],
+  "capabilities": {
+    "services": ["checkout"]
+  }
 }
 ```
 
 ### 5.3 Agent Decision Flow
 
-An agent uses discovery to make an informed decision before starting a checkout:
+An agent uses discovery to bootstrap its interaction with a platform:
 
-1. Agent calls `GET /capabilities` on the merchant's base URL.
-2. Agent receives a `200` response — the merchant supports ACP.
-3. Agent checks `protocol.supported_versions` to confirm its preferred API version is listed.
-4. Agent checks `services` to confirm `"checkout"` is available.
-5. Agent checks `extensions` to see if `"discount"` is supported, informing whether to include discount codes in the checkout request.
-6. Agent proceeds to `POST /checkout_sessions` with its inline capabilities for session-level negotiation.
+1. Agent knows the platform domain (e.g., `acp.stripe.com`).
+2. Agent fetches `https://acp.stripe.com/.well-known/acp.json`.
+3. Agent receives a `200` response: the platform supports ACP.
+4. Agent reads `api_base_url` to learn where to send API requests.
+5. Agent checks `protocol.supported_versions` to confirm its preferred API version is listed.
+6. Agent checks `capabilities.services` to confirm `"checkout"` is available.
+7. Agent checks `capabilities.extensions` to see if `"discount"` is supported, informing whether to include discount codes in the checkout request.
+8. Agent checks `transports` to determine whether to use REST or MCP.
+9. Agent proceeds to `POST {api_base_url}/checkout_sessions` with its inline capabilities for session-level negotiation.
 
-If the agent receives a `404` or non-JSON response, it knows the merchant does not support ACP and should use an alternative channel.
+If the agent receives a `404` or non-JSON response at step 2, it knows the platform does not support ACP and should use an alternative channel.
 
 ---
 
@@ -221,16 +261,16 @@ If the agent receives a `404` or non-JSON response, it knows the merchant does n
 
 Discovery and capability negotiation are complementary mechanisms at different scopes:
 
-| Aspect | Discovery (`GET /capabilities`) | Capability Negotiation (`POST /checkout_sessions`) |
+| Aspect | Discovery (`/.well-known/acp.json`) | Capability Negotiation (`POST /checkout_sessions`) |
 |---|---|---|
 | **Scope** | Platform-level | Session-level |
 | **Authentication** | None required | Bearer token required |
-| **Content** | Protocol version, extensions, services | Payment methods, payment handlers, intervention intersection |
+| **Content** | Protocol version, services, extensions, transports | Payment methods, payment handlers, intervention intersection |
 | **Variability** | Stable across merchants and sessions | Varies per merchant, per session, per rollout state |
 | **Cacheability** | Cacheable (hours to days) | Per-session only |
-| **Purpose** | "Can I use ACP here?" | "What works for this transaction?" |
+| **Purpose** | "Can I use ACP here? Where is the API?" | "What works for this transaction?" |
 
-Discovery does not replace inline capabilities. An agent that calls `GET /capabilities` still MUST include the `capabilities` object in `POST /checkout_sessions` for session-level negotiation.
+Discovery does not replace inline capabilities. An agent that reads `/.well-known/acp.json` still MUST include the `capabilities` object in `POST /checkout_sessions` for session-level negotiation.
 
 ---
 
@@ -238,7 +278,7 @@ Discovery does not replace inline capabilities. An agent that calls `GET /capabi
 
 ### 7.1 No Sensitive Data
 
-The discovery response contains only platform-level metadata. It MUST NOT include:
+The discovery document contains only platform-level metadata. It MUST NOT include:
 
 - Merchant identifiers or configuration
 - Payment handler details or PSP routing
@@ -247,11 +287,15 @@ The discovery response contains only platform-level metadata. It MUST NOT includ
 
 ### 7.2 Rate Limiting
 
-Implementations SHOULD apply rate limiting to prevent abuse. The endpoint is unauthenticated, making it a potential target for scraping or denial-of-service. Standard `429 Too Many Requests` responses with `Retry-After` headers are RECOMMENDED.
+Implementations SHOULD apply rate limiting to prevent abuse. The document is publicly accessible, making it a potential target for scraping or denial-of-service. Standard `429 Too Many Requests` responses with `Retry-After` headers are RECOMMENDED.
 
 ### 7.3 Information Disclosure
 
-The response reveals which ACP features a platform supports. This is considered public, non-sensitive information comparable to publishing an OpenAPI spec. Implementations SHOULD NOT include information that could be used for merchant fingerprinting or competitive intelligence.
+The document reveals which ACP features a platform supports. This is considered public, non-sensitive information comparable to publishing an OpenAPI spec. Implementations SHOULD NOT include information that could be used for merchant fingerprinting or competitive intelligence.
+
+### 7.4 Merchant Enumeration
+
+The discovery document is intentionally platform-scoped. It MUST NOT accept or return merchant identifiers. Because the document is unauthenticated, exposing merchant-level information would allow anyone to enumerate which merchants exist on a platform, creating fingerprinting and competitive intelligence risks.
 
 ---
 
@@ -259,8 +303,8 @@ The response reveals which ACP features a platform supports. This is considered 
 
 This is a purely additive change:
 
-- **New endpoint**: `GET /capabilities` is a new path that does not conflict with any existing endpoints.
-- **New schemas**: `DiscoveryResponse`, `DiscoveryProtocol`, and `DiscoveryExtension` are new schemas that do not modify any existing schemas.
+- **New document**: `/.well-known/acp.json` is a new resource that does not conflict with any existing endpoints or paths.
+- **New schemas**: `DiscoveryResponse`, `DiscoveryCapabilities`, `DiscoveryProtocol`, and `DiscoveryExtension` are new schemas that do not modify any existing schemas.
 - **No changes to existing flows**: The `POST /checkout_sessions` flow and its inline capability negotiation are completely unchanged.
 
 Agents that do not use discovery continue to work exactly as before. Discovery is an optional pre-flight check.
@@ -269,10 +313,10 @@ Agents that do not use discovery continue to work exactly as before. Discovery i
 
 ## 9. Required Spec Updates
 
-- [ ] `spec/unreleased/openapi/openapi.agentic_checkout.yaml` — Add `GET /capabilities` path and `DiscoveryResponse`, `DiscoveryProtocol`, `DiscoveryExtension` schemas
-- [ ] `spec/unreleased/json-schema/schema.agentic_checkout.json` — Add `DiscoveryResponse`, `DiscoveryProtocol`, `DiscoveryExtension` to `$defs`
+- [ ] `spec/unreleased/json-schema/schema.agentic_checkout.json` — Add `DiscoveryResponse`, `DiscoveryCapabilities`, `DiscoveryProtocol`, `DiscoveryExtension` to `$defs`
 - [ ] `examples/unreleased/examples.agentic_checkout.json` — Add discovery response examples
-- [ ] `changelog/unreleased/discovery-capabilities-endpoint.md` — Changelog entry
+- [ ] `changelog/unreleased/discovery-well-known.md` — Changelog entry
+- [ ] `docs/mcp-binding.md` — Cross-reference discovery document for transport advertisement
 
 ---
 
@@ -280,26 +324,29 @@ Agents that do not use discovery continue to work exactly as before. Discovery i
 
 **MUST requirements:**
 
-- [ ] MUST implement `GET /capabilities` returning a valid `DiscoveryResponse`
-- [ ] MUST NOT require authentication for `GET /capabilities`
-- [ ] MUST include `protocol` and `services` in the response
+- [ ] MUST serve `/.well-known/acp.json` at the origin root returning a valid `DiscoveryResponse`
+- [ ] MUST NOT require authentication for the discovery document
+- [ ] MUST include `protocol`, `api_base_url`, `transports`, and `capabilities` in the document
 - [ ] MUST return `protocol.name` as `"acp"`
 - [ ] MUST return `protocol.version` as a valid `YYYY-MM-DD` date string
-- [ ] MUST return `protocol.supported_versions` as a non-empty array
+- [ ] MUST return `protocol.supported_versions` as a non-empty array in chronological order (oldest first)
+- [ ] MUST include at least `"rest"` in `transports`
+- [ ] MUST include `services` within `capabilities`
 
 **SHOULD requirements:**
 
-- [ ] SHOULD include a `Cache-Control` response header
+- [ ] SHOULD include a `Cache-Control` response header with at least `public, max-age=3600`
 - [ ] SHOULD include `extensions` when the platform supports extensions
 - [ ] SHOULD include `intervention_types` when the platform supports interventions
 - [ ] SHOULD include `supported_currencies` and `supported_locales` when known
-- [ ] SHOULD apply rate limiting to the endpoint
+- [ ] SHOULD apply rate limiting to the document
+- [ ] SHOULD NOT update the document more frequently than once per hour
 
 **MAY requirements:**
 
 - [ ] MAY include `documentation_url` in the protocol object
 - [ ] MAY include `spec` URLs on extension declarations
-- [ ] MAY vary the response based on the `API-Version` request header
+- [ ] MAY include `"mcp"` in `transports` when a Model Context Protocol server is available
 
 ---
 
@@ -307,13 +354,14 @@ Agents that do not use discovery continue to work exactly as before. Discovery i
 
 This RFC provides a foundation for future discovery enhancements:
 
-- **MCP tool name advertisement**: Declaring canonical MCP tool names for agents that consume ACP via Model Context Protocol.
 - **Webhook capabilities**: Advertising supported webhook event types and delivery mechanisms.
 - **Authentication methods**: Declaring supported authentication mechanisms (e.g., OAuth 2.0 identity linking) when those capabilities are added to ACP.
 - **Service-level metadata**: Adding per-service configuration (e.g., maximum line items, supported fulfillment types) as the platform's feature set grows.
+- **MCP endpoint URL**: Adding an explicit `mcp_url` field when the MCP transport binding is finalized, allowing agents to discover the MCP endpoint alongside the REST base URL.
 
 ---
 
 ## 12. Change Log
 
-- **2026-02-11**: Initial proposal for platform-level discovery endpoint.
+- **2026-02-11**: Initial proposal for platform-level discovery via `GET /capabilities`.
+- **2026-02-23**: Switched to `/.well-known/acp.json` per RFC 8615 based on reviewer feedback. Added `api_base_url`, `transports` fields. Wrapped capabilities in a `capabilities` object. Added closed-enum versioning guidance for `services`, `intervention_types`, and `transports`. Added `merchant_id` enumeration risk to non-goals. Added minimum `Cache-Control` recommendation. Added cross-reference to SEP #135 (MCP Transport Binding).

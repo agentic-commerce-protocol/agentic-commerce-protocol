@@ -3661,10 +3661,44 @@
     "DiscoveryResponse": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Platform-level capability declaration returned by GET /capabilities. Describes what the ACP platform supports at a high level. This is stable, deterministic information that does not vary per merchant or per session. Merchant-specific capabilities (payment methods, payment handlers) are negotiated inline via the capabilities object on POST /checkout_sessions.",
+      "description": "Well-known discovery document served at /.well-known/acp.json. Describes what the ACP platform supports at a high level. This is stable, deterministic information that does not vary per merchant or per session. Merchant-specific capabilities (payment methods, payment handlers) are negotiated inline via the capabilities object on POST /checkout_sessions.",
       "properties": {
         "protocol": {
           "$ref": "#/$defs/DiscoveryProtocol"
+        },
+        "api_base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for the ACP REST API. Agents append resource paths to this URL (e.g., {api_base_url}/checkout_sessions)."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["rest", "mcp"]
+          },
+          "uniqueItems": true,
+          "description": "Transport bindings supported by this platform. \"rest\" indicates the REST API at api_base_url. \"mcp\" indicates a Model Context Protocol server is available (see SEP #135). New values are introduced in new API versions; agents MAY treat this enum as exhaustive for a given version."
+        },
+        "capabilities": {
+          "$ref": "#/$defs/DiscoveryCapabilities"
+        }
+      },
+      "required": ["protocol", "api_base_url", "transports", "capabilities"]
+    },
+    "DiscoveryCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Platform-level capabilities advertised in the well-known discovery document. Contains high-level feature declarations that are stable across all merchants on the platform.",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["checkout", "orders", "delegate_payment"]
+          },
+          "uniqueItems": true,
+          "description": "High-level services available on this platform. Indicates which ACP operations are implemented. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
         },
         "extensions": {
           "type": "array",
@@ -3680,16 +3714,7 @@
             "enum": ["3ds", "biometric", "address_verification"]
           },
           "uniqueItems": true,
-          "description": "Intervention types the platform supports. Actual availability for a specific session is negotiated via the capabilities object on POST /checkout_sessions."
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["checkout", "orders", "delegate_payment"]
-          },
-          "uniqueItems": true,
-          "description": "High-level services available on this platform. Indicates which ACP operations are implemented."
+          "description": "Intervention types the platform supports. Actual availability for a specific session is negotiated via the capabilities object on POST /checkout_sessions. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
         },
         "supported_currencies": {
           "type": "array",
@@ -3709,7 +3734,7 @@
           "description": "BCP 47 locale tags supported by the platform for localized responses."
         }
       },
-      "required": ["protocol", "services"]
+      "required": ["services"]
     },
     "DiscoveryProtocol": {
       "type": "object",
@@ -3733,7 +3758,7 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "uniqueItems": true,
-          "description": "All API versions the platform currently supports. Agents SHOULD use the API-Version header to request a specific version."
+          "description": "All API versions the platform currently supports, in chronological order (oldest first). Agents SHOULD use the API-Version header to request a specific version. The last element is always the latest supported version."
         },
         "documentation_url": {
           "type": "string",
@@ -3746,7 +3771,7 @@
     "DiscoveryExtension": {
       "type": "object",
       "additionalProperties": false,
-      "description": "High-level extension declaration in a discovery response. Lighter than ExtensionDeclaration — identifies the extension and provides a spec URL, but does not include session-level details like schema or extends fields.",
+      "description": "High-level extension declaration in the discovery document. Identifies the extension and provides a spec URL, but does not include session-level details like schema or extends fields.",
       "properties": {
         "name": {
           "type": "string",

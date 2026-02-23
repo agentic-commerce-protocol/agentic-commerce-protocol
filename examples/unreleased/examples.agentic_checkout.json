@@ -1470,36 +1470,43 @@
       ],
       "documentation_url": "https://agenticcommerce.dev"
     },
-    "extensions": [
-      {
-        "name": "discount",
-        "spec": "https://agenticcommerce.dev/specs/discount"
-      },
-      {
-        "name": "fulfillment",
-        "spec": "https://agenticcommerce.dev/specs/fulfillment"
-      }
+    "api_base_url": "https://acp.stripe.com/api",
+    "transports": [
+      "rest",
+      "mcp"
     ],
-    "intervention_types": [
-      "3ds",
-      "biometric",
-      "address_verification"
-    ],
-    "services": [
-      "checkout",
-      "orders",
-      "delegate_payment"
-    ],
-    "supported_currencies": [
-      "usd",
-      "eur",
-      "gbp"
-    ],
-    "supported_locales": [
-      "en-US",
-      "fr-FR",
-      "de-DE"
-    ]
+    "capabilities": {
+      "services": [
+        "checkout",
+        "orders",
+        "delegate_payment"
+      ],
+      "extensions": [
+        {
+          "name": "discount",
+          "spec": "https://agenticcommerce.dev/specs/discount"
+        },
+        {
+          "name": "fulfillment",
+          "spec": "https://agenticcommerce.dev/specs/fulfillment"
+        }
+      ],
+      "intervention_types": [
+        "3ds",
+        "biometric",
+        "address_verification"
+      ],
+      "supported_currencies": [
+        "usd",
+        "eur",
+        "gbp"
+      ],
+      "supported_locales": [
+        "en-US",
+        "fr-FR",
+        "de-DE"
+      ]
+    }
   },
   "discovery_response_minimal": {
     "protocol": {
@@ -1509,9 +1516,15 @@
         "2025-09-29"
       ]
     },
-    "services": [
-      "checkout"
-    ]
+    "api_base_url": "https://merchant.example.com/api",
+    "transports": [
+      "rest"
+    ],
+    "capabilities": {
+      "services": [
+        "checkout"
+      ]
+    }
   },
   "error_400_idempotency_key_required": {
     "type": "invalid_request",
