@@ -137,6 +137,7 @@ The document is a `DiscoveryResponse` object containing the following fields:
 |---|---|---|---|
 | `name` | `string` | Yes | Extension identifier (e.g., `"discount"`, `"fulfillment"`). |
 | `spec` | `string` (URI) | No | URL to the extension's specification document. |
+| `schema` | `string` (URI) | No | URL to the extension's JSON Schema definition for programmatic validation. |
 
 #### Services Enum Values
 
@@ -212,8 +213,8 @@ Cache-Control: public, max-age=3600
   "capabilities": {
     "services": ["checkout", "orders", "delegate_payment"],
     "extensions": [
-      { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount" },
-      { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment" }
+      { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" },
+      { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment", "schema": "https://agenticcommerce.dev/schemas/fulfillment.json" }
     ],
     "intervention_types": ["3ds", "biometric", "address_verification"],
     "supported_currencies": ["usd", "eur", "gbp"],
@@ -357,7 +358,8 @@ This RFC provides a foundation for future discovery enhancements:
 - **Webhook capabilities**: Advertising supported webhook event types and delivery mechanisms.
 - **Authentication methods**: Declaring supported authentication mechanisms (e.g., OAuth 2.0 identity linking) when those capabilities are added to ACP.
 - **Service-level metadata**: Adding per-service configuration (e.g., maximum line items, supported fulfillment types) as the platform's feature set grows.
-- **MCP endpoint URL**: Adding an explicit `mcp_url` field when the MCP transport binding is finalized, allowing agents to discover the MCP endpoint alongside the REST base URL.
+- **Transport endpoint discovery**: Structured transport objects with per-transport endpoint URLs (e.g., `{"type": "rest", "url": "..."}`, `{"type": "mcp", "url": "..."}`), enabling agents to discover MCP and other transport endpoints directly from the discovery document. Deferred pending MCP binding finalization (SEP #135).
+- **Signing keys**: Public key advertisement (JWK format) for signature verification, enabling agents to verify the authenticity of responses. Deferred pending formalization of ACP's request signing specification.
 
 ---
 

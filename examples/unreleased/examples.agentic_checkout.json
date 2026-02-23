@@ -1484,11 +1484,13 @@
       "extensions": [
         {
           "name": "discount",
-          "spec": "https://agenticcommerce.dev/specs/discount"
+          "spec": "https://agenticcommerce.dev/specs/discount",
+          "schema": "https://agenticcommerce.dev/schemas/discount.json"
         },
         {
           "name": "fulfillment",
-          "spec": "https://agenticcommerce.dev/specs/fulfillment"
+          "spec": "https://agenticcommerce.dev/specs/fulfillment",
+          "schema": "https://agenticcommerce.dev/schemas/fulfillment.json"
         }
       ],
       "intervention_types": [

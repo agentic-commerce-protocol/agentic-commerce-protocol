@@ -3751,7 +3751,7 @@
       "required": ["services"],
       "example": {
         "services": ["checkout", "orders", "delegate_payment"],
-        "extensions": [{ "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount" }],
+        "extensions": [{ "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" }],
         "intervention_types": ["3ds"],
         "supported_currencies": ["usd", "eur"],
         "supported_locales": ["en-US"]
@@ -3809,12 +3809,18 @@
           "type": "string",
           "format": "uri",
           "description": "URL to the extension's specification document."
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension's JSON Schema definition for programmatic validation."
         }
       },
       "required": ["name"],
       "example": {
         "name": "discount",
-        "spec": "https://agenticcommerce.dev/specs/discount"
+        "spec": "https://agenticcommerce.dev/specs/discount",
+        "schema": "https://agenticcommerce.dev/schemas/discount.json"
       }
     },
     "Error": {
