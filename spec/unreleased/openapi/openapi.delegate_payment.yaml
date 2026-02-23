@@ -490,19 +490,19 @@ components:
         name:
           type: string
           maxLength: 256
-          description: "Full name of the person at this address"
+          description: Full name of the person at this address
         line_one:
           type: string
           maxLength: 60
-          description: "Street address line 1 (e.g., street and number)"
+          description: Street address line 1 (e.g., street and number)
         line_two:
           type: string
           maxLength: 60
-          description: "Street address line 2 (e.g., apartment, suite, unit)"
+          description: Street address line 2 (e.g., apartment, suite, unit)
         city:
           type: string
           maxLength: 60
-          description: "City or locality"
+          description: City or locality
         state:
           type: string
           description: State, province, or region
@@ -510,7 +510,7 @@ components:
           type: string
           minLength: 2
           maxLength: 2
-          description: "ISO-3166-1 alpha-2 country code"
+          description: ISO-3166-1 alpha-2 country code
         postal_code:
           type: string
           maxLength: 20
