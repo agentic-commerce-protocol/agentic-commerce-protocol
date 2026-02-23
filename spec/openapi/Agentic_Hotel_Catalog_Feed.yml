@@ -1,201 +1,282 @@
-openapi: 3.0.1
-info:
-  title: Sabre ACP Hotel Catalog Feed
-  version: 1.0.0
-servers:
-  - url: https://api.sabre.com
-# security:
-#   - oauth2_authentication: []
-paths:
-  /catalogFeed:
-    get:
-      summary: Sabre Hotel Catalog Feed
-      description: The “Sabre Hotel Catalog Feed” will provide structured hotel and room metadata.
-      operationId: getCatalogFeed
-      responses:
-        '200':
-          description: Successful response. 
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CatalogFeed'
-components:
-  schemas:
-    CatalogFeed:
-      type: object
-      required:
-      - generated_at
-      - products
-      properties:
-        generated_at:
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Hotel Catalog Schema (Product + Variant + Location) — OpenAI-Compatible"
+description: >
+  Governance-ready hierarchical hotel catalog schema.
+  Product = property-level.
+  Variant = room offer-level.
+  Location is required at the Product level.
+  Designed for export into OpenAI row-based product feeds.
+type: object
+additionalProperties: false
+
+required:
+  - products
+
+properties:
+  schema_version:
+    type: string
+    description: Schema version identifier for governance tracking.
+    default: "1.0"
+
+  products:
+    type: array
+    minItems: 1
+    items:
+      $ref: "#/definitions/Product"
+
+definitions:
+
+  ISO2Country:
+    type: string
+    pattern: "^[A-Z]{2}$"
+    description: ISO 3166-1 alpha-2 country code (uppercase).
+
+  ISO3Currency:
+    type: string
+    pattern: "^[A-Z]{3}$"
+    description: ISO 4217 currency code (uppercase).
+
+  URI:
+    type: string
+    format: uri
+
+  Location:
+    type: object
+    additionalProperties: false
+    required:
+      - city
+      - country
+      - latitude
+      - longitude
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      region:
+        type: string
+      country:
+        $ref: "#/definitions/ISO2Country"
+      postal_code:
+        type: string
+      latitude:
+        type: number
+        minimum: -90
+        maximum: 90
+      longitude:
+        type: number
+        minimum: -180
+        maximum: 180
+
+  Reviews:
+    type: object
+    additionalProperties: false
+    properties:
+      score:
+        type: number
+        minimum: 0
+      count:
+        type: integer
+        minimum: 0
+      source:
+        type: string
+
+  DataFreshness:
+    type: object
+    additionalProperties: false
+    required:
+      - last_updated
+    properties:
+      last_updated:
+        type: string
+        format: date-time
+      source:
+        type: string
+
+  VariantAttributes:
+    type: object
+    additionalProperties: false
+    properties:
+      bed_type:
+        type: string
+      max_occupancy:
+        type: integer
+        minimum: 1
+      room_size_sqm:
+        type: number
+        minimum: 0
+      view_type:
+        type: string
+      refundable:
+        type: boolean
+
+  PolicySummary:
+    type: object
+    additionalProperties: false
+    properties:
+      cancellation:
+        type: string
+      payment:
+        type: string
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+
+  PriceInfo:
+    type: object
+    additionalProperties: false
+    properties:
+      pricing_model:
+        type: string
+        enum:
+          - per_night
+          - per_stay
+      tax_included:
+        type: boolean
+      fees_included:
+        type: boolean
+
+  PricingReference:
+    type: object
+    additionalProperties: false
+    properties:
+      quote_key:
+        type: string
+      offer_ref:
+        type: string
+      inventory_ref:
+        type: string
+
+  Variant:
+    type: object
+    additionalProperties: false
+    required:
+      - item_id
+      - title
+      - description
+      - url
+      - image_url
+      - price
+      - currency
+      - availability
+    properties:
+      item_id:
+        type: string
+      room_type_code:
+        type: string
+      rate_plan_code:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      url:
+        $ref: "#/definitions/URI"
+      image_url:
+        $ref: "#/definitions/URI"
+      additional_image_urls:
+        type: array
+        items:
+          $ref: "#/definitions/URI"
+      price:
+        type: number
+        minimum: 0
+      currency:
+        $ref: "#/definitions/ISO3Currency"
+      availability:
+        type: string
+        enum:
+          - in_stock
+          - out_of_stock
+          - pre_order
+          - backorder
+          - unknown
+      variant_attributes:
+        $ref: "#/definitions/VariantAttributes"
+      inclusions:
+        type: array
+        items:
           type: string
-          format: date-time
-          description: "Timestamp when the feed was generated (freshness signal)"
-        products:
-          type: array
-          items: 
-            $ref: '#/components/schemas/Product'
-    Product:
-      type: object
-      description: Hotel-level metadata mapped to ACP Product object
-      properties:
-        id:
+      policy_summary:
+        $ref: "#/definitions/PolicySummary"
+      requires_identity_for_benefits:
+        type: boolean
+      eligible_programs:
+        type: array
+        items:
           type: string
-          description: Unique, persistent hotel identifier (maps to property_id)
-        title:
+      sustainability_flags:
+        type: array
+        items:
           type: string
-          description: Display name of the property
-        description:
+      data_freshness:
+        $ref: "#/definitions/DataFreshness"
+      price_info:
+        $ref: "#/definitions/PriceInfo"
+      pricing_reference:
+        $ref: "#/definitions/PricingReference"
+
+  Product:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - title
+      - brand
+      - seller_name
+      - seller_url
+      - return_policy
+      - store_country
+      - target_countries
+      - location
+      - variants
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      brand:
+        type: string
+      seller_name:
+        type: string
+      seller_url:
+        $ref: "#/definitions/URI"
+      return_policy:
+        $ref: "#/definitions/URI"
+      store_country:
+        $ref: "#/definitions/ISO2Country"
+      target_countries:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/definitions/ISO2Country"
+      location:
+        $ref: "#/definitions/Location"
+      amenities:
+        type: array
+        items:
           type: string
-          description: Long-form property description
-        link:
+      experience_tags:
+        type: array
+        items:
           type: string
-          format: uri
-          description: Landing page URL for the hotel
-        image_link:
+      sustainability_flags:
+        type: array
+        items:
           type: string
-          format: uri
-          description: Primary hotel image
-        availability:
-          type: string
-          description: High-level availability required by ACP
-        brand:
-          type: string
-          description: Hotel chain/brand
-        enable_search:
-          type: boolean
-          description: Controls whether hotel is indexed/displayed by ChatGPT
-        enable_checkout:
-          type: boolean
-          description: Allows ChatGPT to initiate checkout (future use)
-        seller_tos:
-          type: string
-          format: uri
-          description: Terms of service URL
-        seller_privacy_policy:
-          type: string
-          format: uri
-          description: Merchant privacy policy
-        variants:
-          type: array
-          items:
-            $ref: '#/components/schemas/Variant'
-        location:
-          $ref: '#/components/schemas/Location'
-        amenities:
-          type: array
-          items:
-            type: string
-        images:
-          type: array
-          items:
-            type: string
-        persona_tags:
-          type: array
-          items:
-            type: string
-        sustainability_flags:
-          type: array
-          items:
-            type: string
-        data_freshness:
-          type: string
-          format: date-time
-          description: Last metadata update timestamp
-        star_rating:
-          type: number
-          description: Hotel quality score
-        review_score:
-          type: number
-          description: User rating
-        review_count:
-          type: number
-          description: Review volume
-        price_info:
-          $ref: '#/components/schemas/BasePriceInfo'
-      required:
-        - id
-        - title
-        - description
-        - location
-    Variant:
-      type: object
-      description: Represents a room type mapped to ACP Variant object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        description:
-          type: string
-        product_image_primary:
-          type: string
-          format: uri
-          description: Primary image for the room  
-        availability:
-          type: string
-        features:
-          type: array
-          items:
-            type: string
-        price_info:
-          $ref: '#/components/schemas/BasePriceInfo'
-        live_pricing_endpoint:
-          type: string
-          format: uri-template
-        view_type:
-          type: string
-        amenities:
-          type: array
-          items:
-            type: string
-        bed_type:
-          type: string
-        max_occupancy:
-          type: number
-        room_size_sqft:
-          type: number
-      required:
-        - id
-        - title
-        - description
-        - availability
-        - live_pricing_endpoint
-    Location:
-      type: object
-      properties:
-        address:
-          type: string
-        city:
-          type: string
-        country:
-          type: string
-        latitude:
-          type: number
-        longitude:
-          type: number
-      required:
-        - address
-        - city
-        - country
-        - latitude
-        - longitude
-        - price_info
-        - variants
-    BasePriceInfo:
-      type: object
-      description: Base price range for ranking before hydration
-      properties:
-        price_range:
-          type: object
-          properties:
-            low:
-              type: number
-            high:
-              type: number
-            currency:
-              type: string
-          required:
-            - low
-            - high
-            - currency
+      star_rating:
+        type: number
+        minimum: 0
+        maximum: 7
+      reviews:
+        $ref: "#/definitions/Reviews"
+      data_freshness:
+        $ref: "#/definitions/DataFreshness"
+      variants:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/definitions/Variant"
