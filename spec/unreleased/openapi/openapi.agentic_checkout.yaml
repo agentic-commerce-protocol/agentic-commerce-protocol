@@ -2651,6 +2651,10 @@ components:
         message:
           type: string
           description: Human-readable explanation of why the item was excluded.
+      example:
+        path: "$.line_items[0]"
+        reason: sale_item
+        message: "Sale items are excluded from discount codes."
 
     Sale:
       type: object
@@ -2680,7 +2684,13 @@ components:
           type: object
           additionalProperties:
             type: string
+            description: Metadata value.
           description: Arbitrary key-value pairs. Values MUST be strings.
+      example:
+        id: sale_winter2026
+        name: "Winter Sale"
+        start: "2026-01-15T00:00:00Z"
+        end: "2026-02-15T23:59:59Z"
 
     LineItemSale:
       type: object
@@ -2707,6 +2717,11 @@ components:
           # JSON Schema enforces this via dependentRequired: lowest_recent_amount → lowest_recent_period_days.
           # OpenAPI 3.0 has no equivalent; the constraint is documented in the description.
           description: "Days covered by lowest_recent_amount (default: 30). Required when lowest_recent_amount is present."
+      example:
+        id: sale_winter2026
+        compare_at_amount: 7500
+        lowest_recent_amount: 6000
+        lowest_recent_period_days: 30
 
     RejectedDiscount:
       type: object

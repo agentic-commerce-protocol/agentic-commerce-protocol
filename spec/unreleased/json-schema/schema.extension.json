@@ -166,6 +166,7 @@
             },
             {
               "type": "object",
+              "description": "Discount extension metadata overrides.",
               "properties": {
                 "id": {
                   "const": "discount"

@@ -284,7 +284,8 @@
     "line_item_discount_eligible": {
       "type": "boolean",
       "default": true,
-      "description": "Whether this item accepts code-based discount codes. When false, the item is excluded from ALL code-based discounts (blanket exclusion). When true (default), the item may accept discount codes but per-discount eligibility rules still apply. Does not affect automatic discounts."
+      "description": "Whether this item accepts code-based discount codes. When false, the item is excluded from ALL code-based discounts (blanket exclusion). When true (default), the item may accept discount codes but per-discount eligibility rules still apply. Does not affect automatic discounts.",
+      "example": true
     },
 
     "discount_error_codes": {

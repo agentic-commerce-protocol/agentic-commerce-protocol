@@ -2318,6 +2318,16 @@
           "items": { "$ref": "#/$defs/ExcludedItem" },
           "description": "Items excluded from this discount, with reasons."
         }
+      },
+      "example": {
+        "id": "disc_001",
+        "code": "SAVE20",
+        "coupon": {
+          "id": "coupon_abc",
+          "name": "20% Off",
+          "percent_off": 20
+        },
+        "amount": 1000
       }
     },
     "Sale": {
@@ -2350,9 +2360,15 @@
         },
         "metadata": {
           "type": "object",
-          "additionalProperties": { "type": "string" },
+          "additionalProperties": { "type": "string", "description": "Metadata value." },
           "description": "Arbitrary key-value pairs. Values MUST be strings."
         }
+      },
+      "example": {
+        "id": "sale_winter2026",
+        "name": "Winter Sale",
+        "start": "2026-01-15T00:00:00Z",
+        "end": "2026-02-15T23:59:59Z"
       }
     },
     "LineItemSale": {
@@ -2383,6 +2399,12 @@
       },
       "dependentRequired": {
         "lowest_recent_amount": ["lowest_recent_period_days"]
+      },
+      "example": {
+        "id": "sale_winter2026",
+        "compare_at_amount": 7500,
+        "lowest_recent_amount": 6000,
+        "lowest_recent_period_days": 30
       }
     },
     "ExcludedItem": {

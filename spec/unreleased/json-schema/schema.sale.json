@@ -35,12 +35,19 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "description": "Metadata string value."
           },
           "description": "Arbitrary key-value pairs. Values MUST be strings."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "id": "sale_winter2026",
+        "name": "Winter Sale",
+        "start": "2026-01-15T00:00:00Z",
+        "end": "2026-02-15T23:59:59Z"
+      }
     },
 
     "line_item_sale": {
@@ -71,13 +78,27 @@
       "dependentRequired": {
         "lowest_recent_amount": ["lowest_recent_period_days"]
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "example": {
+        "id": "sale_winter2026",
+        "compare_at_amount": 7500,
+        "lowest_recent_amount": 6000,
+        "lowest_recent_period_days": 30
+      }
     },
 
     "sales_response": {
       "type": "array",
       "items": { "$ref": "#/$defs/sale" },
-      "description": "Array of active sales for this checkout session. Ordering indicates presentation priority — first entry is most prominent/urgent."
+      "description": "Array of active sales for this checkout session. Ordering indicates presentation priority — first entry is most prominent/urgent.",
+      "example": [
+        {
+          "id": "sale_winter2026",
+          "name": "Winter Sale",
+          "start": "2026-01-15T00:00:00Z",
+          "end": "2026-02-15T23:59:59Z"
+        }
+      ]
     },
 
     "checkout_with_sale": {
@@ -87,6 +108,7 @@
         { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionBase" },
         {
           "type": "object",
+          "description": "Sale extension fields added to the checkout session.",
           "properties": {
             "sales": {
               "$ref": "#/$defs/sales_response",
@@ -94,7 +116,15 @@
             }
           }
         }
-      ]
+      ],
+      "example": {
+        "sales": [
+          {
+            "id": "sale_winter2026",
+            "name": "Winter Sale"
+          }
+        ]
+      }
     }
   }
 }
