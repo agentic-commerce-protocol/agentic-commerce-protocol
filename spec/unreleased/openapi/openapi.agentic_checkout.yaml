@@ -1251,7 +1251,6 @@ components:
         amount: 1600
         description: 20% off your order
         source: coupon
-      description: Information about a discount applied to the checkout or a specific item
     LineItem:
       type: object
       additionalProperties: false
