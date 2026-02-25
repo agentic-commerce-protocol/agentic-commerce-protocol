@@ -817,6 +817,11 @@ components:
           items: { $ref: "#/components/schemas/LineItem" }
         fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
         fulfillment_options:
+          description: |
+            Available fulfillment options for this checkout/order (e.g., shipping, digital).
+            These are the options offered to the buyer, not necessarily the final selection.
+            The order.status in webhook events reflects the actual fulfillment progress; e.g.,
+            shipped is only applicable when the order is fulfilled via physical shipping.
           type: array
           items:
             oneOf:
