@@ -65,6 +65,7 @@
           {
             "id": "card_tokenized",
             "name": "dev.acp.tokenized.card",
+            "display_name": "Credit Card",
             "version": "2026-01-22",
             "spec": "https://acp.dev/handlers/tokenized.card",
             "requires_delegate_payment": true,
@@ -966,6 +967,7 @@
           {
             "id": "card_tokenized",
             "name": "dev.acp.tokenized.card",
+            "display_name": "Credit Card",
             "version": "2026-01-22",
             "spec": "https://acp.dev/handlers/tokenized.card",
             "requires_delegate_payment": true,
