@@ -5,6 +5,13 @@ info:
   description: |
     Webhook receiver hosted by OpenAI to accept merchant order lifecycle events.
 
+    Requests are signed via the Merchant-Signature header (`t=<unix_seconds>,v1=<64_hex>`)
+    to prevent replay attacks (timestamp window) and to verify authenticity
+    and integrity (HMAC over payload with shared secret).
+    Signed payload is `timestamp + "." + raw_body`; HMAC-SHA256.
+    Reject with 401 if missing, malformed, timestamp out of window, or verification fails.
+    Recommended timestamp tolerance is 300 seconds.
+
     ## Migration Notes
 
     The `EventDataOrder` schema now composes the full `Order` schema from the
@@ -36,8 +43,11 @@ paths:
         - name: Merchant-Signature
           in: header
           required: true
-          description: HMAC signature header (e.g., Merchant_Name-Signature) over the raw request body
-          schema: { type: string }
+          description: t=<unix_seconds>,v1=<64_hex>. HMAC-SHA256(timestamp + "." + raw_body, secret). Return 401 if invalid.
+          schema:
+            type: string
+            pattern: "^t=\\d+,v1=[a-fA-F0-9]{64}$"
+            example: "t=1709123456,v1=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         - name: Request-Id
           in: header
           required: false
@@ -158,10 +168,35 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
         "401":
-          description: Invalid signature
+          description: Invalid or missing Merchant-Signature (malformed, replay, or verification failed).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                invalid_signature:
+                  summary: Verification failed
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Webhook signature verification failed."
+                missing_signature:
+                  summary: Header missing
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Missing Merchant-Signature header."
+                malformed_signature:
+                  summary: Bad format
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Merchant-Signature must be t=<timestamp>,v1=<64_hex>."
+                timestamp_expired:
+                  summary: Replay or clock skew
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Timestamp outside allowed window."
         "429":
           description: Rate limited
           content:
@@ -187,11 +222,11 @@ components:
       type: object
       additionalProperties: false
       properties:
-        type: 
+        type:
           type: string
           enum: [order_create, order_update]
           description: "Event type: order_create for new orders, order_update for changes to existing orders"
-        data: 
+        data:
           $ref: "#/components/schemas/EventDataOrder"
           description: "The order object associated with this event"
       required: [type, data]
@@ -212,13 +247,13 @@ components:
           type: string
           enum: [invalid_request, processing_error, service_unavailable]
           description: "High-level error category"
-        code: 
+        code:
           type: string
           description: "Specific error code for programmatic handling"
-        message: 
+        message:
           type: string
           description: "Human-readable error message"
-        param: 
+        param:
           type: string
           description: "JSONPath of the offending field if applicable"
       required: [type, code, message]
