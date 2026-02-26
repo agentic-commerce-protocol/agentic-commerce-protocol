@@ -3166,7 +3166,7 @@
             "in_progress",
             "expired"
           ],
-          "description": "Current status of the checkout session"
+          "description": "Session lifecycle state. incomplete: missing required fields. not_ready_for_payment: has items but not payable. in_progress: server processing. requires_escalation: needs non-programmatic intervention. authentication_required: auth (e.g. 3DS) needed. ready_for_payment: all requirements met. pending_approval: awaiting async approval. complete_in_progress: payment/order processing underway. completed: finalized, order created (terminal). canceled: canceled (terminal). expired: server timeout (terminal)."
         },
         "currency": {
           "type": "string",
