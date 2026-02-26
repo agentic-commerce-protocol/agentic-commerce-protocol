@@ -62,6 +62,147 @@
         "postal_code": "94102"
       }
     },
+    "PaymentMethodCrypto": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "x402-based crypto payment. PSP delegates verification to a facilitator and stores the signed payload until settlement.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "crypto"
+        },
+        "x402_payload": {
+          "$ref": "#/$defs/X402PaymentPayload"
+        }
+      },
+      "required": ["type", "x402_payload"],
+      "example": {
+        "type": "crypto",
+        "x402_payload": {
+          "x402Version": 2,
+          "accepted": {
+            "scheme": "exact",
+            "network": "eip155:8453",
+            "amount": 1000000,
+            "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+            "maxTimeoutSeconds": 3600
+          },
+          "payload": {
+            "signature": "0x...",
+            "authorization": {
+              "from": "0x...",
+              "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+              "value": "1000000",
+              "validAfter": "1770103150",
+              "validBefore": "1770362350",
+              "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+            }
+          }
+        }
+      }
+    },
+    "X402PaymentRequirements": {
+      "type": "object",
+      "description": "x402 PaymentRequirements (accepted). additionalProperties: true for forward compat with x402 evolution.",
+      "additionalProperties": true,
+      "properties": {
+        "scheme": { "type": "string", "description": "Payment scheme (e.g. exact)." },
+        "network": { "type": "string", "description": "Network in CAIP-2 format." },
+        "amount": { "type": "integer", "description": "Payment amount in atomic token units. Integer per ACP amount conventions; must match the semantic value in payload.authorization.value (which is string there for EIP-3009/uint256 range)." },
+        "asset": { "type": "string", "description": "Token contract address or asset identifier." },
+        "payTo": { "type": "string", "description": "Recipient address." },
+        "maxTimeoutSeconds": { "type": "integer", "description": "Maximum time allowed for payment." },
+        "extra": { "type": "object", "description": "Scheme-specific data (optional)." }
+      },
+      "required": ["scheme", "network", "amount", "asset", "payTo", "maxTimeoutSeconds"],
+      "example": {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": 1000000,
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+        "maxTimeoutSeconds": 3600
+      }
+    },
+    "X402Authorization": {
+      "type": "object",
+      "description": "x402 authorization (payload.authorization). additionalProperties: true for forward compat with x402 evolution.",
+      "additionalProperties": true,
+      "properties": {
+        "from": { "type": "string", "description": "Payer's wallet address." },
+        "to": { "type": "string", "description": "Recipient's wallet address." },
+        "value": { "type": "string", "description": "Payment amount in atomic units. String (not integer) because EIP-3009 and chain APIs use uint256, which can exceed JSON safe integer range (2^53); string avoids precision loss and matches on-chain representation." },
+        "validAfter": { "type": "string", "description": "Unix timestamp when authorization becomes valid." },
+        "validBefore": { "type": "string", "description": "Unix timestamp when authorization expires." },
+        "nonce": { "type": "string", "description": "32-byte nonce (hex) for replay protection." }
+      },
+      "required": ["from", "to", "value", "validAfter", "validBefore", "nonce"],
+      "example": {
+        "from": "0x...",
+        "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+        "value": "1000000",
+        "validAfter": "1770103150",
+        "validBefore": "1770362350",
+        "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
+    },
+    "X402Payload": {
+      "type": "object",
+      "description": "x402 payload (signature and authorization). additionalProperties: true for forward compat with x402 evolution.",
+      "additionalProperties": true,
+      "properties": {
+        "signature": { "type": "string", "description": "EIP-712 or Ed25519 signature." },
+        "authorization": { "$ref": "#/$defs/X402Authorization" }
+      },
+      "required": ["signature", "authorization"],
+      "example": {
+        "signature": "0x...",
+        "authorization": {
+          "from": "0x...",
+          "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+          "value": "1000000",
+          "validAfter": "1770103150",
+          "validBefore": "1770362350",
+          "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+        }
+      }
+    },
+    "X402PaymentPayload": {
+      "type": "object",
+      "description": "Signed x402 PaymentPayload (see https://github.com/coinbase/x402).",
+      "required": ["x402Version", "accepted", "payload"],
+      "properties": {
+        "x402Version": { "type": "integer", "description": "Protocol version (currently 2; schema allows other values for forward compatibility)." },
+        "accepted": { "$ref": "#/$defs/X402PaymentRequirements" },
+        "payload": { "$ref": "#/$defs/X402Payload" },
+        "resource": { "type": "object", "description": "ResourceInfo describing the resource being paid for (optional)." },
+        "extensions": { "type": "object", "description": "Protocol extensions (optional)." }
+      },
+      "additionalProperties": true,
+      "example": {
+        "x402Version": 2,
+        "accepted": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": 1000000,
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+          "maxTimeoutSeconds": 3600
+        },
+        "payload": {
+          "signature": "0x...",
+          "authorization": {
+            "from": "0x...",
+            "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+            "value": "1000000",
+            "validAfter": "1770103150",
+            "validBefore": "1770362350",
+            "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+          }
+        }
+      }
+    },
     "PaymentMethodCard": {
       "description": "Card payment method details including card number, expiration, and verification data",
       "type": "object",
@@ -235,10 +376,11 @@
       "description": "Fraud detection signal indicating detected risk patterns and recommended actions",
       "type": "object",
       "additionalProperties": false,
+      "description": "Risk signal from agent/upstream. type indicates the risk category; score and action guide PSP handling. card_testing = card fraud/testing; crypto_wallet_risk = wallet/replay/amount risk for crypto (e.g. nonce reuse, wallet reputation).",
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["card_testing"],
+          "enum": ["card_testing", "crypto_wallet_risk"],
           "description": "Type of risk signal detected"
         },
         "score": {
@@ -264,8 +406,11 @@
       "additionalProperties": false,
       "properties": {
         "payment_method": {
-          "$ref": "#/$defs/PaymentMethodCard",
-          "description": "The card payment method to tokenize for delegated use"
+          "oneOf": [
+            { "$ref": "#/$defs/PaymentMethodCard" },
+            { "$ref": "#/$defs/PaymentMethodCrypto" }
+          ],
+          "description": "Payment method to tokenize (card or crypto). Type is the discriminant (\"card\" | \"crypto\")."
         },
         "allowance": {
           "$ref": "#/$defs/Allowance",
@@ -390,7 +535,18 @@
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "idempotency_key_required", "idempotency_in_flight"],
+          "enum": [
+            "invalid_card",
+            "duplicate_request",
+            "idempotency_conflict",
+            "too_many_requests",
+            "idempotency_key_required",
+            "idempotency_in_flight",
+            "x402_invalid",
+            "x402_rejected",
+            "x402_network_unsupported",
+            "x402_settlement_failed"
+          ],
           "description": "Specific error code for programmatic handling"
         },
         "message": {
