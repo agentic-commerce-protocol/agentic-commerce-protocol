@@ -22,8 +22,19 @@
 - **Error.type** — added `unauthorized` (so 401 responses validate) and `internal_server_error` (so 500 responses have a distinct type).
 - **Error.code** — added `unauthorized`, `internal_server_error`, and `service_unavailable` (so all documented examples validate).
 
+### Forward compatibility (RFC)
+
+To avoid breaking clients when new error codes are added, the delegate payment RFC now includes explicit forward-compatibility guidance in **§4.2 Error**:
+
+- The `type` and `code` enums are **extensible**; new values MAY be added in future spec versions without a breaking change.
+- Implementations **MUST NOT** reject responses with unrecognized `type` or `code` and **SHOULD** fall back to generic error handling.
+- Strict enum validation of error responses is **NOT RECOMMENDED**.
+
+This aligns with intent traces (§7.2) and capability negotiation (§6.4, §7.3) and protects future additions (e.g. x402 or auth error codes).
+
 ### Files changed
 
 - `spec/unreleased/json-schema/schema.delegate_payment.json` — Error type and code enums
 - `spec/unreleased/openapi/openapi.delegate_payment.yaml` — Error type and code enums
 - `examples/unreleased/examples.delegate_payment.json` — added error examples for unauthorized, internal_server_error, service_unavailable
+- `rfcs/rfc.delegate_payment.md` — added **Forward compatibility for error codes** under §4.2
