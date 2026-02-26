@@ -899,6 +899,10 @@
           "type": "string",
           "description": "Handler name in reverse-DNS format (e.g., dev.acp.tokenized.card)"
         },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name for UI (e.g., Credit Card). Use when showing payment options to the buyer."
+        },
         "version": {
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -3656,6 +3660,171 @@
           "reason_code": "buyer_cancelled",
           "description": "Customer decided not to purchase"
         }
+      }
+    },
+    "DiscoveryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Well-known discovery document served at /.well-known/acp.json. Describes what the ACP platform supports at a high level. This is stable, deterministic information that does not vary per merchant or per session. Merchant-specific capabilities (payment methods, payment handlers) are negotiated inline via the capabilities object on POST /checkout_sessions.",
+      "properties": {
+        "protocol": {
+          "$ref": "#/$defs/DiscoveryProtocol"
+        },
+        "api_base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for the ACP REST API. Agents append resource paths to this URL (e.g., {api_base_url}/checkout_sessions)."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["rest", "mcp"]
+          },
+          "uniqueItems": true,
+          "description": "Transport bindings supported by this platform. \"rest\" indicates the REST API at api_base_url. \"mcp\" indicates a Model Context Protocol server is available (see SEP #135). New values are introduced in new API versions; agents MAY treat this enum as exhaustive for a given version."
+        },
+        "capabilities": {
+          "$ref": "#/$defs/DiscoveryCapabilities"
+        }
+      },
+      "required": ["protocol", "api_base_url", "transports", "capabilities"],
+      "example": {
+        "protocol": {
+          "name": "acp",
+          "version": "2026-01-30",
+          "supported_versions": ["2025-09-29", "2026-01-30"]
+        },
+        "api_base_url": "https://acp.stripe.com/api",
+        "transports": ["rest"],
+        "capabilities": {
+          "services": ["checkout"]
+        }
+      }
+    },
+    "DiscoveryCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Platform-level capabilities advertised in the well-known discovery document. Contains high-level feature declarations that are stable across all merchants on the platform.",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["checkout", "orders", "delegate_payment"]
+          },
+          "uniqueItems": true,
+          "description": "High-level services available on this platform. Indicates which ACP operations are implemented. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DiscoveryExtension"
+          },
+          "description": "Extensions the platform supports. These are high-level declarations of available extensions. Whether a specific extension is active for a given merchant or session is determined during checkout session creation."
+        },
+        "intervention_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds", "biometric", "address_verification"]
+          },
+          "uniqueItems": true,
+          "description": "Intervention types the platform supports. Actual availability for a specific session is negotiated via the capabilities object on POST /checkout_sessions. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
+        },
+        "supported_currencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{3}$",
+            "description": "ISO 4217 currency code in lowercase (e.g., \"usd\", \"eur\")"
+          },
+          "uniqueItems": true,
+          "description": "ISO 4217 currency codes supported by the platform. Individual merchants may support a subset of these currencies."
+        },
+        "supported_locales": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "BCP 47 locale tag (e.g., \"en-US\", \"fr-FR\")"
+          },
+          "uniqueItems": true,
+          "description": "BCP 47 locale tags supported by the platform for localized responses."
+        }
+      },
+      "required": ["services"],
+      "example": {
+        "services": ["checkout", "orders", "delegate_payment"],
+        "extensions": [{ "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" }],
+        "intervention_types": ["3ds"],
+        "supported_currencies": ["usd", "eur"],
+        "supported_locales": ["en-US"]
+      }
+    },
+    "DiscoveryProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Protocol identification and version information.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "acp",
+          "description": "Protocol identifier. Always \"acp\"."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The current (latest) API version supported by the platform, in YYYY-MM-DD format."
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "uniqueItems": true,
+          "description": "All API versions the platform currently supports, in chronological order (oldest first). Agents SHOULD use the API-Version header to request a specific version. The last element is always the latest supported version."
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the platform's ACP documentation."
+        }
+      },
+      "required": ["name", "version", "supported_versions"],
+      "example": {
+        "name": "acp",
+        "version": "2026-01-30",
+        "supported_versions": ["2025-09-29", "2026-01-30"],
+        "documentation_url": "https://agenticcommerce.dev"
+      }
+    },
+    "DiscoveryExtension": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "High-level extension declaration in the discovery document. Identifies the extension and provides a spec URL, but does not include session-level details like schema or extends fields.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Extension identifier (e.g., \"discount\", \"fulfillment\")."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension's specification document."
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the extension's JSON Schema definition for programmatic validation."
+        }
+      },
+      "required": ["name"],
+      "example": {
+        "name": "discount",
+        "spec": "https://agenticcommerce.dev/specs/discount",
+        "schema": "https://agenticcommerce.dev/schemas/discount.json"
       }
     },
     "Error": {

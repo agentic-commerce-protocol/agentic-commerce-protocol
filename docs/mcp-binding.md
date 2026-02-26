@@ -27,18 +27,21 @@ separate from the REST endpoint paths.
 
 ### Discovery
 
-ACP does not require a discovery profile for MCP. Capability negotiation
-happens inline (the agent sends `capabilities` in the create request, the
-merchant responds with the negotiated set), so there is no pre-session
-discovery phase. The MCP endpoint URL is communicated out-of-band, the same
-way REST endpoint URLs are communicated today (documentation, onboarding, API
-configuration).
+ACP provides a well-known discovery document (`/.well-known/acp.json`) that
+advertises platform capabilities, supported API versions, and available
+transports. When a platform supports MCP, the `transports` array in the
+discovery document includes `"mcp"`. Agents can check this field to determine
+whether to use REST or MCP before making any API calls.
+
+Capability negotiation for individual sessions still happens inline (the agent
+sends `capabilities` in the create request, the merchant responds with the
+negotiated set). The discovery document provides platform-level information
+only.
 
 The required `meta.api_version` field presumes the agent knows a compatible
-API version before its first tool call. Agents may obtain this from merchant
-documentation, or via the Discovery Capabilities mechanism
-([SEP #135](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/135))
-once available.
+API version before its first tool call. Agents can obtain this from the
+`protocol.supported_versions` array in `/.well-known/acp.json`, or from
+merchant documentation.
 
 ## Tool Definitions
 
