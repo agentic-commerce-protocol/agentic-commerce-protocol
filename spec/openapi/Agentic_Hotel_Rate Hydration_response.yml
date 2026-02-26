@@ -1,0 +1,163 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Hotel QuoteResponse Schema (Rate Hydration)"
+type: object
+additionalProperties: false
+required:
+  - quote_token
+  - expires_at
+  - item_id
+  - status
+  - pricing
+  - rate_terms
+  - reprice_required_at_checkout
+
+properties:
+
+  quote_token:
+    type: string
+    description: "Short-lived token representing the priced offer."
+
+  expires_at:
+    type: string
+    format: date-time
+    description: "Quote expiry timestamp (ISO-8601)."
+
+  item_id:
+    type: string
+    description: "Echo of the requested variant identifier."
+
+  status:
+    type: string
+    enum:
+      - OK
+      - CHANGED
+      - UNAVAILABLE
+      - ERROR
+    description: "Quote result status."
+
+  pricing:
+    type: object
+    additionalProperties: false
+    required:
+      - currency
+      - total_amount
+    properties:
+      currency:
+        type: string
+        pattern: "^[A-Z]{3}$"
+      pricing_model:
+        type: string
+        enum:
+          - per_night
+          - per_stay
+        default: per_stay
+      base_amount:
+        type: number
+        minimum: 0
+      tax_amount:
+        type: number
+        minimum: 0
+      fee_amount:
+        type: number
+        minimum: 0
+      total_amount:
+        type: number
+        minimum: 0
+      nightly:
+        type: array
+        description: "Optional nightly breakdown."
+        items:
+          type: object
+          additionalProperties: false
+          required:
+            - date
+            - amount
+          properties:
+            date:
+              type: string
+              format: date
+            amount:
+              type: number
+              minimum: 0
+      tax_included:
+        type: boolean
+      fees_included:
+        type: boolean
+
+  rate_terms:
+    type: object
+    additionalProperties: false
+    required:
+      - refundable
+    properties:
+      refundable:
+        type: boolean
+      cancellation_policy:
+        type: string
+      payment_policy:
+        type: string
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+
+  inclusions:
+    type: array
+    items:
+      type: string
+    description: "Optional rate inclusions."
+
+  benefits:
+    type: array
+    items:
+      type: string
+    description: "Loyalty or corporate benefits applied."
+
+  required_at_checkout:
+    type: object
+    additionalProperties: false
+    description: "Indicates what additional info is required."
+    properties:
+      guest_details:
+        type: boolean
+      special_requests_optional:
+        type: boolean
+      payment_instrument:
+        type: boolean
+
+  reprice_required_at_checkout:
+    type: boolean
+    description: "Whether revalidation must occur at checkout."
+
+  warnings:
+    type: array
+    items:
+      type: string
+
+  errors:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        field:
+          type: string
+
+  provider_reference:
+    type: object
+    additionalProperties: false
+    description: "Supplier reference data."
+    properties:
+      supplier:
+        type: string
+      quote_id:
+        type: string
+      rate_key:
+        type: string

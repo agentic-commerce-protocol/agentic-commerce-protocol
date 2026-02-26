@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hotel QuoteResponse Schema (Rate Hydration) — Draft-07",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "quote_token",
+    "expires_at",
+    "item_id",
+    "status",
+    "pricing",
+    "rate_terms",
+    "reprice_required_at_checkout"
+  ],
+  "properties": {
+    "quote_token": {
+      "type": "string",
+      "description": "Short-lived token representing the priced offer. Can be bound into checkout."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Quote expiry timestamp (ISO-8601)."
+    },
+    "item_id": {
+      "type": "string",
+      "description": "Echo of the requested variant identifier."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["OK", "CHANGED", "UNAVAILABLE", "ERROR"],
+      "description": "Quote result status."
+    },
+    "pricing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currency", "total_amount"],
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency."
+        },
+        "pricing_model": {
+          "type": "string",
+          "enum": ["per_night", "per_stay"],
+          "default": "per_stay",
+          "description": "Interpretation of the quoted amounts."
+        },
+        "base_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Base room amount excluding taxes and fees."
+        },
+        "tax_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total taxes amount."
+        },
+        "fee_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total fees amount."
+        },
+        "total_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total payable amount at quote time (subject to revalidation)."
+        },
+        "nightly": {
+          "type": "array",
+          "description": "Optional nightly breakdown for transparency.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["date", "amount"],
+            "properties": {
+              "date": { "type": "string", "format": "date" },
+              "amount": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "tax_included": {
+          "type": "boolean",
+          "description": "Whether taxes are included in base/total."
+        },
+        "fees_included": {
+          "type": "boolean",
+          "description": "Whether fees are included in base/total."
+        }
+      }
+    },
+    "rate_terms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["refundable"],
+      "description": "Catalog-safe summary of key terms (not the legal contract).",
+      "properties": {
+        "refundable": { "type": "boolean" },
+        "cancellation_policy": { "type": "string" },
+        "payment_policy": { "type": "string" },
+        "check_in_time": { "type": "string" },
+        "check_out_time": { "type": "string" }
+      }
+    },
+    "inclusions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional inclusions (e.g., breakfast_included, wifi_included)."
+    },
+    "benefits": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional loyalty/corporate benefits applied or available."
+    },
+    "required_at_checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Indicates what additional information is required to complete checkout.",
+      "properties": {
+        "guest_details": { "type": "boolean" },
+        "special_requests_optional": { "type": "boolean" },
+        "payment_instrument": { "type": "boolean" }
+      }
+    },
+    "reprice_required_at_checkout": {
+      "type": "boolean",
+      "description": "Whether revalidation/reprice must occur at checkout execution boundary."
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Non-fatal warnings for the agent to communicate."
+    },
+    "errors": {
+      "type": "array",
+      "description": "Optional machine-readable errors (present when status=ERROR).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "field": { "type": "string" }
+        }
+      }
+    },
+    "provider_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional supplier/CRS references useful for support and downstream booking translation.",
+      "properties": {
+        "supplier": { "type": "string" },
+        "quote_id": { "type": "string" },
+        "rate_key": { "type": "string" }
+      }
+    }
+  }
+}
