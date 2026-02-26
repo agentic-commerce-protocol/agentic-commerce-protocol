@@ -25,7 +25,8 @@
       "currency": "usd",
       "checkout_session_id": "csn_01HV3P3XYZ9ABC",
       "merchant_id": "acme_store",
-      "expires_at": "2025-10-09T07:20:50.52Z"
+      "expires_at": "2025-10-09T07:20:50.52Z",
+      "order_id": "ord_abc123"
     },
     "billing_address": {
       "name": "Ada Lovelace",
@@ -34,7 +35,9 @@
       "city": "San Francisco",
       "state": "CA",
       "country": "US",
-      "postal_code": "94131"
+      "postal_code": "94131",
+      "email": "ada@example.com",
+      "phone": "+14155551234"
     },
     "risk_signals": [
       {
@@ -51,6 +54,7 @@
   "delegate_payment_success_response": {
     "id": "vt_01J8Z3WXYZ9ABC",
     "created": "2025-09-29T11:00:00Z",
+    "expires_at": "2025-10-09T07:20:50.52Z",
     "metadata": {
       "source": "agent_checkout",
       "merchant_id": "acme_store",

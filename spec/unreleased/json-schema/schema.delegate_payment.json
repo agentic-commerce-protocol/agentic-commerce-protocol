@@ -42,6 +42,17 @@
           "type": "string",
           "maxLength": 20,
           "description": "ZIP or postal code"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 256,
+          "description": "Optional billing email (receipts, 3DS, fraud)."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Optional billing phone (fraud, 3DS)."
         }
       },
       "required": [
@@ -160,7 +171,8 @@
         "card_number_type",
         "number",
         "display_card_funding_type",
-        "metadata"
+        "metadata",
+        "virtual"
       ],
       "example": {
         "type": "card",
@@ -212,6 +224,10 @@
           "type": "string",
           "format": "date-time",
           "description": "ISO 8601 timestamp when this allowance expires"
+        },
+        "order_id": {
+          "type": "string",
+          "description": "Optional merchant order identifier for correlation."
         }
       },
       "required": [
@@ -353,6 +369,11 @@
           "format": "date-time",
           "description": "ISO 8601 timestamp when the token was created"
         },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the token becomes invalid; echoes allowance.expires_at for merchant convenience."
+        },
         "metadata": {
           "type": "object",
           "description": "Metadata echoed from the request plus system-added fields",
@@ -390,7 +411,7 @@
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "idempotency_key_required", "idempotency_in_flight"],
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "unsupported_api_version", "missing_api_version", "idempotency_key_required", "idempotency_in_flight"],
           "description": "Specific error code for programmatic handling"
         },
         "message": {
