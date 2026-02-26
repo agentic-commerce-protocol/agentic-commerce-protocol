@@ -1,0 +1,230 @@
+{
+  "create_authentication_session_request_minimal": {
+    "merchant_id": "merchant_abc123",
+    "payment_method": {
+      "type": "card",
+      "number": "4917610000000000",
+      "exp_month": "03",
+      "exp_year": "2030",
+      "name": "Jane Doe"
+    },
+    "amount": {
+      "value": 1000,
+      "currency": "EUR"
+    }
+  },
+  "create_authentication_session_request_with_channel_and_acquirer_details": {
+    "merchant_id": "merchant_abc123",
+    "acquirer_details": {
+      "acquirer_bin": "412345",
+      "acquirer_country": "US",
+      "acquirer_merchant_id": "123456789012345",
+      "merchant_name": "Example Merchant Inc",
+      "requestor_id": "REQ_12345"
+    },
+    "payment_method": {
+      "type": "card",
+      "number": "4917610000000000",
+      "exp_month": "03",
+      "exp_year": "2030",
+      "name": "Jane Doe"
+    },
+    "amount": {
+      "value": 1000,
+      "currency": "EUR"
+    },
+    "checkout_session_id": "checkout_session_123",
+    "channel": {
+      "type": "browser",
+      "browser": {
+        "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "ip_address": "192.168.1.1",
+        "javascript_enabled": true,
+        "language": "en-US",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "color_depth": 24,
+        "java_enabled": false,
+        "screen_height": 1080,
+        "screen_width": 1920,
+        "timezone_offset": 0
+      }
+    },
+    "flow_preference": {
+      "type": "challenge",
+      "challenge": {
+        "type": "preferred"
+      }
+    },
+    "challenge_notification_url": "https://agent.example.com/3ds/challenge-callback",
+    "shopper_details": {
+      "name": "Jane Doe",
+      "email": "shopper@example.com",
+      "phone_number": "15551234567",
+      "address": {
+        "name": "Jane Doe",
+        "line_one": "123 Main Street",
+        "line_two": "Apt 4B",
+        "city": "Amsterdam",
+        "state": "NH",
+        "country": "NL",
+        "postal_code": "1012 AB"
+      }
+    }
+  },
+  "create_authentication_session_response_fingerprint_required": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "action_required",
+    "action": {
+      "type": "fingerprint",
+      "fingerprint": {
+        "three_ds_method_url": "https://acs.issuer.com/3dsmethod",
+        "three_ds_server_trans_id": "abc-123-def"
+      }
+    }
+  },
+  "create_authentication_session_response_pending": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "pending"
+  },
+  "create_authentication_session_response_not_supported": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "not_supported"
+  },
+  "authenticate_request_fingerprint_success": {
+    "fingerprint_completion": "Y"
+  },
+  "authenticate_request_fingerprint_timeout": {
+    "fingerprint_completion": "N"
+  },
+  "authenticate_request_fingerprint_unavailable": {
+    "fingerprint_completion": "U"
+  },
+  "authenticate_request_with_deferred_channel": {
+    "fingerprint_completion": "Y",
+    "channel": {
+      "type": "browser",
+      "browser": {
+        "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "ip_address": "192.168.1.1",
+        "javascript_enabled": true,
+        "language": "en-US",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "color_depth": 24,
+        "java_enabled": false,
+        "screen_height": 1080,
+        "screen_width": 1920,
+        "timezone_offset": 0
+      }
+    },
+    "challenge_notification_url": "https://agent.example.com/3ds/challenge-callback"
+  },
+  "authenticate_response_frictionless_authenticated": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "authenticated"
+  },
+  "authenticate_response_frictionless_attempted": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "attempted"
+  },
+  "authenticate_response_challenge_required": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "action_required",
+    "action": {
+      "type": "challenge",
+      "challenge": {
+        "acs_url": "https://acs.issuer.com/challenge",
+        "acs_trans_id": "xyz-789",
+        "three_ds_server_trans_id": "abc-123-def",
+        "message_version": "2.2.0"
+      }
+    }
+  },
+  "authenticate_response_not_authenticated": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "not_authenticated"
+  },
+  "authenticate_response_rejected": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "rejected"
+  },
+  "authenticate_response_expired": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "expired"
+  },
+  "retrieve_session_response_authenticated": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "authenticated",
+    "authentication_result": {
+      "trans_status": "Y",
+      "electronic_commerce_indicator": "05",
+      "three_ds_cryptogram": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
+      "transaction_id": "c4e59ceb-a382-4d6a-bc87-385d591fa09d",
+      "three_ds_server_trans_id": "6edcc246-23ee-4e94-ac5d-8ae620bea7d9",
+      "version": "2.2.0",
+      "authentication_value": "CAVV_VALUE"
+    }
+  },
+  "retrieve_session_response_attempted": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "attempted",
+    "authentication_result": {
+      "trans_status": "A",
+      "electronic_commerce_indicator": "06",
+      "three_ds_cryptogram": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
+      "transaction_id": "b3d48bea-a271-4c5a-ab76-274c480ea98c",
+      "three_ds_server_trans_id": "5dcbb135-22dd-4d83-ab4d-7ad51fbf6b8e",
+      "version": "2.2.0",
+      "authentication_value": "CAVV_VALUE_ATTEMPTED"
+    }
+  },
+  "retrieve_session_response_not_authenticated": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "not_authenticated",
+    "authentication_result": {
+      "trans_status": "N",
+      "trans_status_reason": "01",
+      "electronic_commerce_indicator": "07",
+      "transaction_id": "3022b509-391e-4c25-a225-f37e062843a5",
+      "three_ds_server_trans_id": "87a357a1-faee-4cd1-b3cf-ea2c704bf073",
+      "version": "2.2.0",
+      "cardholder_info": "Please contact your bank's customer support."
+    }
+  },
+  "retrieve_session_response_rejected": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "rejected",
+    "authentication_result": {
+      "trans_status": "R",
+      "trans_status_reason": "02",
+      "transaction_id": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "three_ds_server_trans_id": "9f8e7d6c-5b4a-3c2d-1e0f-9a8b7c6d5e4f",
+      "version": "2.2.0",
+      "cardholder_info": "Transaction rejected by issuer."
+    }
+  },
+  "retrieve_session_response_challenge_abandoned": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "challenge_abandoned",
+    "authentication_result": {
+      "trans_status": "U",
+      "transaction_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "three_ds_server_trans_id": "f0e1d2c3-b4a5-6789-0abc-def123456789",
+      "version": "2.2.0"
+    }
+  },
+  "retrieve_session_response_expired": {
+    "authentication_session_id": "auth_session_abc123",
+    "status": "expired"
+  },
+  "error_invalid_card": {
+    "type": "invalid_request",
+    "code": "invalid_card",
+    "message": "Invalid expiry date (exp_month or exp_year)",
+    "param": "$.payment_method.exp_month"
+  },
+  "error_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Same Idempotency-Key used with different parameters"
+  }
+}
