@@ -20,4 +20,4 @@ Adds first-class support for time-bound products (e.g. flight offers, booking ho
 - `spec/unreleased/openapi/openapi.agentic_checkout.yaml` — LineItem `valid_until`, availability_status enum, MessageError code enum
 - `spec/unreleased/json-schema/schema.agentic_checkout.json` — same
 - `rfcs/rfc.agentic_checkout.md` — Data model extract, new §5.1, Message (error) codes
-- `examples/unreleased/examples.agentic_checkout.json` — new examples `checkout_session_response_time_bound_offer`, `checkout_session_message_offer_expired`
+- `examples/unreleased/examples.agentic_checkout.json` — new examples `checkout_session_response_time_bound_offer`, `checkout_session_response_with_offer_expired_message`
