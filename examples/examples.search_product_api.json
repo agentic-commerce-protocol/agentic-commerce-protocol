@@ -1,0 +1,57 @@
+{
+  "product_id": "PROD-1001",
+  "title": "Wireless Noise-Cancelling Headphones",
+  "description": "Over-ear Bluetooth headphones with active noise cancellation and up to 30 hours battery life.",
+  "brand": "Acme Audio",
+  "category": "Electronics > Audio > Headphones",
+  "sku": "AA-WH-NC30",
+  "price": {
+    "amount": 199.99,
+    "currency": "USD",
+    "original_amount": 249.99,
+    "discount_percentage": 20
+  },
+  "availability": {
+    "status": "in_stock",
+    "quantity": 125
+  },
+  "images": [
+    {
+      "url": "https://example.com/images/prod-1001-1.jpg",
+      "alt_text": "Wireless Noise-Cancelling Headphones — Front View"
+    },
+    {
+      "url": "https://united-sapphire-sxj4vcs9x4.edgeone.app/download.jpeg",
+      "alt_text": "Folded Wireless Headphones"
+    }
+  ],
+  "attributes": {
+    "connectivity": "Bluetooth 5.2",
+    "battery_life": "30 hours",
+    "color": "Matte Black",
+    "weight": "260g",
+    "warranty": "2 years"
+  },
+  "ratings": {
+    "average_rating": 4.5,
+    "review_count": 542
+  },
+  "shipping": {
+    "free_shipping": true,
+    "estimated_delivery_days": "3-5"
+  },
+  "offers": [
+    {
+      "offer_id": "OFF-SAVE20",
+      "type": "percentage_discount",
+      "value": 20,
+      "conditions": "Save 20% with code SAVE20 at checkout.",
+      "valid_until": "2026-03-31"
+    }
+  ],
+  "merchant": {
+    "id": "MERCHANT-ACME123",
+    "name": "Acme Electronics Store",
+    "rating": 4.6
+  }
+}
