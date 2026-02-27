@@ -1,0 +1,104 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: On-chain eligibility discount where a token holder receives a percentage discount verified by an external attestation provider. The discount code is issued after verifying the buyer's wallet holds qualifying tokens on-chain. Per-item allocations distribute the discount across line items.",
+
+  "request": {
+    "line_items": [
+      {"id": "item_coffee_beans", "quantity": 1},
+      {"id": "item_mug", "quantity": 2}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["INSR-A7K3M"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_onchain_001",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_coffee_beans"},
+        "name": "Single Origin Coffee Beans (12oz)",
+        "quantity": 1,
+        "unit_amount": 1800,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 1800},
+          {"type": "items_discount", "display_text": "Token Holder Discount", "amount": 270},
+          {"type": "total", "display_text": "Total", "amount": 1530}
+        ]
+      },
+      {
+        "id": "li_2",
+        "item": {"id": "item_mug"},
+        "name": "Ceramic Pour-Over Mug",
+        "quantity": 2,
+        "unit_amount": 1400,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 2800},
+          {"type": "items_discount", "display_text": "Token Holder Discount", "amount": 420},
+          {"type": "total", "display_text": "Total", "amount": 2380}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": ["INSR-A7K3M"],
+      "applied": [
+        {
+          "id": "di_onchain_a7k3m",
+          "code": "INSR-A7K3M",
+          "coupon": {
+            "id": "coupon_token_holder",
+            "name": "Token Holder Discount (15% off)",
+            "percent_off": 15,
+            "duration": "once"
+          },
+          "amount": 690,
+          "method": "each",
+          "priority": 10,
+          "allocations": [
+            {"path": "$.line_items[0]", "amount": 270},
+            {"path": "$.line_items[1]", "amount": 420}
+          ]
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 500}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 4600},
+      {"type": "items_discount", "display_text": "Token Holder Discount (15% off)", "amount": 690},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 3910},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 500},
+      {"type": "total", "display_text": "Total", "amount": 4410}
+    ],
+    "messages": [],
+    "links": []
+  }
+}
