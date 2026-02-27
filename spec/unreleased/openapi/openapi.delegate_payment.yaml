@@ -73,6 +73,7 @@ paths:
                     state: CA
                     country: US
                     postal_code: "12345"
+                    phone_number: "+15552003434"
                   risk_signals:
                     - type: card_testing
                       score: 10
@@ -509,6 +510,9 @@ components:
           type: string
           maxLength: 20
           description: ZIP or postal code
+        phone_number:
+          type: string
+          description: Contact phone number. E.164 format recommended (e.g., +15551234567).
       required:
         - name
         - line_one
@@ -524,6 +528,7 @@ components:
         state: CA
         country: US
         postal_code: "94102"
+        phone_number: "+15552003434"
       description: Physical address for billing or shipping purposes
     Allowance:
       type: object
