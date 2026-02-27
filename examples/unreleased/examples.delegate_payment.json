@@ -34,7 +34,8 @@
       "city": "San Francisco",
       "state": "CA",
       "country": "US",
-      "postal_code": "94131"
+      "postal_code": "94131",
+      "phone_number": "+15552003434"
     },
     "risk_signals": [
       {
