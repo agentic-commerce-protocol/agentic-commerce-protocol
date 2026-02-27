@@ -3,11 +3,11 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CLA](https://img.shields.io/badge/CLA-Required-red.svg)](legal/cla/)
 [![Maintained by](https://img.shields.io/badge/Maintained%20by-OpenAI%20%26%20Stripe-00ADD8.svg)](MAINTAINERS.md)
-[![Status](https://img.shields.io/badge/Status-Draft-yellow.svg)](changelog/)
+[![Status](https://img.shields.io/badge/Status-Beta-blue.svg)](changelog/)
 
 The **Agentic Commerce Protocol (ACP)** is an interaction model and open standard for connecting buyers, their AI agents, and businesses to complete purchases seamlessly.
 
-The specification is [maintained](MAINTAINERS.md) by **OpenAI** and **Stripe** and is currently in `draft`.
+The specification is [maintained](MAINTAINERS.md) by **OpenAI** and **Stripe** and is currently in `beta`.
 
 - **For businesses** - Reach more customers. Sell to high-intent buyers by making your products and services available for purchase through AI agents—all while using your existing commerce infrastructure.
 - **For AI Agents** - Embed commerce into your application. Let your users discover and transact directly with businesses in your application, without being the merchant of record.
@@ -19,55 +19,45 @@ Learn more at [agenticcommerce.dev](https://agenticcommerce.dev).
 
 ## 📦 Repo Structure
 
-```plaintext
-<repo-root>/
-├── rfcs/
-│   └── rfc.*.md
-│
-├── spec/
-│   ├── 2025-09-29/              # Initial release
-│   │   ├── openapi/
-│   │   │   └── openapi.*.yaml
-│   │   └── json-schema/
-│   │       └── schema.*.json
-│   ├── 2025-12-12/              # Breaking fulfillment changes
-│   │   ├── openapi/
-│   │   └── json-schema/
-│   ├── unreleased/              # Current development
-│   │   ├── openapi/
-│   │   └── json-schema/
-│   └── draft/                   # Draft specifications
-│
-├── examples/
-│   ├── 2025-09-29/              # Examples for initial release
-│   ├── 2025-12-12/              # Examples for 2025-12-12
-│   ├── unreleased/              # Examples for unreleased features
-│   └── draft/
-│
-├── changelog/
-│   ├── 2025-09-29.md
-│   ├── 2025-12-12.md
-│   └── unreleased.md
-│
-├── docs/
-│   ├── governance.md
-│   ├── principles-mission.md
-│   └── sep-guidelines.md
-│
-├── legal/
-│   └── cla/
-│       ├── INDIVIDUAL.md
-│       ├── CORPORATE.md
-│       ├── SIGNATORIES.md
-│       ├── INDIVIDUAL_PROCESS.md
-│       └── CORPORATE_PROCESS.md
-│
-├── MAINTAINERS.md
-├── CONTRIBUTING.md
-├── CODE_OF_CONDUCT.md
-├── LICENSE
-└── README.md
+```
+rfcs/
+├── rfc.agentic_checkout.md
+├── rfc.capability_negotiation.md
+├── rfc.payment_handlers.md
+├── rfc.seller_backed_payment_handler.md
+├── rfc.extensions.md
+├── rfc.discount_extension.md
+└── ...
 
+spec/
+├── 2025-09-29/              # Initial release
+├── 2025-12-12/              # Fulfillment enhancements
+├── 2026-01-16/              # Capability negotiation
+├── 2026-01-30/              # Extensions, discounts, payment handlers
+└── unreleased/              # Current development
+
+examples/
+├── 2025-09-29/
+├── 2025-12-12/
+├── 2026-01-16/
+├── 2026-01-30/
+└── unreleased/
+
+changelog/
+├── 2025-09-29.md
+├── 2025-12-12.md
+├── 2026-01-30.md
+└── unreleased/              # Individual changelog entries (current development)
+
+docs/
+├── governance.md
+├── principles-mission.md
+└── sep-guidelines.md
+
+legal/cla/
+├── INDIVIDUAL.md
+├── CORPORATE.md
+└── SIGNATORIES.md
 ```
 ​
 ---
@@ -77,9 +67,9 @@ Learn more at [agenticcommerce.dev](https://agenticcommerce.dev).
 | Spec Type          | Latest Stable                                        | Description                                                        |
 | ------------------ | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | **RFC (Markdown)** | [rfcs/](rfcs/)                                       | Human-readable design doc with rationale, flows, and rollout plan. |
-| **OpenAPI (YAML)** | [spec/2026-01-16/openapi/](spec/2026-01-16/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
-| **JSON Schema**    | [spec/2026-01-16/json-schema/](spec/2026-01-16/json-schema/) | Data models for payloads, events, and reusable objects.    |
-| **Examples**       | [examples/2026-01-16/](examples/2026-01-16/)         | Sample requests, responses.                                        |
+| **OpenAPI (YAML)** | [spec/2026-01-30/openapi/](spec/2026-01-30/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
+| **JSON Schema**    | [spec/2026-01-30/json-schema/](spec/2026-01-30/json-schema/) | Data models for payloads, events, and reusable objects.    |
+| **Examples**       | [examples/2026-01-30/](examples/2026-01-30/)         | Sample requests, responses.                                        |
 | **Changelog**      | [changelog/](changelog/)                             | API version history and breaking changes.                          |
 
 ---
@@ -94,7 +84,6 @@ ACP uses **date-based versioning** in `YYYY-MM-DD` format. Each version represen
 | --------- | ------- |
 | `spec/<version>/` | Complete spec snapshot for a released version |
 | `spec/unreleased/` | Current development (not yet released) |
-| `spec/draft/` | Experimental specifications under review |
 | `examples/<version>/` | Examples matching each spec version |
 | `changelog/<version>.md` | Release notes for each version |
 
@@ -115,12 +104,12 @@ ACP has been **first implemented by both OpenAI and Stripe**, providing producti
 
 To start building with ACP:
 
-1. Review this repo's [OpenAPI specs](spec/2026-01-16/openapi/) and [JSON Schemas](spec/2026-01-16/json-schema/) for the latest stable version.
+1. Review this repo's [OpenAPI specs](spec/2026-01-30/openapi/) and [JSON Schemas](spec/2026-01-30/json-schema/) for the latest stable version.
 2. Choose a reference implementation:
    - Use OpenAI's implementation to integrate with ChatGPT and other AI agent surfaces.
    - Use Stripe's implementation to leverage its payment and merchant tooling.
 3. Follow the guides provided in the linked documentation.
-4. Test using the [examples](examples/2026-01-16/) provided in this repo.
+4. Test using the [examples](examples/2026-01-30/) provided in this repo.
 
 ---
 
@@ -128,8 +117,8 @@ To start building with ACP:
 
 | Area                  | Resource                                                                                                               |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Checkout API Spec     | [spec/2026-01-16/openapi/openapi.agentic_checkout.yaml](spec/2026-01-16/openapi/openapi.agentic_checkout.yaml)         |
-| Delegate Payment Spec | [spec/2026-01-16/openapi/openapi.delegate_payment.yaml](spec/2026-01-16/openapi/openapi.delegate_payment.yaml)         |
+| Checkout API Spec     | [spec/2026-01-30/openapi/openapi.agentic_checkout.yaml](spec/2026-01-30/openapi/openapi.agentic_checkout.yaml)         |
+| Delegate Payment Spec | [spec/2026-01-30/openapi/openapi.delegate_payment.yaml](spec/2026-01-30/openapi/openapi.delegate_payment.yaml)         |
 | Governance            | [docs/governance.md](docs/governance.md)                                                                               |
 | Project Principles    | [docs/principles-mission.md](docs/principles-mission.md)                                                               |
 | SEP Guidelines        | [docs/sep-guidelines.md](docs/sep-guidelines.md)                                                                       |
@@ -141,9 +130,18 @@ To start building with ACP:
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 - Branching model
-- Pull request guidelines
+- Pull request templates and guidelines
 - Spec versioning and review process
 - Community guidelines
+
+### Pull Request Templates
+
+When creating a PR, choose the appropriate template:
+
+- **[SEP Proposal](.github/PULL_REQUEST_TEMPLATE/sep-proposal.md)** - For major protocol changes, breaking changes, or process changes
+- **[Minor Improvement](.github/PULL_REQUEST_TEMPLATE/minor-improvement.md)** - For documentation fixes, bug fixes, or tooling improvements
+
+See [docs/governance.md](docs/governance.md) for guidance on what requires a SEP.
 
 ### Contributor License Agreement (CLA)
 
@@ -158,7 +156,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 - Updated OpenAPI / JSON Schemas (if applicable)
 - New or updated examples
-- Changelog entry in `changelog/unreleased.md`
+- Changelog entry file in `changelog/unreleased/` (see [CONTRIBUTING.md](CONTRIBUTING.md) for details)
 
 ---
 

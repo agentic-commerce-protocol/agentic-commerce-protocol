@@ -66,8 +66,9 @@
           "type": "string"
         },
         "quantity": {
-          "type": "integer",
-          "minimum": 1
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
         }
       },
       "required": ["id", "quantity"]
@@ -324,20 +325,6 @@
         }
       },
       "required": ["id", "checkout_session_id", "permalink_url"]
-    },
-    "Refund": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["store_credit", "original_payment"]
-        },
-        "amount": {
-          "type": "integer"
-        }
-      },
-      "required": ["type", "amount"]
     },
     "CheckoutSessionBase": {
       "type": "object",

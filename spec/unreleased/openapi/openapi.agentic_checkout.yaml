@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: "unreleased"
+  version: unreleased
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -12,11 +12,11 @@ security:
 tags:
   - name: CheckoutSessions
     description: Create and manage checkout sessions
-
 paths:
   /checkout_sessions:
     post:
-      tags: [CheckoutSessions]
+      tags:
+        - CheckoutSessions
       summary: Create a checkout session
       operationId: createCheckoutSession
       description: |
@@ -46,68 +46,83 @@ paths:
                 summary: Single item; no fulfillment details
                 value:
                   items:
-                    - id: "item_123"
+                    - id: item_123
                       quantity: 1
               with_address:
                 summary: Single item with shipping address
                 value:
                   items:
-                    - id: "item_456"
+                    - id: item_456
                       quantity: 1
                   fulfillment_details:
-                    name: "test"
+                    name: test
                     phone_number: "15551234567"
-                    email: "test@example.com"
+                    email: test@example.com
                     address:
-                      name: "test"
-                      line_one: "555 Golden Gate Avenue"
-                      line_two: "Apt 401"
-                      city: "San Francisco"
-                      state: "CA"
-                      country: "US"
+                      name: test
+                      line_one: 555 Golden Gate Avenue
+                      line_two: Apt 401
+                      city: San Francisco
+                      state: CA
+                      country: US
                       postal_code: "94102"
               with_first_touch_attribution:
                 summary: With first-touch affiliate attribution
                 value:
                   items:
-                    - id: "item_123"
+                    - id: item_123
                       quantity: 1
                   affiliate_attribution:
-                    provider: "impact.com"
-                    token: "atp_01J8Z3WXYZ9ABC"
-                    publisher_id: "pub_123"
-                    touchpoint: "first"
+                    provider: impact.com
+                    token: atp_01J8Z3WXYZ9ABC
+                    publisher_id: pub_123
+                    touchpoint: first
       responses:
         "201":
           description: Created
           headers:
             Idempotency-Key:
               description: Echo of the request idempotency key
-              schema: { type: string }
+              schema:
+                type: string
+            Idempotent-Replayed:
+              description: true when the response is a cached replay of a previous request with the same Idempotency-Key
+              required: false
+              schema:
+                type: string
+                enum:
+                  - "true"
             Request-Id:
               description: Echo of the request correlation id
-              schema: { type: string }
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CheckoutSession"
-        "4XX":
+        "400":
+          $ref: "#/components/responses/IdempotencyKeyRequired"
+        "409":
+          $ref: "#/components/responses/IdempotencyInFlight"
+        "422":
+          $ref: "#/components/responses/IdempotencyConflict"
+        4XX:
           description: Client error
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-        "5XX":
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
           description: Server error
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-
+              schema:
+                $ref: "#/components/schemas/Error"
   /checkout_sessions/{checkout_session_id}:
     parameters:
       - $ref: "#/components/parameters/Authorization"
       - $ref: "#/components/parameters/AcceptLanguage"
       - $ref: "#/components/parameters/UserAgent"
-      - $ref: "#/components/parameters/IdempotencyKey"
       - $ref: "#/components/parameters/RequestId"
       - $ref: "#/components/parameters/Signature"
       - $ref: "#/components/parameters/Timestamp"
@@ -115,9 +130,14 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
-        schema: { type: string }
+        description: Unique identifier for the checkout session
+        schema:
+          type: string
     post:
-      tags: [CheckoutSessions]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      tags:
+        - CheckoutSessions
       summary: Update a checkout session
       operationId: updateCheckoutSession
       description: |
@@ -133,30 +153,51 @@ paths:
                 summary: Select a fulfillment option
                 value:
                   selected_fulfillment_options:
-                    - type: "shipping"
+                    - type: shipping
                       shipping:
-                        option_id: "fulfillment_option_456"
-                        item_ids: ["item_123"]
+                        option_id: fulfillment_option_456
+                        item_ids:
+                          - item_123
       responses:
         "200":
           description: Updated session
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema:
+                type: string
+            Idempotent-Replayed:
+              description: true when the response is a cached replay of a previous request with the same Idempotency-Key
+              required: false
+              schema:
+                type: string
+                enum:
+                  - "true"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CheckoutSession"
-        "4XX":
+        "400":
+          $ref: "#/components/responses/IdempotencyKeyRequired"
+        "409":
+          $ref: "#/components/responses/IdempotencyInFlight"
+        "422":
+          $ref: "#/components/responses/IdempotencyConflict"
+        4XX:
           description: Client error
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-        "5XX":
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
           description: Server error
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-
+              schema:
+                $ref: "#/components/schemas/Error"
     get:
-      tags: [CheckoutSessions]
+      tags:
+        - CheckoutSessions
       summary: Retrieve a checkout session
       operationId: getCheckoutSession
       description: Returns the latest authoritative state for the checkout session.
@@ -171,8 +212,8 @@ paths:
           description: Session not found
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-
+              schema:
+                $ref: "#/components/schemas/Error"
   /checkout_sessions/{checkout_session_id}/complete:
     parameters:
       - $ref: "#/components/parameters/Authorization"
@@ -187,9 +228,12 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
-        schema: { type: string }
+        description: Unique identifier for the checkout session
+        schema:
+          type: string
     post:
-      tags: [CheckoutSessions]
+      tags:
+        - CheckoutSessions
       summary: Complete a checkout session
       operationId: completeCheckoutSession
       description: |
@@ -208,45 +252,64 @@ paths:
                 summary: Complete with payment data
                 value:
                   buyer:
-                    first_name: "John"
-                    last_name: "Smith"
-                    email: "johnsmith@mail.com"
+                    first_name: John
+                    last_name: Smith
+                    email: johnsmith@mail.com
                   payment_data:
-                    token: "spt_123"
-                    provider: "stripe"
+                    token: spt_123
+                    provider: stripe
               with_affiliate_attribution:
                 summary: Complete with last-touch affiliate attribution
                 value:
                   buyer:
-                    first_name: "John"
-                    last_name: "Smith"
-                    email: "johnsmith@mail.com"
+                    first_name: John
+                    last_name: Smith
+                    email: johnsmith@mail.com
                   payment_data:
-                    token: "spt_123"
-                    provider: "stripe"
+                    token: spt_123
+                    provider: stripe
                   affiliate_attribution:
-                    provider: "impact.com"
-                    token: "atp_01J8Z3WXYZ9ABC"
-                    publisher_id: "pub_123"
-                    touchpoint: "last"
+                    provider: impact.com
+                    token: atp_01J8Z3WXYZ9ABC
+                    publisher_id: pub_123
+                    touchpoint: last
       responses:
         "200":
           description: Completed session with order
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema:
+                type: string
+            Idempotent-Replayed:
+              description: true when the response is a cached replay of a previous request with the same Idempotency-Key
+              required: false
+              schema:
+                type: string
+                enum:
+                  - "true"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CheckoutSessionWithOrder"
-        "4XX":
+        "400":
+          $ref: "#/components/responses/IdempotencyKeyRequired"
+        "409":
+          $ref: "#/components/responses/IdempotencyInFlight"
+        "422":
+          $ref: "#/components/responses/IdempotencyConflict"
+        4XX:
           description: Client error
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-        "5XX":
+              schema:
+                $ref: "#/components/schemas/Error"
+        5XX:
           description: Server error
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-
+              schema:
+                $ref: "#/components/schemas/Error"
   /checkout_sessions/{checkout_session_id}/cancel:
     parameters:
       - $ref: "#/components/parameters/Authorization"
@@ -260,9 +323,12 @@ paths:
       - name: checkout_session_id
         in: path
         required: true
-        schema: { type: string }
+        description: Unique identifier for the checkout session
+        schema:
+          type: string
     post:
-      tags: [CheckoutSessions]
+      tags:
+        - CheckoutSessions
       summary: Cancel a checkout session
       operationId: cancelCheckoutSession
       description: |
@@ -277,89 +343,196 @@ paths:
       responses:
         "200":
           description: Canceled session
+          headers:
+            Idempotency-Key:
+              description: Echo of the request idempotency key
+              schema:
+                type: string
+            Idempotent-Replayed:
+              description: true when the response is a cached replay of a previous request with the same Idempotency-Key
+              required: false
+              schema:
+                type: string
+                enum:
+                  - "true"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CheckoutSession"
+        "400":
+          $ref: "#/components/responses/IdempotencyKeyRequired"
         "405":
           description: Not cancelable (already completed/canceled)
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          $ref: "#/components/responses/IdempotencyInFlight"
+        "422":
+          $ref: "#/components/responses/IdempotencyConflict"
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: API Key
-
   parameters:
     Authorization:
       name: Authorization
       in: header
+      description: Bearer token for API authentication
       required: true
-      schema: { type: string, example: "Bearer api_key_123" }
+      schema:
+        type: string
+        example: Bearer api_key_123
     ContentType:
       name: Content-Type
       in: header
       required: true
-      schema: { type: string, example: "application/json" }
+      schema:
+        type: string
+        example: application/json
     AcceptLanguage:
       name: Accept-Language
       in: header
       required: false
-      schema: { type: string, example: "en-US" }
+      schema:
+        type: string
+        example: en-US
     UserAgent:
       name: User-Agent
       in: header
       required: false
       schema:
-        {
-          type: string,
-          example: "ChatGPT/2.0 (Mac OS X 15.0.1; arm64; build 0)",
-        }
+        type: string
+        example: ChatGPT/2.0 (Mac OS X 15.0.1; arm64; build 0)
     IdempotencyKey:
       name: Idempotency-Key
       in: header
-      required: false
-      schema: { type: string, example: "idempotency_key_123" }
+      required: true
+      description: Idempotency key. MUST be present on all POST requests. Opaque string, max 255 characters. UUID v4 recommended. Scoped to authenticated identity + endpoint.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+        example: 550e8400-e29b-41d4-a716-446655440000
     RequestId:
       name: Request-Id
       in: header
       required: false
-      schema: { type: string, example: "request_id_123" }
+      schema:
+        type: string
+        example: request_id_123
     Signature:
       name: Signature
       in: header
+      description: HMAC signature for webhook verification
       required: false
-      schema: { type: string, example: "ZXltZX..." }
+      schema:
+        type: string
+        example: ZXltZX...
     Timestamp:
       name: Timestamp
       in: header
+      description: RFC 3339 date-time string for request timing validation
       required: false
       schema:
-        { type: string, format: date-time, example: "2025-09-29T10:30:00Z" }
+        type: string
+        format: date-time
+        example: "2026-01-30T10:30:00Z"
     APIVersion:
       name: API-Version
       in: header
       required: true
-      schema: { type: string, example: "2025-12-12" }
-
+      schema:
+        type: string
+        example: "2026-01-16"
+  responses:
+    IdempotencyKeyRequired:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            idempotency_key_required:
+              value:
+                type: invalid_request
+                code: idempotency_key_required
+                message: Idempotency-Key header is required
+    IdempotencyInFlight:
+      description: In-flight collision — original request still processing
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          required: true
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            idempotency_in_flight:
+              value:
+                type: invalid_request
+                code: idempotency_in_flight
+                message: A request with this Idempotency-Key is currently being processed
+    IdempotencyConflict:
+      description: Idempotency payload mismatch
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            idempotency_conflict:
+              value:
+                type: invalid_request
+                code: idempotency_conflict
+                message: Idempotency-Key has already been used with a different request body
   schemas:
     Address:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        line_one: { type: string }
-        line_two: { type: string }
-        city: { type: string }
-        state: { type: string }
-        country: { type: string }
-        postal_code: { type: string }
-      required: [name, line_one, city, state, country, postal_code]
-
+        name:
+          type: string
+          description: Recipient name for this address
+        line_one:
+          type: string
+          description: Primary street address line
+        line_two:
+          type: string
+          description: Secondary address line (apartment, suite, etc.)
+        city:
+          type: string
+          description: City name
+        state:
+          type: string
+          description: State or province code
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+        postal_code:
+          type: string
+          description: Postal or ZIP code
+      required:
+        - name
+        - line_one
+        - city
+        - state
+        - country
+        - postal_code
+      example:
+        name: Jane Doe
+        line_one: 123 Main Street
+        line_two: Apt 4B
+        city: New York
+        state: NY
+        country: US
+        postal_code: "10001"
+      description: Physical address for shipping, billing, or pickup locations
     AffiliateAttributionSource:
       type: object
       additionalProperties: false
@@ -367,26 +540,38 @@ components:
       properties:
         type:
           type: string
-          enum: [url, platform, unknown]
+          enum:
+            - url
+            - platform
+            - unknown
           description: The type of attribution source.
         url:
           type: string
           format: uri
           description: Canonical content URL when type is 'url'.
-      required: [type]
-
+      required:
+        - type
+      example:
+        type: url
+        url: https://example.com/product-review
     AffiliateAttributionMetadata:
       type: object
       additionalProperties:
         oneOf:
           - type: string
+            description: String metadata value
           - type: number
+            description: Numeric metadata value
           - type: boolean
+            description: Boolean metadata value
       description: |
         Flat key/value map for additional non-sensitive context.
         Keys must be strings; values must be strings, numbers, or booleans.
         Arrays and nested objects are NOT permitted.
-
+      example:
+        campaign_type: influencer
+        commission_rate: 0.15
+        is_verified: true
     AffiliateAttribution:
       type: object
       description: |
@@ -427,107 +612,792 @@ components:
           $ref: "#/components/schemas/AffiliateAttributionMetadata"
         touchpoint:
           type: string
-          enum: [first, last]
+          enum:
+            - first
+            - last
           description: |
             Attribution touchpoint type. Use 'first' when capturing at session creation,
             'last' when capturing at completion. Enables multi-touch attribution models.
-      required: [provider]
+      required:
+        - provider
       anyOf:
-        - required: [token]
-        - required: [publisher_id]
-
+        - required:
+            - token
+        - required:
+            - publisher_id
+      example:
+        provider: impact.com
+        token: atp_01J8Z3WXYZ9ABC
+        publisher_id: pub_123
+        campaign_id: camp_summer2026
+        touchpoint: first
+        source:
+          type: url
+          url: https://example.com/product-review
+        issued_at: "2026-02-11T10:00:00Z"
+        expires_at: "2026-02-11T11:00:00Z"
     FulfillmentDetails:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-        phone_number: { type: string }
-        email: { type: string, format: email }
-        address: { $ref: "#/components/schemas/Address" }
-
+        name:
+          type: string
+          description: Full name for fulfillment contact
+        phone_number:
+          type: string
+          description: Contact phone number
+        email:
+          type: string
+          format: email
+          description: Contact email address
+        address:
+          $ref: "#/components/schemas/Address"
+          description: Fulfillment address
+      example:
+        name: John Smith
+        phone_number: "15551234567"
+        email: john.smith@example.com
+        address:
+          name: John Smith
+          line_one: 555 Golden Gate Avenue
+          line_two: Apt 401
+          city: San Francisco
+          state: CA
+          country: US
+          postal_code: "94102"
+      description: Details about how items will be fulfilled (shipping, pickup, or delivery information)
+    CompanyInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Company or organization name
+        tax_id:
+          type: string
+          description: Business tax identification number
+        department:
+          type: string
+          description: Department within the organization
+        cost_center:
+          type: string
+          description: Cost center code for internal accounting
+      required:
+        - name
+      example:
+        name: Acme Corporation
+        tax_id: 12-3456789
+        department: Marketing
+        cost_center: CC-2001
+      description: Information about a company or organization associated with the buyer
+    LoyaltyInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        tier:
+          type: string
+          description: Loyalty program tier level
+        points_balance:
+          type: integer
+          description: Current loyalty points balance
+        member_since:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the customer joined the loyalty program
+      example:
+        tier: Gold
+        points_balance: 5000
+        member_since: "2024-01-15T09:00:00Z"
+      description: Loyalty program information including membership details and rewards balance
+    TaxExemption:
+      type: object
+      additionalProperties: false
+      properties:
+        certificate_id:
+          type: string
+          description: Unique identifier for the tax exemption certificate
+        certificate_type:
+          type: string
+          enum:
+            - resale
+            - exempt_organization
+            - government
+          description: Type of tax exemption certificate
+        exempt_regions:
+          type: array
+          items:
+            type: string
+            description: Region code where tax exemption applies (e.g., state abbreviation)
+          description: List of regions where the exemption applies (e.g., state codes)
+        expires_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the exemption certificate expires
+      required:
+        - certificate_id
+        - certificate_type
+      example:
+        certificate_id: cert_12345
+        certificate_type: resale
+        exempt_regions:
+          - CA
+          - NY
+          - TX
+        expires_at: "2027-12-31T23:59:59Z"
+      description: Tax exemption information including exemption type and applicable regions
     Buyer:
       type: object
       additionalProperties: false
       properties:
-        first_name: { type: string }
-        last_name: { type: string }
-        email: { type: string, format: email }
-        phone_number: { type: string }
-      required: [first_name, last_name, email]
-
+        first_name:
+          type: string
+          description: Buyer's first name
+        last_name:
+          type: string
+          description: Buyer's last name
+        full_name:
+          type: string
+          description: Buyer's full name
+        email:
+          type: string
+          format: email
+          description: Buyer's email address
+        phone_number:
+          type: string
+          description: Buyer's phone number
+        customer_id:
+          type: string
+          description: Merchant's internal customer identifier
+        account_type:
+          type: string
+          enum:
+            - guest
+            - registered
+            - business
+          description: Type of buyer account
+        authentication_status:
+          type: string
+          enum:
+            - authenticated
+            - guest
+            - requires_signin
+          description: Buyer's authentication status
+        company:
+          $ref: "#/components/schemas/CompanyInfo"
+        loyalty:
+          $ref: "#/components/schemas/LoyaltyInfo"
+        tax_exemption:
+          $ref: "#/components/schemas/TaxExemption"
+      required:
+        - email
+      example:
+        first_name: Sarah
+        last_name: Johnson
+        full_name: Sarah Johnson
+        email: sarah.johnson@example.com
+        phone_number: +1-415-555-0123
+        customer_id: cust_abc123
+        account_type: registered
+        authentication_status: authenticated
+      description: Information about the buyer including contact details, company info, and loyalty status
+    InterventionCapabilities:
+      type: object
+      additionalProperties: false
+      description: |
+        Intervention capabilities.
+        Context-specific fields: display_context, redirect_context, max_redirects, max_interaction_depth (requests only).
+        required, enforcement (responses only).
+        supported field contains intersection in responses.
+      properties:
+        supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - 3ds
+              - biometric
+              - address_verification
+          description: |
+            Intervention types supported.
+            - Agent request: Interventions the agent can handle
+            - Seller response: Intersection of supported interventions
+        required:
+          type: array
+          items:
+            type: string
+            enum:
+              - 3ds
+              - biometric
+          description: Intervention methods required for this session (seller only).
+        enforcement:
+          type: string
+          enum:
+            - always
+            - conditional
+            - optional
+          description: When required interventions are enforced (seller only).
+        display_context:
+          type: string
+          enum:
+            - native
+            - webview
+            - modal
+            - redirect
+          description: How the Agent presents interventions (agent only).
+        redirect_context:
+          type: string
+          enum:
+            - in_app
+            - external_browser
+            - none
+          description: How the Agent handles redirects (agent only).
+        max_redirects:
+          type: integer
+          minimum: 0
+          description: Maximum number of redirects the Agent can handle (agent only).
+        max_interaction_depth:
+          type: integer
+          minimum: 1
+          description: Maximum depth of nested interactions the Agent can handle (agent only).
+      example:
+        supported:
+          - 3ds
+          - address_verification
+        display_context: native
+        redirect_context: in_app
+        max_redirects: 3
+        max_interaction_depth: 2
+    Capabilities:
+      type: object
+      additionalProperties: false
+      description: |
+        Capabilities object used in requests and responses.
+        Context determines the party: requests are from Agents, responses are from Sellers.
+        Seller responses contain the intersection of supported interventions.
+      properties:
+        payment:
+          $ref: "#/components/schemas/Payment"
+        interventions:
+          $ref: "#/components/schemas/InterventionCapabilities"
+        extensions:
+          oneOf:
+            - type: array
+              items:
+                type: string
+                description: Extension identifier string
+              uniqueItems: true
+              description: Extensions the agent understands (request). Simple identifiers like 'discount'.
+            - type: array
+              items:
+                $ref: "#/components/schemas/ExtensionDeclaration"
+              uniqueItems: true
+              description: Active extensions for this session (response). Objects with name, extends, schema, spec.
+          description: |
+            Extensions supported by the party.
+            Requests: array of extension identifiers.
+            Responses: array of extension declaration objects.
+      example:
+        interventions:
+          supported:
+            - 3ds
+          display_context: native
+        extensions:
+          - discount
+          - affiliate_attribution
+    ExtensionDeclaration:
+      type: object
+      additionalProperties: false
+      description: Extension declaration in capabilities.extensions (response). Describes an active extension and which schema fields it adds.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          pattern: ^[a-z][a-z0-9_-]*(@\d{4}-\d{2}-\d{2})?$|^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9_-]*)+(@\d{4}-\d{2}-\d{2})?$
+          description: Unique identifier for the extension.
+        extends:
+          type: array
+          items:
+            type: string
+            pattern: ^\$\.[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9_]*)*$
+            description: JSONPath expression identifying a schema field added by this extension
+          uniqueItems: true
+          description: |
+            JSONPath expressions identifying the schema fields added by this extension.
+            Format: $.<SchemaName>.<fieldName> (e.g., $.CheckoutSession.discounts).
+        schema:
+          type: string
+          format: uri
+          description: URL to the extension's JSON Schema definition.
+        spec:
+          type: string
+          format: uri
+          description: URL to the extension's specification document.
+      example:
+        name: discount
+        extends:
+          - $.CheckoutSession.discounts
+          - $.CheckoutSessionCreateRequest.coupons
+        schema: https://example.com/schemas/extensions/discount.schema.json
+        spec: https://example.com/specs/extensions/discount
+    PaymentMethodObject:
+      type: object
+      additionalProperties: false
+      description: Payment method with additional constraints (e.g., card brands, PSP routing)
+      properties:
+        method:
+          type: string
+          description: The payment method identifier
+        brands:
+          type: array
+          items:
+            type: string
+            enum:
+              - visa
+              - mastercard
+              - amex
+              - discover
+              - diners
+              - jcb
+              - unionpay
+              - eftpos
+              - interac
+          description: Specific card brands/networks accepted
+        funding_types:
+          type: array
+          items:
+            type: string
+            enum:
+              - credit
+              - debit
+              - prepaid
+          description: For card methods, funding types accepted
+        providers:
+          type: array
+          items:
+            type: string
+            description: Payment service provider identifier
+          description: Optional PSP routing information
+      required:
+        - method
+      example:
+        method: card
+        brands:
+          - visa
+          - mastercard
+        providers:
+          - stripe
+          - adyen
     Item:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        quantity: { type: integer, minimum: 1 }
-      required: [id, quantity]
-
+        id:
+          type: string
+          description: Unique identifier for the item
+        name:
+          type: string
+          description: Display name of the item
+        unit_amount:
+          type: integer
+          description: Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
+      required:
+        - id
+      example:
+        id: item_123
+        name: Wireless Headphones
+        unit_amount: 7999
+      description: A purchasable item with variant options (e.g., size, color) and quantity
     Disclosure:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [disclaimer] }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
-      required: [type, content_type, content]
-
+        type:
+          type: string
+          enum:
+            - disclaimer
+          description: Type of disclosure
+        content_type:
+          type: string
+          enum:
+            - plain
+            - markdown
+          description: Format of the disclosure content
+        content:
+          type: string
+          description: The disclosure text content
+      required:
+        - type
+        - content_type
+        - content
+      example:
+        type: disclaimer
+        content_type: plain
+        content: This product contains small parts and is not suitable for children under 3 years.
+      description: Legal disclosure or terms that must be acknowledged by the buyer
     CustomAttribute:
       type: object
       additionalProperties: false
       properties:
-        display_name: { type: string }
-        value: { type: string }
-      required: [display_name, value]
-
+        display_name:
+          type: string
+          description: Human-readable label for the attribute
+        value:
+          type: string
+          description: Attribute value
+      required:
+        - display_name
+        - value
+      example:
+        display_name: Engraving
+        value: Happy Birthday!
+      description: Custom key-value attribute for merchant-specific metadata on line items
     MarketplaceSellerDetails:
       type: object
       additionalProperties: false
       properties:
-        name: { type: string }
-      required: [name]
-
-    PaymentProvider:
+        name:
+          type: string
+          description: Name of the marketplace seller or vendor
+      required:
+        - name
+      example:
+        name: TechGear Store
+      description: Information about a third-party seller in a marketplace model
+    PaymentHandler:
       type: object
       additionalProperties: false
+      description: Payment handler configuration and capabilities
       properties:
-        provider:
+        id:
           type: string
-          enum: [stripe]
-        supported_payment_methods:
+          description: Seller-defined handler identifier
+        name:
+          type: string
+          description: Handler name in reverse-DNS format (e.g., dev.acp.tokenized.card)
+        display_name:
+          type: string
+          description: Human-readable name for UI (e.g., Credit Card). Use when showing payment options to the buyer.
+        version:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          description: Handler version in YYYY-MM-DD format
+        spec:
+          type: string
+          format: uri
+          description: URL to handler specification
+        requires_delegate_payment:
+          type: boolean
+          description: Whether this handler requires using delegate_payment API
+        requires_pci_compliance:
+          type: boolean
+          description: Whether this handler routes PCI DSS sensitive data
+        psp:
+          type: string
+          description: Payment Service Provider identifier
+        config_schema:
+          type: string
+          format: uri
+          description: URL to JSON Schema for handler configuration
+        instrument_schemas:
           type: array
           items:
             type: string
-            enum: [card]
-      required: [provider, supported_payment_methods]
-
+            format: uri
+            description: URL to a JSON Schema defining accepted payment instrument format
+          description: URLs to JSON Schemas for payment instruments
+        config:
+          type: object
+          description: Handler-specific configuration
+      display_order:
+        type: integer
+        description: Optional merchant-suggested display order (lower = higher preference). Suggestive only; platform/agent MAY reorder.
+      required:
+        - id
+        - name
+        - version
+        - spec
+        - requires_delegate_payment
+        - requires_pci_compliance
+        - psp
+        - config_schema
+        - instrument_schemas
+        - config
+      example:
+        id: handler_stripe_01
+        name: Stripe
+        type: direct
+        instrument_schemas:
+          - https://example.com/schemas/payment/card.json
+    Payment:
+      type: object
+      additionalProperties: false
+      description: Payment configuration with handlers
+      properties:
+        handlers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentHandler"
+          description: Available payment handlers
+      required:
+        - handlers
+      example:
+        handlers: []
+    VariantOption:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Variant attribute name (e.g., 'Size', 'Color')
+        value:
+          type: string
+          description: Variant attribute value (e.g., 'Large', 'Blue')
+      required:
+        - name
+        - value
+      example:
+        name: Color
+        value: Midnight Blue
+      description: Represents a single variant option for a product (e.g., size, color, material)
+    WeightInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        value:
+          type: number
+          description: Numeric weight value
+        unit:
+          type: string
+          enum:
+            - g
+            - kg
+            - oz
+            - lb
+          description: Unit of measurement for weight
+      required:
+        - value
+        - unit
+      example:
+        value: 250
+        unit: g
+      description: Product weight with unit of measurement
+    DimensionsInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        length:
+          type: number
+          description: Length dimension
+        width:
+          type: number
+          description: Width dimension
+        height:
+          type: number
+          description: Height dimension
+        unit:
+          type: string
+          enum:
+            - cm
+            - in
+          description: Unit of measurement for dimensions
+      required:
+        - length
+        - width
+        - height
+        - unit
+      example:
+        length: 15.5
+        width: 10.2
+        height: 5.8
+        unit: cm
+      description: Physical dimensions of a product with unit of measurement
+    DiscountDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          description: Discount code if applicable
+        type:
+          type: string
+          enum:
+            - percentage
+            - fixed
+            - bogo
+            - volume
+          description: Type of discount
+        amount:
+          type: integer
+          description: Discount amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
+        description:
+          type: string
+          description: Human-readable discount description
+        source:
+          type: string
+          enum:
+            - coupon
+            - automatic
+            - loyalty
+          description: Source of the discount
+      required:
+        - type
+        - amount
+      example:
+        code: SAVE20
+        type: percentage
+        amount: 1600
+        description: 20% off your order
+        source: coupon
+      description: Information about a discount applied to the checkout or a specific item
     LineItem:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        item: { $ref: "#/components/schemas/Item" }
-        base_amount: { type: integer }
-        discount: { type: integer }
-        subtotal: { type: integer }
-        tax: { type: integer }
-        total: { type: integer }
-        name: { type: string }
-        description: { type: string }
+        id:
+          type: string
+          description: Unique identifier for the line item
+        item:
+          $ref: "#/components/schemas/Item"
+        quantity:
+          type: integer
+          minimum: 1
+          description: Number of units for this line item
+        name:
+          type: string
+          description: Display name of the line item
+        description:
+          type: string
+          description: Detailed description of the line item
         images:
           type: array
-          items: { type: string, format: uri }
-        unit_amount: { type: integer }
+          items:
+            type: string
+            format: uri
+            description: Image URL for the product
+          description: Array of image URLs for this line item
+        unit_amount:
+          type: integer
+          description: The unit price of the line item in the smallest currency unit (e.g., cents for USD)
         disclosures:
           type: array
-          items: { $ref: "#/components/schemas/Disclosure" }
+          items:
+            $ref: "#/components/schemas/Disclosure"
+          description: Legal disclosures or disclaimers for this item
         custom_attributes:
           type: array
-          items: { $ref: "#/components/schemas/CustomAttribute" }
+          items:
+            $ref: "#/components/schemas/CustomAttribute"
+          description: Custom attributes specific to this line item
         marketplace_seller_details:
-          { $ref: "#/components/schemas/MarketplaceSellerDetails" }
-      required: [id, item, base_amount, discount, subtotal, tax, total]
-
+          $ref: "#/components/schemas/MarketplaceSellerDetails"
+        product_id:
+          type: string
+          description: Merchant's product identifier
+        sku:
+          type: string
+          description: Stock keeping unit identifier
+        variant_id:
+          type: string
+          description: Product variant identifier
+        category:
+          type: string
+          description: Product category
+        tags:
+          type: array
+          items:
+            type: string
+            description: Product tag or category
+          description: Product tags or labels
+        weight:
+          $ref: "#/components/schemas/WeightInfo"
+        dimensions:
+          $ref: "#/components/schemas/DimensionsInfo"
+        availability_status:
+          type: string
+          enum:
+            - in_stock
+            - low_stock
+            - out_of_stock
+            - backorder
+            - pre_order
+          description: Current availability status of the item
+        available_quantity:
+          type: integer
+          minimum: 0
+          description: Quantity currently available for purchase
+        max_quantity_per_order:
+          type: integer
+          minimum: 1
+          description: Maximum quantity allowed per order
+        fulfillable_on:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when item becomes available for fulfillment
+        variant_options:
+          type: array
+          items:
+            $ref: "#/components/schemas/VariantOption"
+          description: Selected product variant options (e.g., size, color)
+        discount_details:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscountDetail"
+          description: Line-item level discount details
+        tax_exempt:
+          type: boolean
+          description: Whether this line item is tax exempt
+        tax_exemption_reason:
+          type: string
+          description: Reason for tax exemption if applicable
+        parent_id:
+          type: string
+          description: Reference to parent line item for bundled products
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Line-item level totals breakdown including base_amount, discount, subtotal, tax, and total
+      required:
+        - id
+        - item
+        - quantity
+        - totals
+      example:
+        id: item_001
+        product_id: prod_tshirt_blue_m
+        name: Organic Cotton T-Shirt
+        quantity: 2
+        base_amount: 2900
+        discount: 0
+        subtotal: 5800
+        tax: 464
+        total: 6264
+        currency: usd
+        image_url: https://example.com/images/tshirt-blue.jpg
+      description: A line item in the checkout representing a product with pricing, discounts, and fulfillment details
+    TaxBreakdownItem:
+      type: object
+      additionalProperties: false
+      properties:
+        jurisdiction:
+          type: string
+          description: Tax jurisdiction name (e.g., 'California State Tax', 'City of San Francisco')
+        rate:
+          type: number
+          description: Tax rate as a decimal (e.g., 0.0875 for 8.75%)
+        amount:
+          type: integer
+          description: Tax amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
+      required:
+        - jurisdiction
+        - rate
+        - amount
+      example:
+        name: State Sales Tax
+        amount: 464
+        rate: 0.08
+      description: Breakdown of tax amounts by type, jurisdiction, or rate
     Total:
       type: object
       additionalProperties: false
@@ -535,256 +1405,1819 @@ components:
         type:
           type: string
           enum:
-            [
-              items_base_amount,
-              items_discount,
-              subtotal,
-              discount,
-              fulfillment,
-              tax,
-              fee,
-              total,
-            ]
-        display_text: { type: string }
-        amount: { type: integer }
-        description: { type: string }
-      required: [type, display_text, amount]
-
+            - items_base_amount
+            - items_discount
+            - subtotal
+            - discount
+            - fulfillment
+            - tax
+            - fee
+            - gift_wrap
+            - tip
+            - store_credit
+            - total
+            - amount_refunded
+          description: Type of total line item
+        display_text:
+          type: string
+          description: Localized display text for this total
+        amount:
+          type: integer
+          description: Amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
+        presentment_amount:
+          type: integer
+          description: Amount in presentment currency minor units if different from settlement currency
+        description:
+          type: string
+          description: Additional descriptive text for this total
+        breakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaxBreakdownItem"
+          description: Detailed breakdown for tax totals
+      required:
+        - type
+        - display_text
+        - amount
+      example:
+        currency: usd
+        subtotal: 5800
+        discount: 0
+        tax: 464
+        shipping: 500
+        total: 6764
+      description: Total amounts for the checkout including subtotal, discounts, tax, shipping, and final total
+    FulfillmentOptionPickup:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          const: pickup
+          description: Fulfillment type discriminator
+        id:
+          type: string
+          description: Unique identifier for this fulfillment option
+        title:
+          type: string
+          description: Display title for this pickup option
+        description:
+          type: string
+          description: Additional details about this pickup option
+        location:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Location name
+            address:
+              $ref: "#/components/schemas/Address"
+            phone:
+              type: string
+              description: Location phone number
+            instructions:
+              type: string
+              description: Special pickup instructions
+          required:
+            - name
+            - address
+          description: Pickup location details
+        pickup_type:
+          type: string
+          enum:
+            - in_store
+            - curbside
+            - locker
+          description: Type of pickup method
+        ready_by:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when order will be ready for pickup
+        pickup_by:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp by which order must be picked up
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
+      required:
+        - type
+        - id
+        - title
+        - location
+        - totals
+      example:
+        id: pickup_01
+        type: pickup
+        name: Store Pickup
+        cost: 0
+        currency: usd
+        address:
+          name: Downtown Store
+          line_one: 123 Main St
+          city: San Francisco
+          state: CA
+          country: US
+          postal_code: "94102"
+      description: In-store or curbside pickup fulfillment option with pickup location details
+    FulfillmentOptionLocalDelivery:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          const: local_delivery
+          description: Fulfillment type discriminator
+        id:
+          type: string
+          description: Unique identifier for this fulfillment option
+        title:
+          type: string
+          description: Display title for this local delivery option
+        description:
+          type: string
+          description: Additional details about this delivery option
+        delivery_window:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date-time
+              description: RFC 3339 timestamp for delivery window start
+            end:
+              type: string
+              format: date-time
+              description: RFC 3339 timestamp for delivery window end
+          required:
+            - start
+            - end
+          description: Expected delivery time window
+        service_area:
+          type: object
+          properties:
+            radius_miles:
+              type: number
+              description: Delivery radius in miles
+            center_postal_code:
+              type: string
+              description: Center point postal code for delivery radius
+          description: Geographic service area for local delivery
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
+      required:
+        - type
+        - id
+        - title
+        - totals
+      example:
+        id: delivery_01
+        type: local_delivery
+        name: Same Day Delivery
+        cost: 999
+        currency: usd
+        address:
+          name: Jane Doe
+          line_one: 456 Oak Ave
+          city: San Francisco
+          state: CA
+          country: US
+          postal_code: "94103"
+      description: Local delivery fulfillment option with delivery address and scheduling details
     FulfillmentOptionShipping:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: shipping }
-        id: { type: string }
-        title: { type: string }
-        subtitle: { type: string }
-        carrier: { type: string }
-        earliest_delivery_time: { type: string, format: date-time }
-        latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: integer }
-        tax: { type: integer }
-        total: { type: integer }
-      required: [type, id, title, subtotal, tax, total]
-
+        type:
+          type: string
+          const: shipping
+          description: Fulfillment type discriminator
+        id:
+          type: string
+          description: Unique identifier for this fulfillment option
+        title:
+          type: string
+          description: Display title for this shipping option (e.g., 'Standard Shipping', 'Express')
+        description:
+          type: string
+          description: Additional details about this shipping option
+        carrier:
+          type: string
+          description: Shipping carrier name (e.g., 'USPS', 'FedEx')
+        earliest_delivery_time:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp for earliest expected delivery
+        latest_delivery_time:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp for latest expected delivery
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
+      required:
+        - type
+        - id
+        - title
+        - totals
+      example:
+        id: ship_01
+        type: shipping
+        name: Standard Shipping
+        cost: 500
+        currency: usd
+        carrier: USPS
+        service_level: ground
+      description: Shipping fulfillment option with carrier, service level, and delivery estimates
     FulfillmentOptionDigital:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: digital }
-        id: { type: string }
-        title: { type: string }
-        subtitle: { type: string }
-        subtotal: { type: integer }
-        tax: { type: integer }
-        total: { type: integer }
-      required: [type, id, title, subtotal, tax, total]
-
-    SelectedShippingFulfillmentOption:
-      type: object
-      additionalProperties: false
-      properties:
-        option_id: { type: string }
-        item_ids:
+        type:
+          type: string
+          const: digital
+          description: Fulfillment type discriminator
+        id:
+          type: string
+          description: Unique identifier for this fulfillment option
+        title:
+          type: string
+          description: Display title for this digital delivery option
+        description:
+          type: string
+          description: Additional details about digital delivery method
+        totals:
           type: array
-          items: { type: string }
-      required: [option_id, item_ids]
-
-    SelectedDigitalFulfillmentOption:
-      type: object
-      additionalProperties: false
-      properties:
-        option_id: { type: string }
-        item_ids:
-          type: array
-          items: { type: string }
-      required: [option_id, item_ids]
-
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Cost breakdown for this fulfillment option
+      required:
+        - type
+        - id
+        - title
+        - totals
+      example:
+        id: digital_01
+        type: digital
+        name: Instant Download
+        cost: 0
+        currency: usd
+      description: Digital delivery fulfillment option for downloadable or streaming content
     SelectedFulfillmentOption:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [shipping, digital] }
-        shipping: { $ref: "#/components/schemas/SelectedShippingFulfillmentOption" }
-        digital: { $ref: "#/components/schemas/SelectedDigitalFulfillmentOption" }
-      required: [type]
-      oneOf:
-        - properties:
-            type: { const: shipping }
-          required: [shipping]
-        - properties:
-            type: { const: digital }
-          required: [digital]
-
+        type:
+          type: string
+          enum:
+            - shipping
+            - digital
+            - pickup
+            - local_delivery
+          description: Type of fulfillment option selected
+        option_id:
+          type: string
+          description: ID of the selected fulfillment option
+        item_ids:
+          type: array
+          items:
+            type: string
+            description: Line item identifier
+          description: List of line item IDs associated with this fulfillment option
+      required:
+        - type
+        - option_id
+        - item_ids
+      example:
+        id: ship_01
+        type: shipping
+        item_ids:
+          - item_001
+          - item_002
+      description: Fulfillment option selected by the buyer for specific line items
     MessageInfo:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: info }
-        param: { type: string, description: "RFC 9535 JSONPath" }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
-      required: [type, content_type, content]
-
-    MessageError:
+        type:
+          type: string
+          const: info
+          description: Message type discriminator
+        severity:
+          type: string
+          enum:
+            - info
+            - low
+            - medium
+            - high
+            - critical
+          description: Severity level of this informational message
+        resolution:
+          type: string
+          enum:
+            - recoverable
+            - requires_buyer_input
+            - requires_buyer_review
+          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
+        param:
+          type: string
+          description: RFC 9535 JSONPath
+        content_type:
+          type: string
+          enum:
+            - plain
+            - markdown
+          description: Format of the message content
+        content:
+          type: string
+          description: Informational message text
+      required:
+        - type
+        - content_type
+        - content
+      example:
+        id: msg_info_01
+        message: Free shipping on orders over $50
+        display_context: banner
+      description: Informational message to display to the buyer during checkout
+    MessageWarning:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, const: error }
+        type:
+          type: string
+          const: warning
+          description: Message type discriminator
         code:
-          {
-            type: string,
-            enum:
-              [
-                missing,
-                invalid,
-                out_of_stock,
-                payment_declined,
-                requires_sign_in,
-                requires_3ds,
-              ],
-          }
+          type: string
+          enum:
+            - low_stock
+            - high_demand
+            - shipping_delay
+            - price_change
+            - expiring_promotion
+            - limited_availability
+            - discount_code_expired
+            - discount_code_invalid
+            - discount_code_already_applied
+            - discount_code_combination_disallowed
+            - discount_code_minimum_not_met
+            - discount_code_user_not_logged_in
+            - discount_code_user_ineligible
+            - discount_code_usage_limit_reached
+          description: Warning code indicating the type of warning
+        severity:
+          type: string
+          enum:
+            - info
+            - low
+            - medium
+            - high
+            - critical
+          description: Severity level of this warning
+        resolution:
+          type: string
+          enum:
+            - recoverable
+            - requires_buyer_input
+            - requires_buyer_review
+          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
         param:
-          { type: string, description: "RFC 9535 JSONPath", nullable: true }
-        content_type: { type: string, enum: [plain, markdown] }
-        content: { type: string }
-      required: [type, code, content_type, content]
-
+          type: string
+          description: RFC 9535 JSONPath
+        content_type:
+          type: string
+          enum:
+            - plain
+            - markdown
+          description: Format of the warning message content
+        content:
+          type: string
+          description: Warning message text
+      required:
+        - type
+        - code
+        - content_type
+        - content
+      example:
+        id: msg_warn_01
+        message: Only 2 items left in stock
+        code: low_stock
+        param: $.items[0]
+      description: Warning message to display to the buyer during checkout (non-blocking)
+    MessageError:
+      type: object
+      additionalProperties: false
+      description: |
+        Business-logic error within a valid CheckoutSession response. Used in messages[]
+        on 2xx responses when the session is valid but has actionable issues (e.g.
+        status "not_ready_for_payment"). The agent can respond by asking the buyer
+        for corrections or trying alternatives. Use MessageError—not Error—when you
+        can return a valid CheckoutSession and the problem is conversational (e.g.
+        invalid email → code "invalid" and param "$.buyer.email"; out of stock →
+        code "out_of_stock" and param "$.items[0]").
+      properties:
+        type:
+          type: string
+          const: error
+          description: Message type discriminator
+        code:
+          type: string
+          enum:
+            - missing
+            - invalid
+            - out_of_stock
+            - payment_declined
+            - requires_sign_in
+            - requires_3ds
+            - low_stock
+            - quantity_exceeded
+            - coupon_invalid
+            - coupon_expired
+            - minimum_not_met
+            - maximum_exceeded
+            - region_restricted
+            - age_verification_required
+            - approval_required
+            - unsupported
+            - not_found
+            - conflict
+            - rate_limited
+            - expired
+            - intervention_required
+          description: Error code indicating the type of error
+        severity:
+          type: string
+          enum:
+            - info
+            - low
+            - medium
+            - high
+            - critical
+          description: Severity level of this error
+        resolution:
+          type: string
+          enum:
+            - recoverable
+            - requires_buyer_input
+            - requires_buyer_review
+          description: "Who resolves this message. 'recoverable': agent can fix via API. 'requires_buyer_input': buyer must provide info. 'requires_buyer_review': buyer must authorize."
+        param:
+          type: string
+          description: RFC 9535 JSONPath
+          nullable: true
+        content_type:
+          type: string
+          enum:
+            - plain
+            - markdown
+          description: Format of the error message content
+        content:
+          type: string
+          description: Error message text
+      required:
+        - type
+        - code
+        - content_type
+        - content
+      example:
+        id: msg_err_01
+        message: Invalid email address format
+        code: invalid
+        param: $.buyer.email
+    GiftWrap:
+      type: object
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+          description: Whether gift wrapping is enabled for this order
+        style:
+          type: string
+          enum:
+            - birthday
+            - holiday
+            - elegant
+          description: Gift wrap style selected
+        charge:
+          type: integer
+          description: Additional charge for gift wrapping in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
+      required:
+        - enabled
+      example:
+        available: true
+        cost: 500
+        currency: usd
+        message: Happy Birthday!
+      description: Gift wrapping option with associated cost and customization details
     Link:
       type: object
       additionalProperties: false
       properties:
         type:
-          {
-            type: string,
-            enum: [terms_of_use, privacy_policy, return_policy],
-          }
-        url: { type: string, format: uri }
-      required: [type, url]
-
+          type: string
+          enum:
+            - terms_of_use
+            - privacy_policy
+            - return_policy
+            - shipping_policy
+            - contact_us
+            - about_us
+            - faq
+            - support
+          description: Type of link
+        title:
+          type: string
+          description: Display text for the link
+        url:
+          type: string
+          format: uri
+          description: URL destination
+      required:
+        - type
+        - url
+      example:
+        url: https://example.com/terms
+        text: Terms of Service
+        action: view
+      description: Hyperlink with URL, display text, and optional action semantics
+    SplitPayment:
+      type: object
+      additionalProperties: false
+      properties:
+        amount:
+          type: integer
+          description: Payment amount in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100) for this split
+      required:
+        - amount
+      example:
+        enabled: true
+        methods:
+          - card
+          - paypal
+      description: Split payment configuration allowing payment across multiple methods or parties
     PaymentData:
       type: object
       additionalProperties: false
       properties:
-        token: { type: string }
-        provider: { type: string, enum: [stripe] }
-        billing_address: { $ref: "#/components/schemas/Address" }
-      required: [token, provider]
-
-    Order:
+        handler_id:
+          type: string
+          description: ID of the payment handler to use
+        instrument:
+          type: object
+          description: Payment instrument details
+          properties:
+            type:
+              type: string
+              description: Instrument type (e.g., card, wallet_token)
+            credential:
+              type: object
+              description: Payment credential
+              properties:
+                type:
+                  type: string
+                  description: Credential type (e.g., spt, wallet_token)
+                token:
+                  type: string
+                  description: Credential token value
+              required:
+                - type
+                - token
+          required:
+            - type
+            - credential
+        billing_address:
+          $ref: "#/components/schemas/Address"
+        purchase_order_number:
+          type: string
+          description: Purchase order number
+        payment_terms:
+          type: string
+          enum:
+            - immediate
+            - net_15
+            - net_30
+            - net_60
+            - net_90
+          description: Payment terms for B2B transactions
+        due_date:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when payment is due
+        approval_required:
+          type: boolean
+          description: Whether this payment requires approval
+      anyOf:
+        - required:
+            - handler_id
+            - instrument
+        - required:
+            - purchase_order_number
+      example:
+        type: vault_token
+        token: vt_01J8Z3WXYZ9ABC123
+      description: Payment instrument data collected from the buyer (e.g., card details, wallet tokens)
+    FulfillmentGroup:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        checkout_session_id: { type: string }
-        permalink_url: { type: string, format: uri }
-      required: [id, checkout_session_id, permalink_url]
-
+        id:
+          type: string
+          description: Unique identifier for this fulfillment group
+        item_ids:
+          type: array
+          items:
+            type: string
+            description: Line item identifier in this fulfillment group
+          description: List of line item IDs in this fulfillment group
+        destination_type:
+          type: string
+          enum:
+            - shipping
+            - pickup
+            - local_delivery
+            - digital
+          description: Type of fulfillment for this group
+        fulfillment_details:
+          $ref: "#/components/schemas/FulfillmentDetails"
+        location_id:
+          type: string
+          description: Location identifier for pickup or local delivery
+        instructions:
+          type: string
+          description: Special fulfillment instructions
+      required:
+        - id
+        - item_ids
+        - destination_type
+      example:
+        id: fg_01
+        fulfillment_option_id: ship_01
+        item_ids:
+          - item_001
+          - item_002
+      description: Group of line items that share the same fulfillment method and destination
+    EstimatedDelivery:
+      type: object
+      additionalProperties: false
+      properties:
+        earliest:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp for earliest expected delivery
+        latest:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp for latest expected delivery
+      required:
+        - earliest
+        - latest
+      example:
+        earliest: "2026-02-15"
+        latest: "2026-02-20"
+      description: Estimated delivery date range for a fulfillment option
+    OrderConfirmation:
+      type: object
+      additionalProperties: false
+      properties:
+        confirmation_number:
+          type: string
+          description: Order confirmation number
+        confirmation_email_sent:
+          type: boolean
+          description: Whether a confirmation email has been sent
+        receipt_url:
+          type: string
+          format: uri
+          description: URL to the order receipt
+        invoice_number:
+          type: string
+          description: Invoice number if generated
+      example:
+        order_id: ord_abc123
+        order_number: "12345"
+        confirmation_url: https://example.com/orders/ord_abc123
+      description: Order confirmation details including order number and tracking information
+    SupportInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+          description: Support contact email
+        phone:
+          type: string
+          description: Support contact phone number
+        hours:
+          type: string
+          description: Support hours of operation
+        help_center_url:
+          type: string
+          format: uri
+          description: URL to merchant's help center
+      example:
+        email: support@example.com
+        phone: +1-800-555-0123
+        url: https://example.com/support
+      description: Customer support contact information including email, phone, and URL
+    Order:
+      type: object
+      additionalProperties: false
+      description: |
+        Order returned after checkout completion. Contains order details and optional
+        rich post-purchase tracking (line items, fulfillments, adjustments).
+      properties:
+        type:
+          type: string
+          const: order
+          description: Discriminator field for webhook payloads. Always 'order' when present.
+        id:
+          type: string
+          description: Unique identifier for the order
+        checkout_session_id:
+          type: string
+          description: ID of the checkout session that created this order
+        order_number:
+          type: string
+          description: Human-readable order number for customer reference
+        permalink_url:
+          type: string
+          format: uri
+          description: Permanent URL where the customer can view order details
+        status:
+          type: string
+          enum:
+            - created
+            - confirmed
+            - manual_review
+            - processing
+            - shipped
+            - delivered
+            - canceled
+          description: Order-level status. Can be derived from line item and fulfillment statuses.
+        estimated_delivery:
+          $ref: "#/components/schemas/EstimatedDelivery"
+        confirmation:
+          $ref: "#/components/schemas/OrderConfirmation"
+        support:
+          $ref: "#/components/schemas/SupportInfo"
+        line_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderLineItem"
+          description: What was ordered, with per-item fulfillment tracking
+        fulfillments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Fulfillment"
+          description: How items are being delivered (shipping, pickup, digital)
+        adjustments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Adjustment"
+          description: "Post-order changes: refunds, credits, returns, disputes"
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Order-level totals using the same Total schema as checkout. The 'total' entry is always the original charged amount. 'amount_refunded' tracks cumulative refunds.
+      required:
+        - id
+        - checkout_session_id
+        - permalink_url
+      example:
+        id: ord_abc123
+        order_number: "12345"
+        status: confirmed
+        currency: usd
+        total: 6764
+        line_items: []
+        created_at: "2026-02-13T10:30:00Z"
+    OrderLineItem:
+      type: object
+      additionalProperties: false
+      description: Per-line-item tracking of what was ordered and fulfillment progress.
+      properties:
+        id:
+          type: string
+          description: Line item identifier, used for references in fulfillments and adjustments
+        title:
+          type: string
+          description: Product name
+        product_id:
+          type: string
+          description: Catalog product ID
+        description:
+          type: string
+          description: Product description
+        image_url:
+          type: string
+          format: uri
+          description: Product image URL
+        url:
+          type: string
+          format: uri
+          description: Product page URL
+        quantity:
+          $ref: "#/components/schemas/OrderLineItemQuantity"
+        unit_price:
+          type: integer
+          description: Price per unit in minor currency units (cents)
+        subtotal:
+          type: integer
+          description: Line total in minor currency units (quantity.ordered * unit_price)
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Optional line-item level totals breakdown using the same Total schema as checkout. Merchants who can provide richer breakdowns MAY use this alongside or instead of unit_price/subtotal.
+        status:
+          type: string
+          enum:
+            - processing
+            - partial
+            - shipped
+            - delivered
+            - canceled
+          description: "Derived: processing if shipped=0, partial if 0<shipped<ordered, shipped if shipped=ordered"
+      required:
+        - id
+        - title
+        - quantity
+      example:
+        id: oli_001
+        line_item_id: item_001
+        status: fulfilled
+        quantity:
+          ordered: 2
+          fulfilled: 2
+    OrderLineItemQuantity:
+      type: object
+      additionalProperties: false
+      description: Quantity tracking for an order line item. 'shipped' is optional and defaults to 0.
+      properties:
+        ordered:
+          type: integer
+          minimum: 1
+          description: How many the customer ordered
+        shipped:
+          type: integer
+          minimum: 0
+          description: How many have been handed to carrier (optional, default 0)
+      required:
+        - ordered
+      example:
+        ordered: 2
+        fulfilled: 2
+        cancelled: 0
+        returned: 0
+    LineItemReference:
+      type: object
+      additionalProperties: false
+      description: Reference to a line item with quantity, used in fulfillments and adjustments
+      properties:
+        id:
+          type: string
+          description: Line item ID reference
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity in this fulfillment or adjustment
+      required:
+        - id
+        - quantity
+      example:
+        line_item_id: item_001
+        quantity: 1
+    Fulfillment:
+      type: object
+      additionalProperties: false
+      description: A fulfillment represents how items are delivered to the buyer (shipping, pickup, digital).
+      properties:
+        id:
+          type: string
+          description: Fulfillment identifier
+        type:
+          type: string
+          enum:
+            - shipping
+            - pickup
+            - digital
+          description: Fulfillment method type
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - shipped
+            - in_transit
+            - out_for_delivery
+            - ready_for_pickup
+            - delivered
+            - failed
+            - canceled
+          description: |
+            Current fulfillment status. Not all statuses apply to all types:
+            - shipping: pending, processing, shipped, in_transit, out_for_delivery, delivered, failed, canceled
+            - pickup: pending, processing, ready_for_pickup, delivered, failed, canceled
+            - digital: pending, processing, delivered, failed, canceled
+        line_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineItemReference"
+          description: Which line items and quantities are in this fulfillment
+        carrier:
+          type: string
+          description: "Carrier name (e.g., 'FedEx', 'UPS', 'USPS'). Applies to type: shipping."
+        tracking_number:
+          type: string
+          description: "Carrier tracking number. Applies to type: shipping."
+        tracking_url:
+          type: string
+          format: uri
+          description: "URL to track this shipment. Applies to type: shipping."
+        destination:
+          $ref: "#/components/schemas/Address"
+        estimated_delivery:
+          $ref: "#/components/schemas/EstimatedDelivery"
+        digital_delivery:
+          type: object
+          description: "Digital delivery details. Applies to type: digital."
+          properties:
+            access_url:
+              type: string
+              format: uri
+              description: URL to access digital content (download link, streaming page, etc.)
+            license_key:
+              type: string
+              description: License or activation key
+            expires_at:
+              type: string
+              format: date-time
+              description: When access expires (RFC 3339 timestamp)
+        description:
+          type: string
+          description: Human-readable description (e.g., 'Backordered - ships Feb 15')
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/FulfillmentEvent"
+          description: Append-only event log tracking fulfillment progress
+      required:
+        - id
+        - type
+      example:
+        id: ful_001
+        type: shipping
+        status: shipped
+        line_items: []
+        tracking_number: 1Z999AA10123456784
+        carrier: UPS
+    FulfillmentEvent:
+      type: object
+      additionalProperties: false
+      description: A point-in-time event in the fulfillment lifecycle.
+      properties:
+        id:
+          type: string
+          description: Event identifier
+        type:
+          type: string
+          enum:
+            - processing
+            - shipped
+            - in_transit
+            - out_for_delivery
+            - ready_for_pickup
+            - delivered
+            - failed_attempt
+            - returned
+          description: Event type
+        occurred_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when this event occurred
+        description:
+          type: string
+          description: Human-readable description (e.g., 'Left at front door')
+        location:
+          type: string
+          description: Location where this event occurred (e.g., 'Memphis, TN')
+      required:
+        - id
+        - type
+        - occurred_at
+      example:
+        status: shipped
+        timestamp: "2026-02-13T14:00:00Z"
+        location: San Francisco, CA
+    Adjustment:
+      type: object
+      additionalProperties: false
+      description: A post-order change such as refund, credit, return, or dispute.
+      properties:
+        id:
+          type: string
+          description: Adjustment identifier
+        type:
+          type: string
+          enum:
+            - refund
+            - partial_refund
+            - store_credit
+            - return
+            - exchange
+            - cancellation
+            - dispute
+            - chargeback
+          description: Type of adjustment
+        occurred_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when this adjustment occurred
+        status:
+          type: string
+          enum:
+            - pending
+            - completed
+            - failed
+          description: Adjustment status
+        line_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineItemReference"
+          description: Which line items and quantities are affected (optional for order-level adjustments)
+        amount:
+          type: integer
+          description: Total amount credited to the buyer in minor currency units, inclusive of any applicable tax
+        currency:
+          type: string
+          pattern: ^[a-z]{3}$
+          description: ISO 4217 currency code
+        description:
+          type: string
+          description: Human-readable reason (e.g., 'Defective item')
+        reason:
+          type: string
+          description: Structured reason code
+      required:
+        - id
+        - type
+        - occurred_at
+        - status
+      example:
+        id: adj_001
+        type: refund
+        amount: 1000
+        currency: usd
+        reason: Customer request
+        created_at: "2026-02-14T10:00:00Z"
+    ProtocolVersion:
+      type: object
+      additionalProperties: false
+      description: Protocol metadata included in checkout responses. Indicates the ACP version.
+      properties:
+        version:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          example: "2026-01-27"
+          description: ACP protocol version in YYYY-MM-DD format.
+      required:
+        - version
+      example:
+        version: "2026-01-30"
+    DiscountAllocation:
+      type: object
+      additionalProperties: false
+      description: Breakdown of how a discount amount was allocated to a specific target.
+      required:
+        - path
+        - amount
+      properties:
+        path:
+          type: string
+          description: JSONPath to the allocation target (e.g., '$.line_items[0]', '$.totals.shipping').
+        amount:
+          type: integer
+          minimum: 0
+          description: Amount allocated to this target in minor (cents) currency units.
+      example:
+        target: line_item
+        target_id: item_001
+        amount: 500
+    Coupon:
+      type: object
+      additionalProperties: false
+      description: Coupon details describing the discount terms.
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the coupon.
+        name:
+          type: string
+          description: Human-readable coupon name (e.g., 'Summer Sale 20% Off').
+        percent_off:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage discount (0-100). Mutually exclusive with amount_off.
+        amount_off:
+          type: integer
+          minimum: 0
+          description: Fixed discount amount in minor currency units. Mutually exclusive with percent_off.
+        currency:
+          type: string
+          pattern: ^[a-z]{3}$
+          description: ISO 4217 currency code for amount_off. Required if amount_off is set.
+        duration:
+          type: string
+          enum:
+            - once
+            - repeating
+            - forever
+          description: How long the discount applies. 'once' = single use, 'repeating' = multiple billing periods, 'forever' = indefinitely.
+        duration_in_months:
+          type: integer
+          minimum: 1
+          description: Number of months the coupon applies if duration is 'repeating'.
+        max_redemptions:
+          type: integer
+          minimum: 1
+          description: Maximum number of times this coupon can be redeemed across all customers.
+        times_redeemed:
+          type: integer
+          minimum: 0
+          description: Number of times this coupon has been redeemed.
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+            description: Metadata value
+          description: Arbitrary key-value metadata attached to the coupon.
+      example:
+        code: SAVE20
+        metadata: {}
+    AppliedDiscount:
+      type: object
+      additionalProperties: false
+      description: A discount that was successfully applied to the checkout session.
+      required:
+        - id
+        - coupon
+        - amount
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this applied discount instance.
+        code:
+          type: string
+          description: The discount code entered by the user. Omitted for automatic discounts.
+        coupon:
+          $ref: "#/components/schemas/Coupon"
+        amount:
+          type: integer
+          minimum: 0
+          description: Total discount amount in minor (cents) currency units.
+        automatic:
+          type: boolean
+          default: false
+          description: True if applied automatically by merchant rules (no code required).
+        start:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the discount became active.
+        end:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the discount expires.
+        method:
+          type: string
+          enum:
+            - each
+            - across
+          description: Allocation method. 'each' = applied independently per item. 'across' = split proportionally by value.
+        priority:
+          type: integer
+          minimum: 1
+          description: Stacking order for discount calculation. Lower numbers applied first (1 = first).
+        allocations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscountAllocation"
+          description: Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount.
+      example:
+        code: SAVE20
+        amount: 1000
+        allocations: []
+    RejectedDiscount:
+      type: object
+      additionalProperties: false
+      description: A discount code that could not be applied, with the reason.
+      required:
+        - code
+        - reason
+      properties:
+        code:
+          type: string
+          description: The discount code that was rejected.
+        reason:
+          $ref: "#/components/schemas/DiscountErrorCode"
+          description: Error code indicating why the discount was rejected.
+        message:
+          type: string
+          description: Human-readable explanation of why the code was rejected.
+      example:
+        code: EXPIRED10
+        reason: discount_code_expired
+    DiscountErrorCode:
+      type: string
+      enum:
+        - discount_code_expired
+        - discount_code_invalid
+        - discount_code_already_applied
+        - discount_code_combination_disallowed
+        - discount_code_minimum_not_met
+        - discount_code_user_not_logged_in
+        - discount_code_user_ineligible
+        - discount_code_usage_limit_reached
+      description: Error codes for rejected discount codes, used in messages[].code.
+      example: discount_code_expired
+    DiscountsRequest:
+      type: object
+      additionalProperties: false
+      description: Discount codes input for checkout create/update requests.
+      properties:
+        codes:
+          type: array
+          items:
+            type: string
+            description: Discount code to apply
+          description: Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear.
+      example:
+        codes:
+          - SAVE20
+          - FREESHIP
+    DiscountsResponse:
+      type: object
+      additionalProperties: false
+      description: Discount codes input and applied discounts output in checkout responses.
+      properties:
+        codes:
+          type: array
+          items:
+            type: string
+            description: Discount code submitted
+          description: Echo of submitted discount codes.
+        applied:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppliedDiscount"
+          description: Discounts successfully applied (code-based and automatic).
+        rejected:
+          type: array
+          items:
+            $ref: "#/components/schemas/RejectedDiscount"
+          description: Discount codes that could not be applied, with reasons.
+      example:
+        codes:
+          - SAVE20
+        applied: []
+        rejected: []
+    PaymentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          description: Payment provider identifier
+        instruments:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            description: Payment instrument schema reference
+          description: Available payment instruments
+        handlers:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            description: Payment handler configuration
+          description: Available payment handlers
+      example:
+        instruments: []
+        handlers: []
+      description: Payment configuration returned by the seller including accepted methods and handlers
     CheckoutSessionBase:
       type: object
       additionalProperties: false
       properties:
-        id: { type: string }
-        buyer: { $ref: "#/components/schemas/Buyer" }
-        payment_provider: { $ref: "#/components/schemas/PaymentProvider" }
+        id:
+          type: string
+          description: Unique identifier for the checkout session
+        protocol:
+          $ref: "#/components/schemas/ProtocolVersion"
+        capabilities:
+          $ref: "#/components/schemas/Capabilities"
+        buyer:
+          $ref: "#/components/schemas/Buyer"
         status:
-          {
-            type: string,
-            enum:
-              [
-                not_ready_for_payment,
-                ready_for_payment,
-                completed,
-                canceled,
-                in_progress,
-              ],
-          }
-        currency: { type: string }
+          type: string
+          enum:
+            - incomplete
+            - not_ready_for_payment
+            - requires_escalation
+            - authentication_required
+            - ready_for_payment
+            - pending_approval
+            - complete_in_progress
+            - completed
+            - canceled
+            - in_progress
+            - expired
+          description: Current status of the checkout session
+        currency:
+          type: string
+          description: ISO 4217 settlement currency code
+        presentment_currency:
+          type: string
+          description: ISO 4217 presentment currency code if different from settlement currency
+        exchange_rate:
+          type: number
+          description: Exchange rate from presentment to settlement currency
+        exchange_rate_timestamp:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when exchange rate was determined
+        locale:
+          type: string
+          description: Locale code (e.g., 'en-US') for localizing content
+        timezone:
+          type: string
+          description: IANA timezone identifier (e.g., 'America/New_York')
         line_items:
           type: array
-          items: { $ref: "#/components/schemas/LineItem" }
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+          items:
+            $ref: "#/components/schemas/LineItem"
+          description: Line items in the checkout session
+        fulfillment_details:
+          $ref: "#/components/schemas/FulfillmentDetails"
         fulfillment_options:
           type: array
           items:
             oneOf:
               - $ref: "#/components/schemas/FulfillmentOptionShipping"
               - $ref: "#/components/schemas/FulfillmentOptionDigital"
+              - $ref: "#/components/schemas/FulfillmentOptionPickup"
+              - $ref: "#/components/schemas/FulfillmentOptionLocalDelivery"
+          description: Available fulfillment options
         selected_fulfillment_options:
           type: array
-          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
+          items:
+            $ref: "#/components/schemas/SelectedFulfillmentOption"
+          description: Currently selected fulfillment options
+        fulfillment_groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/FulfillmentGroup"
+          description: Optional grouping of line items by fulfillment method
         totals:
           type: array
-          items: { $ref: "#/components/schemas/Total" }
+          items:
+            $ref: "#/components/schemas/Total"
+          description: Cart-level totals breakdown
         messages:
           type: array
           items:
             oneOf:
               - $ref: "#/components/schemas/MessageInfo"
+              - $ref: "#/components/schemas/MessageWarning"
               - $ref: "#/components/schemas/MessageError"
+          description: Messages to communicate with the buyer (info, warnings, errors)
         links:
           type: array
-          items: { $ref: "#/components/schemas/Link" }
+          items:
+            $ref: "#/components/schemas/Link"
+          description: Relevant links (terms, policies, support)
+        authentication_metadata:
+          $ref: "#/components/schemas/AuthenticationMetadata"
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the session was created
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp of last update
+        expires_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the session expires
+        continue_url:
+          type: string
+          format: uri
+          description: URL to continue or resume the checkout session
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Arbitrary metadata for merchant use
+        quote_id:
+          type: string
+          description: Quote identifier if this session is based on a quote
+        quote_expires_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp when the quote expires
+        discounts:
+          $ref: "#/components/schemas/DiscountsResponse"
+          description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
       required:
-        [
-          id,
-          status,
-          currency,
-          line_items,
-          totals,
-          fulfillment_options,
-          messages,
-          links,
-        ]
-
+        - id
+        - status
+        - currency
+        - line_items
+        - totals
+        - fulfillment_options
+        - messages
+        - links
+        - capabilities
+      example:
+        id: cs_abc123
+        status: ready_for_payment
+        currency: usd
+        line_items: []
+        totals:
+          currency: usd
+          subtotal: 5800
+          total: 6764
+        fulfillment_options: []
+        messages: []
+        links: []
+        capabilities: {}
+      description: Base checkout session model containing common fields for all checkout session states
     CheckoutSession:
       allOf:
         - $ref: "#/components/schemas/CheckoutSessionBase"
-
+      example:
+        id: cs_abc123
+        status: ready_for_payment
+        currency: usd
+        line_items: []
+        totals:
+          currency: usd
+          subtotal: 5800
+          total: 6764
+        fulfillment_options: []
+        messages: []
+        links: []
+        capabilities: {}
+      description: Checkout session response model
     CheckoutSessionWithOrder:
       allOf:
         - $ref: "#/components/schemas/CheckoutSessionBase"
         - type: object
           properties:
-            order: { $ref: "#/components/schemas/Order" }
-          required: [order]
-
+            order:
+              $ref: "#/components/schemas/Order"
+          required:
+            - order
+          description: Order extension for completed checkout sessions
+      example:
+        id: cs_abc123
+        status: completed
+        currency: usd
+        line_items: []
+        totals:
+          currency: usd
+          subtotal: 5800
+          total: 6764
+        fulfillment_options: []
+        messages: []
+        links: []
+        capabilities: {}
+        order:
+          id: ord_abc123
+          order_number: "12345"
+          status: confirmed
+          currency: usd
+          total: 6764
+          line_items: []
+          created_at: "2026-02-13T10:30:00Z"
+      description: Checkout session response after completion, includes the created order
     CheckoutSessionCreateRequest:
       type: object
       additionalProperties: false
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
-        items:
+        buyer:
+          $ref: "#/components/schemas/Buyer"
+        line_items:
           type: array
-          items: { $ref: "#/components/schemas/Item" }
+          items:
+            $ref: "#/components/schemas/Item"
           minItems: 1
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+          description: Items to add to the checkout session
+        currency:
+          type: string
+          description: ISO 4217 currency code
+        fulfillment_details:
+          $ref: "#/components/schemas/FulfillmentDetails"
+        capabilities:
+          $ref: "#/components/schemas/Capabilities"
+        fulfillment_groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/FulfillmentGroup"
+          description: Grouping of items by fulfillment method
         affiliate_attribution:
-          { $ref: "#/components/schemas/AffiliateAttribution" }
-      required: [items]
-
+          $ref: "#/components/schemas/AffiliateAttribution"
+        coupons:
+          type: array
+          items:
+            type: string
+            description: Coupon code to apply
+          description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
+        discounts:
+          $ref: "#/components/schemas/DiscountsRequest"
+          description: Discount codes to apply to the checkout session.
+        locale:
+          type: string
+          description: Locale code for localizing content (e.g., 'en-US')
+        timezone:
+          type: string
+          description: IANA timezone identifier (e.g., 'America/New_York')
+        quote_id:
+          type: string
+          description: Quote identifier if this session is based on a quote
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Arbitrary metadata for merchant use
+      required:
+        - line_items
+        - currency
+        - capabilities
+      example:
+        items:
+          - product_id: prod_tshirt_blue_m
+            quantity: 2
+        currency: usd
+        capabilities: {}
+      description: Request to create a new checkout session
     CheckoutSessionUpdateRequest:
       type: object
       additionalProperties: false
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
-        items:
+        buyer:
+          $ref: "#/components/schemas/Buyer"
+        line_items:
           type: array
-          items: { $ref: "#/components/schemas/Item" }
-        fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails" }
+          items:
+            $ref: "#/components/schemas/Item"
+          description: Items to update in the checkout session
+        fulfillment_details:
+          $ref: "#/components/schemas/FulfillmentDetails"
+        fulfillment_groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/FulfillmentGroup"
+          description: Updated fulfillment groupings
         selected_fulfillment_options:
           type: array
-          items: { $ref: "#/components/schemas/SelectedFulfillmentOption" }
-
+          items:
+            $ref: "#/components/schemas/SelectedFulfillmentOption"
+          description: Fulfillment option selected by the buyer
+        coupons:
+          type: array
+          items:
+            type: string
+            description: Coupon code to apply
+          description: "DEPRECATED: Use discounts.codes instead. Discount codes to apply."
+        discounts:
+          $ref: "#/components/schemas/DiscountsRequest"
+          description: Discount codes to apply. Replaces previously submitted codes.
+      example:
+        buyer:
+          email: customer@example.com
+      description: Request to update an existing checkout session
+    RiskSignals:
+      type: object
+      additionalProperties: false
+      properties:
+        ip_address:
+          type: string
+          description: IP address of the buyer
+        user_agent:
+          type: string
+          description: User agent string of the buyer's browser
+        accept_language:
+          type: string
+          description: Accept-Language header from the buyer's browser
+        session_id:
+          type: string
+          description: Session identifier for the buyer
+        device_fingerprint:
+          type: string
+          description: Device fingerprint for fraud detection
+      example:
+        ip_country: US
+        device_fingerprint: fp_abc123
+      description: Risk and fraud detection signals for the checkout session
     CheckoutSessionCompleteRequest:
       type: object
       additionalProperties: false
       properties:
-        buyer: { $ref: "#/components/schemas/Buyer" }
-        payment_data: { $ref: "#/components/schemas/PaymentData" }
+        buyer:
+          $ref: "#/components/schemas/Buyer"
+        payment_data:
+          $ref: "#/components/schemas/PaymentData"
+        authentication_result:
+          $ref: "#/components/schemas/AuthenticationResult"
         affiliate_attribution:
-          { $ref: "#/components/schemas/AffiliateAttribution" }
-      required: [payment_data]
-
+          $ref: "#/components/schemas/AffiliateAttribution"
+        risk_signals:
+          $ref: "#/components/schemas/RiskSignals"
+      required:
+        - payment_data
+      example:
+        payment_data:
+          type: vault_token
+          token: vt_01J8Z3WXYZ9ABC123
+      description: Request to complete a checkout session and create an order
+    AuthenticationMetadata:
+      type: object
+      additionalProperties: true
+      description: |
+        Seller-provided authentication metadata for 3DS flows.
+      required:
+        - acquirer_details
+        - directory_server
+      properties:
+        acquirer_details:
+          type: object
+          additionalProperties: false
+          description: Details about the acquirer used for this 3DS Authentication. This object MUST be present.
+          properties:
+            acquirer_bin:
+              type: string
+              maxLength: 11
+              description: The Acquirer BIN (directory-server specific).
+            acquirer_country:
+              type: string
+              minLength: 2
+              maxLength: 2
+              description: Two-letter ISO 3166-1 alpha-2 country code.
+            acquirer_merchant_id:
+              type: string
+              maxLength: 35
+              description: The Merchant ID assigned by the acquirer.
+            merchant_name:
+              type: string
+              maxLength: 40
+              description: Merchant name assigned by the acquirer.
+            requestor_id:
+              type: string
+              maxLength: 35
+              description: Requestor ID (if required by the directory server).
+          required:
+            - acquirer_bin
+            - acquirer_country
+            - acquirer_merchant_id
+            - merchant_name
+        directory_server:
+          type: string
+          enum:
+            - american_express
+            - mastercard
+            - visa
+          description: The 3DS directory server used for this Authentication.
+        flow_preference:
+          type: object
+          additionalProperties: false
+          description: |
+            Contains additional details on the seller's preference for the 3DS authentication flow. Sellers MAY request a preference, but issuers ultimately decide the actual flow.
+          properties:
+            type:
+              type: string
+              enum:
+                - challenge
+                - frictionless
+              description: |
+                Type of flow requested for this 3DS Authentication. "challenge" requests a challenge flow; "frictionless" requests a frictionless flow.
+            challenge:
+              type: object
+              additionalProperties: false
+              description: |
+                Details about the requested challenge flow.
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - mandated
+                    - preferred
+                  description: |
+                    Subtype of challenge preference.
+            frictionless:
+              type: object
+              additionalProperties: false
+              description: |
+                Details about the requested frictionless flow.
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - low_risk
+                  description: |
+                    Subtype of frictionless preference.
+          required:
+            - type
+      example:
+        three_ds_version: 2.1.0
+        merchant_name: Example Store
+    AuthenticationResult:
+      type: object
+      additionalProperties: false
+      description: |
+        Agent-provided authentication results returned to the seller for card-based 3D Secure.
+      properties:
+        outcome:
+          type: string
+          description: The outcome of this 3DS Authentication.
+          enum:
+            - abandoned
+            - attempt_acknowledged
+            - authenticated
+            - canceled
+            - denied
+            - informational
+            - internal_error
+            - not_supported
+            - processing_error
+            - rejected
+          example: authenticated
+        outcome_details:
+          type: object
+          description: |
+            Detailed authentication data. This field is required when the outcome is 'authenticated', 'informational', or 'attempt_acknowledged'.
+          additionalProperties: false
+          properties:
+            three_ds_cryptogram:
+              type: string
+              description: |
+                The 3DS cryptogram (authentication value / AAV/CAVV/AEVV). This value is 20 bytes, base64-encoded into a 28-character string.
+              example: AbCdEfGhIjKlMnOpQrStUvWxY0=
+            electronic_commerce_indicator:
+              type: string
+              description: |
+                Electronic Commerce Indicator (ECI) returned by the 3D Secure provider. Indicates the degree/type of authentication performed.
+              enum:
+                - "01"
+                - "02"
+                - "05"
+                - "06"
+                - "07"
+              example: "05"
+            transaction_id:
+              type: string
+              description: |
+                Transaction identifier returned by the 3DS system: - For 3DS1: the XID - For 3DS2: the Directory Server Transaction ID (dsTransID)
+              example: dsTransId_abc123
+            version:
+              type: string
+              description: |
+                The 3D Secure version used for this authentication (for example "1.0.2" or "2.2.0").
+              example: 2.2.0
+          required:
+            - three_ds_cryptogram
+            - electronic_commerce_indicator
+            - transaction_id
+            - version
+      required:
+        - outcome
+      allOf:
+        - if:
+            properties:
+              outcome:
+                enum:
+                  - authenticated
+                  - informational
+                  - attempt_acknowledged
+          then:
+            required:
+              - outcome_details
+      example:
+        status: authenticated
+        transaction_id: 3ds_abc123
+        eci: "05"
     IntentTrace:
       type: object
       properties:
@@ -812,30 +3245,64 @@ components:
         metadata:
           type: object
           additionalProperties:
-            type: [string, number, boolean]
-      required: [reason_code]
-
+            type:
+              - string
+              - number
+              - boolean
+            description: Metadata value
+          description: Additional structured metadata about the intent
+      required:
+        - reason_code
+      example:
+        reason_code: buyer_initiated
+        description: Customer requested to complete checkout
+        metadata: {}
+      description: Structured reason for why a buyer action was taken, used for analytics and debugging
     CancelSessionRequest:
       type: object
       properties:
-        intent_trace: { $ref: "#/components/schemas/IntentTrace" }
-
+        intent_trace:
+          $ref: "#/components/schemas/IntentTrace"
+      example:
+        intent_trace:
+          reason_code: buyer_cancelled
+          description: Customer decided not to purchase
+      description: Request to cancel a checkout session
     Error:
       type: object
       additionalProperties: false
+      description: |
+        Protocol-level error returned in 4xx/5xx responses when the server cannot
+        return a valid CheckoutSession at all (e.g. malformed request or unexpected
+        failure). Use Error—not MessageError—when there is no valid session state
+        to return. type semantics: invalid_request — malformed request, missing
+        required fields, invalid JSON, or idempotency violations (codes:
+        idempotency_key_required, idempotency_in_flight, idempotency_conflict);
+        processing_error — unexpected server-side failure;
+        service_unavailable — temporary unavailability.
       properties:
         type:
-          {
-            type: string,
-            enum:
-              [
-                invalid_request,
-                request_not_idempotent,
-                processing_error,
-                service_unavailable,
-              ],
-          }
-        code: { type: string, description: "Implementation-defined error code" }
-        message: { type: string }
-        param: { type: string, description: "RFC 9535 JSONPath (optional)" }
-      required: [type, code, message]
+          type: string
+          enum:
+            - invalid_request
+            - processing_error
+            - service_unavailable
+          description: Error type indicating the category of protocol-level error
+        code:
+          type: string
+          description: Implementation-defined error code
+        message:
+          type: string
+          description: Human-readable error message
+        param:
+          type: string
+          description: RFC 9535 JSONPath (optional)
+      required:
+        - type
+        - code
+        - message
+      example:
+        type: invalid_request
+        code: invalid_email
+        message: The email address format is invalid
+        param: $.buyer.email

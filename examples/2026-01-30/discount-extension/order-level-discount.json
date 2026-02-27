@@ -1,0 +1,88 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Order-level discount with a fixed amount off the total",
+
+  "request": {
+    "line_items": [
+      {"id": "item_123", "quantity": 1}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["SAVE10"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_abc123",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ],
+          "schema": "https://agenticcommerce.dev/schemas/discount/2026-01-27.json"
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {
+          "id": "item_123"
+        },
+        "name": "Wireless Headphones",
+        "quantity": 1,
+        "unit_amount": 5000,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+          {"type": "total", "display_text": "Total", "amount": 5000}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": ["SAVE10"],
+      "applied": [
+        {
+          "id": "di_abc123",
+          "code": "SAVE10",
+          "coupon": {
+            "id": "coupon_xyz",
+            "name": "$10 Off Your Order",
+            "amount_off": 1000,
+            "currency": "usd",
+            "duration": "once"
+          },
+          "amount": 1000
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 599}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+      {"type": "discount", "display_text": "Order Discount (SAVE10)", "amount": 1000},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 599},
+      {"type": "total", "display_text": "Total", "amount": 4599}
+    ],
+    "messages": [],
+    "links": []
+  }
+}
+

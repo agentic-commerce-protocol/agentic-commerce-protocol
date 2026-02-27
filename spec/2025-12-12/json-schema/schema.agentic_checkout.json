@@ -582,20 +582,6 @@
       },
       "required": ["id", "checkout_session_id", "permalink_url"]
     },
-    "Refund": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["store_credit", "original_payment"]
-        },
-        "amount": {
-          "type": "integer"
-        }
-      },
-      "required": ["type", "amount"]
-    },
     "AuthenticationMetadata": {
       "type": "object",
       "additionalProperties": true,
@@ -982,6 +968,9 @@
         },
         "authentication_metadata": {
           "$ref": "#/$defs/AuthenticationMetadata"
+        },
+        "order": {
+          "$ref": "#/$defs/Order"
         }
       },
       "required": [

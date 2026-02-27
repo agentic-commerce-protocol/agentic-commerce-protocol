@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-commerce-protocol.com/schemas/discount.json",
+  "title": "Discount Extension",
+  "description": "Extends Checkout with discount code support, enabling agents to apply promotional, loyalty, referral, and other discount codes. Version: 2026-01-27.",
+
+  "$defs": {
+    "allocation": {
+      "type": "object",
+      "description": "Breakdown of how a discount amount was allocated to a specific target.",
+      "required": ["path", "amount"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "JSONPath to the allocation target (e.g., '$.line_items[0]', '$.totals.shipping')."
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Amount allocated to this target in minor (cents) currency units."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "coupon": {
+      "type": "object",
+      "description": "Coupon details describing the discount terms.",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the coupon."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable coupon name (e.g., 'Summer Sale 20% Off')."
+        },
+        "percent_off": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage discount (0-100). Mutually exclusive with amount_off."
+        },
+        "amount_off": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Fixed discount amount in minor currency units. Mutually exclusive with percent_off."
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$",
+          "description": "ISO 4217 currency code for amount_off. Required if amount_off is set."
+        },
+        "duration": {
+          "type": "string",
+          "enum": ["once", "repeating", "forever"],
+          "description": "How long the discount applies. 'once' = single use, 'repeating' = multiple billing periods, 'forever' = indefinitely."
+        },
+        "duration_in_months": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of months the coupon applies if duration is 'repeating'."
+        },
+        "max_redemptions": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of times this coupon can be redeemed across all customers."
+        },
+        "times_redeemed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of times this coupon has been redeemed."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary key-value metadata attached to the coupon."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "applied_discount": {
+      "type": "object",
+      "description": "A discount that was successfully applied to the checkout session.",
+      "required": ["id", "coupon", "amount"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this applied discount instance."
+        },
+        "code": {
+          "type": "string",
+          "description": "The discount code entered by the user. Omitted for automatic discounts."
+        },
+        "coupon": {
+          "$ref": "#/$defs/coupon",
+          "description": "Details about the underlying coupon/promotion."
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total discount amount in minor (cents) currency units."
+        },
+        "automatic": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if applied automatically by merchant rules (no code required)."
+        },
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the discount became active."
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the discount expires."
+        },
+        "method": {
+          "type": "string",
+          "enum": ["each", "across"],
+          "description": "Allocation method. 'each' = applied independently per item (allocations typically included). 'across' = applied to order total (allocations typically omitted)."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Stacking order for discount calculation. Lower numbers applied first (1 = first)."
+        },
+        "allocations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/allocation" },
+          "description": "Breakdown of where this discount was allocated. Sum of allocation amounts equals total amount."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "rejected_discount": {
+      "type": "object",
+      "description": "A discount code that could not be applied, with the reason.",
+      "required": ["code", "reason"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The discount code that was rejected."
+        },
+        "reason": {
+          "$ref": "#/$defs/discount_error_codes",
+          "description": "Error code indicating why the discount was rejected."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable explanation of why the code was rejected."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "discounts_request": {
+      "type": "object",
+      "description": "Discount codes input for checkout create/update requests.",
+      "properties": {
+        "codes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Discount codes to apply. Case-insensitive. Replaces previously submitted codes. Send empty array to clear."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "discounts_response": {
+      "type": "object",
+      "description": "Discount codes input, applied discounts, and rejected codes in checkout responses.",
+      "properties": {
+        "codes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Echo of submitted discount codes."
+        },
+        "applied": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/applied_discount" },
+          "description": "Discounts successfully applied (code-based and automatic)."
+        },
+        "rejected": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/rejected_discount" },
+          "description": "Discount codes that could not be applied, with reasons."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "discount_error_codes": {
+      "type": "string",
+      "enum": [
+        "discount_code_expired",
+        "discount_code_invalid",
+        "discount_code_already_applied",
+        "discount_code_combination_disallowed",
+        "discount_code_minimum_not_met",
+        "discount_code_user_not_logged_in",
+        "discount_code_user_ineligible",
+        "discount_code_usage_limit_reached"
+      ],
+      "description": "Error codes for rejected discount codes, used in messages[].code."
+    },
+
+    "checkout_with_discount": {
+      "title": "Checkout with Discount Extension",
+      "description": "Checkout session extended with discount capability.",
+      "allOf": [
+        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "discounts": {
+              "$ref": "#/$defs/discounts_response",
+              "description": "Discount codes and applied discounts for this checkout session."
+            }
+          }
+        }
+      ]
+    },
+
+    "checkout_create_request_with_discount": {
+      "title": "Checkout Create Request with Discount Extension",
+      "description": "Checkout session create request extended with discount codes.",
+      "allOf": [
+        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionCreateRequest" },
+        {
+          "type": "object",
+          "properties": {
+            "discounts": {
+              "$ref": "#/$defs/discounts_request",
+              "description": "Discount codes to apply to the new checkout session."
+            }
+          }
+        }
+      ]
+    },
+
+    "checkout_update_request_with_discount": {
+      "title": "Checkout Update Request with Discount Extension",
+      "description": "Checkout session update request extended with discount codes.",
+      "allOf": [
+        { "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionUpdateRequest" },
+        {
+          "type": "object",
+          "properties": {
+            "discounts": {
+              "$ref": "#/$defs/discounts_request",
+              "description": "Discount codes to apply. Replaces previously submitted codes."
+            }
+          }
+        }
+      ]
+    }
+  }
+}

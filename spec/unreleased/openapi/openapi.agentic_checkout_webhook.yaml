@@ -4,6 +4,23 @@ info:
   version: "unreleased"
   description: |
     Webhook receiver hosted by OpenAI to accept merchant order lifecycle events.
+
+    Requests are signed via the Merchant-Signature header (`t=<unix_seconds>,v1=<64_hex>`)
+    to prevent replay attacks (timestamp window) and to verify authenticity
+    and integrity (HMAC over payload with shared secret).
+    Signed payload is `timestamp + "." + raw_body`; HMAC-SHA256.
+    Reject with 401 if missing, malformed, timestamp out of window, or verification fails.
+    Recommended timestamp tolerance is 300 seconds.
+
+    ## Migration Notes
+
+    The `EventDataOrder` schema now composes the full `Order` schema from the
+    checkout spec via `$ref`. This means all Order fields (line_items,
+    fulfillments, adjustments, totals, etc.) can be included in webhook payloads.
+
+    The legacy `refunds[]` field has been removed. Use `adjustments[]` on the
+    Order schema instead, which supports refunds, credits, returns, disputes,
+    and more.
 servers:
   - url: https://openai.example.com
 tags:
@@ -18,23 +35,33 @@ paths:
       description: |
         Merchants POST order events so ChatGPT can stay in sync with fulfillment-grade truth.
         Requests MUST be signed with an HMAC signature in the `Merchant-Signature` header.
+
+        The `data` field MUST contain the full Order object (not incremental deltas).
+        All optional Order fields (line_items, fulfillments, adjustments, totals) SHOULD
+        be included when available.
       parameters:
         - name: Merchant-Signature
           in: header
           required: true
-          description: HMAC signature header (e.g., Merchant_Name-Signature) over the raw request body
-          schema: { type: string }
+          description: t=<unix_seconds>,v1=<64_hex>. HMAC-SHA256(timestamp + "." + raw_body, secret). Return 401 if invalid.
+          schema:
+            type: string
+            pattern: "^t=\\d+,v1=[a-fA-F0-9]{64}$"
+            example: "t=1709123456,v1=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         - name: Request-Id
           in: header
           required: false
+          description: "Unique identifier for request tracking and debugging"
           schema: { type: string }
         - name: Timestamp
           in: header
           required: false
+          description: "ISO 8601 timestamp for request timing validation"
           schema: { type: string, format: date-time }
         - name: Content-Type
           in: header
           required: true
+          description: "Must be application/json"
           schema: { type: string, example: "application/json" }
       requestBody:
         required: true
@@ -44,25 +71,86 @@ paths:
               $ref: "#/components/schemas/WebhookEvent"
             examples:
               order_created:
+                summary: New order created
                 value:
                   type: order_create
                   data:
                     type: order
+                    id: "ord_123"
                     checkout_session_id: "checkout_session_123"
                     permalink_url: "https://example.com/orders/123"
                     status: created
-                    refunds: []
-              order_updated:
+                    line_items:
+                      - id: "li_shoes"
+                        title: "Running Shoes"
+                        quantity: { ordered: 1, shipped: 0 }
+                        unit_price: 9900
+                        subtotal: 9900
+                    totals:
+                      - { type: subtotal, display_text: "Subtotal", amount: 9900 }
+                      - { type: fulfillment, display_text: "Shipping", amount: 500 }
+                      - { type: tax, display_text: "Tax", amount: 860 }
+                      - { type: total, display_text: "Total", amount: 11260 }
+              order_shipped:
+                summary: Order shipped with tracking
                 value:
                   type: order_update
                   data:
                     type: order
+                    id: "ord_123"
                     checkout_session_id: "checkout_session_123"
                     permalink_url: "https://example.com/orders/123"
                     status: shipped
-                    refunds:
-                      - type: original_payment
-                        amount: "1.00"
+                    line_items:
+                      - id: "li_shoes"
+                        title: "Running Shoes"
+                        quantity: { ordered: 1, shipped: 1 }
+                        unit_price: 9900
+                        subtotal: 9900
+                        status: "shipped"
+                    fulfillments:
+                      - id: "ful_1"
+                        type: "shipping"
+                        status: "shipped"
+                        line_items:
+                          - { id: "li_shoes", quantity: 1 }
+                        carrier: "USPS"
+                        tracking_number: "9400111899223456789012"
+                        tracking_url: "https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111899223456789012"
+                        events:
+                          - id: "evt_1"
+                            type: "shipped"
+                            occurred_at: "2026-02-05T10:00:00Z"
+                    adjustments: []
+                    totals:
+                      - { type: subtotal, display_text: "Subtotal", amount: 9900 }
+                      - { type: fulfillment, display_text: "Shipping", amount: 500 }
+                      - { type: tax, display_text: "Tax", amount: 860 }
+                      - { type: total, display_text: "Total", amount: 11260 }
+              order_with_refund:
+                summary: Order with a completed refund
+                value:
+                  type: order_update
+                  data:
+                    type: order
+                    id: "ord_456"
+                    checkout_session_id: "checkout_session_456"
+                    permalink_url: "https://example.com/orders/456"
+                    status: delivered
+                    adjustments:
+                      - id: "adj_1"
+                        type: "refund"
+                        occurred_at: "2026-02-10T14:30:00Z"
+                        status: "completed"
+                        amount: 10760
+                        currency: "usd"
+                        description: "Defective item refund (inclusive of tax)"
+                    totals:
+                      - { type: subtotal, display_text: "Subtotal", amount: 9900 }
+                      - { type: fulfillment, display_text: "Shipping", amount: 500 }
+                      - { type: tax, display_text: "Tax", amount: 860 }
+                      - { type: total, display_text: "Total", amount: 11260 }
+                      - { type: amount_refunded, display_text: "Refunded", amount: 10760 }
       responses:
         "200":
           description: Event accepted
@@ -71,8 +159,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  received: { type: boolean }
-                  request_id: { type: string }
+                  received: { type: boolean, description: "Confirms the event was received" }
+                  request_id: { type: string, description: "Echo of the Request-Id header if provided" }
                 required: [received]
         "400":
           description: Bad payload
@@ -80,10 +168,35 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
         "401":
-          description: Invalid signature
+          description: Invalid or missing Merchant-Signature (malformed, replay, or verification failed).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                invalid_signature:
+                  summary: Verification failed
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Webhook signature verification failed."
+                missing_signature:
+                  summary: Header missing
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Missing Merchant-Signature header."
+                malformed_signature:
+                  summary: Bad format
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Merchant-Signature must be t=<timestamp>,v1=<64_hex>."
+                timestamp_expired:
+                  summary: Replay or clock skew
+                  value:
+                    type: invalid_request
+                    code: invalid_signature
+                    message: "Timestamp outside allowed window."
         "429":
           description: Rate limited
           content:
@@ -97,48 +210,55 @@ paths:
 
 components:
   schemas:
-    Refund:
-      type: object
-      additionalProperties: false
-      properties:
-        type: { type: string, enum: [store_credit, original_payment] }
-        amount: { type: integer }
-      required: [type, amount]
-
     EventDataOrder:
-      type: object
-      additionalProperties: false
-      properties:
-        type: { type: string, const: order }
-        checkout_session_id: { type: string }
-        permalink_url: { type: string, format: uri }
-        status:
-          type: string
-          enum:
-            [created, manual_review, confirmed, canceled, shipped, fulfilled]
-        refunds:
-          type: array
-          items: { $ref: "#/components/schemas/Refund" }
-      required: [type, checkout_session_id, permalink_url, status, refunds]
+      description: |
+        Order data included in webhook events. Uses the full Order schema
+        from the checkout spec. The 'type' discriminator field is always 'order'.
+      allOf:
+        - $ref: "./openapi.agentic_checkout.yaml#/components/schemas/Order"
+      required: [type, checkout_session_id, permalink_url, status]
 
     WebhookEvent:
       type: object
       additionalProperties: false
       properties:
-        type: { type: string, enum: [order_create, order_update] }
-        data: { $ref: "#/components/schemas/EventDataOrder" }
+        type:
+          type: string
+          enum: [order_create, order_update]
+          description: "Event type: order_create for new orders, order_update for changes to existing orders"
+        data:
+          $ref: "#/components/schemas/EventDataOrder"
+          description: "The order object associated with this event"
       required: [type, data]
+      example:
+        type: "order_update"
+        data:
+          type: "order"
+          checkout_session_id: "cs_01HV3P3ABC123"
+          permalink_url: "https://merchant.example.com/orders/ord_123456"
+          status: "shipped"
+          refunds: []
 
     Error:
       type: object
       additionalProperties: false
       properties:
         type:
-          {
-            type: string,
-            enum: [invalid_request, processing_error, service_unavailable],
-          }
-        code: { type: string }
-        message: { type: string }
-        param: { type: string }
+          type: string
+          enum: [invalid_request, processing_error, service_unavailable]
+          description: "High-level error category"
+        code:
+          type: string
+          description: "Specific error code for programmatic handling"
+        message:
+          type: string
+          description: "Human-readable error message"
+        param:
+          type: string
+          description: "JSONPath of the offending field if applicable"
       required: [type, code, message]
+      example:
+        type: "invalid_request"
+        code: "missing_required_field"
+        message: "The 'amount' field is required"
+        param: "$.amount"

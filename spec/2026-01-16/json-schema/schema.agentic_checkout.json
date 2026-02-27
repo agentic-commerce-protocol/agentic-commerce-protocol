@@ -222,15 +222,35 @@
           "type": "string",
           "enum": ["stripe"]
         },
+        "merchant_id": {
+          "type": "string"
+        },
         "supported_payment_methods": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": ["card"]
+            "$ref": "#/$defs/PaymentMethod"
           }
         }
       },
-      "required": ["provider", "supported_payment_methods"]
+      "required": ["provider", "merchant_id", "supported_payment_methods"]
+    },
+    "PaymentMethod": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["card"]
+        },
+        "supported_card_networks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["amex", "discover", "mastercard", "visa"]
+          }
+        }
+      },
+      "required": ["type", "supported_card_networks"]
     },
     "LineItem": {
       "type": "object",
@@ -343,7 +363,7 @@
         "title": {
           "type": "string"
         },
-        "subtitle": {
+        "description": {
           "type": "string"
         },
         "carrier": {
@@ -357,17 +377,12 @@
           "type": "string",
           "format": "date-time"
         },
-        "subtotal": {
-          "type": "integer"
-        },
-        "tax": {
-          "type": "integer"
-        },
-        "total": {
-          "type": "integer"
+        "totals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Total" }
         }
       },
-      "required": ["type", "id", "title", "total"]
+      "required": ["type", "id", "title", "totals"]
     },
     "FulfillmentOptionDigital": {
       "type": "object",
@@ -383,20 +398,15 @@
         "title": {
           "type": "string"
         },
-        "subtitle": {
+        "description": {
           "type": "string"
         },
-        "subtotal": {
-          "type": "integer"
-        },
-        "tax": {
-          "type": "integer"
-        },
-        "total": {
-          "type": "integer"
+        "totals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Total" }
         }
       },
-      "required": ["type", "id", "title", "total"]
+      "required": ["type", "id", "title", "totals"]
     },
     "SelectedShippingFulfillmentOption": {
       "type": "object",
@@ -548,6 +558,134 @@
       },
       "required": ["token", "provider"]
     },
+    "AuthenticationMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["browser"]
+            },
+            "browser": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "accept_header": {
+                  "type": "string"
+                },
+                "ip_address": {
+                  "type": "string"
+                },
+                "javascript_enabled": {
+                  "type": "boolean"
+                },
+                "language": {
+                  "type": "string"
+                },
+                "user_agent": {
+                  "type": "string"
+                },
+                "color_depth": {
+                  "type": "integer"
+                },
+                "java_enabled": {
+                  "type": "boolean"
+                },
+                "screen_height": {
+                  "type": "integer"
+                },
+                "screen_width": {
+                  "type": "integer"
+                },
+                "timezone_offset": {
+                  "type": "integer"
+                }
+              },
+              "required": ["accept_header", "ip_address", "javascript_enabled", "language", "user_agent"]
+            }
+          },
+          "required": ["type", "browser"]
+        },
+        "acquirer_details": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "acquirer_bin": {
+              "type": "string"
+            },
+            "acquirer_country": {
+              "type": "string"
+            },
+            "acquirer_merchant_id": {
+              "type": "string"
+            },
+            "merchant_name": {
+              "type": "string"
+            },
+            "requestor_id": {
+              "type": "string"
+            }
+          },
+          "required": ["acquirer_bin", "acquirer_country", "acquirer_merchant_id", "merchant_name"]
+        },
+        "directory_server": {
+          "type": "string",
+          "enum": ["american_express", "mastercard", "visa"]
+        },
+        "flow_preference": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["challenge", "frictionless"]
+            },
+            "challenge": {
+              "type": "object"
+            },
+            "frictionless": {
+              "type": "object"
+            }
+          },
+          "required": ["type"]
+        }
+      },
+      "required": ["channel", "acquirer_details", "directory_server"]
+    },
+    "AuthenticationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": ["authenticated", "failed", "unavailable", "rejected", "attempt"]
+        },
+        "outcome_details": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "three_ds_cryptogram": {
+              "type": "string"
+            },
+            "electronic_commerce_indicator": {
+              "type": "string"
+            },
+            "transaction_id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": ["three_ds_cryptogram", "electronic_commerce_indicator", "transaction_id", "version"]
+        }
+      },
+      "required": ["outcome"]
+    },
     "Order": {
       "type": "object",
       "additionalProperties": false,
@@ -565,19 +703,26 @@
       },
       "required": ["id", "checkout_session_id", "permalink_url"]
     },
-    "Refund": {
+    "AuthenticationProvider": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": {
+        "provider": {
           "type": "string",
-          "enum": ["store_credit", "original_payment"]
+          "enum": ["stripe", "adyen"]
         },
-        "amount": {
-          "type": "integer"
+        "merchant_id": {
+          "type": "string"
+        },
+        "supported_authentication_methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["3ds"]
+          }
         }
       },
-      "required": ["type", "amount"]
+      "required": ["provider", "merchant_id", "supported_authentication_methods"]
     },
     "CheckoutSessionBase": {
       "type": "object",
@@ -592,6 +737,9 @@
         "payment_provider": {
           "$ref": "#/$defs/PaymentProvider"
         },
+        "authentication_provider": {
+          "$ref": "#/$defs/AuthenticationProvider"
+        },
         "status": {
           "type": "string",
           "enum": [
@@ -599,7 +747,8 @@
             "ready_for_payment",
             "completed",
             "canceled",
-            "in_progress"
+            "in_progress",
+            "authentication_required"
           ]
         },
         "currency": {
@@ -657,6 +806,12 @@
           "items": {
             "$ref": "#/$defs/Link"
           }
+        },
+        "authentication_metadata": {
+          "$ref": "#/$defs/AuthenticationMetadata"
+        },
+        "order": {
+          "$ref": "#/$defs/Order"
         }
       },
       "required": [
@@ -752,6 +907,9 @@
         },
         "affiliate_attribution": {
           "$ref": "#/$defs/AffiliateAttribution"
+        },
+        "authentication_result": {
+          "$ref": "#/$defs/AuthenticationResult"
         }
       },
       "required": ["payment_data"]

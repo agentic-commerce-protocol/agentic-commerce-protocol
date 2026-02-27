@@ -95,6 +95,13 @@ There are three categories of changes within the ACP project:
 - Minor enum or data changes to support additional participants
 - Tooling improvements
 
+**Pull Request Templates**: Contributors should use the appropriate PR template
+when submitting changes:
+- Major and Process Changes: Use [sep-proposal.md](../.github/PULL_REQUEST_TEMPLATE/sep-proposal.md)
+- Minor Changes: Use [minor-improvement.md](../.github/PULL_REQUEST_TEMPLATE/minor-improvement.md)
+- Administrative Changes (admins only): Use [admin.md](../.github/PULL_REQUEST_TEMPLATE/admin.md) — for CLA signatory additions, Schedule A updates, and other corporate housekeeping. Title must start with `ADMIN:`.
+- Releases (admins only): Use [release.md](../.github/PULL_REQUEST_TEMPLATE/release.md) — for promoting unreleased specs, examples, and changelog entries to a dated version. Title must start with `RELEASE:`.
+
 ### Specification Enhancement Proposals (SEPs)
 
 ACP follows a simplified version of the MCP SEP process. SEPs are design

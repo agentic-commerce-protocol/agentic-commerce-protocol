@@ -494,12 +494,27 @@ components:
         provider:
           type: string
           enum: [stripe]
+        merchant_id:
+          type: string
         supported_payment_methods:
           type: array
           items:
+            $ref: "#/components/schemas/PaymentMethod"
+      required: [provider, merchant_id, supported_payment_methods]
+
+    PaymentMethod:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum: [card]
+        supported_card_networks:
+          type: array
+          items:
             type: string
-            enum: [card]
-      required: [provider, supported_payment_methods]
+            enum: [amex, discover, mastercard, visa]
+      required: [type, supported_card_networks]
 
     LineItem:
       type: object
@@ -557,14 +572,14 @@ components:
         type: { type: string, const: shipping }
         id: { type: string }
         title: { type: string }
-        subtitle: { type: string }
+        description: { type: string }
         carrier: { type: string }
         earliest_delivery_time: { type: string, format: date-time }
         latest_delivery_time: { type: string, format: date-time }
-        subtotal: { type: integer }
-        tax: { type: integer }
-        total: { type: integer }
-      required: [type, id, title, subtotal, tax, total]
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+      required: [type, id, title, totals]
 
     FulfillmentOptionDigital:
       type: object
@@ -573,11 +588,11 @@ components:
         type: { type: string, const: digital }
         id: { type: string }
         title: { type: string }
-        subtitle: { type: string }
-        subtotal: { type: integer }
-        tax: { type: integer }
-        total: { type: integer }
-      required: [type, id, title, subtotal, tax, total]
+        description: { type: string }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Total" }
+      required: [type, id, title, totals]
 
     SelectedShippingFulfillmentOption:
       type: object
@@ -670,6 +685,86 @@ components:
         billing_address: { $ref: "#/components/schemas/Address" }
       required: [token, provider]
 
+    AuthenticationMetadata:
+      type: object
+      additionalProperties: false
+      properties:
+        channel:
+          type: object
+          additionalProperties: false
+          properties:
+            type: { type: string, enum: [browser] }
+            browser:
+              type: object
+              additionalProperties: false
+              properties:
+                accept_header: { type: string }
+                ip_address: { type: string }
+                javascript_enabled: { type: boolean }
+                language: { type: string }
+                user_agent: { type: string }
+                color_depth: { type: integer }
+                java_enabled: { type: boolean }
+                screen_height: { type: integer }
+                screen_width: { type: integer }
+                timezone_offset: { type: integer }
+              required:
+                [
+                  accept_header,
+                  ip_address,
+                  javascript_enabled,
+                  language,
+                  user_agent,
+                ]
+          required: [type, browser]
+        acquirer_details:
+          type: object
+          additionalProperties: false
+          properties:
+            acquirer_bin: { type: string }
+            acquirer_country: { type: string }
+            acquirer_merchant_id: { type: string }
+            merchant_name: { type: string }
+            requestor_id: { type: string }
+          required:
+            [acquirer_bin, acquirer_country, acquirer_merchant_id, merchant_name]
+        directory_server:
+          type: string
+          enum: [american_express, mastercard, visa]
+        flow_preference:
+          type: object
+          additionalProperties: false
+          properties:
+            type: { type: string, enum: [challenge, frictionless] }
+            challenge: { type: object }
+            frictionless: { type: object }
+          required: [type]
+      required: [channel, acquirer_details, directory_server]
+
+    AuthenticationResult:
+      type: object
+      additionalProperties: false
+      properties:
+        outcome:
+          type: string
+          enum: [authenticated, failed, unavailable, rejected, attempt]
+        outcome_details:
+          type: object
+          additionalProperties: false
+          properties:
+            three_ds_cryptogram: { type: string }
+            electronic_commerce_indicator: { type: string }
+            transaction_id: { type: string }
+            version: { type: string }
+          required:
+            [
+              three_ds_cryptogram,
+              electronic_commerce_indicator,
+              transaction_id,
+              version,
+            ]
+      required: [outcome]
+
     Order:
       type: object
       additionalProperties: false
@@ -679,6 +774,22 @@ components:
         permalink_url: { type: string, format: uri }
       required: [id, checkout_session_id, permalink_url]
 
+    AuthenticationProvider:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+          enum: [stripe, adyen]
+        merchant_id:
+          type: string
+        supported_authentication_methods:
+          type: array
+          items:
+            type: string
+            enum: [3ds]
+      required: [provider, merchant_id, supported_authentication_methods]
+
     CheckoutSessionBase:
       type: object
       additionalProperties: false
@@ -686,6 +797,7 @@ components:
         id: { type: string }
         buyer: { $ref: "#/components/schemas/Buyer" }
         payment_provider: { $ref: "#/components/schemas/PaymentProvider" }
+        authentication_provider: { $ref: "#/components/schemas/AuthenticationProvider" }
         status:
           {
             type: string,
@@ -696,6 +808,7 @@ components:
                 completed,
                 canceled,
                 in_progress,
+                authentication_required,
               ],
           }
         currency: { type: string }
@@ -724,6 +837,7 @@ components:
         links:
           type: array
           items: { $ref: "#/components/schemas/Link" }
+        authentication_metadata: { $ref: "#/components/schemas/AuthenticationMetadata" }
       required:
         [
           id,
@@ -783,6 +897,7 @@ components:
         payment_data: { $ref: "#/components/schemas/PaymentData" }
         affiliate_attribution:
           { $ref: "#/components/schemas/AffiliateAttribution" }
+        authentication_result: { $ref: "#/components/schemas/AuthenticationResult" }
       required: [payment_data]
 
     IntentTrace:

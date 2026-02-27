@@ -36,7 +36,7 @@ jobs:
           node -p "require('ajv-formats/package.json').version"
 
       - name: Show tree (debug)
-        run: ls -la spec/json-schema || true
+        run: ls -la spec/unreleased/json-schema
 
       - name: Compile schema
         run: pnpm run compile:schema

@@ -1,0 +1,104 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Percentage discount with item-level allocations showing where the discount was applied",
+
+  "request": {
+    "line_items": [
+      {"id": "item_shirt", "quantity": 2},
+      {"id": "item_pants", "quantity": 1}
+    ],
+    "currency": "usd",
+    "discounts": {
+      "codes": ["SUMMER20"]
+    }
+  },
+
+  "response": {
+    "id": "checkout_session_def456",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_shirt"},
+        "name": "Cotton T-Shirt",
+        "quantity": 2,
+        "unit_amount": 2500,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
+          {"type": "items_discount", "display_text": "Discount", "amount": 1000},
+          {"type": "total", "display_text": "Total", "amount": 4000}
+        ]
+      },
+      {
+        "id": "li_2",
+        "item": {"id": "item_pants"},
+        "name": "Slim Fit Jeans",
+        "quantity": 1,
+        "unit_amount": 6000,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 6000},
+          {"type": "items_discount", "display_text": "Discount", "amount": 1200},
+          {"type": "total", "display_text": "Total", "amount": 4800}
+        ]
+      }
+    ],
+    "discounts": {
+      "codes": ["SUMMER20"],
+      "applied": [
+        {
+          "id": "di_summer20",
+          "code": "SUMMER20",
+          "coupon": {
+            "id": "coupon_summer",
+            "name": "Summer Sale 20% Off",
+            "percent_off": 20,
+            "duration": "once"
+          },
+          "amount": 2200,
+          "method": "each",
+          "allocations": [
+            {"path": "$.line_items[0]", "amount": 1000},
+            {"path": "$.line_items[1]", "amount": 1200}
+          ]
+        }
+      ]
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 11000},
+      {"type": "items_discount", "display_text": "Item Discounts (20% off)", "amount": 2200},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 8800},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "total", "display_text": "Total", "amount": 8800}
+    ],
+    "messages": [],
+    "links": []
+  }
+}
+

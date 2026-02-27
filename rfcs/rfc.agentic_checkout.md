@@ -34,6 +34,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** follow RFC 2119/8174.
 ### 2.1 Initialization
 
 - **Versioning:** Client (ChatGPT) **MUST** send `API-Version`. Server **MUST** validate support (e.g., `2026-01-16`).
+  - When rejecting a request due to missing or unsupported `API-Version` header, servers **SHOULD** return HTTP `400 Bad Request` with a `supported_versions` array listing all versions the server accepts. Servers **MAY** use `unsupported_api_version` or `missing_api_version` as well-known `code` values.
 - **Identity/Signing:** Server **SHOULD** publish acceptable signature algorithms out‑of‑band; client **SHOULD** sign requests (`Signature`) over canonical JSON with an accompanying `Timestamp` (RFC 3339).
 - **Capabilities:** Merchant **SHOULD** document accepted payment methods (e.g., `card`) and fulfillment types (`shipping`, `digital`).
 
@@ -63,7 +64,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 - `Content-Type: application/json` (**REQUIRED** on requests with body)
 - `Accept-Language: <locale>` (e.g., `en-US`) (**RECOMMENDED**)
 - `User-Agent: <string>` (**RECOMMENDED**)
-- `Idempotency-Key: <string>` (**RECOMMENDED**; required for create/complete in certification)
+- `Idempotency-Key: <string>` (**REQUIRED** on all POST requests; opaque string, max 255 characters, UUID v4 recommended)
 - `Request-Id: <string>` (**RECOMMENDED**)
 - `Signature: <base64url>` (**RECOMMENDED**)
 - `Timestamp: <RFC3339>` (**RECOMMENDED**)
@@ -71,7 +72,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 
 **Response Headers:**
 
-- `Idempotency-Key` — echo if provided
+- `Idempotency-Key` — echo on all POST responses
 - `Request-Id` — echo if provided
 
 **Error Shape (flat):**
@@ -85,7 +86,7 @@ All endpoints **MUST** use HTTPS and return JSON. Amounts **MUST** be integers i
 }
 ```
 
-Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | service_unavailable`. `param` is an RFC 9535 JSONPath (optional).
+Where `type` ∈ `invalid_request | processing_error | service_unavailable`. `param` is an RFC 9535 JSONPath (optional).
 
 ---
 
@@ -125,7 +126,7 @@ Where `type` ∈ `invalid_request | request_not_idempotent | processing_error | 
 **Response body (authoritative cart):**
 
 - `id` (string)
-- `payment_provider` (e.g., `stripe`, `supported_payment_methods: [{ type: "card", supported_card_networks: ["visa"] }]`)
+- `capabilities.payment.handlers` (array of **PaymentHandler** objects with handler config, PSP, and requirements)
 - `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
@@ -178,20 +179,28 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
 - **Address**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
 - **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested Address object)
-- **FulfillmentOption (shipping)**: `id`, `title`, `subtitle?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `subtotal?`, `tax?`, `total` (**int**)
-- **FulfillmentOption (digital)**: `id`, `title`, `subtitle?`, `subtotal?`, `tax?`, `total` (**int**)
-- **SelectedFulfillmentOption**: `type` (`shipping|digital`), and type-specific nested object (e.g., `shipping: {option_id, item_ids[]}`)
-- **PaymentProvider**: `provider` (`stripe`), `supported_payment_methods` (array of **PaymentMethod**)
-- **PaymentMethod**: `type` (`"card"`), `supported_card_networks` (`amex | discover | mastercard | visa`)
-- **PaymentData**: `token`, `provider` (`stripe`), `billing_address?`
+- **FulfillmentOption (shipping)**: `id`, `title`, `description?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `totals` (array of **Total**)
+- **FulfillmentOption (digital)**: `id`, `title`, `description?`, `totals` (array of **Total**)
+- **FulfillmentOption (pickup)**: `id`, `title`, `description?`, `location`, `pickup_type?`, `ready_by?`, `pickup_by?`, `totals` (array of **Total**)
+- **FulfillmentOption (local_delivery)**: `id`, `title`, `description?`, `delivery_window?`, `service_area?`, `totals` (array of **Total**)
+- **SelectedFulfillmentOption**: `type` (`shipping|digital|pickup|local_delivery`), `option_id`, `item_ids[]` (simple object mapping fulfillment option to items)
+- **PaymentHandler**: `id`, `name`, `version`, `spec`, `requires_delegate_payment`, `requires_pci_compliance`, `psp`, `config_schema`, `instrument_schemas[]`, `config` (handler-specific configuration)
+- **PaymentData**: `handler_id`, `instrument` (with `type` and `credential`), `billing_address?`
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
-- **Message (info)**: `type: "info"`, `param?`, `content_type: "plain"|"markdown"`, `content`
-- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `param?`, `content_type`, `content`
+- **Message (info)**: `type: "info"`, `severity?`, `resolution?`, `param?`, `content_type: "plain"|"markdown"`, `content`
+- **Message (warning)**: `type: "warning"`, `code`, `severity?`, `resolution?`, `param?`, `content_type`, `content`
+- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `severity?`, `resolution?`, `param?`, `content_type`, `content`
+
+Message resolution values:
+- `resolution` (optional): Declares who resolves this message. Values:
+  - `recoverable`: Agent can fix via API (e.g., retry with different parameters)
+  - `requires_buyer_input`: Buyer must provide information the API cannot collect programmatically
+  - `requires_buyer_review`: Buyer must authorize before order placement (policy, regulatory, or entitlement rules)
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
+- **Total**: `type`, `display_text`, `amount` (**int**), `description?`
 
 3D Secure / Authentication-specific types:
-- **AuthenticationMetadata**: 
-  - `channel` (object): `type` ("browser"), `browser` (object containing `accept_header`, `ip_address`, `javascript_enabled` (bool), `language`, `user_agent`; plus conditional fields if JS enabled: `color_depth`, `java_enabled`, `screen_height`, `screen_width`, `timezone_offset`).
+- **AuthenticationMetadata**:
   - `acquirer_details` (object): `acquirer_bin`, `acquirer_country`, `acquirer_merchant_id`, `merchant_name`, `requestor_id?`.
   - `directory_server`: enum `american_express` | `mastercard` | `visa`.
   - `flow_preference?` (object): `type` ("challenge" | "frictionless"), `challenge?` (object), `frictionless?` (object).
@@ -203,17 +212,91 @@ All money fields are **integers (minor units)**.
 
 ## 6. Idempotency, Retries & Concurrency
 
-- Clients **SHOULD** set `Idempotency-Key` on **create** and **complete** requests.
-- Replays with the **same** key and **identical** parameters **MUST** return the original result.
-- Replays with the **same** key and **different** parameters **MUST** return **409** with:
+> Canonical reference for ACP idempotency. Supersedes prior idempotency rules where they conflict. See SEP #120.
+
+### 6.1 Idempotency-Key Requirement
+
+- Clients **MUST** include an `Idempotency-Key` header on **every POST** request (create, update, complete, cancel).
+- The key is an **opaque string**, max **255 characters**; UUID v4 is **RECOMMENDED**.
+- Servers **MUST** scope keys to the **authenticated identity + endpoint path**; the same key on different endpoints is treated independently.
+- A POST request **without** an `Idempotency-Key` header **MUST** be rejected with:
+  ```json
+  {
+    "type": "invalid_request",
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required on all POST requests"
+  }
+  ```
+  HTTP status: **400 Bad Request**.
+
+### 6.2 Request Equivalence
+
+- Equivalence is determined by **semantic JSON equality of the request body only**; headers are excluded.
+- Servers **MUST** treat the following as equivalent:
+  | Variation | Equivalent? |
+  |---|---|
+  | Different key ordering | Yes |
+  | `null` value vs absent key | **Different** — `null` means "clear this field"; absent means "do not modify" |
+  | Trailing zeros in numbers (`1.0` vs `1`) | Yes |
+  | Array element ordering | **No** — arrays are order-sensitive |
+- Monetary values **SHOULD** use **string** or **integer-cent** representations to avoid floating-point ambiguity.
+- _Informative:_ Servers **MAY** implement comparison via RFC 8785 (JCS) canonicalization + SHA-256 fingerprint.
+
+### 6.3 Replay Behavior
+
+- Same key + **identical** body → server **MUST** return the **original response** with the **same HTTP status code**.
+- The replayed response **SHOULD** include the header `Idempotent-Replayed: true`.
+- **Update endpoints** (`POST /checkout_sessions/{id}`) follow the same replay semantics as create: same key + same body returns the stored response.
+- Servers **MUST NOT** re-execute side effects (e.g., payment capture, inventory reservation) on replay.
+
+### 6.4 Error Responses
+
+All idempotency errors use `type: "invalid_request"` and the following codes:
+
+| Scenario | HTTP | `code` | Retryable? |
+|---|---|---|---|
+| Missing `Idempotency-Key` header | 400 | `idempotency_key_required` | Yes (add header) |
+| Same key, different body | 422 | `idempotency_conflict` | **No** (permanent) |
+| Same key, original request still in flight | 409 | `idempotency_in_flight` | Yes (honor `Retry-After`) |
+
+- **422 — payload mismatch** example:
   ```json
   {
     "type": "invalid_request",
     "code": "idempotency_conflict",
-    "message": "Same Idempotency-Key used with different parameters"
+    "message": "Idempotency-Key has already been used with a different request body"
   }
   ```
-- Servers **SHOULD** implement at‑least‑once processing and be resilient to network timeouts.
+- **409 — in-flight collision** example:
+  ```json
+  {
+    "type": "invalid_request",
+    "code": "idempotency_in_flight",
+    "message": "A request with this Idempotency-Key is currently being processed"
+  }
+  ```
+  Servers **SHOULD** include a `Retry-After` header (in seconds).
+
+### 6.5 Server Error Caching
+
+- Responses with HTTP **5xx** status codes **MUST NOT** be cached against the idempotency key.
+- A retry with the same key after a 5xx **MUST** be processed as a **fresh request**.
+
+### 6.6 Key Retention
+
+- Servers **MUST** retain idempotency key → response mappings for **at least 24 hours**.
+- After expiry, a reused key is treated as a **new request** (no error).
+
+### 6.7 Extension Fields
+
+- When an ACP extension is active, extension-defined fields in the request body **MUST** participate in body comparison (§6.2).
+
+### 6.8 Implementation Guidance (informative)
+
+- **Gateway / middleware pattern:** Idempotency logic is **RECOMMENDED** to live in a middleware layer in front of business logic, so all endpoints gain consistent behavior.
+- **Atomic transaction boundaries:** The idempotency key record and the business operation **SHOULD** be committed in the **same ACID transaction** to prevent ghost keys (key stored, operation failed) or lost keys (operation succeeded, key not stored).
+- **Recovery points:** When an operation triggers foreign state mutations (e.g., PSP authorization), servers **SHOULD** implement recovery-point semantics — record intermediate state so that retries can resume rather than restart.
+- **SDK serialization:** Because `null` and absent are semantically distinct (§6.2), SDK authors **SHOULD** ensure their serializers preserve the distinction. Clients **MUST** only include `null` when they intend to clear a field, and **MUST** omit the key when they intend to leave the field unchanged.
 
 ---
 
@@ -221,7 +304,7 @@ All money fields are **integers (minor units)**.
 
 - **Authentication:** `Authorization: Bearer <token>` **REQUIRED**.
 - **Integrity & Freshness:** `Signature` over canonical JSON and `Timestamp` **SHOULD** be verified with a bounded clock‑skew window.
-- **PCI/PII:** Do not log full PAN/CVC; redact addresses as required by policy. TLS 1.2+ **MUST** be used.
+- **PCI/PII:** Do not log full PAN/CVC; redact addresses as required by policy. TLS 1.3 **MUST** be used.
 - **Webhooks:** Verify HMAC (`Merchant-Signature`) on webhook calls (see separate Webhooks RFC/OAS).
 
 ---
@@ -232,7 +315,7 @@ All money fields are **integers (minor units)**.
 - All monetary amounts are **integers** (minor units).
 - `status` ∈ `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`.
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
-- `selected_fulfillment_options[].shipping.option_id` or `digital.option_id` **MUST** match an element of `fulfillment_options` when set.
+- `selected_fulfillment_options[].option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
 - When status is `authentication_required`, the session response MUST include `authentication_metadata`.
 
@@ -267,12 +350,25 @@ All money fields are **integers (minor units)**.
 ```json
 {
   "id": "checkout_session_123",
-  "payment_provider": {
-    "provider": "stripe",
-    "supported_payment_methods": [
+  "payment": {
+    "handlers": [
       {
-        "type": "card",
-        "supported_card_networks": ["amex", "discover", "mastercard", "visa"]
+        "id": "card_tokenized",
+        "name": "dev.acp.tokenized.card",
+        "version": "2026-01-22",
+        "spec": "https://acp.dev/handlers/tokenized.card",
+        "requires_delegate_payment": true,
+        "requires_pci_compliance": false,
+        "psp": "stripe",
+        "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+        "instrument_schemas": ["https://acp.dev/schemas/handlers/tokenized.card/instrument.json"],
+        "config": {
+          "merchant_id": "acct_1234567890",
+          "psp": "stripe",
+          "accepted_brands": ["visa", "mastercard", "amex", "discover"],
+          "supports_3ds": true,
+          "environment": "production"
+        }
       }
     ]
   },
@@ -306,10 +402,8 @@ All money fields are **integers (minor units)**.
   "selected_fulfillment_options": [
     {
       "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_123",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_123",
+      "item_ids": ["item_456"]
     }
   ],
   "totals": [
@@ -328,25 +422,25 @@ All money fields are **integers (minor units)**.
       "type": "shipping",
       "id": "fulfillment_option_123",
       "title": "Standard",
-      "subtitle": "Arrives in 4-5 days",
+      "description": "Arrives in 4-5 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
       "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-      "subtotal": 100,
-      "tax": 0,
-      "total": 100
+      "totals": [
+        { "type": "total", "display_text": "Shipping", "amount": 100 }
+      ]
     },
     {
       "type": "shipping",
       "id": "fulfillment_option_456",
       "title": "Express",
-      "subtitle": "Arrives in 1-2 days",
+      "description": "Arrives in 1-2 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
       "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-      "subtotal": 500,
-      "tax": 0,
-      "total": 500
+      "totals": [
+        { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+      ]
     }
   ],
   "messages": [],
@@ -365,11 +459,8 @@ All money fields are **integers (minor units)**.
 {
   "selected_fulfillment_options": [
     {
-      "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_456",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_456",
+      "item_ids": ["item_456"]
     }
   ]
 }
@@ -409,11 +500,8 @@ All money fields are **integers (minor units)**.
   },
   "selected_fulfillment_options": [
     {
-      "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_456",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_456",
+      "item_ids": ["item_456"]
     }
   ],
   "totals": [
@@ -432,25 +520,25 @@ All money fields are **integers (minor units)**.
       "type": "shipping",
       "id": "fulfillment_option_123",
       "title": "Standard",
-      "subtitle": "Arrives in 4-5 days",
+      "description": "Arrives in 4-5 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
       "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-      "subtotal": 100,
-      "tax": 0,
-      "total": 100
+      "totals": [
+        { "type": "total", "display_text": "Shipping", "amount": 100 }
+      ]
     },
     {
       "type": "shipping",
       "id": "fulfillment_option_456",
       "title": "Express",
-      "subtitle": "Arrives in 1-2 days",
+      "description": "Arrives in 1-2 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
       "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-      "subtotal": 500,
-      "tax": 0,
-      "total": 500
+      "totals": [
+        { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+      ]
     }
   ],
   "messages": [],
@@ -474,8 +562,14 @@ All money fields are **integers (minor units)**.
     "phone_number": "15552003434"
   },
   "payment_data": {
-    "token": "spt_123",
-    "provider": "stripe",
+    "handler_id": "card_tokenized",
+    "instrument": {
+      "type": "card",
+      "credential": {
+        "type": "spt",
+        "token": "spt_123"
+      }
+    },
     "billing_address": {
       "name": "test",
       "line_one": "1234 Chat Road",
@@ -541,10 +635,8 @@ If the session is in `authentication_required` state, a client MUST include `aut
   "selected_fulfillment_options": [
     {
       "type": "shipping",
-      "shipping": {
-        "option_id": "fulfillment_option_123",
-        "item_ids": ["item_456"]
-      }
+      "option_id": "fulfillment_option_456",
+      "item_ids": ["item_456"]
     }
   ],
   "totals": [
@@ -555,33 +647,33 @@ If the session is in `authentication_required` state, a client MUST include `aut
     },
     { "type": "subtotal", "display_text": "Subtotal", "amount": 300 },
     { "type": "tax", "display_text": "Tax", "amount": 30 },
-    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 100 },
-    { "type": "total", "display_text": "Total", "amount": 430 }
+    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 500 },
+    { "type": "total", "display_text": "Total", "amount": 830 }
   ],
   "fulfillment_options": [
     {
       "type": "shipping",
       "id": "fulfillment_option_123",
       "title": "Standard",
-      "subtitle": "Arrives in 4-5 days",
+      "description": "Arrives in 4-5 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
       "latest_delivery_time": "2025-10-13T07:20:50.52Z",
-      "subtotal": 100,
-      "tax": 0,
-      "total": 100
+      "totals": [
+        { "type": "total", "display_text": "Shipping", "amount": 100 }
+      ]
     },
     {
       "type": "shipping",
       "id": "fulfillment_option_456",
       "title": "Express",
-      "subtitle": "Arrives in 1-2 days",
+      "description": "Arrives in 1-2 days",
       "carrier": "USPS",
       "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
       "latest_delivery_time": "2025-10-10T07:20:50.52Z",
-      "subtotal": 500,
-      "tax": 0,
-      "total": 500
+      "totals": [
+        { "type": "total", "display_text": "Express Shipping", "amount": 500 }
+      ]
     }
   ],
   "messages": [],
@@ -638,8 +730,8 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
     },
     { "type": "subtotal", "display_text": "Subtotal", "amount": 300 },
     { "type": "tax", "display_text": "Tax", "amount": 30 },
-    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 100 },
-    { "type": "total", "display_text": "Total", "amount": 430 }
+    { "type": "fulfillment", "display_text": "Fulfillment", "amount": 500 },
+    { "type": "total", "display_text": "Total", "amount": 830 }
   ],
   "messages": [
     {
@@ -665,7 +757,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 - [ ] Returns **authoritative** cart state on every response
 - [ ] Uses **integer** minor units for all monetary amounts
 - [ ] Implements create, update (POST), retrieve (GET), complete, cancel
-- [ ] Implements idempotency semantics and conflict detection
+- [ ] Requires `Idempotency-Key` on all POST; returns 400/422/409 per §6
 - [ ] Emits flat error objects with `type/code/message/param?`
 - [ ] Verifies auth; signs/verifies requests where applicable
 - [ ] Emits order webhooks per the Webhooks RFC (separate spec)
@@ -677,6 +769,8 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **Unreleased**: Rewrote §6 (Idempotency, Retries & Concurrency) with full normative rules: mandatory `Idempotency-Key` on all POST requests, request equivalence semantics, replay behavior with `Idempotent-Replayed` header, IETF-aligned error codes (`idempotency_key_required`, `idempotency_conflict`, `idempotency_in_flight`), 5xx caching prohibition, 24-hour key retention, and extension field participation. Removed `request_not_idempotent` from `Error.type` enum. See SEP #120.
+- **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:
   - Renamed `fulfillment_address` to `fulfillment_details` with nested structure (`name`, `phone_number`, `email`, `address`)
   - Replaced `fulfillment_option_id` with `selected_fulfillment_options[]` array supporting multiple selections and item mappings

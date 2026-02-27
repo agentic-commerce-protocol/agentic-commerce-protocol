@@ -102,6 +102,11 @@ The standard SEP workflow is:
 6. If the SEP has not found a sponsor within three months, Founding Maintainers
    may close the SEP as `dormant`.
 
+**Pull Request Template**: When creating a pull request for your SEP, use the
+[sep-proposal.md](../.github/PULL_REQUEST_TEMPLATE/sep-proposal.md) template.
+This template ensures you include all required sections and helps maintainers
+review your proposal efficiently.
+
 ### SEP Format
 
 Each SEP should have the following parts:
