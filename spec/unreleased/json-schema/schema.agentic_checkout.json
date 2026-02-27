@@ -1085,7 +1085,9 @@
             "low_stock",
             "out_of_stock",
             "backorder",
-            "pre_order"
+            "pre_order",
+            "offer_valid",
+            "offer_expired"
           ],
           "description": "Current availability status of the item"
         },
@@ -1103,6 +1105,11 @@
           "type": "string",
           "format": "date-time",
           "description": "RFC 3339 timestamp when item becomes available for fulfillment"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when this offer/price expires."
         },
         "variant_options": {
           "type": "array",
@@ -1945,6 +1952,8 @@
             "conflict",
             "rate_limited",
             "expired",
+            "offer_expired",
+            "quote_expired",
             "intervention_required"
           ],
           "description": "Error code indicating the type of error"

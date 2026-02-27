@@ -268,6 +268,106 @@
       }
     ]
   },
+  "checkout_session_response_time_bound_offer": {
+    "id": "cs_booking_456",
+    "protocol": { "version": "2026-01-30" },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "quote_id": "fare_hold_xyz789",
+    "quote_expires_at": "2026-02-27T18:30:00Z",
+    "line_items": [
+      {
+        "id": "line_flight_001",
+        "item": { "id": "offer_flight_abc" },
+        "quantity": 1,
+        "name": "Outbound: SFO → JFK, Economy",
+        "description": "Fri Mar 15, 2026, 08:00 departure",
+        "availability_status": "offer_valid",
+        "valid_until": "2026-02-27T18:30:00Z",
+        "totals": [
+          { "type": "items_base_amount", "display_text": "Base Fare", "amount": 12500 },
+          { "type": "subtotal", "display_text": "Subtotal", "amount": 12500 },
+          { "type": "tax", "display_text": "Tax", "amount": 0 },
+          { "type": "total", "display_text": "Total", "amount": 12500 }
+        ]
+      },
+      {
+        "id": "line_addon_001",
+        "item": { "id": "addon_baggage_20kg" },
+        "quantity": 1,
+        "name": "Extra 20kg checked baggage",
+        "parent_id": "line_flight_001",
+        "availability_status": "offer_valid",
+        "valid_until": "2026-02-27T18:30:00Z",
+        "totals": [
+          { "type": "items_base_amount", "display_text": "Baggage", "amount": 3500 },
+          { "type": "subtotal", "display_text": "Subtotal", "amount": 3500 },
+          { "type": "tax", "display_text": "Tax", "amount": 0 },
+          { "type": "total", "display_text": "Total", "amount": 3500 }
+        ]
+      }
+    ],
+    "totals": [
+      { "type": "items_base_amount", "display_text": "Item(s) total", "amount": 16000 },
+      { "type": "subtotal", "display_text": "Subtotal", "amount": 16000 },
+      { "type": "tax", "display_text": "Tax", "amount": 0 },
+      { "type": "total", "display_text": "Total", "amount": 16000 }
+    ],
+    "fulfillment_options": [],
+    "messages": [],
+    "links": []
+  },
+  "checkout_session_response_with_offer_expired_message": {
+    "id": "cs_booking_789",
+    "protocol": { "version": "2026-01-30" },
+    "capabilities": {
+      "payment": { "handlers": [] },
+      "interventions": { "supported": [], "required": [], "enforcement": "conditional" }
+    },
+    "status": "not_ready_for_payment",
+    "currency": "usd",
+    "quote_id": "fare_hold_abc",
+    "quote_expires_at": "2026-02-27T18:30:00Z",
+    "line_items": [
+      {
+        "id": "line_flight_002",
+        "item": { "id": "offer_flight_expired" },
+        "quantity": 1,
+        "name": "Outbound: LAX → BOS, Economy",
+        "availability_status": "offer_expired",
+        "valid_until": "2026-02-27T12:00:00Z",
+        "totals": [
+          { "type": "items_base_amount", "display_text": "Base Fare", "amount": 9800 },
+          { "type": "subtotal", "display_text": "Subtotal", "amount": 9800 },
+          { "type": "tax", "display_text": "Tax", "amount": 0 },
+          { "type": "total", "display_text": "Total", "amount": 9800 }
+        ]
+      }
+    ],
+    "totals": [
+      { "type": "items_base_amount", "display_text": "Item(s) total", "amount": 9800 },
+      { "type": "subtotal", "display_text": "Subtotal", "amount": 9800 },
+      { "type": "tax", "display_text": "Tax", "amount": 0 },
+      { "type": "total", "display_text": "Total", "amount": 9800 }
+    ],
+    "fulfillment_options": [],
+    "messages": [
+      {
+        "type": "error",
+        "code": "offer_expired",
+        "content_type": "plain",
+        "content": "This offer has expired. Please refresh to get updated pricing.",
+        "param": "$.line_items[0]",
+        "severity": "high",
+        "resolution": "recoverable"
+      }
+    ],
+    "links": []
+  },
   "update_checkout_session_request": {
     "selected_fulfillment_options": [
       {
