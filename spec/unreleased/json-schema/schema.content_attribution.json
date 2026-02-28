@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-commerce-protocol.com/schemas/content_attribution.json",
+  "$comment": "ACP binding of OpenAttribution Telemetry v0.4. Canonical specification: https://openattribution.org/telemetry",
+  "title": "Content Attribution Extension for ACP",
+  "description": "Content citation attribution data for ACP checkout sessions.",
+  "type": "object",
+  "properties": {
+    "content_scope": {
+      "type": "string",
+      "description": "Opaque identifier for the content collection used by the agent."
+    },
+    "content_retrieved": {
+      "type": "array",
+      "description": "Content URLs fetched during the session.",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": ["content_url", "timestamp"],
+        "properties": {
+          "content_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI of content retrieved."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC timestamp of retrieval (ISO 8601)."
+          }
+        }
+      }
+    },
+    "content_cited": {
+      "type": "array",
+      "description": "Content explicitly referenced in agent responses.",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": ["content_url", "timestamp"],
+        "properties": {
+          "content_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI of content cited."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC timestamp of citation (ISO 8601)."
+          },
+          "citation_type": {
+            "type": "string",
+            "enum": ["direct_quote", "paraphrase", "reference", "contradiction"],
+            "description": "How the content was used in the response."
+          },
+          "excerpt_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Token count of the cited excerpt."
+          },
+          "position": {
+            "type": "string",
+            "enum": ["primary", "supporting", "mentioned"],
+            "description": "Prominence of the citation in the response."
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[a-fA-F0-9]{64}$",
+            "description": "SHA-256 hash of the content the agent processed from this URL, for integrity audit trail in dispute resolution (format: 'sha256:abc123...')."
+          }
+        }
+      }
+    },
+    "conversation_summary": {
+      "type": "object",
+      "description": "Lightweight conversation context. All fields are agent-reported hints.",
+      "properties": {
+        "turn_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of conversation turns before checkout."
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "De-duplicated free-form topic tags from the conversation."
+        }
+      }
+    }
+  },
+  "required": ["content_retrieved"],
+  "additionalProperties": true
+}
