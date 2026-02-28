@@ -63,6 +63,26 @@ paths:
                     refunds:
                       - type: original_payment
                         amount: "1.00"
+              order_updated_shipping_fulfilled:
+                summary: "Shipping flow - order delivered (confirmed -> shipped -> fulfilled)"
+                value:
+                  type: order_update
+                  data:
+                    type: order
+                    checkout_session_id: "checkout_session_123"
+                    permalink_url: "https://example.com/orders/123"
+                    status: fulfilled
+                    refunds: []
+              order_updated_digital_fulfilled:
+                summary: "Digital flow - order provisioned (confirmed -> fulfilled, no shipped)"
+                value:
+                  type: order_update
+                  data:
+                    type: order
+                    checkout_session_id: "checkout_session_456"
+                    permalink_url: "https://example.com/orders/456"
+                    status: fulfilled
+                    refunds: []
       responses:
         "200":
           description: Event accepted
@@ -115,7 +135,17 @@ components:
         status:
           type: string
           enum:
-            [created, manual_review, confirmed, canceled, shipped, fulfilled]
+            [created, manual_review, confirmed, canceled, shipped, delivered, fulfilled]
+          description: |
+            Order lifecycle status.
+            - shipped: Physical shipping only. The order has been handed off to a carrier and is in transit.
+            - fulfilled: Fulfillment completed (terminal). For shipping: delivered or picked up. For digital: delivered or provisioned.
+            - delivered: Equivalent to fulfilled for physical shipping (accepted for backward compatibility).
+            Notes:
+            - fulfilled means fulfillment completed (execution done), not "order information is complete"; the latter is reflected by statuses such as confirmed.
+            - shipped MUST NOT be used for digital-only orders.
+            - For shipping orders the typical progression is confirmed -> shipped -> fulfilled (or delivered).
+            - For digital orders the typical progression is confirmed -> fulfilled.
         refunds:
           type: array
           items: { $ref: "#/components/schemas/Refund" }
