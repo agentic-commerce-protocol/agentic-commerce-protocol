@@ -1,0 +1,81 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.store.json#/$defs/checkout_with_store",
+  "id": "cs_out_of_stock_example",
+  "protocol": {
+    "name": "acp",
+    "version": "unreleased"
+  },
+  "status": "not_ready_for_payment",
+  "currency": "usd",
+  "store": {
+    "id": "store_sf_mission",
+    "name": "Mission District Store",
+    "address": {
+      "name": "Mission District Store",
+      "line_one": "456 Mission Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94110"
+    },
+    "coordinates": {
+      "latitude": 37.7599,
+      "longitude": -122.4148
+    }
+  },
+  "line_items": [
+    {
+      "id": "li_jacket_001",
+      "product_id": "prod_jacket_blue_large",
+      "title": "Blue Jacket - Large",
+      "quantity": 1,
+      "unit_amount": 8900,
+      "availability_status": "out_of_stock",
+      "available_quantity": 0
+    }
+  ],
+  "totals": [
+    {
+      "type": "subtotal",
+      "display_text": "Subtotal",
+      "currency": "usd",
+      "amount": 8900
+    },
+    {
+      "type": "tax",
+      "display_text": "Tax",
+      "currency": "usd",
+      "amount": 779
+    },
+    {
+      "type": "total",
+      "display_text": "Total",
+      "currency": "usd",
+      "amount": 9679
+    }
+  ],
+  "fulfillment_options": [],
+  "messages": [
+    {
+      "type": "error",
+      "code": "out_of_stock",
+      "param": "$.line_items[0]",
+      "resolution": "recoverable",
+      "content_type": "plain",
+      "content": "This item is not available at Mission District Store. Available at Market Street (0.8 mi) or try shipping."
+    }
+  ],
+  "links": [],
+  "capabilities": {
+    "extensions": [
+      {
+        "name": "store",
+        "extends": [
+          "$.CheckoutSessionCreateRequest.store_id",
+          "$.CheckoutSessionUpdateRequest.store_id",
+          "$.CheckoutSession.store"
+        ]
+      }
+    ]
+  }
+}
