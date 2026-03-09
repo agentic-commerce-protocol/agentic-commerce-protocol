@@ -228,7 +228,7 @@ the early growth of the protocol and its governance structures.
 
 ### Responsibilities
 
-- Appoint and remove TSC members based on the published membership criteria.
+- Appoint TSC members based on the published membership criteria.
 - Ensure the protocol's long-term coherence, security, and alignment with its
   founding mission.
 - Each holds one seat on the TSC with the same voting rights as any other
