@@ -1,6 +1,6 @@
 # Discovery Well-Known Document
 
-**Added** -- platform-level discovery document at `/.well-known/acp.json` for pre-session capability checks.
+**Added** -- discovery document at `/.well-known/acp.json` for pre-session capability checks.
 
 ## New Document
 
@@ -12,7 +12,7 @@
 
 - **DiscoveryResponse**: Top-level document containing protocol metadata, API base URL, supported
   transports, and a capabilities object.
-- **DiscoveryCapabilities**: Platform-level capabilities wrapper containing services, extensions,
+- **DiscoveryCapabilities**: Seller capabilities wrapper containing services, extensions,
   intervention types, supported currencies, and supported locales.
 - **DiscoveryProtocol**: Protocol identification with name (`acp`), current version,
   supported version history (chronologically ordered), and documentation URL.
@@ -21,7 +21,7 @@
 ## Design Notes
 
 - No authentication required -- the document is publicly accessible.
-- Platform-scoped -- returns information that is stable across all merchants and sessions.
+- Seller-scoped -- returns information that is stable across sessions.
 - Merchant-specific and session-specific capabilities (payment methods, payment handlers)
   remain in the inline `capabilities` object on `POST /checkout_sessions`.
 - Responses SHOULD include `Cache-Control: public, max-age=3600` as a recommended minimum.

@@ -3665,7 +3665,7 @@
     "DiscoveryResponse": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Well-known discovery document served at /.well-known/acp.json. Describes what the ACP platform supports at a high level. This is stable, deterministic information that does not vary per merchant or per session. Merchant-specific capabilities (payment methods, payment handlers) are negotiated inline via the capabilities object on POST /checkout_sessions.",
+      "description": "Well-known discovery document served at /.well-known/acp.json. Describes the seller's capabilities. This is stable, deterministic information that does not vary per session. Session-specific capabilities (payment methods, payment handlers) are negotiated inline via the capabilities object on POST /checkout_sessions.",
       "properties": {
         "protocol": {
           "$ref": "#/$defs/DiscoveryProtocol"
@@ -3682,7 +3682,7 @@
             "enum": ["rest", "mcp"]
           },
           "uniqueItems": true,
-          "description": "Transport bindings supported by this platform. \"rest\" indicates the REST API at api_base_url. \"mcp\" indicates a Model Context Protocol server is available (see SEP #135). New values are introduced in new API versions; agents MAY treat this enum as exhaustive for a given version."
+          "description": "Transport bindings supported by this seller. \"rest\" indicates the REST API at api_base_url. \"mcp\" indicates a Model Context Protocol server is available (see SEP #135). New values are introduced in new API versions; agents MAY treat this enum as exhaustive for a given version."
         },
         "capabilities": {
           "$ref": "#/$defs/DiscoveryCapabilities"
@@ -3705,7 +3705,7 @@
     "DiscoveryCapabilities": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Platform-level capabilities advertised in the well-known discovery document. Contains high-level feature declarations that are stable across all merchants on the platform.",
+      "description": "Seller capabilities advertised in the well-known discovery document. Contains feature declarations that are stable across sessions.",
       "properties": {
         "services": {
           "type": "array",
@@ -3714,14 +3714,14 @@
             "enum": ["checkout", "orders", "delegate_payment"]
           },
           "uniqueItems": true,
-          "description": "High-level services available on this platform. Indicates which ACP operations are implemented. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
+          "description": "Services available from this seller. Indicates which ACP operations are implemented. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
         },
         "extensions": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/DiscoveryExtension"
           },
-          "description": "Extensions the platform supports. These are high-level declarations of available extensions. Whether a specific extension is active for a given merchant or session is determined during checkout session creation."
+          "description": "Extensions the seller supports. Whether a specific extension is active for a given session is determined during checkout session creation."
         },
         "intervention_types": {
           "type": "array",
@@ -3730,7 +3730,7 @@
             "enum": ["3ds", "biometric", "address_verification"]
           },
           "uniqueItems": true,
-          "description": "Intervention types the platform supports. Actual availability for a specific session is negotiated via the capabilities object on POST /checkout_sessions. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
+          "description": "Intervention types the seller supports. Actual availability for a specific session is negotiated via the capabilities object on POST /checkout_sessions. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
         },
         "supported_currencies": {
           "type": "array",
@@ -3740,7 +3740,7 @@
             "description": "ISO 4217 currency code in lowercase (e.g., \"usd\", \"eur\")"
           },
           "uniqueItems": true,
-          "description": "ISO 4217 currency codes supported by the platform. Individual merchants may support a subset of these currencies."
+          "description": "ISO 4217 currency codes supported by the seller."
         },
         "supported_locales": {
           "type": "array",
@@ -3749,7 +3749,7 @@
             "description": "BCP 47 locale tag (e.g., \"en-US\", \"fr-FR\")"
           },
           "uniqueItems": true,
-          "description": "BCP 47 locale tags supported by the platform for localized responses."
+          "description": "BCP 47 locale tags supported by the seller for localized responses."
         }
       },
       "required": ["services"],
@@ -3774,7 +3774,7 @@
         "version": {
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-          "description": "The current (latest) API version supported by the platform, in YYYY-MM-DD format."
+          "description": "The current (latest) API version supported by the seller, in YYYY-MM-DD format."
         },
         "supported_versions": {
           "type": "array",
@@ -3784,12 +3784,12 @@
             "description": "API version in YYYY-MM-DD format"
           },
           "uniqueItems": true,
-          "description": "All API versions the platform currently supports, in chronological order (oldest first). Agents SHOULD use the API-Version header to request a specific version. The last element is always the latest supported version."
+          "description": "All API versions the seller currently supports, in chronological order (oldest first). Agents SHOULD use the API-Version header to request a specific version. The last element is always the latest supported version."
         },
         "documentation_url": {
           "type": "string",
           "format": "uri",
-          "description": "URL to the platform's ACP documentation."
+          "description": "URL to the seller's ACP documentation."
         }
       },
       "required": ["name", "version", "supported_versions"],

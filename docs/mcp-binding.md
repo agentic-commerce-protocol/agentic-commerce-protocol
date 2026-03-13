@@ -28,14 +28,14 @@ separate from the REST endpoint paths.
 ### Discovery
 
 ACP provides a well-known discovery document (`/.well-known/acp.json`) that
-advertises platform capabilities, supported API versions, and available
-transports. When a platform supports MCP, the `transports` array in the
+advertises the seller's capabilities, supported API versions, and available
+transports. When a seller supports MCP, the `transports` array in the
 discovery document includes `"mcp"`. Agents can check this field to determine
 whether to use REST or MCP before making any API calls.
 
 Capability negotiation for individual sessions still happens inline (the agent
 sends `capabilities` in the create request, the merchant responds with the
-negotiated set). The discovery document provides platform-level information
+negotiated set). The discovery document provides the seller's capabilities
 only.
 
 The required `meta.api_version` field presumes the agent knows a compatible
