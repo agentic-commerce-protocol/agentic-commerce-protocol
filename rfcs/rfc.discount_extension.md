@@ -49,13 +49,13 @@ This extension introduces:
 
 ## 3. Extension Declaration
 
-Merchants advertise discount support via `capabilities.extensions` in checkout
+Merchants advertise discount support via `protocol.extensions` in checkout
 responses:
 
 ```json
 {
-  "capabilities": {
-    "payment_methods": ["card"],
+  "protocol": {
+    "version": "2026-01-30",
     "extensions": [
       {
         "name": "discount",
@@ -315,8 +315,8 @@ Applied discounts are reflected in the core checkout fields:
 ```json
 {
   "id": "checkout_session_123",
-  "capabilities": {
-    "payment_methods": ["card"],
+  "protocol": {
+    "version": "2026-01-30",
     "extensions": [
       {
         "name": "discount",
@@ -584,4 +584,3 @@ takes precedence.
 ## 13. Change Log
 
 - **2026-01-27**: Initial draft
-

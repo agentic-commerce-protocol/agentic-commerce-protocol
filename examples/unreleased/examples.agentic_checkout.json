@@ -1470,19 +1470,7 @@
         "2026-01-16",
         "2026-01-30"
       ],
-      "documentation_url": "https://agenticcommerce.dev"
-    },
-    "api_base_url": "https://acp.stripe.com/api",
-    "transports": [
-      "rest",
-      "mcp"
-    ],
-    "capabilities": {
-      "services": [
-        "checkout",
-        "orders",
-        "delegate_payment"
-      ],
+      "documentation_url": "https://agenticcommerce.dev",
       "extensions": [
         {
           "name": "discount",
@@ -1494,6 +1482,18 @@
           "spec": "https://agenticcommerce.dev/specs/fulfillment",
           "schema": "https://agenticcommerce.dev/schemas/fulfillment.json"
         }
+      ]
+    },
+    "api_base_url": "https://acp.stripe.com/api",
+    "transports": [
+      "rest",
+      "mcp"
+    ],
+    "capabilities": {
+      "services": [
+        "checkout",
+        "orders",
+        "delegate_payment"
       ],
       "intervention_types": [
         "3ds",

@@ -209,16 +209,16 @@ Cache-Control: public, max-age=3600
     "name": "acp",
     "version": "2026-01-30",
     "supported_versions": ["2025-09-29", "2025-12-12", "2026-01-16", "2026-01-30"],
-    "documentation_url": "https://agenticcommerce.dev"
+    "documentation_url": "https://agenticcommerce.dev",
+    "extensions": [
+      { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" },
+      { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment", "schema": "https://agenticcommerce.dev/schemas/fulfillment.json" }
+    ]
   },
   "api_base_url": "https://acp.stripe.com/api",
   "transports": ["rest", "mcp"],
   "capabilities": {
     "services": ["checkout", "orders", "delegate_payment"],
-    "extensions": [
-      { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" },
-      { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment", "schema": "https://agenticcommerce.dev/schemas/fulfillment.json" }
-    ],
     "intervention_types": ["3ds", "biometric", "address_verification"],
     "supported_currencies": ["usd", "eur", "gbp"],
     "supported_locales": ["en-US", "fr-FR", "de-DE"]
@@ -253,7 +253,7 @@ An agent uses discovery to bootstrap its interaction with a seller:
 4. Agent reads `api_base_url` to learn where to send API requests.
 5. Agent checks `protocol.supported_versions` to confirm its preferred API version is listed.
 6. Agent checks `capabilities.services` to confirm `"checkout"` is available.
-7. Agent checks `capabilities.extensions` to see if `"discount"` is supported, informing whether to include discount codes in the checkout request.
+7. Agent checks `protocol.extensions` to see if `"discount"` is supported, informing whether to use discount extension fields in checkout requests.
 8. Agent checks `transports` to determine whether to use REST or MCP.
 9. Agent proceeds to `POST {api_base_url}/checkout_sessions` with its inline capabilities for session-level negotiation.
 
@@ -269,7 +269,7 @@ Discovery and capability negotiation are complementary mechanisms at different s
 |---|---|---|
 | **Scope** | Seller's capabilities | Session-specific capabilities |
 | **Authentication** | None required | Bearer token required |
-| **Content** | Protocol version, services, extensions, transports | Payment methods, payment handlers, intervention intersection |
+| **Content** | Protocol version, protocol extensions, services, transports | Payment methods, payment handlers, intervention intersection |
 | **Variability** | Stable across sessions | Varies per session, per rollout state |
 | **Cacheability** | Cacheable (hours to days) | Per-session only |
 | **Purpose** | "Can I use ACP here? Where is the API?" | "What works for this transaction?" |
@@ -340,7 +340,7 @@ Agents that do not use discovery continue to work exactly as before. Discovery i
 **SHOULD requirements:**
 
 - [ ] SHOULD include a `Cache-Control` response header with at least `public, max-age=3600`
-- [ ] SHOULD include `extensions` when the seller supports extensions
+- [ ] SHOULD include `protocol.extensions` when the seller supports extensions
 - [ ] SHOULD include `intervention_types` when the seller supports interventions
 - [ ] SHOULD include `supported_currencies` and `supported_locales` when known
 - [ ] SHOULD apply rate limiting to the document

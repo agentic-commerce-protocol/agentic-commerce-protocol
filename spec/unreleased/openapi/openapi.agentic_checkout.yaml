@@ -879,35 +879,15 @@ components:
           $ref: "#/components/schemas/Payment"
         interventions:
           $ref: "#/components/schemas/InterventionCapabilities"
-        extensions:
-          oneOf:
-            - type: array
-              items:
-                type: string
-                description: Extension identifier string
-              uniqueItems: true
-              description: Extensions the agent understands (request). Simple identifiers like 'discount'.
-            - type: array
-              items:
-                $ref: "#/components/schemas/ExtensionDeclaration"
-              uniqueItems: true
-              description: Active extensions for this session (response). Objects with name, extends, schema, spec.
-          description: |
-            Extensions supported by the party.
-            Requests: array of extension identifiers.
-            Responses: array of extension declaration objects.
       example:
         interventions:
           supported:
             - 3ds
           display_context: native
-        extensions:
-          - discount
-          - affiliate_attribution
     ExtensionDeclaration:
       type: object
       additionalProperties: false
-      description: Extension declaration in capabilities.extensions (response). Describes an active extension and which schema fields it adds.
+      description: Extension declaration in protocol.extensions (response). Describes an active extension and which schema fields it adds.
       required:
         - name
       properties:
@@ -2479,20 +2459,41 @@ components:
         currency: usd
         reason: Customer request
         created_at: "2026-02-14T10:00:00Z"
-    ProtocolVersion:
+    Protocol:
       type: object
       additionalProperties: false
-      description: Protocol metadata included in checkout responses. Indicates the ACP version.
+      description: Protocol metadata included in checkout responses. Carries the ACP version and active protocol extensions for the session.
       properties:
         version:
           type: string
           pattern: ^\d{4}-\d{2}-\d{2}$
           example: "2026-01-27"
           description: ACP protocol version in YYYY-MM-DD format.
-      required:
-        - version
+        extensions:
+          oneOf:
+            - type: array
+              items:
+                type: string
+                pattern: ^[a-z][a-z0-9_-]*(@\d{4}-\d{2}-\d{2})?$|^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9_-]*)+(@\d{4}-\d{2}-\d{2})?$
+                description: Extension identifier string
+              uniqueItems: true
+              description: Extensions the agent understands for this request.
+            - type: array
+              items:
+                $ref: "#/components/schemas/ExtensionDeclaration"
+              uniqueItems: true
+              description: Active protocol extensions for this session.
+          description: Protocol extensions. Requests use identifiers; responses use extension declaration objects.
       example:
         version: "2026-01-30"
+        extensions:
+          - name: discount
+            extends:
+              - $.CheckoutSessionCreateRequest.discounts
+              - $.CheckoutSessionUpdateRequest.discounts
+              - $.CheckoutSession.discounts
+            schema: https://agenticcommerce.dev/schemas/discount/2026-01-27.json
+            spec: https://agenticcommerce.dev/specs/discount
     DiscountAllocation:
       type: object
       additionalProperties: false
@@ -2725,8 +2726,6 @@ components:
         id:
           type: string
           description: Unique identifier for the checkout session
-        protocol:
-          $ref: "#/components/schemas/ProtocolVersion"
         capabilities:
           $ref: "#/components/schemas/Capabilities"
         buyer:
