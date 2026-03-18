@@ -440,7 +440,7 @@ they advocate for it through the same TSC process as everyone else.
 A: For illustrative purposes: imagine the TSC adopts a change that requires all
 ACP implementations to depend on a proprietary API controlled by a single
 company. This would compromise the neutrality of the protocol and could be
-vetoed. Or supposed a specification change is adopted that exposes agents
+vetoed. Or suppose a specification change is adopted that exposes agents
 directly to raw payment credentials, significantly increasing PCI scope for all
 participants, that's a systematic safety risk worth blocking. These are extreme
 scenarios, and the expectation is that most concerns like these would be resolved
