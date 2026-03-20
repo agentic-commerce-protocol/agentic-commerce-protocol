@@ -126,10 +126,12 @@ The existing `Order` schema gains optional fields:
 - `created` — Order received but not yet confirmed
 - `confirmed` — Order placed successfully
 - `manual_review` — Order held for fraud or manual review
-- `processing` — Being prepared
-- `shipped` — All items handed to carrier
-- `delivered` — All items delivered
+- `shipped` — Physical shipping only: order handed off to carrier, in transit
+- `fulfilled` — Fulfillment completed (terminal). For shipping: delivered or picked up; for digital: delivered or provisioned
+- `delivered` — Equivalent to `fulfilled` for physical shipping (accepted for backward compatibility)
 - `canceled` — Order canceled
+
+**Notes:** `fulfilled` means fulfillment completed (execution done), not "order information is complete" (that is reflected by e.g. `confirmed`). `shipped` MUST NOT be used for digital-only orders. Typical progressions: shipping `confirmed` -> `shipped` -> `fulfilled` (or `delivered`); digital `confirmed` -> `fulfilled`.
 
 ### 4.2 OrderLineItem
 
