@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/cart/bundle.schema.json",
+  "title": "Cart — Schema Bundle",
+  "$defs": {
+    "Cart": {
+      "description": "A shopping cart with estimated pricing. Carts provide a lightweight pre-checkout phase for item collection without payment configuration or status lifecycle.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "line_items", "currency", "totals"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique cart identifier, server-generated."
+        },
+        "line_items": {
+          "type": "array",
+          "items": {
+            "$ref": "schema.agentic_checkout.json#/$defs/LineItem"
+          },
+          "description": "Cart line items. Same structure as checkout line items."
+        },
+        "buyer": {
+          "$ref": "schema.agentic_checkout.json#/$defs/Buyer",
+          "description": "Buyer information, if provided."
+        },
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217 currency code. Determined by the seller based on context or request."
+        },
+        "totals": {
+          "type": "array",
+          "items": {
+            "$ref": "schema.agentic_checkout.json#/$defs/Total"
+          },
+          "description": "Estimated cost breakdown. May be partial (e.g., tax omitted if address is unknown). Totals are estimates until checkout."
+        },
+        "discounts": {
+          "$ref": "schema.agentic_checkout.json#/$defs/DiscountsResponse",
+          "description": "Applied and rejected discounts (discount extension)."
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "$ref": "schema.agentic_checkout.json#/$defs/MessageInfo" },
+              { "$ref": "schema.agentic_checkout.json#/$defs/MessageWarning" },
+              { "$ref": "schema.agentic_checkout.json#/$defs/MessageError" }
+            ]
+          },
+          "description": "Validation messages, warnings, or informational notices (e.g., low stock, price changes)."
+        },
+        "continue_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for cart handoff, sharing, or session recovery."
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the cart expires."
+        }
+      },
+      "example": {
+        "id": "cart_abc123",
+        "line_items": [
+          {
+            "id": "li_1",
+            "item": {
+              "id": "item_123",
+              "name": "Blue Running Shoes",
+              "unit_amount": 12000
+            },
+            "quantity": 2,
+            "totals": [
+              { "type": "subtotal", "amount": 24000 }
+            ]
+          }
+        ],
+        "currency": "usd",
+        "totals": [
+          { "type": "subtotal", "amount": 24000 },
+          { "type": "total", "amount": 24000 }
+        ],
+        "continue_url": "https://seller.example.com/cart/cart_abc123",
+        "expires_at": "2026-04-01T12:00:00Z"
+      }
+    },
+
+    "CartCreateRequest": {
+      "description": "Request to create a new cart.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line_items"],
+      "properties": {
+        "line_items": {
+          "type": "array",
+          "items": {
+            "$ref": "schema.agentic_checkout.json#/$defs/Item"
+          },
+          "minItems": 1,
+          "description": "Items to add to the cart."
+        },
+        "buyer": {
+          "$ref": "schema.agentic_checkout.json#/$defs/Buyer",
+          "description": "Buyer information for personalized estimates."
+        },
+        "locale": {
+          "type": "string",
+          "description": "Locale code for content localization (e.g., 'en-US')."
+        },
+        "discounts": {
+          "$ref": "schema.agentic_checkout.json#/$defs/DiscountsRequest",
+          "description": "Discount codes to apply (discount extension)."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Arbitrary metadata for seller use."
+        }
+      },
+      "example": {
+        "line_items": [
+          { "id": "item_123", "quantity": 2 },
+          { "id": "item_456", "quantity": 1 }
+        ],
+        "buyer": {
+          "email": "buyer@example.com"
+        }
+      }
+    },
+
+    "CartUpdateRequest": {
+      "description": "Request to update a cart. Full replacement — the agent MUST send the complete desired cart state.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line_items"],
+      "properties": {
+        "line_items": {
+          "type": "array",
+          "items": {
+            "$ref": "schema.agentic_checkout.json#/$defs/Item"
+          },
+          "minItems": 1,
+          "description": "Complete list of items (replaces existing cart contents)."
+        },
+        "buyer": {
+          "$ref": "schema.agentic_checkout.json#/$defs/Buyer",
+          "description": "Updated buyer information."
+        },
+        "discounts": {
+          "$ref": "schema.agentic_checkout.json#/$defs/DiscountsRequest",
+          "description": "Discount codes to apply (replaces existing)."
+        }
+      },
+      "example": {
+        "line_items": [
+          { "id": "item_123", "quantity": 3 },
+          { "id": "item_789", "quantity": 1 }
+        ]
+      }
+    }
+  }
+}

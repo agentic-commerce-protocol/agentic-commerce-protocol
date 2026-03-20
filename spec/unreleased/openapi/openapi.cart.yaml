@@ -1,0 +1,336 @@
+openapi: 3.1.0
+info:
+  title: Agentic Commerce — Cart API
+  version: unreleased
+  description: |
+    Seller-implemented REST API for pre-checkout cart management.
+    Implements create, retrieve (GET), update (POST), and cancel of cart sessions.
+
+    Carts provide a lightweight pre-checkout phase for item collection without
+    payment configuration or status lifecycle. See rfc.cart.md for the full specification.
+servers:
+  - url: https://seller.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: Carts
+    description: Create and manage shopping carts
+
+paths:
+  /carts:
+    post:
+      tags: [Carts]
+      summary: Create a cart
+      operationId: createCart
+      description: |
+        Creates a new cart with line items and optional buyer information.
+        Returns estimated pricing. No payment configuration or capability negotiation occurs.
+
+        When all requested items are unavailable, the seller MAY return a 422 error
+        instead of creating a cart.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CartCreateRequest"
+            examples:
+              minimal:
+                summary: Single item
+                value:
+                  line_items:
+                    - id: item_123
+                      quantity: 1
+              with_buyer:
+                summary: Multiple items with buyer
+                value:
+                  line_items:
+                    - id: item_123
+                      quantity: 2
+                    - id: item_456
+                      quantity: 1
+                  buyer:
+                    email: buyer@example.com
+              with_discounts:
+                summary: With discount code
+                value:
+                  line_items:
+                    - id: item_123
+                      quantity: 1
+                  discounts:
+                    codes:
+                      - SAVE20
+      responses:
+        "201":
+          description: Cart created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+              examples:
+                created:
+                  value:
+                    id: cart_abc123
+                    line_items:
+                      - id: li_1
+                        item:
+                          id: item_123
+                          name: Blue Running Shoes
+                          unit_amount: 12000
+                        quantity: 2
+                        totals:
+                          - type: subtotal
+                            amount: 24000
+                      - id: li_2
+                        item:
+                          id: item_456
+                          name: Athletic Socks (3-pack)
+                          unit_amount: 1500
+                        quantity: 1
+                        totals:
+                          - type: subtotal
+                            amount: 1500
+                    currency: usd
+                    totals:
+                      - type: subtotal
+                        amount: 25500
+                      - type: total
+                        amount: 25500
+                    continue_url: https://seller.example.com/cart/cart_abc123
+                    expires_at: "2026-04-01T12:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          description: Unprocessable — all items unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                out_of_stock:
+                  value:
+                    type: invalid_request
+                    code: out_of_stock
+                    message: All requested items are currently unavailable.
+
+  /carts/{id}:
+    get:
+      tags: [Carts]
+      summary: Get a cart
+      operationId: getCart
+      description: |
+        Retrieves the current state of a cart. Returns 404 if the cart does not
+        exist, has expired, or was canceled.
+      parameters:
+        - $ref: "#/components/parameters/CartId"
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/APIVersion"
+      responses:
+        "200":
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/CartNotFound"
+
+    post:
+      tags: [Carts]
+      summary: Update a cart
+      operationId: updateCart
+      description: |
+        Full replacement of the cart. The agent MUST send the complete desired
+        cart state. The provided line_items replace the existing cart contents.
+      parameters:
+        - $ref: "#/components/parameters/CartId"
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CartUpdateRequest"
+            examples:
+              update_quantity:
+                summary: Change quantity and add item
+                value:
+                  line_items:
+                    - id: item_123
+                      quantity: 3
+                    - id: item_789
+                      quantity: 1
+      responses:
+        "200":
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/CartNotFound"
+
+  /carts/{id}/cancel:
+    post:
+      tags: [Carts]
+      summary: Cancel a cart
+      operationId: cancelCart
+      description: |
+        Cancels a cart. The seller MUST return the cart state before deletion.
+        Subsequent operations on this cart ID SHOULD return 404 Not Found.
+      parameters:
+        - $ref: "#/components/parameters/CartId"
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Cart canceled successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/CartNotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    CartId:
+      name: id
+      in: path
+      required: true
+      description: Cart identifier
+      schema:
+        type: string
+        example: cart_abc123
+    Authorization:
+      name: Authorization
+      in: header
+      description: Bearer token for API authentication
+      required: true
+      schema:
+        type: string
+        example: Bearer api_key_123
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      schema:
+        type: string
+        example: application/json
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+        example: en-US
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Idempotency key. MUST be present on all POST requests. Opaque string, max 255 characters. UUID v4 recommended.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+        example: 550e8400-e29b-41d4-a716-446655440000
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        example: request_id_123
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      schema:
+        type: string
+        example: "2026-01-30"
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            invalid_request:
+              value:
+                type: invalid_request
+                code: missing_line_items
+                message: "line_items is required and must contain at least one item"
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            unauthorized:
+              value:
+                type: invalid_request
+                code: unauthorized
+                message: "Invalid or missing Authorization header"
+    CartNotFound:
+      description: Cart not found, expired, or canceled
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            not_found:
+              value:
+                type: invalid_request
+                code: not_found
+                message: Cart not found or has expired.
+
+  schemas:
+    Cart:
+      $ref: "../../unreleased/json-schema/schema.cart.json#/$defs/Cart"
+    CartCreateRequest:
+      $ref: "../../unreleased/json-schema/schema.cart.json#/$defs/CartCreateRequest"
+    CartUpdateRequest:
+      $ref: "../../unreleased/json-schema/schema.cart.json#/$defs/CartUpdateRequest"
+    Error:
+      $ref: "../../unreleased/json-schema/schema.agentic_checkout.json#/$defs/Error"
