@@ -26,6 +26,12 @@ Complex example showing multiple discounts stacked together with:
 - Different allocation methods (`each` vs `across`)
 - `each` discounts include allocations; `across` discounts apply to order total
 
+### [onchain-eligibility-discount.json](./onchain-eligibility-discount.json)
+Demonstrates a discount issued after verifying the buyer's on-chain token holdings. An external attestation provider checks whether the buyer's wallet holds qualifying tokens, then issues a time-limited discount code. The example shows:
+- A signed discount code (`INSR-XXXXX`) issued by an on-chain verification provider
+- Per-item allocations distributing the discount across line items
+- `duration: "once"` since the code is single-use and expires after 30 minutes
+
 ## Key Concepts
 
 ### Request Format
