@@ -2,7 +2,7 @@
 
 This file tracks contributors who have signed the Agentic Commerce Protocol Contributor License Agreement as required by Section 2.4 of the Collaboration and Governance Agreement dated November 21, 2025.
 
-Last updated: 2026-03-19
+Last updated: 2026-03-20
 
 ## Corporate CLA Signatories
 
@@ -14,7 +14,9 @@ Last updated: 2026-03-19
 | Wix.com Ltd. | 2026-02-19 | nazark-wix | nazark-wix,olehtarapata,shayh3,evgenywix,avivfa-wix,oleksandrba | #155 |
 | commercetools Inc. | 2026-02-19 | prateek-ct | prateek-ct,lgiavedoni | #145 |
 | OpenCommerce Network Inc. | 2026-02-26 | Barak Ben-Rachel | Barak-OC,dean-harel-nekuda-ai,ilayalog,vladikk,Idan-Levin | #163 |
+| Affirm Inc. | 2026-03-09 | Ethan Melnick | vcello,mirzar,tlevy | #172 |
 | Meta Platforms, Inc. | 2026-03-19 | poshannessy | lhwa,jamesandersen,srikun,kaichen2000,bretlorimore | #185 |
+
 
 
 ## Individual CLA Signatories
