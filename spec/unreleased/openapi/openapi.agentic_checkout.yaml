@@ -1321,7 +1321,11 @@ components:
             - out_of_stock
             - backorder
             - pre_order
-          description: Current availability status of the item
+            - offer_valid
+            - offer_expired
+          description: |
+            Current availability status of the item.
+            For time-bound offers (e.g. flight bookings) use offer_valid when the offer/price is still valid, or offer_expired when it has expired.
         available_quantity:
           type: integer
           minimum: 0
@@ -1334,6 +1338,12 @@ components:
           type: string
           format: date-time
           description: RFC 3339 timestamp when item becomes available for fulfillment
+        valid_until:
+          type: string
+          format: date-time
+          description: |
+            RFC 3339 timestamp when this offer/price expires. Used for time-bound products (e.g. flight offers, booking holds).
+            After this time the merchant may reject completion or reprice. Distinct from quote_expires_at (session-level).
         variant_options:
           type: array
           items:
@@ -1850,6 +1860,8 @@ components:
             - conflict
             - rate_limited
             - expired
+            - offer_expired
+            - quote_expired
             - intervention_required
           description: Error code indicating the type of error
         severity:

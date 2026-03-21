@@ -172,7 +172,7 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 ## 5. Data Model (authoritative extract)
 
 - **Item**: `id` (string), `quantity` (int ≥ 1)
-- **LineItem**: `id`, `item`, `base_amount`, `discount`, `subtotal`, `tax`, `total` (**int**), `name?` (string), `description?` (string), `images?` (array of URI strings), `unit_amount?` (**int**), `disclosures?` (array of **Disclosure**), `custom_attributes?` (array of **CustomAttribute**), `marketplace_seller_details?` (**MarketplaceSellerDetails**)
+- **LineItem**: `id`, `item`, `base_amount`, `discount`, `subtotal`, `tax`, `total` (**int**), `name?` (string), `description?` (string), `images?` (array of URI strings), `unit_amount?` (**int**), `disclosures?` (array of **Disclosure**), `custom_attributes?` (array of **CustomAttribute**), `marketplace_seller_details?` (**MarketplaceSellerDetails**), `valid_until?` (RFC 3339 date-time — when this offer/price expires; for time-bound products), `availability_status?` (including `offer_valid` | `offer_expired` for time-bound offers)
 - **Disclosure**: `type` (`disclaimer`), `content_type` (`plain | markdown`), `content` (string)
 - **CustomAttribute**: `display_name` (string), `value` (string)
 - **MarketplaceSellerDetails**: `name` (string)
@@ -189,7 +189,7 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **Order**: `id`, `checkout_session_id`, `permalink_url`
 - **Message (info)**: `type: "info"`, `severity?`, `resolution?`, `param?`, `content_type: "plain"|"markdown"`, `content`
 - **Message (warning)**: `type: "warning"`, `code`, `severity?`, `resolution?`, `param?`, `content_type`, `content`
-- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds`), `severity?`, `resolution?`, `param?`, `content_type`, `content`
+- **Message (error)**: `type: "error"`, `code` (`missing|invalid|out_of_stock|payment_declined|requires_sign_in|requires_3ds|offer_expired|quote_expired|…`), `severity?`, `resolution?`, `param?`, `content_type`, `content`
 
 Message resolution values:
 - `resolution` (optional): Declares who resolves this message. Values:
@@ -207,6 +207,16 @@ Message resolution values:
 - **AuthenticationResult**: `outcome` (enum), `outcome_details?` (object containing `three_ds_cryptogram`, `electronic_commerce_indicator`, `transaction_id`, `version`).
 
 All money fields are **integers (minor units)**.
+
+### 5.1 Time-bound offers and booking flows
+
+For **time-bound products** (e.g. flight offers, booking holds), the following semantics apply:
+
+- **Session-level quote expiry**: When a checkout session is tied to a quote (e.g. a held fare), use `quote_id` on create and `quote_expires_at` on the session. This indicates the **entire quote** expires at that time; after that, the merchant may reject completion or reprice.
+- **Per-line offer expiry**: When a **specific line item’s** offer or price has its own expiry (e.g. a flight segment offer that expires before the overall hold), the merchant SHOULD set **`valid_until`** (RFC 3339) on that LineItem. After `valid_until`, the merchant may reject completion for that item or return updated pricing/availability.
+- **Availability for time-bound products**: Use **`availability_status`** `offer_valid` when the offer/price is still valid, and `offer_expired` when it has expired. For inventory products, continue to use `in_stock`, `low_stock`, `out_of_stock`, `backorder`, `pre_order`.
+- **Fulfillable vs valid until**: **`fulfillable_on`** means “when the item **becomes available**” (e.g. event date, delivery date). **`valid_until`** means “when the **offer/price expires**” (e.g. booking hold expiry). They are independent.
+- **Message codes**: When a line item’s offer has expired, include a message with `code: "offer_expired"` and `param` pointing to the line item (e.g. `$.line_items[0]`). When the session quote has expired, use `code: "quote_expired"`. Agents can use these to prompt the buyer to refresh the quote or create a new session.
 
 ---
 
