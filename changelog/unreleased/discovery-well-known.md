@@ -12,10 +12,10 @@
 
 - **DiscoveryResponse**: Top-level document containing protocol metadata, API base URL, supported
   transports, and a capabilities object.
-- **DiscoveryCapabilities**: Seller capabilities wrapper containing services, extensions,
+- **DiscoveryCapabilities**: Seller capabilities wrapper containing services,
   intervention types, supported currencies, and supported locales.
 - **DiscoveryProtocol**: Protocol identification with name (`acp`), current version,
-  supported version history (chronologically ordered), and documentation URL.
+  supported version history (chronologically ordered), documentation URL, and supported extensions.
 - **DiscoveryExtension**: Lightweight extension declaration with name and optional spec URL.
 
 ## Design Notes
