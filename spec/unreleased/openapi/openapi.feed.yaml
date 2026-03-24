@@ -1,0 +1,715 @@
+openapi: 3.1.0
+info:
+  title: Agentic Commerce — Feed API
+  version: unreleased
+  description: |
+    Create and manage ACP feed resources and their product catalogs.
+
+    This API supports feed metadata creation and retrieval and partial product upserts by `Product.id`.
+
+    For offline full replacement ingestion, `metadata.json` uses the `FeedMetadata` shape and
+    `products.jsonl` contains one `Product` object per line. File ingestion replaces the full product
+    set. Partial updates are only supported through `PATCH /feeds/{id}/products`.
+servers:
+  - url: https://merchant.example.com
+tags:
+  - name: Feeds
+    description: Create and manage feed resources and product catalogs
+paths:
+  /feeds:
+    post:
+      tags:
+        - Feeds
+      summary: Create a feed
+      operationId: createFeed
+      description: Creates a feed resource and returns server-managed metadata for the new feed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeedRequest"
+            examples:
+              minimal:
+                summary: Create a feed for the United States market
+                value:
+                  target_country: US
+      responses:
+        "201":
+          description: Feed created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedMetadata"
+              examples:
+                created:
+                  value:
+                    id: feed_8f3K2x
+                    target_country: US
+                    updated_at: "2026-03-01T00:00:00Z"
+        "400":
+          description: Invalid feed payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                invalid_request:
+                  value:
+                    type: invalid_request
+                    code: invalid_target_country
+                    message: target_country must be an ISO 3166-1 alpha-2 code
+                    param: target_country
+  /feeds/{id}:
+    parameters:
+      - $ref: "#/components/parameters/FeedId"
+    get:
+      tags:
+        - Feeds
+      summary: Retrieve feed metadata
+      operationId: getFeed
+      description: Returns server-managed metadata for the specified feed.
+      responses:
+        "200":
+          description: Feed metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedMetadata"
+              examples:
+                found:
+                  value:
+                    id: feed_8f3K2x
+                    target_country: US
+                    updated_at: "2026-03-01T00:00:00Z"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                not_found:
+                  value:
+                    type: invalid_request
+                    code: feed_not_found
+                    message: Feed not found
+                    param: id
+  /feeds/{id}/products:
+    parameters:
+      - $ref: "#/components/parameters/FeedId"
+    get:
+      tags:
+        - Feeds
+      summary: Retrieve products for a feed
+      operationId: getFeedProducts
+      description: Returns the full current product set for the specified feed.
+      responses:
+        "200":
+          description: Feed products
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductsResponse"
+              examples:
+                products:
+                  value:
+                    products:
+                      - id: prod_classic_tee
+                        title: Classic Tee
+                        variants:
+                          - id: sku123-red-s
+                            title: Classic Tee - Red / Small
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                not_found:
+                  value:
+                    type: invalid_request
+                    code: feed_not_found
+                    message: Feed not found
+                    param: id
+    patch:
+      tags:
+        - Feeds
+      summary: Upsert products for a feed
+      operationId: upsertFeedProducts
+      description: Upserts products into the specified feed by `Product.id`. Products omitted from the request remain unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertProductsRequest"
+            examples:
+              upsert_single_product:
+                summary: Upsert a single product
+                value:
+                  products:
+                    - id: prod_classic_tee
+                      title: Classic Tee
+                      variants:
+                        - id: sku124-red-m
+                          title: Classic Tee - Red / Medium
+                          availability:
+                            available: false
+                            status: out_of_stock
+      responses:
+        "200":
+          description: Product upsert accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpsertProductsResponse"
+              examples:
+                accepted:
+                  value:
+                    id: feed_8f3K2x
+                    accepted: true
+        "400":
+          description: Invalid product payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                invalid_request:
+                  value:
+                    type: invalid_request
+                    code: invalid_product_payload
+                    message: products must contain at least one valid Product
+                    param: products
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                not_found:
+                  value:
+                    type: invalid_request
+                    code: feed_not_found
+                    message: Feed not found
+                    param: id
+components:
+  parameters:
+    FeedId:
+      name: id
+      in: path
+      required: true
+      description: Identifier of the feed resource.
+      schema:
+        type: string
+        example: feed_8f3K2x
+  schemas:
+    Description:
+      description: Structured long-form or rich-text description content for a product or variant.
+      type: object
+      additionalProperties: false
+      properties:
+        plain:
+          type: string
+          description: Plain-text description intended for clients that do not render rich formatting.
+        html:
+          type: string
+          description: HTML-formatted description content.
+        markdown:
+          type: string
+          description: Markdown-formatted description content.
+      minProperties: 1
+      example:
+        plain: Classic cotton tee in red, size small.
+    Price:
+      description: Monetary amount expressed in minor units with an associated ISO 4217 currency code.
+      type: object
+      additionalProperties: false
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: integer
+          minimum: 0
+          description: Monetary amount expressed in ISO 4217 minor units.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Three-letter ISO 4217 currency identifier.
+      example:
+        amount: 1999
+        currency: USD
+    Availability:
+      description: Purchasability and fulfillment state for a variant.
+      type: object
+      additionalProperties: false
+      properties:
+        available:
+          type: boolean
+          description: Indicates whether the variant is currently purchasable. Use status for fulfillment context.
+        status:
+          type: string
+          description: Extensible fulfillment state for the variant. Known values include in_stock, limited_stock, backorder, preorder, out_of_stock, and discontinued.
+      example:
+        available: true
+        status: in_stock
+    Barcode:
+      description: Machine-readable identifier attached to a variant, such as a GTIN or UPC.
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          description: Barcode scheme or identifier type, such as GTIN, UPC, or EAN.
+        value:
+          type: string
+          description: Raw barcode value as provided by the merchant.
+      example:
+        type: GTIN
+        value: "00012345600012"
+    Media:
+      description: Media asset associated with a product or variant.
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - url
+      properties:
+        type:
+          type: string
+          description: Media kind, such as image, video, or model.
+        url:
+          type: string
+          format: uri
+          description: Canonical URL where the media asset can be retrieved.
+        alt_text:
+          type: string
+          description: Human-readable alternate text describing the asset.
+        width:
+          type: integer
+          description: Rendered width of the asset in pixels, when known.
+        height:
+          type: integer
+          description: Rendered height of the asset in pixels, when known.
+      example:
+        type: image
+        url: https://cdn.merchant.com/products/classic-tee/main.jpg
+        alt_text: Classic Tee front view
+    VariantOption:
+      description: One selected characteristic of a variant, such as size or color.
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+          description: Display name of the option dimension, such as Color or Size.
+        value:
+          type: string
+          description: Selected option value for this variant.
+      example:
+        name: Color
+        value: Red
+    Category:
+      description: Category assignment for a product or variant within a specific taxonomy.
+      type: object
+      additionalProperties: false
+      required:
+        - value
+      properties:
+        value:
+          type: string
+          description: Category label or hierarchical path, for example Mens > Sweaters > Crewnecks.
+        taxonomy:
+          type: string
+          description: Names the taxonomy system used for the category value, such as google_product_category, shopify, or merchant.
+      example:
+        value: Apparel > Shirts
+        taxonomy: merchant
+    Link:
+      description: Merchant-provided informational or policy link associated with a seller.
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - url
+      properties:
+        type:
+          type: string
+          description: Extensible link type, such as privacy_policy, terms_of_service, refund_policy, shipping_policy, or faq.
+        title:
+          type: string
+          description: Human-readable label for the linked resource.
+        url:
+          type: string
+          format: uri
+          description: Canonical URL for the linked resource.
+      example:
+        type: shipping_policy
+        title: Shipping Policy
+        url: https://merchant.com/policies/shipping
+    Seller:
+      description: Merchant or seller identity associated with a variant offer.
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Display name of the seller or merchant of record.
+        links:
+          type: array
+          description: Informational or policy links associated with this seller.
+          items:
+            $ref: "#/components/schemas/Link"
+      example:
+        name: Example Merchant
+        links:
+          - type: refund_policy
+            title: Refund Policy
+            url: https://merchant.com/policies/refunds
+    Condition:
+      description: Extensible list of applicable item conditions, such as new or secondhand.
+      type: array
+      items:
+        type: string
+        description: Condition label supplied by the merchant.
+      example:
+        - new
+    Measure:
+      description: Measured quantity paired with a unit for unit-price calculations.
+      type: object
+      additionalProperties: false
+      required:
+        - value
+        - unit
+      properties:
+        value:
+          type: number
+          description: Measured quantity for the package or item.
+        unit:
+          type: string
+          description: Unit label for the measured quantity, such as oz, ml, or kg.
+      example:
+        value: 12
+        unit: oz
+    ReferenceMeasure:
+      description: Reference unit used when normalizing a unit price for display.
+      type: object
+      additionalProperties: false
+      required:
+        - value
+        - unit
+      properties:
+        value:
+          type: integer
+          description: Reference quantity used to normalize the unit price.
+        unit:
+          type: string
+          description: Reference unit label, such as ml, g, or oz.
+      example:
+        value: 1
+        unit: oz
+    UnitPrice:
+      description: Normalized unit price for products sold by weight, volume, or measure.
+      type: object
+      additionalProperties: false
+      required:
+        - amount
+        - currency
+        - measure
+        - reference
+      properties:
+        amount:
+          type: integer
+          minimum: 0
+          description: Normalized price amount expressed in ISO 4217 minor units.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Three-letter ISO 4217 currency identifier.
+        measure:
+          allOf:
+            - $ref: "#/components/schemas/Measure"
+          description: Actual packaged measure associated with the sale item.
+        reference:
+          allOf:
+            - $ref: "#/components/schemas/ReferenceMeasure"
+          description: Reference measure used to display the normalized unit price.
+      example:
+        amount: 499
+        currency: USD
+        measure:
+          value: 12
+          unit: oz
+        reference:
+          value: 1
+          unit: oz
+    Variant:
+      description: Purchasable variant of a product within a feed.
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+          description: Stable global identifier for this variant.
+        title:
+          type: string
+          description: Display title for the variant.
+        description:
+          allOf:
+            - $ref: "#/components/schemas/Description"
+          description: Structured description content for the variant.
+        url:
+          type: string
+          format: uri
+          description: Canonical URL for the variant detail page.
+        barcodes:
+          type: array
+          description: Machine-readable identifiers associated with this variant.
+          items:
+            $ref: "#/components/schemas/Barcode"
+        price:
+          allOf:
+            - $ref: "#/components/schemas/Price"
+          description: Active selling price for the variant.
+        list_price:
+          allOf:
+            - $ref: "#/components/schemas/Price"
+          description: Reference or pre-discount price for the variant.
+        unit_price:
+          allOf:
+            - $ref: "#/components/schemas/UnitPrice"
+          description: Normalized unit price, when applicable.
+        availability:
+          allOf:
+            - $ref: "#/components/schemas/Availability"
+          description: Purchasability and fulfillment state for the variant.
+        categories:
+          type: array
+          description: Category assignments associated with this variant.
+          items:
+            $ref: "#/components/schemas/Category"
+        condition:
+          allOf:
+            - $ref: "#/components/schemas/Condition"
+          description: Extensible list of conditions applicable to this variant.
+        variant_options:
+          type: array
+          description: "Option selections that distinguish this variant, such as Color: Red or Size: Small."
+          items:
+            $ref: "#/components/schemas/VariantOption"
+        media:
+          type: array
+          description: Media assets specific to this variant. The first item is the primary listing asset.
+          items:
+            $ref: "#/components/schemas/Media"
+        seller:
+          allOf:
+            - $ref: "#/components/schemas/Seller"
+          description: Seller or merchant of record for this variant.
+        marketplace:
+          allOf:
+            - $ref: "#/components/schemas/Seller"
+          description: Marketplace or intermediary platform through which this variant is offered, if applicable.
+      example:
+        id: sku123-red-s
+        title: Classic Tee - Red / Small
+        description:
+          plain: Classic cotton tee in red, size small.
+        url: https://merchant.com/products/classic-tee?variant=sku123-red-s
+        barcodes:
+          - type: GTIN
+            value: "00012345600012"
+        price:
+          amount: 1999
+          currency: USD
+        list_price:
+          amount: 2499
+          currency: USD
+        availability:
+          available: true
+          status: in_stock
+        variant_options:
+          - name: Color
+            value: Red
+          - name: Size
+            value: Small
+        media:
+          - type: image
+            url: https://cdn.merchant.com/products/classic-tee/red-small-1.jpg
+            alt_text: Classic Tee in red, size small
+        seller:
+          name: Example Merchant
+        marketplace:
+          name: Example Marketplace
+    Product:
+      description: Catalog product grouping one or more purchasable variants within a feed.
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - variants
+      properties:
+        id:
+          type: string
+          description: Stable global identifier for this product.
+        title:
+          type: string
+          description: Display title for the product.
+        description:
+          allOf:
+            - $ref: "#/components/schemas/Description"
+          description: Structured description content for the product.
+        url:
+          type: string
+          format: uri
+          description: Canonical URL for the product detail page.
+        media:
+          type: array
+          description: Media assets associated with the product.
+          items:
+            $ref: "#/components/schemas/Media"
+        variants:
+          type: array
+          description: Purchasable variants grouped under this product.
+          items:
+            $ref: "#/components/schemas/Variant"
+      example:
+        id: prod_classic_tee
+        title: Classic Tee
+        media:
+          - type: image
+            url: https://cdn.merchant.com/products/classic-tee/main.jpg
+            alt_text: Classic Tee front view
+        variants:
+          - id: sku123-red-s
+            title: Classic Tee - Red / Small
+    FeedMetadata:
+      description: Server-managed metadata describing a feed resource.
+      type: object
+      additionalProperties: false
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Stable identifier for the feed resource.
+        target_country:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: Optional ISO 3166-1 alpha-2 country code describing the feed's target market.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of the most recent update applied to this feed.
+      example:
+        id: feed_8f3K2x
+        target_country: US
+        updated_at: "2026-03-01T00:00:00Z"
+    CreateFeedRequest:
+      description: Request payload used to create a feed.
+      type: object
+      additionalProperties: false
+      properties:
+        target_country:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: Optional ISO 3166-1 alpha-2 country code describing the feed's target market.
+      example:
+        target_country: US
+    ProductsResponse:
+      description: Response envelope containing the current product set for a feed.
+      type: object
+      additionalProperties: false
+      required:
+        - products
+      properties:
+        products:
+          type: array
+          description: Full list of products currently associated with the feed.
+          items:
+            $ref: "#/components/schemas/Product"
+      example:
+        products:
+          - id: prod_classic_tee
+            title: Classic Tee
+            variants:
+              - id: sku123-red-s
+                title: Classic Tee - Red / Small
+    UpsertProductsResponse:
+      description: Acknowledgement returned after accepting an upsert payload for a feed.
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - accepted
+      properties:
+        id:
+          type: string
+          description: Identifier for the feed whose product upsert was processed.
+        accepted:
+          type: boolean
+          description: Whether the submitted product upsert payload was accepted for processing.
+      example:
+        id: feed_8f3K2x
+        accepted: true
+    UpsertProductsRequest:
+      description: Request payload that partially upserts products into a feed. Products omitted from the request remain unchanged.
+      type: object
+      additionalProperties: false
+      required:
+        - products
+      properties:
+        products:
+          type: array
+          description: Subset of products to create or update within the feed, matched by Product.id.
+          items:
+            $ref: "#/components/schemas/Product"
+      example:
+        products:
+          - id: prod_classic_tee
+            title: Classic Tee
+            variants:
+              - id: sku124-red-m
+                title: Classic Tee - Red / Medium
+                availability:
+                  available: false
+                  status: out_of_stock
+    Error:
+      description: Structured error returned when a feed request cannot be fulfilled.
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - code
+        - message
+      properties:
+        type:
+          type: string
+          description: High-level error category.
+        code:
+          type: string
+          description: Machine-readable error code for programmatic handling.
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        param:
+          type: string
+          description: Optional request parameter or field associated with the error.
+      example:
+        type: invalid_request
+        code: feed_not_found
+        message: Feed not found
+        param: id
