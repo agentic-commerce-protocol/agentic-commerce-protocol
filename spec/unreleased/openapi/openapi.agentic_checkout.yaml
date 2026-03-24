@@ -371,6 +371,116 @@ paths:
           $ref: "#/components/responses/IdempotencyInFlight"
         "422":
           $ref: "#/components/responses/IdempotencyConflict"
+  /stores:
+    get:
+      tags:
+        - Stores
+      summary: Find stores or list all stores
+      operationId: listStores
+      description: |
+        Returns stores based on query parameters. Supports two use cases:
+
+        1. **Fetch all stores** (no query params) - Returns complete store list for agent-side proximity filtering
+        2. **Server-side filtering** (with query params) - Platform filters stores by location
+
+        This endpoint is part of the Store Extension. Platforms advertise support via the `store` extension
+        in `/.well-known/acp.json`. Agents construct the full URL as `{api_base_url}/stores`.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/APIVersion"
+        - name: latitude
+          in: query
+          required: false
+          description: Latitude for proximity search (decimal degrees)
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: longitude
+          in: query
+          required: false
+          description: Longitude for proximity search (decimal degrees)
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+        - name: radius
+          in: query
+          required: false
+          description: Search radius in kilometers (default 50)
+          schema:
+            type: number
+            default: 50
+            minimum: 0
+        - name: postal_code
+          in: query
+          required: false
+          description: Postal code for proximity search
+          schema:
+            type: string
+        - name: city
+          in: query
+          required: false
+          description: City name for location search
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results (default 20, max 100)
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: List of stores matching the search criteria
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stores:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Store"
+                        - type: object
+                          properties:
+                            distance_km:
+                              type: number
+                              description: Distance from search location in kilometers
+                example:
+                  stores:
+                    - id: store_sf_market
+                      name: San Francisco Market Street
+                      address:
+                        name: San Francisco Market Street
+                        line_one: 123 Market St
+                        city: San Francisco
+                        state: CA
+                        country: US
+                        postal_code: "94102"
+                      coordinates:
+                        latitude: 37.7749
+                        longitude: -122.4194
+                      distance_km: 0.8
+                      services:
+                        - pickup
+                        - returns
+        "400":
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        4XX:
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     bearerAuth:
@@ -533,6 +643,95 @@ components:
         country: US
         postal_code: "10001"
       description: Physical address for shipping, billing, or pickup locations
+    Store:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          description: Unique store identifier
+        name:
+          type: string
+          description: Store display name
+        address:
+          $ref: '#/components/schemas/Address'
+          description: Store physical address
+        phone_number:
+          type: string
+          description: Store contact phone number (E.164 format)
+        email:
+          type: string
+          format: email
+          description: Store contact email
+        business_hours:
+          type: object
+          additionalProperties:
+            type: string
+            description: Operating hours in HH:MM-HH:MM format or 'closed'
+          description: 'Store operating hours (keys: monday-sunday)'
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+          description: Store geographic coordinates
+        services:
+          type: array
+          items:
+            type: string
+            enum:
+              - pickup
+              - returns
+              - ship_from_store
+              - curbside
+          description: Services offered by this store
+        timezone:
+          type: string
+          description: IANA timezone identifier (e.g., 'America/Los_Angeles')
+        store_url:
+          type: string
+          format: uri
+          description: URL to store details page
+      required:
+        - id
+        - name
+      example:
+        id: store_sf_market
+        name: San Francisco Market Street
+        address:
+          name: San Francisco Market Street
+          line_one: 123 Market Street
+          city: San Francisco
+          state: CA
+          country: US
+          postal_code: "94102"
+        phone_number: "+14155551234"
+        coordinates:
+          latitude: 37.7749
+          longitude: -122.4194
+        services:
+          - pickup
+          - returns
+          - ship_from_store
+      description: Physical store location details
+    Coordinates:
+      type: object
+      additionalProperties: false
+      properties:
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: Latitude in decimal degrees
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: Longitude in decimal degrees
+      required:
+        - latitude
+        - longitude
+      example:
+        latitude: 37.7749
+        longitude: -122.4194
+      description: Geographic coordinates
     AffiliateAttributionSource:
       type: object
       additionalProperties: false
@@ -2765,6 +2964,9 @@ components:
         timezone:
           type: string
           description: IANA timezone identifier (e.g., 'America/New_York')
+        store:
+          $ref: "#/components/schemas/Store"
+          description: Store information when store context is specified
         line_items:
           type: array
           items:
@@ -2962,6 +3164,9 @@ components:
           type: object
           additionalProperties: true
           description: Arbitrary metadata for merchant use
+        store_id:
+          type: string
+          description: Store identifier for store-specific inventory, pricing, and fulfillment. Part of the Store Extension.
       required:
         - line_items
         - currency
@@ -3005,6 +3210,9 @@ components:
         discounts:
           $ref: "#/components/schemas/DiscountsRequest"
           description: Discount codes to apply. Replaces previously submitted codes.
+        store_id:
+          type: string
+          description: Store identifier for store-specific inventory, pricing, and fulfillment. Part of the Store Extension.
       example:
         buyer:
           email: customer@example.com

@@ -3193,6 +3193,10 @@
           "type": "string",
           "description": "IANA timezone identifier (e.g., 'America/New_York')"
         },
+        "store": {
+          "$ref": "schema.store.json#/$defs/store",
+          "description": "Store information when store context is specified"
+        },
         "line_items": {
           "type": "array",
           "items": {
@@ -3483,6 +3487,10 @@
           "type": "string",
           "maxLength": 5000,
           "description": "Optional customer/order notes (e.g., delivery instructions, gift message)."
+        },
+        "store_id": {
+          "type": "string",
+          "description": "Store identifier for store-specific inventory, pricing, and fulfillment. Part of the Store Extension."
         }
       },
       "required": [
@@ -3551,6 +3559,10 @@
           "type": "string",
           "maxLength": 5000,
           "description": "Optional customer/order notes."
+        },
+        "store_id": {
+          "type": "string",
+          "description": "Store identifier for store-specific inventory, pricing, and fulfillment. Part of the Store Extension."
         }
       },
       "example": {
@@ -3755,7 +3767,10 @@
       "required": ["services"],
       "example": {
         "services": ["checkout", "orders", "delegate_payment"],
-        "extensions": [{ "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" }],
+        "extensions": [
+          { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" },
+          { "name": "store", "spec": "https://agenticcommerce.dev/specs/store", "schema": "https://agenticcommerce.dev/schemas/store.json" }
+        ],
         "intervention_types": ["3ds"],
         "supported_currencies": ["usd", "eur"],
         "supported_locales": ["en-US"]
