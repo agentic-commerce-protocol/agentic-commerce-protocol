@@ -179,6 +179,17 @@
         "company": {
           "type": "string",
           "description": "Postal or ZIP code"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 256,
+          "description": "Optional billing/shipping email (receipts, 3DS, fraud)."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Optional billing/shipping phone (fraud, 3DS)."
         }
       },
       "required": [
