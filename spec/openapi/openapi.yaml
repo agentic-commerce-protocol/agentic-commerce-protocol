@@ -1,0 +1,339 @@
+openapi: 3.0.3
+info:
+  title: Agentic Hotel Commerce API (Catalog + Quote + Checkout + Order)
+  version: "1.0.0"
+  description: >
+    Governance-ready OpenAPI specification for agent-led hotel commerce.
+    This API supports: static catalog feed ingestion, quote (rate hydration),
+    checkout (native or redirect), order retrieval, order lifecycle actions,
+    and order update events via webhooks.
+servers:
+  - url: https://api.sabre.com/agentic-hotels/v1
+    description: Example base URL (replace with actual)
+tags:
+  - name: Catalog
+  - name: Quote
+  - name: Checkout
+  - name: Order
+  - name: Webhooks
+
+paths:
+  /catalog/products:
+    post:
+      tags: [Catalog]
+      summary: Ingest or update hotel products (static catalog feed)
+      description: >
+        Accepts a batch of hotel Products with Variants (rooms) and optional Location objects.
+        Intended for static, cacheable discovery.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HotelCatalogFeed"
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ack"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quotes:
+    post:
+      tags: [Quote]
+      summary: Create a confirmation-ready quote (rate hydration)
+      description: >
+        Returns a confirmation-ready quote for a specific hotel room Variant for given stay dates and occupancy.
+        The resulting quote_token should be used at checkout for revalidation and booking execution.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteRequest"
+      responses:
+        "200":
+          description: Quote returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Not available / price changed / inventory conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /checkouts:
+    post:
+      tags: [Checkout]
+      summary: Execute checkout (native) or generate redirect URL (redirect)
+      description: >
+        Executes booking for a quote or generates a deep-link for merchant-hosted checkout.
+        Mode 'native' supports embedded agent checkout. Mode 'redirect' returns a redirect_url.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutRequest"
+      responses:
+        "200":
+          description: Checkout result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Reprice required / quote expired / inventory conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/{order_id}:
+    get:
+      tags: [Order]
+      summary: Retrieve an order
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelOrder"
+        "404":
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/{order_id}/cancel:
+    post:
+      tags: [Order]
+      summary: Cancel an order (reservation)
+      description: >
+        Requests cancellation of a confirmed reservation, subject to cancellation policy and deadlines.
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelRequest"
+      responses:
+        "200":
+          description: Updated order returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelOrder"
+        "409":
+          description: Not cancellable / deadline passed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/{order_id}/modify:
+    post:
+      tags: [Order]
+      summary: Modify an order (dates/occupancy) — optional capability
+      description: >
+        Requests modification for eligible bookings (supplier capability dependent).
+        If modification requires repricing, a new quote_token may be returned.
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModifyRequest"
+      responses:
+        "200":
+          description: Updated order returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelOrder"
+        "409":
+          description: Not modifiable / inventory conflict / deadline passed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks/order-updates:
+    post:
+      tags: [Webhooks]
+      summary: Receive order updates (webhook endpoint)
+      description: >
+        Webhook receiver for order lifecycle events (confirmation, cancellation, modification, refunds).
+        This endpoint is implemented by the client; included here to document event shape.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderEvent"
+      responses:
+        "200":
+          description: Acknowledge receipt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ack"
+
+components:
+  schemas:
+    # Replace these placeholders with your actual schema documents as needed.
+    HotelCatalogFeed:
+      type: object
+      description: "Hotel catalog feed (Products + Variants + optional Locations)."
+      additionalProperties: true
+
+    QuoteRequest:
+      type: object
+      description: "Quote request (rate hydration)."
+      additionalProperties: true
+
+    QuoteResponse:
+      type: object
+      description: "Quote response (confirmation-ready)."
+      additionalProperties: true
+
+    CheckoutRequest:
+      type: object
+      description: "Checkout request supporting native and redirect modes."
+      additionalProperties: true
+
+    CheckoutResponse:
+      type: object
+      description: "Checkout response returning confirmation or redirect."
+      additionalProperties: true
+
+    HotelOrder:
+      type: object
+      description: "Contractual Order object for hotel reservations."
+      additionalProperties: true
+
+    OrderEvent:
+      $ref: "./order-event.schema.json"
+
+    CancelRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          description: "Optional cancellation reason."
+        requested_by:
+          type: string
+          description: "Actor requesting cancellation (e.g., agent, user)."
+
+    ModifyRequest:
+      type: object
+      additionalProperties: false
+      required: [stay]
+      properties:
+        stay:
+          type: object
+          additionalProperties: false
+          required: [checkin, checkout]
+          properties:
+            checkin:
+              type: string
+              format: date
+            checkout:
+              type: string
+              format: date
+        occupancy:
+          type: object
+          additionalProperties: false
+          properties:
+            rooms:
+              type: integer
+              minimum: 1
+            adults:
+              type: integer
+              minimum: 1
+            children:
+              type: integer
+              minimum: 0
+            child_ages:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 17
+        special_requests:
+          type: string
+
+    Ack:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok, accepted]
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, message]
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              field:
+                type: string
+                description: "Optional pointer to invalid field."
+              details:
+                type: object
+                additionalProperties: true
