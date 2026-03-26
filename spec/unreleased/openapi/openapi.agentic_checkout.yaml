@@ -1497,6 +1497,10 @@ components:
           type: string
           format: date-time
           description: RFC 3339 timestamp by which order must be picked up
+        is_default:
+          type: boolean
+          description: Indicates this is the seller's recommended default fulfillment option.
+
         totals:
           type: array
           items:
@@ -1564,6 +1568,10 @@ components:
               type: string
               description: Center point postal code for delivery radius
           description: Geographic service area for local delivery
+        is_default:
+          type: boolean
+          description: Indicates this is the seller's recommended default fulfillment option.
+
         totals:
           type: array
           items:
@@ -1616,6 +1624,10 @@ components:
           type: string
           format: date-time
           description: RFC 3339 timestamp for latest expected delivery
+        is_default:
+          type: boolean
+          description: Indicates this is the seller's recommended default fulfillment option.
+
         totals:
           type: array
           items:
