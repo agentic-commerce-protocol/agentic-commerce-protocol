@@ -3,7 +3,12 @@
     "currency": "usd",
     "line_items": [
       {
-        "id": "item_123"
+        "id": "item_123",
+        "suggested_price": {
+          "amount": 7999,
+          "source": "feed_upload_session:7829461035",
+          "observed_at": "2026-03-23T08:30:00Z"
+        }
       }
     ],
     "capabilities": {

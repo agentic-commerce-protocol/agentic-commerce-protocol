@@ -783,6 +783,36 @@
         ]
       }
     },
+    "SuggestedPrice": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Agent-provided price expectation with provenance. Allows the agent to communicate the price it displayed to the buyer, along with the catalog source and observation timestamp. The seller uses this information to verify the price origin and decide whether to honor it.",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "description": "Suggested price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for \u00a5100). This is the price the agent displayed to the buyer."
+        },
+        "source": {
+          "type": "string",
+          "description": "URI or identifier of the catalog source where the agent obtained this price. Examples: a product feed URL, catalog API endpoint, catalog snapshot ID, or seller-provided price list identifier."
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the agent last observed this price from the source."
+        }
+      },
+      "required": [
+        "amount",
+        "source",
+        "observed_at"
+      ],
+      "example": {
+        "amount": 5999,
+        "source": "feed_upload_session:7829461035",
+        "observed_at": "2026-03-23T08:30:00Z"
+      }
+    },
     "Item": {
       "description": "A purchasable item with variant options (e.g., size, color) and quantity",
       "type": "object",
@@ -799,6 +829,10 @@
         "unit_amount": {
           "type": "integer",
           "description": "Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)"
+        },
+        "suggested_price": {
+          "$ref": "#/$defs/SuggestedPrice",
+          "description": "Agent-provided price expectation with catalog source provenance. When present, the seller SHOULD verify the source and honor this price if it falls within the seller's acceptable time window."
         }
       },
       "required": [
