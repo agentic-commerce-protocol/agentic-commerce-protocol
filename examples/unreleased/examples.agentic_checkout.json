@@ -256,6 +256,13 @@
         ]
       }
     ],
+    "marketing_consent_options": [
+      {
+        "type": "email",
+        "description": "Promotional emails, product launches, and exclusive offers",
+        "privacy_policy_url": "https://www.testshop.com/privacy"
+      }
+    ],
     "messages": [],
     "links": [
       {
@@ -437,7 +444,13 @@
         "postal_code": "94131"
       }
     },
-    "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
+    "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer.",
+    "marketing_consents": [
+      {
+        "type": "email",
+        "opted_in": true
+      }
+    ]
   },
   "complete_checkout_session_request_seller_backed": {
     "buyer": {
