@@ -1215,6 +1215,8 @@ components:
     DiscountDetail:
       type: object
       additionalProperties: false
+      deprecated: true
+      description: "DEPRECATED: Use the Discount Extension's AppliedDiscount (discounts.applied[]) instead. DiscountDetail will be removed in a future spec version."
       properties:
         code:
           type: string
@@ -1249,7 +1251,6 @@ components:
         amount: 1600
         description: 20% off your order
         source: coupon
-      description: Information about a discount applied to the checkout or a specific item
     LineItem:
       type: object
       additionalProperties: false
@@ -1343,7 +1344,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DiscountDetail"
-          description: Line-item level discount details
+          deprecated: true
+          description: "DEPRECATED: Use the Discount Extension's discounts.applied[] instead."
         tax_exempt:
           type: boolean
           description: Whether this line item is tax exempt
@@ -2582,6 +2584,13 @@ components:
         code:
           type: string
           description: The discount code entered by the user. Omitted for automatic discounts.
+        description:
+          type: string
+          description: "Human-readable description of the discount (e.g., '20% off with code SAVE20')."
+        type:
+          type: string
+          enum: [percentage, fixed, bogo, volume]
+          description: The type of discount applied.
         coupon:
           $ref: "#/components/schemas/Coupon"
         amount:
@@ -2591,7 +2600,8 @@ components:
         automatic:
           type: boolean
           default: false
-          description: True if applied automatically by merchant rules (no code required).
+          deprecated: true
+          description: "DEPRECATED: Use the absence of `code` to identify automatic discounts instead. True if applied automatically by merchant rules (no code required). This field will be removed in a future spec version."
         start:
           type: string
           format: date-time

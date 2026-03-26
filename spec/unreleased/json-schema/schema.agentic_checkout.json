@@ -97,6 +97,7 @@
     "DiscountDetail": {
       "description": "Information about a discount applied to the checkout or a specific item",
       "type": "object",
+      "description": "DEPRECATED: Use the Discount Extension's AppliedDiscount (discounts.applied[]) instead. DiscountDetail will be removed in a future spec version.",
       "additionalProperties": false,
       "properties": {
         "code": {
@@ -1116,7 +1117,7 @@
           "items": {
             "$ref": "#/$defs/DiscountDetail"
           },
-          "description": "Line-item level discount details"
+          "description": "DEPRECATED: Use the Discount Extension's discounts.applied[] instead."
         },
         "tax_exempt": {
           "type": "boolean",
