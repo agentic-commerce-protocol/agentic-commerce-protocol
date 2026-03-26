@@ -384,13 +384,15 @@
             "invalid_request",
             "rate_limit_exceeded",
             "processing_error",
-            "service_unavailable"
+            "service_unavailable",
+            "unauthorized",
+            "internal_server_error"
           ],
           "description": "High-level error category"
         },
         "code": {
           "type": "string",
-          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "idempotency_key_required", "idempotency_in_flight"],
+          "enum": ["invalid_card", "duplicate_request", "idempotency_conflict", "too_many_requests", "idempotency_key_required", "idempotency_in_flight", "unauthorized", "internal_server_error", "service_unavailable"],
           "description": "Specific error code for programmatic handling"
         },
         "message": {
