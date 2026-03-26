@@ -127,7 +127,7 @@ Where `type` ∈ `invalid_request | processing_error | service_unavailable`. `pa
 
 - `id` (string)
 - `capabilities.payment.handlers` (array of **PaymentHandler** objects with handler config, PSP, and requirements)
-- `status`: `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`
+- `status`: session lifecycle state (see §5.1 for full reference)
 - `currency` (ISO 4217, e.g., `usd`)
 - `line_items[]` with `base_amount`, `discount`, `subtotal`, `tax`, `total` (all **integers**)
 - `fulfillment_details` (with `name`, `phone`, `email`, and nested `address`)
@@ -207,6 +207,26 @@ Message resolution values:
 - **AuthenticationResult**: `outcome` (enum), `outcome_details?` (object containing `three_ds_cryptogram`, `electronic_commerce_indicator`, `transaction_id`, `version`).
 
 All money fields are **integers (minor units)**.
+
+### 5.1 Session Status Reference
+
+The `status` field on `CheckoutSessionBase` tracks where a session is in the checkout lifecycle. The OpenAPI schema defines 11 values:
+
+| Status | Description | Terminal? |
+|---|---|---|
+| `incomplete` | Session created but missing required fields (e.g., items, fulfillment details). Server cannot compute totals or determine readiness. | No |
+| `not_ready_for_payment` | Session has items but is not payable. May be missing address, fulfillment selection, or has unresolved error messages. | No |
+| `in_progress` | Server is actively processing the session (e.g., computing totals, validating inventory after a create or update). | No |
+| `requires_escalation` | Session needs intervention that the agent cannot perform programmatically. The agent should surface this to the buyer or a human operator. | No |
+| `authentication_required` | An authentication step (e.g., 3DS) must be completed before the session can be finalized. Response **MUST** include `authentication_metadata`. | No |
+| `ready_for_payment` | All requirements are met. The agent may call `POST /checkout_sessions/{id}/complete` with `payment_data`. | No |
+| `pending_approval` | Completion has been requested but is awaiting asynchronous approval (e.g., merchant fraud review, buyer authorization for high-value orders). | No |
+| `complete_in_progress` | Completion has been requested and payment or order processing is underway asynchronously. The agent should poll `GET /checkout_sessions/{id}` until the session reaches a terminal state. | No |
+| `completed` | Session finalized and order created. Response **MUST** include `order` with `id`, `checkout_session_id`, and `permalink_url`. | **Yes** |
+| `canceled` | Session canceled via `POST /checkout_sessions/{id}/cancel`. | **Yes** |
+| `expired` | Session expired due to server-enforced timeout. | **Yes** |
+
+Terminal states (`completed`, `canceled`, `expired`) reject further mutations. `POST /checkout_sessions/{id}/cancel` returns **405** for sessions already in `completed` or `canceled`.
 
 ---
 
@@ -313,7 +333,7 @@ All idempotency errors use `type: "invalid_request"` and the following codes:
 
 - `currency` is ISO‑4217 (lowercase recommended, e.g., `usd`).
 - All monetary amounts are **integers** (minor units).
-- `status` ∈ `not_ready_for_payment | ready_for_payment | completed | canceled | in_progress`.
+- `status` ∈ `incomplete | not_ready_for_payment | in_progress | requires_escalation | authentication_required | ready_for_payment | pending_approval | complete_in_progress | completed | canceled | expired` (see §5.1).
 - At least one `Total` with `type: "total"` **SHOULD** be present when calculable.
 - `selected_fulfillment_options[].option_id` **MUST** match an element of `fulfillment_options` when set.
 - `messages[].param` **SHOULD** be an RFC 9535 JSONPath when applicable.
