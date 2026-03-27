@@ -13,15 +13,8 @@
 
 - **Cart**: Response object with `id`, `line_items`, `buyer`, `currency`, `totals`, `messages`,
   `continue_url`, and `expires_at`. Reuses existing ACP types (LineItem, Buyer, Total, Message).
-- **CartCreateRequest**: `line_items` (required), `buyer`, `locale`, `discounts`, `metadata`.
-- **CartUpdateRequest**: `line_items` (required), `buyer`, `discounts`.
-
-## Cart-to-Checkout Conversion
-
-- **`cart_id`** added as an optional field on `CheckoutSessionCreateRequest`. When present,
-  the seller initializes the checkout session from the cart's line items and buyer information.
-- Conversion is idempotent: if an incomplete checkout already exists for the given `cart_id`,
-  the seller returns the existing session.
+- **CartCreateRequest**: `line_items` (required), `buyer`, `locale`.
+- **CartUpdateRequest**: `line_items` (required), `buyer`.
 
 ## Discovery Integration
 
@@ -30,16 +23,17 @@
 
 ## Design Notes
 
+- Carts are scoped to a single seller.
 - Carts have no status lifecycle — they either exist or return 404.
 - Carts have no capability negotiation — that occurs at checkout creation time.
 - Carts have no payment data — payment is a checkout concern.
 - Totals on carts are estimates (e.g., tax may be omitted if address is unknown).
-- Carts support the discount extension for applying codes during browsing.
+- Cart-to-checkout conversion (via `cart_id`) and extension support (e.g., discounts) are deferred to follow-up SEPs.
 
 **Files changed:**
 
 - `spec/unreleased/json-schema/schema.cart.json` (new)
 - `spec/unreleased/openapi/openapi.cart.yaml` (new)
-- `spec/unreleased/json-schema/schema.agentic_checkout.json` (cart_id on checkout create, carts in discovery services)
+- `spec/unreleased/json-schema/schema.agentic_checkout.json` (carts in discovery services enum)
 - `rfcs/rfc.cart.md` (new)
 - `rfcs/rfc.discovery.md` (carts in services enum)

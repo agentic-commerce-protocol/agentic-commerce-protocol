@@ -1,7 +1,7 @@
 # RFC: Agentic Commerce — Cart
 
-**Status:** Proposal  
-**Version:** unreleased  
+**Status:** Proposal
+**Version:** unreleased
 **Scope:** Pre-checkout basket building for the Agentic Commerce Protocol
 
 This RFC introduces a **Cart** capability for the Agentic Commerce Protocol (ACP). Carts provide a lightweight CRUD interface for item collection before purchase intent is established, enabling incremental basket building, estimated pricing, and session persistence without the overhead of a full checkout lifecycle.
@@ -44,10 +44,10 @@ Neither approach serves agents or sellers well.
 
 1. **Simple CRUD**: Create, read, update, and cancel carts with minimal required fields.
 2. **Reuse existing types**: Cart line items, buyer, totals, and messages reuse existing ACP types — no new domain concepts.
-3. **Cart-to-checkout conversion**: A single `cart_id` field on checkout create converts a cart into a checkout session, carrying over items, buyer info, and context.
-4. **Estimated totals**: Sellers provide best-effort pricing estimates. Totals are explicitly non-authoritative until checkout.
-5. **Optional capability**: Cart is an optional ACP service. Sellers MAY implement it. Agents MUST NOT assume cart support.
-6. **Extension support**: Carts support the discount extension, enabling agents to apply discount codes during browsing.
+3. **Estimated totals**: Sellers provide best-effort pricing estimates. Totals are explicitly non-authoritative until checkout.
+4. **Optional capability**: Cart is an optional ACP service. Sellers MAY implement it. Agents MUST NOT assume cart support.
+
+> **Deferred to follow-up SEPs:** Cart-to-checkout conversion via a `cart_id` field on `CheckoutSessionCreateRequest`, and extension support (e.g., discount codes during browsing) are intentionally deferred. This SEP establishes the core cart resource; conversion and extension semantics will build on it additively.
 
 ### 2.2 Non-Goals
 
@@ -55,11 +55,14 @@ Neither approach serves agents or sellers well.
 - **Status lifecycle**: Carts do not have a status state machine. A cart either exists or it does not.
 - **Capability negotiation**: Carts do not carry a `capabilities` object. Capability negotiation occurs at checkout creation time.
 - **Fulfillment option selection**: Carts do not support fulfillment option selection. Fulfillment options are presented and selected during checkout.
-- **Order creation**: Carts cannot be completed or converted to orders directly. They must first be converted to a checkout session.
+- **Order creation**: Carts cannot be completed or converted to orders directly.
+- **Cart-to-checkout bridge**: Automatic conversion of carts to checkout sessions via a `cart_id` field is deferred to a follow-up SEP. Agents can manually create checkout sessions using cart contents retrieved via `GET /carts/{id}`.
 
 ---
 
 ## 3. Design
+
+**Scope:** Carts are scoped to a single seller. Each cart is hosted under the seller's `api_base_url`. Agents managing cross-merchant shopping SHOULD maintain separate carts per seller.
 
 ### 3.1 Cart vs Checkout
 
@@ -77,14 +80,13 @@ Neither approach serves agents or sellers well.
 ### 3.2 Lifecycle
 
 ```
-Cart (browsing) ──cart_id──▶ Checkout Session (purchasing) ──complete──▶ Order
+Cart (browsing) ──agent reads cart──▶ Checkout Session (purchasing) ──complete──▶ Order
 ```
 
 1. Agent creates a cart with one or more items.
 2. Agent updates the cart as the buyer adds, removes, or changes items.
-3. When the buyer is ready to purchase, the agent creates a checkout session with `cart_id` referencing the cart.
-4. The seller initializes the checkout session from the cart contents.
-5. The checkout proceeds through its normal lifecycle (capability negotiation, payment, completion).
+3. When the buyer is ready to purchase, the agent retrieves the cart via `GET /carts/{id}` and creates a checkout session using the cart's contents.
+4. The checkout proceeds through its normal lifecycle (capability negotiation, payment, completion).
 
 ### 3.3 Cart Schema
 
@@ -102,36 +104,6 @@ A `Cart` response contains the following fields:
 | `expires_at` | string (date-time) | No | RFC 3339 timestamp when the cart expires. |
 
 All types (`LineItem`, `Buyer`, `Total`, `Message`) reuse existing ACP definitions from the checkout schema. No new domain types are introduced.
-
-### 3.4 Cart-to-Checkout Conversion
-
-When an agent is ready to proceed to checkout, it creates a checkout session with the optional `cart_id` field:
-
-```json
-POST /checkout_sessions
-{
-  "cart_id": "cart_abc123",
-  "line_items": [],
-  "currency": "usd",
-  "capabilities": { ... }
-}
-```
-
-**Conversion rules:**
-
-1. Seller MUST use the cart's `line_items` and `buyer` to initialize the checkout session.
-2. Seller MUST ignore `line_items` and `buyer` fields in the checkout request body when `cart_id` is present. The `line_items` field may be sent as an empty array to satisfy schema validation.
-3. Seller MUST apply discount codes from the cart, if the discount extension was used.
-4. `currency` and `capabilities` are still required on the checkout create request (they are not cart fields).
-
-**Idempotency:**
-
-If an incomplete checkout session already exists for the given `cart_id`, the seller MUST return the existing checkout session rather than creating a new one. This ensures a single active checkout per cart and prevents conflicting sessions.
-
-**Cart lifecycle after conversion:**
-
-- **During active checkout**: Seller SHOULD maintain the cart and reflect relevant checkout modifications (quantity changes, item removals) back to the cart. This supports back-to-browsing flows where buyers transition between checkout and the storefront.
-- **After checkout completion**: Seller MAY clear the cart based on TTL, completion of the checkout, or other business logic. Subsequent operations on a cleared cart return `not_found`; the agent can start a new cart with `POST /carts`.
 
 ---
 
@@ -165,7 +137,8 @@ All endpoints follow ACP's existing HTTP conventions:
 | `line_items` | `Item[]` | Yes | Items to add to the cart. |
 | `buyer` | `Buyer` | No | Buyer information for personalized estimates. |
 | `locale` | string | No | Locale code for content localization. |
-| `discounts` | `DiscountsRequest` | No | Discount codes to apply (discount extension). |
+
+**Currency resolution:** The `currency` field is not required on the create request. The seller determines currency from available context (buyer locale, buyer address, storefront default, or seller default). If the seller cannot determine a currency, it SHOULD return `422 Unprocessable Entity` with a message requesting the agent provide a `locale` or `buyer` with sufficient context.
 
 **Response:** `201 Created` with `Cart` object.
 
@@ -263,9 +236,12 @@ Full replacement of the cart. The agent MUST send the complete desired cart stat
 |---|---|---|---|
 | `line_items` | `Item[]` | Yes | Complete list of items (replaces existing). |
 | `buyer` | `Buyer` | No | Updated buyer information. |
-| `discounts` | `DiscountsRequest` | No | Discount codes to apply (replaces existing). |
 
 **Response:** `200 OK` with updated `Cart` object.
+
+**Design rationale — full replacement:** Full replacement is intentional and consistent with ACP's checkout update pattern. While partial update operations (add item, remove item, change quantity) would reduce per-request payload, they significantly increase the API surface area and introduce new failure modes (concurrent add/remove, quantity delta ambiguity, item-level addressing). Agents maintain client-side cart state from the previous response and can trivially reconstruct the full items array. Future protocol versions MAY introduce optimistic concurrency (e.g., `If-Match` / ETag) if race conditions prove problematic in practice.
+
+**Cart expiry:** Sellers SHOULD refresh `expires_at` on any successful update. If a cart has expired, subsequent operations return `404 Not Found`; the agent MAY create a new cart with the previously-known items.
 
 ### 4.5 Cancel Cart
 
@@ -279,17 +255,11 @@ Cancels a cart. The seller MUST return the cart state before deletion. Subsequen
 
 ---
 
-## 5. Extension Support
+## 5. Future Extensions
 
-### 5.1 Discount Extension
+Future extensions MAY declare cart support by extending the `Cart` type, following the same `extends` pattern used for checkout extensions (see `rfc.extensions.md`). Extension integration with carts (e.g., discount codes during browsing, fulfillment previews) is deferred to follow-up SEPs.
 
-Carts support the discount extension. Agents MAY include `discounts.codes` in cart create and update requests. The seller applies discount codes and returns `discounts.applied` and `discounts.rejected` in the cart response.
-
-When a cart with applied discounts is converted to a checkout session via `cart_id`, the seller MUST carry the discount state forward to the checkout session.
-
-### 5.2 Other Extensions
-
-Future extensions MAY declare cart support by extending the `Cart` type, following the same `extends` pattern used for checkout extensions (see `rfc.extensions.md`).
+A follow-up SEP will also define cart-to-checkout conversion via a `cart_id` field on `CheckoutSessionCreateRequest`, including conversion rules, idempotency semantics, and post-conversion cart lifecycle.
 
 ---
 
@@ -321,8 +291,8 @@ Agents SHOULD check the discovery document for `"carts"` in `capabilities.servic
 This is a purely additive change:
 
 - **New endpoints**: `/carts`, `/carts/{id}`, `/carts/{id}/cancel` are new paths that do not conflict with existing endpoints.
-- **New optional field**: `cart_id` on `CheckoutSessionCreateRequest` is optional and does not change existing checkout behavior when absent.
 - **New service value**: `"carts"` in the discovery services enum does not affect existing service values.
+- **No changes to existing schemas**: No fields are added to or modified on existing ACP types. The checkout session schema is unchanged.
 - **No changes to existing flows**: Checkout session lifecycle, capability negotiation, and payment flows are unchanged.
 
 Agents that do not use carts continue to work exactly as before.
@@ -333,7 +303,7 @@ Agents that do not use carts continue to work exactly as before.
 
 - [ ] `spec/unreleased/json-schema/schema.cart.json` — New schema defining `Cart`, `CartCreateRequest`, `CartUpdateRequest`
 - [ ] `spec/unreleased/openapi/openapi.cart.yaml` — New OpenAPI defining cart REST endpoints
-- [ ] `spec/unreleased/json-schema/schema.agentic_checkout.json` — Add `cart_id` to `CheckoutSessionCreateRequest`
+- [ ] `spec/unreleased/json-schema/schema.agentic_checkout.json` — Add `"carts"` to discovery services enum
 - [ ] `rfcs/rfc.discovery.md` — Add `"carts"` to services enum documentation
 - [ ] `changelog/unreleased/cart.md` — Changelog entry
 
@@ -349,22 +319,17 @@ Agents that do not use carts continue to work exactly as before.
 - [ ] MUST implement `POST /carts/{id}/cancel` returning `200 OK` with the final cart state
 - [ ] MUST return `404 Not Found` for expired, canceled, or nonexistent carts
 - [ ] MUST return `id`, `line_items`, `currency`, and `totals` in every cart response
-- [ ] MUST use cart contents (line_items, buyer) when `cart_id` is provided on checkout create
-- [ ] MUST ignore `line_items` and `buyer` in the checkout request body when `cart_id` is present
-- [ ] MUST return an existing incomplete checkout session if one already exists for the given `cart_id` (idempotent conversion)
-- [ ] MUST carry discount state from cart to checkout when converting via `cart_id`
 
 **SHOULD requirements:**
 
 - [ ] SHOULD provide `continue_url` for cart handoff and session recovery
 - [ ] SHOULD provide estimated totals when calculable
 - [ ] SHOULD return informational messages for validation warnings (low stock, price changes)
-- [ ] SHOULD maintain the link between cart and checkout during active checkout (reflecting modifications back)
+- [ ] SHOULD refresh `expires_at` on successful cart updates
 - [ ] SHOULD advertise `"carts"` in `capabilities.services` in the discovery document
 
 **MAY requirements:**
 
-- [ ] MAY omit tax totals until checkout when address is unknown
+- [ ] MAY omit tax totals when address is unknown
 - [ ] MAY set cart expiry via `expires_at`
-- [ ] MAY clear the cart after checkout completion
 - [ ] MAY return an error response instead of creating a cart when all items are unavailable

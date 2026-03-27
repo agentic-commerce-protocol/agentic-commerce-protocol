@@ -3415,13 +3415,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "cart_id": {
-          "type": "string",
-          "description": "Cart ID to convert to a checkout session. When present, the seller MUST use the cart's line_items and buyer to initialize the checkout session and MUST ignore the line_items and buyer fields in this request body. If an incomplete checkout already exists for this cart_id, the seller MUST return the existing checkout session (idempotent conversion)."
-        },
         "buyer": {
           "$ref": "#/$defs/Buyer",
-          "description": "Buyer information. Ignored when cart_id is present."
+          "description": "Buyer information"
         },
         "line_items": {
           "type": "array",

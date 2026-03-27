@@ -58,15 +58,6 @@ paths:
                       quantity: 1
                   buyer:
                     email: buyer@example.com
-              with_discounts:
-                summary: With discount code
-                value:
-                  line_items:
-                    - id: item_123
-                      quantity: 1
-                  discounts:
-                    codes:
-                      - SAVE20
       responses:
         "201":
           description: Cart created successfully

@@ -24,6 +24,7 @@
           "$ref": "schema.agentic_checkout.json#/$defs/Buyer",
           "description": "Buyer information, if provided."
         },
+      }, 
         "currency": {
           "type": "string",
           "description": "ISO 4217 currency code. Determined by the seller based on context or request."
@@ -34,10 +35,6 @@
             "$ref": "schema.agentic_checkout.json#/$defs/Total"
           },
           "description": "Estimated cost breakdown. May be partial (e.g., tax omitted if address is unknown). Totals are estimates until checkout."
-        },
-        "discounts": {
-          "$ref": "schema.agentic_checkout.json#/$defs/DiscountsResponse",
-          "description": "Applied and rejected discounts (discount extension)."
         },
         "messages": {
           "type": "array",
@@ -108,15 +105,6 @@
         "locale": {
           "type": "string",
           "description": "Locale code for content localization (e.g., 'en-US')."
-        },
-        "discounts": {
-          "$ref": "schema.agentic_checkout.json#/$defs/DiscountsRequest",
-          "description": "Discount codes to apply (discount extension)."
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Arbitrary metadata for seller use."
         }
       },
       "example": {
@@ -147,10 +135,6 @@
         "buyer": {
           "$ref": "schema.agentic_checkout.json#/$defs/Buyer",
           "description": "Updated buyer information."
-        },
-        "discounts": {
-          "$ref": "schema.agentic_checkout.json#/$defs/DiscountsRequest",
-          "description": "Discount codes to apply (replaces existing)."
         }
       },
       "example": {
