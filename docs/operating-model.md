@@ -49,7 +49,7 @@ as new members join the TSC.
 
 | Channel              | Purpose                                              |
 |----------------------|------------------------------------------------------|
-| **Discord**          | Real-time coordination, triage discussion, community Q&A |
+| **[Discord](https://discord.gg/53k84htnJ)** | Real-time coordination, triage discussion, community Q&A |
 | **GitHub Issues/PRs**| Formal proposals, code review, SEP lifecycle         |
 | **GitHub Discussions**| Open-ended technical discussion and ideation         |
 | **Weekly Meeting**   | Decision-making, SEP votes, triage handoff           |
@@ -61,7 +61,7 @@ as new members join the TSC.
 | `#announcements`     | Read-only. Releases, SEP outcomes, governance updates. |
 | `#general`           | Open community discussion.                           |
 | `#tsc-meetings`      | Meeting agendas, notes, and recordings.              |
-| `#sep-discussion`    | Informal SEP ideation before filing a GitHub Issue.  |
+| `#technical-steering-committee` | SEP ideation, review announcements, and TSC discussion. |
 | `#triage`            | Active triage thread for the current rotation lead.  |
 | `#working-groups`    | DWG coordination (per-DWG channels as groups form).  |
 
@@ -78,6 +78,9 @@ the full process.
    assigns a milestone.
 3. **Community Review** — Sponsor moves the SEP to `in-review`. A mandatory
    7-business-day review window opens, spanning at least one weekly meeting.
+   The sponsor posts a notice to `#technical-steering-committee` on Discord
+   with a summary and a link to the GitHub Issue so the broader community
+   can provide feedback.
 4. **TSC Vote** — The SEP is discussed at the weekly meeting and decided by
    simple majority (50%+1).
 5. **Resolution** — Accepted SEPs move to implementation; rejected SEPs may be
