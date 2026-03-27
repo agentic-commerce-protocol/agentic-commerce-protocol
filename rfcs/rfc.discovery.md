@@ -149,6 +149,7 @@ The document is a `DiscoveryResponse` object containing the following fields:
 | `checkout` | Checkout session management (`POST /checkout_sessions` and related endpoints). |
 | `orders` | Post-purchase order lifecycle management. |
 | `delegate_payment` | Payment credential delegation (`POST /delegate_payment`). |
+| `carts` | Pre-checkout cart management (`POST /carts` and related endpoints). |
 
 The `services` enum is closed per API version. New values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version.
 
@@ -214,7 +215,7 @@ Cache-Control: public, max-age=3600
   "api_base_url": "https://acp.stripe.com/api",
   "transports": ["rest", "mcp"],
   "capabilities": {
-    "services": ["checkout", "orders", "delegate_payment"],
+    "services": ["checkout", "orders", "delegate_payment", "carts"],
     "extensions": [
       { "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" },
       { "name": "fulfillment", "spec": "https://agenticcommerce.dev/specs/fulfillment", "schema": "https://agenticcommerce.dev/schemas/fulfillment.json" }

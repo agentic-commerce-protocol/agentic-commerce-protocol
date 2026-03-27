@@ -3711,7 +3711,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["checkout", "orders", "delegate_payment"]
+            "enum": ["checkout", "orders", "delegate_payment", "carts"]
           },
           "uniqueItems": true,
           "description": "Services available from this seller. Indicates which ACP operations are implemented. This enum is closed per API version; new values are introduced in new API versions. Agents MAY treat the set as exhaustive for a given version."
@@ -3754,7 +3754,7 @@
       },
       "required": ["services"],
       "example": {
-        "services": ["checkout", "orders", "delegate_payment"],
+        "services": ["checkout", "orders", "delegate_payment", "carts"],
         "extensions": [{ "name": "discount", "spec": "https://agenticcommerce.dev/specs/discount", "schema": "https://agenticcommerce.dev/schemas/discount.json" }],
         "intervention_types": ["3ds"],
         "supported_currencies": ["usd", "eur"],
