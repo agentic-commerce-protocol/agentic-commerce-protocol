@@ -64,6 +64,8 @@ Neither approach serves agents or sellers well.
 
 **Scope:** Carts are scoped to a single seller. Each cart is hosted under the seller's `api_base_url`. Agents managing cross-merchant shopping SHOULD maintain separate carts per seller.
 
+**Origin:** Carts MAY originate outside the ACP API — for example, from a merchant's existing storefront or native app. Sellers that support externally-created carts SHOULD make them retrievable via `GET /carts/{id}` and updatable via `POST /carts/{id}` using standard ACP authentication. This allows agents to pick up carts started by human buyers, enabling hybrid flows where product discovery happens on the merchant's storefront and checkout is handled by the agent.
+
 ### 3.1 Cart vs Checkout
 
 | Aspect | Cart | Checkout Session |
