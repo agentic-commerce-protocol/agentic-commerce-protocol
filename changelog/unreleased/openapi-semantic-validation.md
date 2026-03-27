@@ -17,4 +17,4 @@ Adds machine validation of every `openapi.*.yaml` spec using `@apidevtools/swagg
 
 ### Reference
 
-- PR: #(fill in after opening)
+- PR: https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/pull/202
