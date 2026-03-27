@@ -12,8 +12,8 @@ Steering Committee. It complements the [Governance Model](./governance.md) and
 - **Duration:** 30 minutes
 - **Who:** All TSC member organizations must attend or send a designated
   representative.
-- **Agenda:** Published to the `#tsc-meetings` Discord channel at least 24 hours
-  before the meeting. Any TSC member may add items.
+- **Agenda:** Published to `#technical-steering-committee` on Discord at least
+  24 hours before the meeting. Any TSC member may add items.
 - **Format:**
   1. Triage handoff — outgoing triage lead summarizes the week's ingress.
   2. SEP review — discuss and vote on any SEPs in the `in-review` state.
@@ -59,10 +59,8 @@ as new members join the TSC.
 | Channel              | Purpose                                              |
 |----------------------|------------------------------------------------------|
 | `#announcements`     | Read-only. Releases, SEP outcomes, governance updates. |
-| `#general`           | Open community discussion.                           |
-| `#tsc-meetings`      | Meeting agendas, notes, and recordings.              |
-| `#technical-steering-committee` | SEP ideation, review announcements, and TSC discussion. |
-| `#triage`            | Active triage thread for the current rotation lead.  |
+| `#general`           | Open to all. Community discussion, questions, and informal SEP ideation. |
+| `#technical-steering-committee` | TSC members only. Meeting agendas, triage threads, SEP review announcements, sponsorship coordination, and governance discussion. |
 | `#working-groups`    | DWG coordination (per-DWG channels as groups form).  |
 
 ---
@@ -72,10 +70,13 @@ as new members join the TSC.
 This is the week-to-week flow; see [SEP Guidelines](./sep-guidelines.md) for
 the full process.
 
-1. **Ingress** — New SEP filed as a GitHub Issue with `SEP` and `proposal` tags.
-   The triage lead acknowledges and flags it to the TSC.
+1. **Ingress** — Anyone may file a new SEP as a GitHub Issue with `SEP` and
+   `proposal` tags. Community members can discuss ideas in `#general` on Discord
+   before filing. The triage lead acknowledges the issue and flags it to the TSC.
 2. **Sponsorship** — A TSC member sponsors the SEP, adds the `draft` tag, and
-   assigns a milestone.
+   assigns a milestone. Every SEP requires a TSC sponsor; the triage lead or any
+   TSC member may volunteer. Sponsorship discussion happens in
+   `#technical-steering-committee`.
 3. **Community Review** — Sponsor moves the SEP to `in-review`. A mandatory
    7-business-day review window opens, spanning at least one weekly meeting.
    The sponsor posts a notice to `#technical-steering-committee` on Discord
