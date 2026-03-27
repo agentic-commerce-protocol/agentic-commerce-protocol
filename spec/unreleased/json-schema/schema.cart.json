@@ -24,7 +24,6 @@
           "$ref": "schema.agentic_checkout.json#/$defs/Buyer",
           "description": "Buyer information, if provided."
         },
-      }, 
         "currency": {
           "type": "string",
           "description": "ISO 4217 currency code. Determined by the seller based on context or request."
