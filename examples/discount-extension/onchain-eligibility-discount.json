@@ -1,6 +1,6 @@
 {
   "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
-  "description": "Example: On-chain eligibility discount where a token holder receives a percentage discount verified by an external attestation provider. The discount code is issued after verifying the buyer's wallet holds qualifying tokens on-chain. Per-item allocations distribute the discount across line items.",
+  "description": "Example: Condition-based discount where a buyer's wallet is evaluated against on-chain conditions (token holdings) and a signed boolean determines eligibility. No balances exposed. Per-item allocations distribute the discount across line items.",
 
   "request": {
     "line_items": [
