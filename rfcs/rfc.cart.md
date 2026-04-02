@@ -263,6 +263,8 @@ Future extensions MAY declare cart support by extending the `Cart` type, followi
 
 A follow-up SEP will also define cart-to-checkout conversion via a `cart_id` field on `CheckoutSessionCreateRequest`, including conversion rules, idempotency semantics, and post-conversion cart lifecycle.
 
+Future SEPs may also define `continue_url` as an input on `CartCreateRequest`, enabling agents to reference existing merchant-created carts by URL without requiring knowledge of individual product IDs.
+
 ---
 
 ## 6. Discovery Integration
