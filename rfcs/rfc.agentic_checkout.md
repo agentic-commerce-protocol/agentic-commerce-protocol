@@ -196,6 +196,22 @@ Message resolution values:
   - `recoverable`: Agent can fix via API (e.g., retry with different parameters)
   - `requires_buyer_input`: Buyer must provide information the API cannot collect programmatically
   - `requires_buyer_review`: Buyer must authorize before order placement (policy, regulatory, or entitlement rules)
+
+### 5.1 Markdown Content Specification
+
+When `content_type` is `"markdown"` on Disclosure, MessageInfo, MessageWarning, or MessageError, the `content` field:
+
+- **MUST** conform to [CommonMark version 0.31.2](https://spec.commonmark.org/0.31.2/).
+- **MUST NOT** contain [raw HTML elements](https://spec.commonmark.org/0.31.2/#raw-html) (e.g., `<script>`, `<div>`, `<img>`, `<iframe>`).
+
+**Shared responsibility model:**
+
+- **Sellers** MUST author CommonMark-compliant markdown without raw HTML.
+- **Servers** MUST validate inbound markdown and reject content containing raw HTML.
+- **Agents** MUST render markdown using a CommonMark-compliant parser with raw HTML output disabled or sanitized.
+
+When `content_type` is `"plain"`, the `content` field is plain text with no formatting semantics.
+
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 - **Total**: `type`, `display_text`, `amount` (**int**), `description?`
 

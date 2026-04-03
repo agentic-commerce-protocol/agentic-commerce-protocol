@@ -828,11 +828,11 @@
             "plain",
             "markdown"
           ],
-          "description": "Format of the disclosure content"
+          "description": "Format of the disclosure content. When set to 'markdown', content MUST conform to CommonMark (https://spec.commonmark.org/0.31.2/). Raw HTML elements MUST NOT be included. When set to 'plain', content is plain text with no formatting."
         },
         "content": {
           "type": "string",
-          "description": "The disclosure text content"
+          "description": "The disclosure text content. When content_type is 'markdown', this MUST be valid CommonMark with no raw HTML. Agents MUST render using a CommonMark-compliant parser with raw HTML output disabled or sanitized."
         }
       },
       "required": [
@@ -1814,11 +1814,11 @@
             "plain",
             "markdown"
           ],
-          "description": "Format of the message content"
+          "description": "Format of the message content. When set to 'markdown', content MUST conform to CommonMark (https://spec.commonmark.org/0.31.2/). Raw HTML elements MUST NOT be included. When set to 'plain', content is plain text with no formatting."
         },
         "content": {
           "type": "string",
-          "description": "Informational message text"
+          "description": "Informational message text. When content_type is 'markdown', this MUST be valid CommonMark with no raw HTML. Agents MUST render using a CommonMark-compliant parser with raw HTML output disabled or sanitized."
         }
       },
       "required": [
@@ -1892,11 +1892,11 @@
             "plain",
             "markdown"
           ],
-          "description": "Format of the warning message content"
+          "description": "Format of the warning message content. When set to 'markdown', content MUST conform to CommonMark (https://spec.commonmark.org/0.31.2/). Raw HTML elements MUST NOT be included. When set to 'plain', content is plain text with no formatting."
         },
         "content": {
           "type": "string",
-          "description": "Warning message text"
+          "description": "Warning message text. When content_type is 'markdown', this MUST be valid CommonMark with no raw HTML. Agents MUST render using a CommonMark-compliant parser with raw HTML output disabled or sanitized."
         }
       },
       "required": [
@@ -1979,11 +1979,11 @@
             "plain",
             "markdown"
           ],
-          "description": "Format of the error message content"
+          "description": "Format of the error message content. When set to 'markdown', content MUST conform to CommonMark (https://spec.commonmark.org/0.31.2/). Raw HTML elements MUST NOT be included. When set to 'plain', content is plain text with no formatting."
         },
         "content": {
           "type": "string",
-          "description": "Error message text"
+          "description": "Error message text. When content_type is 'markdown', this MUST be valid CommonMark with no raw HTML. Agents MUST render using a CommonMark-compliant parser with raw HTML output disabled or sanitized."
         }
       },
       "required": [
