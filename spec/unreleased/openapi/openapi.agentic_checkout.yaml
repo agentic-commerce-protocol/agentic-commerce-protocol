@@ -1095,6 +1095,7 @@ components:
         psp:
           type: string
           description: Payment Service Provider identifier
+          enum: ["stripe", "adyen", "braintree", "checkout", "razorpay", "seller_managed"]
         config_schema:
           type: string
           format: uri
@@ -1143,6 +1144,69 @@ components:
         - handlers
       example:
         handlers: []
+    RazorpayUpiConfig:
+      type: object
+      additionalProperties: false
+      description: Configuration schema for Razorpay UPI payment handler (in.razorpay.upi)
+      properties:
+        merchant_id:
+          type: string
+          description: Razorpay merchant key identifier
+          maxLength: 256
+          examples:
+            - rzp_live_abc123xyz
+            - rzp_test_abc123xyz
+        psp:
+          type: string
+          const: razorpay
+          description: Payment Service Provider - must be razorpay for this handler
+        accepted_flows:
+          type: array
+          description: UPI flows supported by this handler
+          items:
+            type: string
+            enum: [collect, intent, upi_number, qr_code]
+          minItems: 1
+          uniqueItems: true
+          default: [collect, intent]
+        environment:
+          type: string
+          enum: [sandbox, production]
+          description: Environment for this handler instance
+      required:
+        - merchant_id
+        - psp
+    RazorpayReservePayConfig:
+      type: object
+      additionalProperties: false
+      description: Configuration schema for Razorpay Reserve Pay tokenized payment handler (in.razorpay.reserve_pay)
+      properties:
+        merchant_id:
+          type: string
+          description: Razorpay merchant key identifier
+          maxLength: 256
+          examples:
+            - rzp_live_abc123xyz
+            - rzp_test_abc123xyz
+        psp:
+          type: string
+          const: razorpay
+          description: Payment Service Provider - must be razorpay for this handler
+        accepted_instruments:
+          type: array
+          description: Payment instruments supported by Reserve Pay
+          items:
+            type: string
+            enum: [card, upi, netbanking, wallet, paylater]
+          minItems: 1
+          uniqueItems: true
+        environment:
+          type: string
+          enum: [sandbox, production]
+          description: Environment for this handler instance
+      required:
+        - merchant_id
+        - psp
     VariantOption:
       type: object
       additionalProperties: false
