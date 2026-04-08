@@ -277,7 +277,6 @@
         },
         "risk_signals": {
           "type": "array",
-          "minItems": 1,
           "description": "List of risk assessment signals from fraud detection",
           "items": {
             "$ref": "#/$defs/RiskSignal"
