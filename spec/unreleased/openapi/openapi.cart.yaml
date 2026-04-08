@@ -139,7 +139,7 @@ paths:
         "404":
           $ref: "#/components/responses/CartNotFound"
 
-    post:
+    put:
       tags: [Carts]
       summary: Update a cart
       operationId: updateCart

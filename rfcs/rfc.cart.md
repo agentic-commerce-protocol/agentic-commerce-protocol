@@ -64,7 +64,7 @@ Neither approach serves agents or sellers well.
 
 **Scope:** Carts are scoped to a single seller. Each cart is hosted under the seller's `api_base_url`. Agents managing cross-merchant shopping SHOULD maintain separate carts per seller.
 
-**Origin:** Carts MAY originate outside the ACP API — for example, from a merchant's existing storefront or native app. Sellers that support externally-created carts SHOULD make them retrievable via `GET /carts/{id}` and updatable via `POST /carts/{id}` using standard ACP authentication. This allows agents to pick up carts started by human buyers, enabling hybrid flows where product discovery happens on the merchant's storefront and checkout is handled by the agent.
+**Origin:** Carts MAY originate outside the ACP API — for example, from a merchant's existing storefront or native app. Sellers that support externally-created carts SHOULD make them retrievable via `GET /carts/{id}` and updatable via `PUT /carts/{id}` using standard ACP authentication. This allows agents to pick up carts started by human buyers, enabling hybrid flows where product discovery happens on the merchant's storefront and checkout is handled by the agent.
 
 ### 3.1 Cart vs Checkout
 
@@ -117,7 +117,7 @@ All types (`LineItem`, `Buyer`, `Total`, `Message`) reuse existing ACP definitio
 |---|---|---|---|
 | Create Cart | `POST` | `/carts` | Create a new cart with items. |
 | Get Cart | `GET` | `/carts/{id}` | Retrieve current cart state. |
-| Update Cart | `POST` | `/carts/{id}` | Update cart (full replacement). |
+| Update Cart | `PUT` | `/carts/{id}` | Update cart (full replacement). |
 | Cancel Cart | `POST` | `/carts/{id}/cancel` | Cancel a cart. |
 
 All endpoints follow ACP's existing HTTP conventions:
@@ -228,7 +228,7 @@ Returns the current cart state. Returns `404 Not Found` if the cart does not exi
 
 ### 4.4 Update Cart
 
-`POST /carts/{id}`
+`PUT /carts/{id}`
 
 Full replacement of the cart. The agent MUST send the complete desired cart state. The provided `line_items` replace the existing cart contents.
 
@@ -319,7 +319,7 @@ Agents that do not use carts continue to work exactly as before.
 
 - [ ] MUST implement `POST /carts` returning `201 Created` with a valid `Cart` object
 - [ ] MUST implement `GET /carts/{id}` returning `200 OK` with the current cart state
-- [ ] MUST implement `POST /carts/{id}` accepting a full replacement of the cart
+- [ ] MUST implement `PUT /carts/{id}` accepting a full replacement of the cart
 - [ ] MUST implement `POST /carts/{id}/cancel` returning `200 OK` with the final cart state
 - [ ] MUST return `404 Not Found` for expired, canceled, or nonexistent carts
 - [ ] MUST return `id`, `line_items`, `currency`, and `totals` in every cart response

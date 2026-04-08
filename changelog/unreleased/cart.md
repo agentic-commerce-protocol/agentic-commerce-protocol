@@ -6,7 +6,7 @@
 
 - **`POST /carts`** -- Create a new cart with line items and optional buyer information.
 - **`GET /carts/{id}`** -- Retrieve the current state of a cart.
-- **`POST /carts/{id}`** -- Update a cart (full replacement of line items).
+- **`PUT /carts/{id}`** -- Update a cart (full replacement of line items).
 - **`POST /carts/{id}/cancel`** -- Cancel a cart and return its final state.
 
 ## New Schemas
