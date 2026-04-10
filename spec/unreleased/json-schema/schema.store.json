@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-commerce-protocol.com/schemas/store.json",
+  "title": "Store Extension",
+  "description": "Extends Checkout with store context for localized inventory, pricing, and fulfillment. Enables Buy Online Pick Up In Store (BOPIS) and in-store assisted shopping.",
+  "$defs": {
+    "coordinates": {
+      "type": "object",
+      "description": "Geographic coordinates",
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "Latitude in decimal degrees"
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "description": "Longitude in decimal degrees"
+        }
+      },
+      "required": ["latitude", "longitude"],
+      "example": {
+        "latitude": 37.7749,
+        "longitude": -122.4194
+      }
+    },
+    "store": {
+      "type": "object",
+      "description": "Physical store location details",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique store identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Store display name"
+        },
+        "address": {
+          "$ref": "schema.agentic_checkout.json#/$defs/Address",
+          "description": "Store physical address"
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "Store contact phone number (E.164 format)"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Store contact email"
+        },
+        "business_hours": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Operating hours in HH:MM-HH:MM format or 'closed'"
+          },
+          "description": "Store operating hours (keys: monday-sunday)"
+        },
+        "coordinates": {
+          "$ref": "#/$defs/coordinates",
+          "description": "Store geographic coordinates"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["pickup", "returns", "ship_from_store", "curbside"]
+          },
+          "description": "Services offered by this store"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone identifier (e.g., 'America/Los_Angeles')"
+        },
+        "store_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to store details page"
+        }
+      },
+      "required": ["id", "name"],
+      "example": {
+        "id": "store_sf_market",
+        "name": "San Francisco Market Street",
+        "address": {
+          "name": "San Francisco Market Street",
+          "line_one": "123 Market Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "country": "US",
+          "postal_code": "94102"
+        },
+        "phone_number": "+14155551234",
+        "coordinates": {
+          "latitude": 37.7749,
+          "longitude": -122.4194
+        },
+        "services": ["pickup", "returns", "ship_from_store"]
+      }
+    },
+    "stores_response": {
+      "type": "object",
+      "description": "Response from store discovery endpoint",
+      "properties": {
+        "stores": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/store"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "distance_km": {
+                    "type": "number",
+                    "description": "Distance from search location in kilometers (when filtering by location)"
+                  }
+                }
+              }
+            ]
+          },
+          "description": "List of stores matching search criteria"
+        }
+      },
+      "example": {
+        "stores": [
+          {
+            "id": "store_sf_market",
+            "name": "San Francisco Market Street",
+            "address": {
+              "name": "San Francisco Market Street",
+              "line_one": "123 Market St",
+              "city": "San Francisco",
+              "state": "CA",
+              "country": "US",
+              "postal_code": "94102"
+            },
+            "coordinates": {
+              "latitude": 37.7749,
+              "longitude": -122.4194
+            },
+            "distance_km": 0.8,
+            "services": ["pickup", "returns"]
+          }
+        ]
+      }
+    },
+    "checkout_with_store": {
+      "title": "Checkout with Store Extension",
+      "description": "Checkout session extended with store context.",
+      "allOf": [
+        {
+          "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionBase"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "store": {
+              "$ref": "#/$defs/store",
+              "description": "Store information when store context is specified"
+            }
+          },
+          "description": "Store extension fields"
+        }
+      ],
+      "example": {
+        "id": "cs_abc123",
+        "status": "ready_for_payment",
+        "currency": "usd",
+        "store": {
+          "id": "store_sf_market",
+          "name": "San Francisco Market Street",
+          "coordinates": {
+            "latitude": 37.7749,
+            "longitude": -122.4194
+          }
+        },
+        "line_items": [
+          {
+            "id": "li_123",
+            "availability_status": "in_stock",
+            "available_quantity": 5
+          }
+        ],
+        "totals": {
+          "currency": "usd",
+          "total": 5000
+        },
+        "fulfillment_options": [
+          {
+            "type": "pickup",
+            "title": "Pick up at San Francisco Market Street",
+            "location": {
+              "id": "store_sf_market",
+              "name": "San Francisco Market Street"
+            }
+          }
+        ],
+        "messages": [],
+        "links": [],
+        "capabilities": {}
+      }
+    },
+    "checkout_create_request_with_store": {
+      "title": "Checkout Create Request with Store Extension",
+      "description": "Checkout session create request extended with store context.",
+      "allOf": [
+        {
+          "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionCreateRequest"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "store_id": {
+              "type": "string",
+              "description": "Store identifier for store-specific inventory, pricing, and fulfillment. Part of the Store Extension."
+            }
+          },
+          "description": "Store extension fields for create request"
+        }
+      ],
+      "example": {
+        "line_items": [
+          {
+            "id": "item_123",
+            "quantity": 1
+          }
+        ],
+        "currency": "usd",
+        "capabilities": {},
+        "store_id": "store_sf_market"
+      }
+    },
+    "checkout_update_request_with_store": {
+      "title": "Checkout Update Request with Store Extension",
+      "description": "Checkout session update request extended with store context.",
+      "allOf": [
+        {
+          "$ref": "schema.agentic_checkout.json#/$defs/CheckoutSessionUpdateRequest"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "store_id": {
+              "type": "string",
+              "description": "Store identifier for store-specific inventory, pricing, and fulfillment. Part of the Store Extension."
+            }
+          },
+          "description": "Store extension fields for update request"
+        }
+      ],
+      "example": {
+        "buyer": {
+          "email": "customer@example.com"
+        },
+        "store_id": "store_sf_mission"
+      }
+    }
+  }
+}

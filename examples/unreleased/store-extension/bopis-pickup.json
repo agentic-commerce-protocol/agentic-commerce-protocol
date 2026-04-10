@@ -1,0 +1,106 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.store.json#/$defs/checkout_with_store",
+  "id": "cs_bopis_example",
+  "protocol": {
+    "name": "acp",
+    "version": "unreleased"
+  },
+  "status": "ready_for_payment",
+  "currency": "usd",
+  "store": {
+    "id": "store_sf_market",
+    "name": "San Francisco Market Street",
+    "address": {
+      "name": "San Francisco Market Street",
+      "line_one": "123 Market Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "US",
+      "postal_code": "94102"
+    },
+    "phone_number": "+14155551234",
+    "coordinates": {
+      "latitude": 37.7749,
+      "longitude": -122.4194
+    },
+    "business_hours": {
+      "monday": "09:00-21:00",
+      "tuesday": "09:00-21:00",
+      "wednesday": "09:00-21:00",
+      "thursday": "09:00-21:00",
+      "friday": "09:00-21:00",
+      "saturday": "10:00-20:00",
+      "sunday": "11:00-19:00"
+    },
+    "services": ["pickup", "returns", "ship_from_store"],
+    "timezone": "America/Los_Angeles"
+  },
+  "line_items": [
+    {
+      "id": "li_laptop_001",
+      "product_id": "prod_laptop_pro",
+      "title": "Laptop Pro 15-inch",
+      "quantity": 1,
+      "unit_amount": 149900,
+      "availability_status": "in_stock",
+      "available_quantity": 3
+    }
+  ],
+  "totals": [
+    {
+      "type": "subtotal",
+      "display_text": "Subtotal",
+      "currency": "usd",
+      "amount": 149900
+    },
+    {
+      "type": "tax",
+      "display_text": "Tax",
+      "currency": "usd",
+      "amount": 13116
+    },
+    {
+      "type": "total",
+      "display_text": "Total",
+      "currency": "usd",
+      "amount": 163016
+    }
+  ],
+  "fulfillment_options": [
+    {
+      "id": "pickup_sf_market",
+      "type": "pickup",
+      "title": "Pick up at San Francisco Market Street",
+      "description": "Ready by 2:00 PM today",
+      "amount": 0,
+      "currency": "usd",
+      "ready_by": "2026-03-02T14:00:00-08:00",
+      "location": {
+        "id": "store_sf_market",
+        "name": "San Francisco Market Street",
+        "address": {
+          "name": "San Francisco Market Street",
+          "line_one": "123 Market Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "country": "US",
+          "postal_code": "94102"
+        }
+      }
+    }
+  ],
+  "messages": [],
+  "links": [],
+  "capabilities": {
+    "extensions": [
+      {
+        "name": "store",
+        "extends": [
+          "$.CheckoutSessionCreateRequest.store_id",
+          "$.CheckoutSessionUpdateRequest.store_id",
+          "$.CheckoutSession.store"
+        ]
+      }
+    ]
+  }
+}
