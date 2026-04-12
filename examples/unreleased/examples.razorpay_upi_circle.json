@@ -1,0 +1,320 @@
+{
+  "handler_declaration_app_manifest": {
+    "payment": {
+      "handlers": [
+        {
+          "id": "razorpay_upi_circle_001",
+          "name": "com.razorpay.upi_circle",
+          "version": "2026-04-07",
+          "spec": "https://razorpay.com/acp/upi_circle/2026-04-07/spec.md",
+          "schema": "https://razorpay.com/acp/upi_circle/2026-04-07/schema.json",
+          "config": {
+            "environment": "production",
+            "merchant_id": "rzp_live_abc123xyz",
+            "merchant_name": "BigBasket",
+            "delegate_vpa": "agent@razorpay",
+            "supported_flows": ["mandate_onboard", "agent_initiated_debit"]
+          },
+          "requires_delegate_payment": true,
+          "psp": "razorpay"
+        }
+      ]
+    },
+    "checkout_config": {
+      "checkout_type": "instant",
+      "payment_provider": {
+        "name": "razorpay",
+        "payment_type": "upi_circle",
+        "handler_id": "razorpay_upi_circle_001"
+      }
+    }
+  },
+  "mandate_onboarding_via_external_checkout": {
+    "widget_request": {
+      "action": "openExternal",
+      "params": {
+        "href": "https://checkout.razorpay.com/v2/upi-circle/onboard?merchant_id=rzp_live_XXX&user_id=acp_user_123&max_amount=50000&expiry=2026-12-31&category=retail",
+        "metadata": {
+          "acp_session_id": "session_abc123",
+          "flow": "upi_circle_onboarding"
+        }
+      }
+    },
+    "user_flow": {
+      "step_1": "User authenticates with UPI PIN",
+      "step_2": "User approves mandate for agent@razorpay to debit up to ₹500",
+      "step_3": "Razorpay redirects to merchant with mandate_id",
+      "step_4": "Merchant stores mandate against acp_user_id"
+    }
+  },
+  "mandate_onboarding_escalation_response": {
+    "status": "requires_escalation",
+    "continue_url": "https://checkout.razorpay.com/v2/upi-circle/onboard?merchant_id=rzp_live_XXX&user_id=acp_user_123&max_amount=5000000&expiry=2026-12-31&category=retail",
+    "messages": [
+      {
+        "type": "info",
+        "content_type": "plain",
+        "content": "Please complete UPI Circle mandate setup to enable agent-initiated payments. You'll authorize up to ₹5,000 with expiry Dec 31, 2026."
+      }
+    ],
+    "mandate_request": {
+      "max_amount": 500000,
+      "expiry": "2026-12-31T23:59:59Z",
+      "merchant_category": "retail",
+      "delegate_vpa": "agent@razorpay"
+    }
+  },
+  "stored_mandate_user_record": {
+    "acp_user_id": "acp_user_123",
+    "mandates": [
+      {
+        "mandate_id": "mand_P6WA7b8Ys3qKm2",
+        "user_vpa": "user@okicici",
+        "delegate_vpa": "agent@razorpay",
+        "max_amount": 500000,
+        "remaining_amount": 450000,
+        "status": "active",
+        "created_at": "2026-04-01T10:00:00Z",
+        "expires_at": "2026-12-31T23:59:59Z",
+        "merchant_category": "retail"
+      }
+    ]
+  },
+  "request_checkout_with_upi_circle": {
+    "checkout_type": "instant",
+    "currency": "INR",
+    "amount": 49900,
+    "line_items": [
+      {
+        "id": "sku_kurta_m",
+        "name": "Kurta — Size M",
+        "quantity": 1,
+        "unit_price": 49900
+      }
+    ],
+    "payment_provider": {
+      "name": "razorpay",
+      "merchant_id": "rzp_live_XXXX",
+      "payment_type": "upi_circle",
+      "delegate_vpa": "agent@razorpay",
+      "mandate_id": "mand_P6WA7b8Ys3qKm2",
+      "mandate_max_amount": 500000,
+      "mandate_expiry": "2026-12-31T23:59:59Z",
+      "order_id": "order_P6WL8c9Xt4rUj1"
+    }
+  },
+  "pre_confirmation_message": {
+    "type": "confirmation",
+    "content": "This purchase of ₹499 will be charged via your pre-authorized UPI Circle mandate (ceiling: ₹5,000, expires: Dec 2026). Proceed?",
+    "actions": [
+      {
+        "type": "confirm",
+        "label": "Pay ₹499"
+      },
+      {
+        "type": "cancel",
+        "label": "Choose different method"
+      }
+    ]
+  },
+  "razorpay_order_create_for_upi_circle": {
+    "request": {
+      "amount": 49900,
+      "currency": "INR",
+      "receipt": "rcpt_upi_abc123",
+      "notes": {
+        "acp_checkout_id": "chk_abc123",
+        "mandate_id": "mand_P6WA7b8Ys3qKm2"
+      }
+    },
+    "response": {
+      "id": "order_P6WL8c9Xt4rUj1",
+      "entity": "order",
+      "amount": 49900,
+      "amount_paid": 0,
+      "amount_due": 49900,
+      "currency": "INR",
+      "receipt": "rcpt_upi_abc123",
+      "status": "created",
+      "attempts": 0,
+      "notes": {
+        "acp_checkout_id": "chk_abc123",
+        "mandate_id": "mand_P6WA7b8Ys3qKm2"
+      },
+      "created_at": 1712505600
+    }
+  },
+  "razorpay_upi_circle_debit_api_request": {
+    "endpoint": "POST /v1/upi-circle/debit",
+    "headers": {
+      "Authorization": "Basic {base64(key_id:key_secret)}",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "amount": 49900,
+      "currency": "INR",
+      "mandate_id": "mand_P6WA7b8Ys3qKm2",
+      "order_id": "order_P6WL8c9Xt4rUj1",
+      "notes": {
+        "acp_checkout_id": "chk_abc123"
+      }
+    }
+  },
+  "razorpay_upi_circle_debit_api_response": {
+    "id": "pay_P6WMPl2NNnnLFk",
+    "entity": "payment",
+    "amount": 49900,
+    "currency": "INR",
+    "status": "captured",
+    "order_id": "order_P6WL8c9Xt4rUj1",
+    "method": "upi",
+    "vpa": "user@okicici",
+    "upi_transaction_id": "318219246640",
+    "mandate_id": "mand_P6WA7b8Ys3qKm2",
+    "agent_initiated": true,
+    "captured_at": 1712505900,
+    "notes": {
+      "acp_checkout_id": "chk_abc123"
+    }
+  },
+  "complete_checkout_mcp_request_with_upi_circle": {
+    "tool": "complete_checkout",
+    "payment_data": {
+      "type": "upi_circle",
+      "provider": "razorpay",
+      "payment_id": "pay_P6WMPl2NNnnLFk",
+      "order_id": "order_P6WL8c9Xt4rUj1",
+      "mandate_id": "mand_P6WA7b8Ys3qKm2",
+      "upi_txn_id": "318219246640",
+      "agent_initiated": true,
+      "status": "captured",
+      "signature": "9ef4dabb240c2bbcb6f8e04a48d2f3e5dbc9a1f7e6d8c2b4a5f6e7d8c9b0a1f2",
+      "amount": 49900,
+      "currency": "INR",
+      "method": "upi",
+      "vpa": "user@okicici"
+    },
+    "order_summary": {
+      "order_id": "order_P6WL8c9Xt4rUj1",
+      "amount": 49900,
+      "currency": "INR",
+      "line_items": [
+        {
+          "id": "sku_kurta_m",
+          "name": "Kurta — Size M",
+          "quantity": 1,
+          "unit_price": 49900
+        }
+      ]
+    }
+  },
+  "get_mandate_status_api_request": {
+    "endpoint": "GET /v1/upi-circle/mandates/mand_P6WA7b8Ys3qKm2",
+    "headers": {
+      "Authorization": "Basic {base64(key_id:key_secret)}"
+    }
+  },
+  "get_mandate_status_api_response": {
+    "id": "mand_P6WA7b8Ys3qKm2",
+    "entity": "mandate",
+    "status": "active",
+    "customer_vpa": "user@okicici",
+    "delegate_vpa": "agent@razorpay",
+    "max_amount": 500000,
+    "remaining_amount": 450000,
+    "expiry": "2026-12-31T23:59:59Z",
+    "merchant_category": "retail",
+    "created_at": "2026-04-01T10:00:00Z",
+    "last_debit_at": "2026-04-07T14:30:00Z"
+  },
+  "post_payment_user_notification": {
+    "title": "Payment Successful",
+    "message": "₹499 was charged via your UPI Circle mandate for Kurta — Size M from BigBasket.",
+    "details": {
+      "amount": "₹499.00",
+      "merchant": "BigBasket",
+      "mandate_id": "mand_P6WA7b8Ys3qKm2",
+      "order_id": "order_P6WL8c9Xt4rUj1",
+      "upi_txn_id": "318219246640"
+    },
+    "action": {
+      "label": "View Order",
+      "url": "https://bigbasket.com/orders/order_P6WL8c9Xt4rUj1"
+    }
+  },
+  "mandate_management_ui_data": {
+    "active_mandates": [
+      {
+        "mandate_id": "mand_P6WA7b8Ys3qKm2",
+        "merchant": "BigBasket",
+        "vpa": "user@okicici",
+        "ceiling": "₹5,000",
+        "remaining": "₹4,500",
+        "expiry": "Dec 31, 2026",
+        "status": "active"
+      }
+    ],
+    "actions": [
+      {
+        "type": "revoke",
+        "label": "Revoke Mandate",
+        "confirmation_message": "This will prevent future agent-initiated payments. You can set up a new mandate anytime."
+      }
+    ]
+  },
+  "error_mandate_expired": {
+    "code": "mandate_expired",
+    "severity": "recoverable",
+    "message": "UPI Circle mandate has expired. Please set up a new mandate.",
+    "resolution": "Trigger mandate_onboarding flow again"
+  },
+  "error_mandate_revoked": {
+    "code": "mandate_revoked",
+    "severity": "recoverable",
+    "message": "UPI Circle mandate has been revoked. Please set up a new mandate.",
+    "resolution": "Trigger mandate_onboarding flow again"
+  },
+  "error_mandate_amount_exceeded": {
+    "code": "mandate_amount_exceeded",
+    "severity": "recoverable",
+    "message": "Transaction amount exceeds UPI Circle mandate maximum. Use redirect checkout or request mandate increase.",
+    "resolution": "Suggest redirect checkout or mandate re-onboarding with higher ceiling"
+  },
+  "error_upi_circle_limit_exceeded": {
+    "code": "upi_circle_limit_exceeded",
+    "severity": "recoverable",
+    "message": "Amount exceeds NPCI UPI Circle limit of ₹15,000 per transaction. Use standard UPI redirect instead.",
+    "resolution": "Fall back to redirect checkout for amounts > ₹15,000"
+  },
+  "error_mandate_not_found": {
+    "code": "mandate_not_found",
+    "severity": "recoverable",
+    "message": "UPI Circle mandate not found. Please complete mandate onboarding first.",
+    "resolution": "Trigger mandate_onboarding flow"
+  },
+  "error_invalid_signature": {
+    "code": "invalid_signature",
+    "severity": "error",
+    "message": "Payment signature verification failed. Please retry or contact support.",
+    "resolution": "Retry complete_checkout or surface error to user"
+  },
+  "flow_diagram": {
+    "mandate_setup_flow": [
+      "1. Widget calls window.openai.openExternal with Razorpay UPI Circle onboarding URL",
+      "2. User authenticates with UPI PIN and approves mandate",
+      "3. Razorpay redirects to merchant with mandate_id",
+      "4. Merchant stores mandate_id against acp_user_id",
+      "5. Subsequent purchases use mandate without user interaction"
+    ],
+    "purchase_flow": [
+      "1. Widget calls window.openai.requestCheckout with payment_type: upi_circle",
+      "2. Platform validates mandate (amount within ceiling, not expired)",
+      "3. Platform shows pre-confirmation message to user",
+      "4. User confirms, platform calls Razorpay UPI Circle debit API",
+      "5. Razorpay executes agent-initiated debit via NPCI",
+      "6. Platform calls complete_checkout with payment details",
+      "7. Merchant verifies signature server-side",
+      "8. Order fulfilled, user notified"
+    ]
+  }
+}

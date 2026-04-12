@@ -1,0 +1,558 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://razorpay.com/acp/upi_circle/2026-04-07/schema.json",
+  "title": "Razorpay UPI Circle Handler - Schema Bundle",
+  "description": "JSON Schema definitions for the Razorpay UPI Circle delegated payment handler for ACP (Agentic Commerce Protocol). Enables agent-initiated UPI payments within pre-authorized NPCI UPI Circle mandates.",
+  "$defs": {
+    "HandlerConfig": {
+      "description": "Configuration for the Razorpay UPI Circle handler",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": ["sandbox", "production"],
+          "description": "Razorpay API environment"
+        },
+        "merchant_id": {
+          "type": "string",
+          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
+          "description": "Razorpay merchant identifier (e.g., rzp_live_abc123xyz)"
+        },
+        "merchant_name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name shown to users"
+        },
+        "delegate_vpa": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+$",
+          "description": "Razorpay-managed agent UPI VPA (e.g., agent@razorpay)"
+        },
+        "supported_flows": {
+          "type": "array",
+          "description": "Supported UPI Circle flows",
+          "items": {
+            "type": "string",
+            "enum": ["mandate_onboard", "agent_initiated_debit"]
+          },
+          "default": ["mandate_onboard", "agent_initiated_debit"]
+        }
+      },
+      "required": ["environment", "merchant_id", "merchant_name", "delegate_vpa"],
+      "example": {
+        "environment": "production",
+        "merchant_id": "rzp_live_abc123xyz",
+        "merchant_name": "BigBasket",
+        "delegate_vpa": "agent@razorpay",
+        "supported_flows": ["mandate_onboard", "agent_initiated_debit"]
+      }
+    },
+    "UPIPaymentProvider": {
+      "description": "Payment provider configuration for UPI Circle in requestCheckout",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "razorpay",
+          "description": "Payment provider name - must be 'razorpay'"
+        },
+        "merchant_id": {
+          "type": "string",
+          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
+          "description": "Razorpay merchant identifier"
+        },
+        "payment_type": {
+          "type": "string",
+          "const": "upi_circle",
+          "description": "Must be 'upi_circle' for this handler"
+        },
+        "delegate_vpa": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+$",
+          "description": "Razorpay-managed agent UPI VPA"
+        },
+        "mandate_id": {
+          "type": "string",
+          "pattern": "^mand_[a-zA-Z0-9]+$",
+          "description": "NPCI-issued UPI Circle mandate ID from onboarding"
+        },
+        "mandate_max_amount": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 1500000,
+          "description": "User-approved spending ceiling in paise (max ₹15,000 per NPCI limit)"
+        },
+        "mandate_expiry": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 mandate expiry timestamp"
+        },
+        "order_id": {
+          "type": "string",
+          "pattern": "^order_[a-zA-Z0-9]+$",
+          "description": "Pre-created Razorpay Order ID for reconciliation (recommended)"
+        }
+      },
+      "required": ["name", "merchant_id", "payment_type", "delegate_vpa", "mandate_id", "mandate_max_amount", "mandate_expiry"],
+      "example": {
+        "name": "razorpay",
+        "merchant_id": "rzp_live_XXXX",
+        "payment_type": "upi_circle",
+        "delegate_vpa": "agent@razorpay",
+        "mandate_id": "mand_P6WA7b8Ys3qKm2",
+        "mandate_max_amount": 500000,
+        "mandate_expiry": "2026-12-31T23:59:59Z",
+        "order_id": "order_P6WL8c9Xt4rUj1"
+      }
+    },
+    "MandateInfo": {
+      "description": "UPI Circle mandate information stored against user",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mandate_id": {
+          "type": "string",
+          "pattern": "^mand_[a-zA-Z0-9]+$",
+          "description": "NPCI-issued mandate ID"
+        },
+        "user_vpa": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
+          "description": "User's UPI VPA (Virtual Payment Address)"
+        },
+        "delegate_vpa": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+$",
+          "description": "Agent VPA authorized to debit"
+        },
+        "max_amount": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 1500000,
+          "description": "Maximum amount per transaction in paise"
+        },
+        "remaining_amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Remaining authorized amount available for debits"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "revoked", "expired", "consumed"],
+          "description": "Current mandate status"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Mandate creation timestamp"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Mandate expiry timestamp"
+        },
+        "merchant_category": {
+          "type": "string",
+          "description": "Merchant category code (MCC) authorized"
+        }
+      },
+      "required": ["mandate_id", "user_vpa", "delegate_vpa", "max_amount", "status", "created_at", "expires_at"],
+      "example": {
+        "mandate_id": "mand_P6WA7b8Ys3qKm2",
+        "user_vpa": "user@okicici",
+        "delegate_vpa": "agent@razorpay",
+        "max_amount": 500000,
+        "remaining_amount": 450000,
+        "status": "active",
+        "created_at": "2026-04-01T10:00:00Z",
+        "expires_at": "2026-12-31T23:59:59Z",
+        "merchant_category": "retail"
+      }
+    },
+    "CompleteCheckoutPaymentData": {
+      "description": "Payment data for complete_checkout MCP tool with UPI Circle",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "upi_circle",
+          "description": "Must be 'upi_circle'"
+        },
+        "provider": {
+          "type": "string",
+          "const": "razorpay",
+          "description": "Must be 'razorpay'"
+        },
+        "payment_id": {
+          "type": "string",
+          "pattern": "^pay_[a-zA-Z0-9]+$",
+          "description": "Razorpay payment ID (pay_XXXXXXXXXX)"
+        },
+        "order_id": {
+          "type": "string",
+          "pattern": "^order_[a-zA-Z0-9]+$",
+          "description": "Razorpay order ID (order_XXXXXXXXX)"
+        },
+        "mandate_id": {
+          "type": "string",
+          "pattern": "^mand_[a-zA-Z0-9]+$",
+          "description": "Mandate ID used for this debit"
+        },
+        "upi_txn_id": {
+          "type": "string",
+          "description": "NPCI transaction reference for reconciliation"
+        },
+        "agent_initiated": {
+          "type": "boolean",
+          "const": true,
+          "description": "Always true for UPI Circle debits"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["captured", "failed", "pending"],
+          "description": "Payment status"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Razorpay HMAC-SHA256 signature for verification"
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Amount debited in paise"
+        },
+        "currency": {
+          "type": "string",
+          "const": "INR",
+          "description": "Currency code - always INR for UPI"
+        },
+        "method": {
+          "type": "string",
+          "const": "upi",
+          "description": "Payment method - always UPI"
+        },
+        "vpa": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
+          "description": "User's UPI VPA used for payment"
+        }
+      },
+      "required": ["type", "provider", "payment_id", "order_id", "mandate_id", "upi_txn_id", "agent_initiated", "status", "signature", "amount", "currency"],
+      "example": {
+        "type": "upi_circle",
+        "provider": "razorpay",
+        "payment_id": "pay_P6WMPl2NNnnLFk",
+        "order_id": "order_P6WL8c9Xt4rUj1",
+        "mandate_id": "mand_P6WA7b8Ys3qKm2",
+        "upi_txn_id": "318219246640",
+        "agent_initiated": true,
+        "status": "captured",
+        "signature": "9ef4dabb240c2bbcb6f8e04a48d2f3e5dbc9a1f7...",
+        "amount": 49900,
+        "currency": "INR",
+        "method": "upi",
+        "vpa": "user@okicici"
+      }
+    },
+    "OrderSummary": {
+      "description": "Order summary for complete_checkout confirmation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "description": "Razorpay order identifier"
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Total order amount in paise"
+        },
+        "currency": {
+          "type": "string",
+          "const": "INR",
+          "description": "Currency code"
+        },
+        "line_items": {
+          "type": "array",
+          "description": "Order line items",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "SKU or item ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Item name"
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Item quantity"
+              },
+              "unit_price": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Price per unit in paise"
+              }
+            },
+            "required": ["id", "name", "quantity", "unit_price"]
+          }
+        }
+      },
+      "required": ["order_id", "amount", "currency"],
+      "example": {
+        "order_id": "order_P6WL8c9Xt4rUj1",
+        "amount": 49900,
+        "currency": "INR",
+        "line_items": [
+          {
+            "id": "sku_kurta_m",
+            "name": "Kurta — Size M",
+            "quantity": 1,
+            "unit_price": 49900
+          }
+        ]
+      }
+    },
+    "MandateOnboardingRequest": {
+      "description": "Request to initiate UPI Circle mandate onboarding via External Checkout",
+      "type": "object",
+      "properties": {
+        "href": {
+          "type": "string",
+          "format": "uri",
+          "description": "Razorpay UPI Circle onboarding URL"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "acp_session_id": {
+              "type": "string",
+              "description": "Widget session ID for correlation"
+            },
+            "flow": {
+              "type": "string",
+              "const": "upi_circle_onboarding",
+              "description": "Flow identifier"
+            }
+          }
+        }
+      },
+      "example": {
+        "href": "https://checkout.razorpay.com/v2/upi-circle/onboard?merchant_id=rzp_live_XXX&user_id=user_123&max_amount=50000&expiry=2026-12-31&category=retail",
+        "metadata": {
+          "acp_session_id": "<widgetSessionId>",
+          "flow": "upi_circle_onboarding"
+        }
+      }
+    },
+    "RazorpayUPICircleAPIRequest": {
+      "description": "Request to Razorpay UPI Circle API for mandate creation",
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "description": "Razorpay customer ID linked to ChatGPT user"
+        },
+        "max_amount": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 1500000,
+          "description": "Maximum amount per transaction in paise"
+        },
+        "expiry": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Mandate expiry timestamp"
+        },
+        "merchant_category": {
+          "type": "string",
+          "description": "Merchant category code (MCC)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "Mandate description shown to user"
+        },
+        "notes": {
+          "type": "object",
+          "description": "Additional metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["customer_id", "max_amount", "expiry"],
+      "example": {
+        "customer_id": "cust_XXXXXXXXXX",
+        "max_amount": 500000,
+        "expiry": "2026-12-31T23:59:59Z",
+        "merchant_category": "retail",
+        "description": "Authorize BigBasket to auto-debit up to ₹5,000 via AI agent",
+        "notes": {
+          "acp_user_id": "user_123",
+          "source": "chatgpt_app"
+        }
+      }
+    },
+    "RazorpayUPICircleDebitRequest": {
+      "description": "Request to execute UPI Circle debit via Razorpay API",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 1500000,
+          "description": "Amount to debit in paise (max ₹15,000 per NPCI limit)"
+        },
+        "currency": {
+          "type": "string",
+          "const": "INR"
+        },
+        "mandate_id": {
+          "type": "string",
+          "pattern": "^mand_[a-zA-Z0-9]+$",
+          "description": "UPI Circle mandate ID"
+        },
+        "order_id": {
+          "type": "string",
+          "pattern": "^order_[a-zA-Z0-9]+$",
+          "description": "Pre-created Razorpay Order ID"
+        },
+        "notes": {
+          "type": "object",
+          "properties": {
+            "acp_checkout_id": {
+              "type": "string",
+              "description": "ACP checkout session ID"
+            }
+          }
+        }
+      },
+      "required": ["amount", "currency", "mandate_id", "order_id"],
+      "example": {
+        "amount": 49900,
+        "currency": "INR",
+        "mandate_id": "mand_P6WA7b8Ys3qKm2",
+        "order_id": "order_P6WL8c9Xt4rUj1",
+        "notes": {
+          "acp_checkout_id": "chk_abc123"
+        }
+      }
+    },
+    "ErrorMandateExpired": {
+      "description": "Error when UPI Circle mandate has expired",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "mandate_expired"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "UPI Circle mandate has expired. Please set up a new mandate."
+        }
+      }
+    },
+    "ErrorMandateRevoked": {
+      "description": "Error when user has revoked the mandate",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "mandate_revoked"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "UPI Circle mandate has been revoked. Please set up a new mandate."
+        }
+      }
+    },
+    "ErrorMandateExceeded": {
+      "description": "Error when transaction exceeds mandate ceiling",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "mandate_amount_exceeded"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "Transaction amount exceeds UPI Circle mandate maximum. Use redirect checkout or request mandate increase."
+        }
+      }
+    },
+    "ErrorUPICircleLimit": {
+      "description": "Error when amount exceeds NPCI UPI Circle per-transaction limit",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "upi_circle_limit_exceeded"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "Amount exceeds NPCI UPI Circle limit of ₹15,000 per transaction. Use standard UPI redirect instead."
+        }
+      }
+    },
+    "ErrorMandateNotFound": {
+      "description": "Error when mandate ID is not found or invalid",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "mandate_not_found"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "UPI Circle mandate not found. Please complete mandate onboarding first."
+        }
+      }
+    },
+    "ErrorInvalidSignature": {
+      "description": "Error when Razorpay signature verification fails",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "invalid_signature"
+        },
+        "severity": {
+          "type": "string",
+          "const": "error"
+        },
+        "message": {
+          "type": "string",
+          "const": "Payment signature verification failed. Please retry or contact support."
+        }
+      }
+    }
+  }
+}
