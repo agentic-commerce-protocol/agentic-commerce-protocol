@@ -1,0 +1,445 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://razorpay.com/acp/magic_checkout/2026-04-07/schema.json",
+  "title": "Razorpay Magic Checkout Handler - Schema Bundle",
+  "description": "JSON Schema definitions for the Razorpay Magic Checkout payment handler for ACP (Agentic Commerce Protocol). Implements hosted checkout redirect pattern for the India market.",
+  "$defs": {
+    "HandlerConfig": {
+      "description": "Configuration for the Razorpay Magic Checkout handler",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": ["sandbox", "production"],
+          "description": "Razorpay API environment"
+        },
+        "merchant_id": {
+          "type": "string",
+          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
+          "description": "Razorpay merchant identifier (e.g., rzp_live_abc123xyz)"
+        },
+        "merchant_name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name shown in Magic Checkout UI"
+        },
+        "supported_methods": {
+          "type": "array",
+          "description": "Payment methods supported by this handler",
+          "items": {
+            "type": "string",
+            "enum": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
+          }
+        }
+      },
+      "required": ["environment", "merchant_id", "merchant_name"],
+      "example": {
+        "environment": "production",
+        "merchant_id": "rzp_live_abc123xyz",
+        "merchant_name": "BigBasket",
+        "supported_methods": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
+      }
+    },
+    "PrefillData": {
+      "description": "Prefill data for Magic Checkout to skip entry steps and auto-load saved data",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Skips email entry step in Magic Checkout"
+        },
+        "contact": {
+          "type": "string",
+          "description": "Auto-login trigger. If phone matches a Magic Checkout account, saved addresses and payment methods are loaded"
+        },
+        "name": {
+          "type": "string",
+          "description": "Pre-fills the name field in address capture"
+        }
+      },
+      "example": {
+        "email": "buyer@example.com",
+        "contact": "+919876543210",
+        "name": "Priya Sharma"
+      }
+    },
+    "RetryConfig": {
+      "description": "Retry configuration for failed payments",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow retry on payment failure"
+        },
+        "max_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Max retry attempts before redirect to cancel_url. When absent, no limit enforced."
+        }
+      },
+      "example": {
+        "enabled": true,
+        "max_count": 3
+      }
+    },
+    "Notes": {
+      "description": "Custom key-value metadata on the Razorpay order (max 15 pairs, 256 chars per value)",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "maxProperties": 15,
+      "properties": {
+        "acp_checkout_id": {
+          "type": "string",
+          "description": "ACP checkout session ID. Required for webhook-to-session binding."
+        }
+      },
+      "required": ["acp_checkout_id"]
+    },
+    "IntegrationMetadata": {
+      "description": "Integration metadata for analytics and attribution",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Platform identifier for analytics (e.g., 'chatgpt_app')"
+        },
+        "referer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Originating page URL for analytics attribution"
+        }
+      }
+    },
+    "Credential": {
+      "description": "Credential schema extending ACP hosted_checkout_credential with Razorpay-specific fields",
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "hosted_checkout",
+              "description": "Always 'hosted_checkout' for this handler"
+            },
+            "session_id": {
+              "type": "string",
+              "description": "Razorpay Order ID (e.g., order_xyz789). Used for webhook correlation."
+            },
+            "return_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "HTTPS URL — buyer returns here after successful payment"
+            },
+            "cancel_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "HTTPS URL — buyer returns here on abandonment or cancel"
+            }
+          },
+          "required": ["type", "return_url"]
+        }
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "hosted_checkout"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "return_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cancel_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "prefill": {
+          "$ref": "#/$defs/PrefillData"
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryConfig"
+        },
+        "notes": {
+          "$ref": "#/$defs/Notes"
+        },
+        "integration": {
+          "$ref": "#/$defs/IntegrationMetadata"
+        }
+      },
+      "required": ["type", "return_url", "notes"],
+      "example": {
+        "type": "hosted_checkout",
+        "session_id": "order_xyz789",
+        "return_url": "https://merchant.example.com/acp/checkout/chk_abc123/return",
+        "cancel_url": "https://merchant.example.com/acp/checkout/chk_abc123/cancel",
+        "prefill": {
+          "email": "buyer@example.com",
+          "contact": "+919876543210",
+          "name": "Priya Sharma"
+        },
+        "retry": {
+          "enabled": true,
+          "max_count": 3
+        },
+        "notes": {
+          "acp_checkout_id": "chk_abc123",
+          "merchant_order_ref": "BIGBASKET-ORD-7890"
+        },
+        "integration": {
+          "source": "chatgpt_app",
+          "referer": "https://bigbasket.com/cart"
+        }
+      }
+    },
+    "Instrument": {
+      "description": "Instrument schema for Magic Checkout. Uses ACP hosted_checkout_instrument type.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Instrument identifier"
+        },
+        "handler_id": {
+          "type": "string",
+          "description": "Reference to the handler configuration ID"
+        },
+        "type": {
+          "type": "string",
+          "const": "hosted_checkout",
+          "description": "Always 'hosted_checkout' for this handler"
+        },
+        "credential": {
+          "$ref": "#/$defs/Credential"
+        }
+      },
+      "required": ["id", "handler_id", "type", "credential"],
+      "example": {
+        "id": "inst_hosted_001",
+        "handler_id": "razorpay_magic_001",
+        "type": "hosted_checkout",
+        "credential": {
+          "type": "hosted_checkout",
+          "session_id": "order_xyz789",
+          "return_url": "https://merchant.example.com/acp/checkout/chk_abc123/return",
+          "cancel_url": "https://merchant.example.com/acp/checkout/chk_abc123/cancel"
+        }
+      }
+    },
+    "RazorpayOrderRequest": {
+      "description": "Request to create a Razorpay order via the Orders API",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Amount in paise (INR). Minimum ₹1 (100 paise)"
+        },
+        "currency": {
+          "type": "string",
+          "const": "INR",
+          "description": "Currency code. Only INR supported for Magic Checkout"
+        },
+        "receipt": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Internal reference. Must be unique."
+        },
+        "notes": {
+          "$ref": "#/$defs/Notes"
+        }
+      },
+      "required": ["amount", "currency", "notes"],
+      "example": {
+        "amount": 57700,
+        "currency": "INR",
+        "receipt": "rcpt_chk_abc123",
+        "notes": {
+          "acp_checkout_id": "chk_abc123",
+          "merchant_order_ref": "BIGBASKET-ORD-7890"
+        }
+      }
+    },
+    "RazorpayWebhookEvent": {
+      "description": "Razorpay webhook event structure",
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "enum": ["payment.captured", "order.paid", "payment.failed"],
+          "description": "Webhook event type"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "payment": {
+              "type": "object",
+              "properties": {
+                "entity": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Razorpay payment ID (e.g., pay_abc123)"
+                    },
+                    "order_id": {
+                      "type": "string",
+                      "description": "Razorpay order ID (e.g., order_xyz789)"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["created", "authorized", "captured", "refunded", "failed"]
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "description": "Amount in paise"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "const": "INR"
+                    },
+                    "method": {
+                      "type": "string",
+                      "enum": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "acp_checkout_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": ["id", "order_id", "status", "amount", "currency"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": ["event", "payload"],
+      "example": {
+        "event": "payment.captured",
+        "payload": {
+          "payment": {
+            "entity": {
+              "id": "pay_abc123",
+              "order_id": "order_xyz789",
+              "status": "captured",
+              "amount": 57700,
+              "currency": "INR",
+              "method": "upi",
+              "notes": {
+                "acp_checkout_id": "chk_abc123"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ErrorInvalidMerchantId": {
+      "description": "Error when merchant ID is invalid or inactive",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "invalid_merchant_id"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "Merchant ID not found or inactive. Verify account and key mode (test vs. live)."
+        }
+      }
+    },
+    "ErrorMagicCheckoutDisabled": {
+      "description": "Error when Magic Checkout is not enabled on account",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "magic_checkout_disabled"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "Magic Checkout not enabled on account. Activate in Dashboard → Settings → Magic Checkout."
+        }
+      }
+    },
+    "ErrorUnsupportedCurrency": {
+      "description": "Error when currency is not supported (only INR supported)",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "unsupported_currency"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "Currency not supported. This handler supports INR only."
+        }
+      }
+    },
+    "ErrorOrderCreationFailed": {
+      "description": "Error when Razorpay order creation fails",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "order_creation_failed"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "Razorpay order creation failed. Verify amount ≥ 100 paise; retry with exponential backoff."
+        }
+      }
+    },
+    "ErrorCheckoutExpired": {
+      "description": "Error when checkout session has expired",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "checkout_expired"
+        },
+        "severity": {
+          "type": "string",
+          "const": "recoverable"
+        },
+        "message": {
+          "type": "string",
+          "const": "ACP checkout session or Razorpay order expired. Create a new checkout session."
+        }
+      }
+    }
+  }
+}
