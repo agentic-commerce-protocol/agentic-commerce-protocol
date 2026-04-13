@@ -614,10 +614,59 @@ components:
           type: string
           format: date-time
           description: Timestamp of the most recent update applied to this feed.
+        extensions:
+          type: array
+          description: Extension declarations active for this feed.
+          items:
+            $ref: "#/components/schemas/ExtensionDeclaration"
+          uniqueItems: true
       example:
         id: feed_8f3K2x
         target_country: US
-        updated_at: "2026-03-01T00:00:00Z"
+        updated_at: "2026-04-07T00:00:00Z"
+        extensions:
+          - name: image_attributes
+            extends:
+              - "$.Media.description"
+              - "$.Media.shot_style"
+            schema: "https://example.com/schemas/feed-extensions/image-attributes/2026-04-07.json"
+            spec: "https://example.com/specs/feed-extensions/image-attributes"
+    ExtensionDeclaration:
+      type: object
+      additionalProperties: false
+      description: Extension declaration identifying an active feed extension and which schema fields it adds.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          pattern: ^[a-z][a-z0-9_-]*(@\d{4}-\d{2}-\d{2})?$|^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9_-]*)+(@\d{4}-\d{2}-\d{2})?$
+          description: Unique identifier for the extension.
+        extends:
+          type: array
+          items:
+            type: string
+            pattern: ^\$\.[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9_]*)*$
+            description: JSONPath expression identifying a schema field added by this extension
+          uniqueItems: true
+          description: |
+            JSONPath expressions identifying the schema fields added by this extension.
+            Format: $.<SchemaName>.<fieldName> (e.g., $.Media.description).
+        schema:
+          type: string
+          format: uri
+          description: URL to the extension's JSON Schema definition.
+        spec:
+          type: string
+          format: uri
+          description: URL to the extension's specification document.
+      example:
+        name: image_attributes
+        extends:
+          - $.Media.description
+          - $.Media.shot_style
+        schema: https://example.com/schemas/feed-extensions/image-attributes/2026-04-07.json
+        spec: https://example.com/specs/feed-extensions/image-attributes
     CreateFeedRequest:
       description: Request payload used to create a feed.
       type: object
