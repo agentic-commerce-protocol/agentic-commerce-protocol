@@ -220,6 +220,51 @@ Content-Type: application/json
 }
 ```
 
+**Partial availability:** When some but not all requested items are unavailable, the seller SHOULD still create the cart and return `201 Created`. The response SHOULD include `messages` indicating which items have availability issues. This keeps the agent in control — it can choose to remove unavailable items, substitute them, or keep them in the cart. Sellers MUST NOT silently drop unavailable items from the cart without a corresponding message.
+
+Example response with partial availability:
+
+```json
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "id": "cart_def456",
+  "line_items": [
+    {
+      "id": "li_1",
+      "item": { "id": "item_123", "name": "Blue Running Shoes", "unit_amount": 12000 },
+      "quantity": 2,
+      "totals": [
+        { "type": "subtotal", "amount": 24000 }
+      ]
+    },
+    {
+      "id": "li_2",
+      "item": { "id": "item_456", "name": "Athletic Socks (3-pack)", "unit_amount": 1500 },
+      "quantity": 1,
+      "totals": [
+        { "type": "subtotal", "amount": 1500 }
+      ]
+    }
+  ],
+  "currency": "usd",
+  "totals": [
+    { "type": "subtotal", "amount": 25500 },
+    { "type": "total", "amount": 25500 }
+  ],
+  "messages": [
+    {
+      "type": "warning",
+      "code": "out_of_stock",
+      "message": "item_456 (Athletic Socks 3-pack) is currently out of stock."
+    }
+  ],
+  "continue_url": "https://seller.example.com/cart/cart_def456",
+  "expires_at": "2026-04-15T12:00:00Z"
+}
+```
+
 ### 4.3 Get Cart
 
 `GET /carts/{id}`
@@ -240,6 +285,8 @@ Full replacement of the cart. The agent MUST send the complete desired cart stat
 | `buyer` | `Buyer` | No | Updated buyer information. |
 
 **Response:** `200 OK` with updated `Cart` object.
+
+**Partial availability on update:** When some items in the replacement payload are unavailable, the seller SHOULD accept the update and return `200 OK` with `messages` indicating which items have availability issues. Rejecting the entire update would leave the cart in its previous state, which is confusing when the agent may have been changing quantities or removing other items at the same time. As with cart creation, sellers MUST NOT silently drop unavailable items without a corresponding message.
 
 **Design rationale — full replacement:** Full replacement is intentional and consistent with ACP's checkout update pattern. While partial update operations (add item, remove item, change quantity) would reduce per-request payload, they significantly increase the API surface area and introduce new failure modes (concurrent add/remove, quantity delta ambiguity, item-level addressing). Agents maintain client-side cart state from the previous response and can trivially reconstruct the full items array. Future protocol versions MAY introduce optimistic concurrency (e.g., `If-Match` / ETag) if race conditions prove problematic in practice.
 

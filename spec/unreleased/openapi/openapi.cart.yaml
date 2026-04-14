@@ -182,6 +182,18 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/CartNotFound"
+        "422":
+          description: Unprocessable — all items unavailable or currency unresolvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                out_of_stock:
+                  value:
+                    type: invalid_request
+                    code: out_of_stock
+                    message: All requested items are currently unavailable.
 
   /carts/{id}/cancel:
     post:
