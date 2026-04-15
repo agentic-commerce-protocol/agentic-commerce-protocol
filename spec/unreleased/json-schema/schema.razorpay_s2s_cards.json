@@ -1,11 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://razorpay.com/acp/s2s_cards/2026-04-07/schema.json",
-  "title": "Razorpay S2S Cards Handler - Schema Bundle",
-  "description": "JSON Schema definitions for the Razorpay Server-to-Server (S2S) Cards payment handler for ACP. Enables tokenized card payments with 3DS support and RBI Card-on-File Tokenization (CoFT) compliance.",
+  "$id": "https://example.com/schemas/razorpay-s2s-cards/bundle.schema.json",
+  "title": "Razorpay S2S Cards \u2014 Schema Bundle",
   "$defs": {
     "HandlerConfig": {
-      "description": "Configuration for the Razorpay S2S Cards handler",
+      "description": "Configuration for the Razorpay S2S Cards payment handler",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -22,11 +21,11 @@
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "API environment"
+          "description": "Razorpay API environment"
         },
         "supported_networks": {
           "type": "array",
-          "description": "Supported card networks",
+          "description": "Card networks accepted by this handler",
           "items": {
             "type": "string",
             "enum": ["visa", "mastercard", "rupay", "amex"]
@@ -35,7 +34,7 @@
         },
         "supported_types": {
           "type": "array",
-          "description": "Supported card types",
+          "description": "Card funding types accepted by this handler",
           "items": {
             "type": "string",
             "enum": ["credit", "debit"]
@@ -44,12 +43,12 @@
         },
         "emi_enabled": {
           "type": "boolean",
-          "description": "Whether to offer EMI on eligible cards",
+          "description": "Whether to offer EMI plans on eligible cards",
           "default": false
         },
         "save_cards": {
           "type": "boolean",
-          "description": "Whether to offer save-card option (Token HQ)",
+          "description": "Whether to offer save-card option via Razorpay Token HQ",
           "default": true
         }
       },
@@ -72,22 +71,27 @@
         "name": {
           "type": "string",
           "const": "razorpay",
-          "description": "Must be 'razorpay'"
+          "description": "Payment provider name, always 'razorpay'"
         },
         "payment_type": {
           "type": "string",
           "const": "s2s_card",
-          "description": "Must be 's2s_card'"
+          "description": "Payment type, always 's2s_card'"
         },
         "handler_id": {
           "type": "string",
-          "description": "Reference to handler configuration ID"
+          "description": "Reference to the handler configuration ID"
         }
       },
-      "required": ["name", "payment_type", "handler_id"]
+      "required": ["name", "payment_type", "handler_id"],
+      "example": {
+        "name": "razorpay",
+        "payment_type": "s2s_card",
+        "handler_id": "razorpay_s2s_cards_001"
+      }
     },
     "CardInstrument": {
-      "description": "Tokenized card instrument for S2S card payments",
+      "description": "Tokenized card instrument for S2S card payments. Raw PAN is never transmitted; all card data is represented via Razorpay Token HQ token_id.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -102,16 +106,16 @@
         "type": {
           "type": "string",
           "const": "s2s_card",
-          "description": "Always 's2s_card'"
+          "description": "Payment instrument type, always 's2s_card'"
         },
         "selected": {
           "type": "boolean",
-          "description": "Whether instrument is selected"
+          "description": "Whether this instrument is currently selected"
         },
         "token_id": {
           "type": "string",
           "pattern": "^token_[a-zA-Z0-9]+$",
-          "description": "Razorpay Token HQ token ID (never raw PAN)"
+          "description": "Razorpay Token HQ token ID (never a raw PAN)"
         },
         "card_network": {
           "type": "string",
@@ -121,24 +125,24 @@
         "card_last4": {
           "type": "string",
           "pattern": "^[0-9]{4}$",
-          "description": "Last 4 digits (display only)"
+          "description": "Last 4 digits of the card number, for display only"
         },
         "card_type": {
           "type": "string",
           "enum": ["credit", "debit"],
-          "description": "Credit or debit"
+          "description": "Card funding type"
         },
         "cvv": {
           "type": "string",
-          "description": "Encrypted CVV (Razorpay.js encrypted, never plaintext)"
+          "description": "CVV encrypted by Razorpay.js; never transmitted as plaintext"
         },
         "emi_plan_id": {
           "type": "string",
-          "description": "EMI plan ID from Razorpay EMI Plans API"
+          "description": "EMI plan ID from Razorpay EMI Plans API, if buyer selected EMI"
         },
         "save_card": {
           "type": "boolean",
-          "description": "Whether buyer opted to save this card",
+          "description": "Whether the buyer opted to save this card via Token HQ",
           "default": false
         },
         "recurring": {
@@ -147,215 +151,335 @@
           "default": false
         }
       },
-      "required": ["id", "handler_id", "type", "token_id", "card_network", "card_last4", "card_type"]
+      "required": ["id", "handler_id", "type", "token_id", "card_network", "card_last4", "card_type"],
+      "example": {
+        "id": "inst_abc123",
+        "handler_id": "razorpay_s2s_cards_001",
+        "type": "s2s_card",
+        "selected": true,
+        "token_id": "token_KNq2OQK30t5SXO",
+        "card_network": "Visa",
+        "card_last4": "4242",
+        "card_type": "credit",
+        "save_card": true,
+        "recurring": false
+      }
+    },
+    "RiskSignal": {
+      "description": "Device and session signals used for fraud detection on S2S card transactions",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ip_address": {
+          "type": "string",
+          "format": "ipv4",
+          "description": "Buyer's IP address"
+        },
+        "user_agent": {
+          "type": "string",
+          "description": "Buyer's browser user-agent string"
+        },
+        "device_id": {
+          "type": "string",
+          "description": "Razorpay device fingerprint token"
+        }
+      },
+      "required": ["ip_address", "user_agent"],
+      "example": {
+        "ip_address": "203.0.113.42",
+        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+        "device_id": "fp_abc123xyz"
+      }
     },
     "ChargeCardRequest": {
-      "description": "Request to charge_card MCP tool",
+      "description": "Request payload sent to the charge_card MCP tool to initiate an S2S card charge",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "tool": {
           "type": "string",
-          "const": "charge_card"
+          "const": "charge_card",
+          "description": "MCP tool name, always 'charge_card'"
         },
         "payment": {
           "type": "object",
+          "additionalProperties": false,
+          "description": "Payment details including the selected card instrument",
           "properties": {
             "instruments": {
               "type": "array",
+              "description": "Selected card instruments (exactly one element expected)",
               "items": {
                 "$ref": "#/$defs/CardInstrument"
-              }
+              },
+              "minItems": 1,
+              "maxItems": 1
             }
-          }
+          },
+          "required": ["instruments"]
         },
         "risk_signals": {
-          "type": "object",
-          "properties": {
-            "ip_address": {
-              "type": "string",
-              "format": "ipv4"
-            },
-            "user_agent": {
-              "type": "string"
-            },
-            "device_id": {
-              "type": "string",
-              "description": "Razorpay fingerprint token"
-            }
-          }
+          "$ref": "#/$defs/RiskSignal",
+          "description": "Device and session signals for fraud detection"
         },
         "order_context": {
           "type": "object",
+          "additionalProperties": false,
+          "description": "Order context required to create the Razorpay order",
           "properties": {
             "acp_checkout_id": {
-              "type": "string"
+              "type": "string",
+              "description": "ACP checkout session identifier"
             },
             "amount": {
               "type": "integer",
-              "minimum": 100
+              "minimum": 100,
+              "description": "Amount in paise (e.g., 49900 for \u20b9499)"
             },
             "currency": {
               "type": "string",
-              "const": "INR"
+              "const": "INR",
+              "description": "Currency code, always 'INR'"
             }
           },
           "required": ["acp_checkout_id", "amount", "currency"]
         }
+      },
+      "required": ["tool", "payment", "risk_signals", "order_context"],
+      "example": {
+        "tool": "charge_card",
+        "payment": {
+          "instruments": [
+            {
+              "id": "inst_abc123",
+              "handler_id": "razorpay_s2s_cards_001",
+              "type": "s2s_card",
+              "selected": true,
+              "token_id": "token_KNq2OQK30t5SXO",
+              "card_network": "Visa",
+              "card_last4": "4242",
+              "card_type": "credit",
+              "save_card": true
+            }
+          ]
+        },
+        "risk_signals": {
+          "ip_address": "203.0.113.42",
+          "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+          "device_id": "fp_abc123xyz"
+        },
+        "order_context": {
+          "acp_checkout_id": "cs_01HV3P3XYZ789",
+          "amount": 49900,
+          "currency": "INR"
+        }
       }
     },
     "ChargeCardResponseFrictionless": {
-      "description": "Frictionless charge response (no 3DS)",
+      "description": "Response from charge_card when the bank approves without a 3DS challenge",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "status": {
           "type": "string",
-          "const": "captured"
+          "const": "captured",
+          "description": "Payment captured successfully"
         },
         "payment_id": {
           "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$"
+          "pattern": "^pay_[a-zA-Z0-9]+$",
+          "description": "Razorpay payment ID"
         },
         "order_id": {
           "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$"
+          "pattern": "^order_[a-zA-Z0-9]+$",
+          "description": "Razorpay order ID"
         },
         "amount": {
           "type": "integer",
-          "minimum": 100
+          "minimum": 100,
+          "description": "Captured amount in paise"
         },
         "currency": {
           "type": "string",
           "const": "INR"
         }
       },
-      "required": ["status", "payment_id", "order_id", "amount", "currency"]
+      "required": ["status", "payment_id", "order_id", "amount", "currency"],
+      "example": {
+        "status": "captured",
+        "payment_id": "pay_NmtIbizJ5JUEmH",
+        "order_id": "order_NmtIbizJ5JUEmX",
+        "amount": 49900,
+        "currency": "INR"
+      }
     },
     "ChargeCardResponse3DS": {
-      "description": "3DS challenge required response",
+      "description": "Response from charge_card when the bank requires a 3DS challenge before capture",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "status": {
           "type": "string",
-          "const": "requires_3ds_challenge"
+          "const": "requires_3ds_challenge",
+          "description": "Bank requires 3DS authentication before capture"
         },
         "payment_id": {
           "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$"
-        },
-        "razorpay_payment_id": {
-          "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$"
+          "pattern": "^pay_[a-zA-Z0-9]+$",
+          "description": "Razorpay payment ID"
         },
         "next_action": {
           "type": "object",
+          "additionalProperties": false,
+          "description": "Instructions for the runtime to render the 3DS challenge",
           "properties": {
             "type": {
               "type": "string",
-              "const": "redirect_to_url"
+              "const": "redirect_to_url",
+              "description": "Always 'redirect_to_url' for 3DS inline iframe rendering"
             },
             "redirect_to_url": {
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "url": {
                   "type": "string",
                   "format": "uri",
-                  "description": "ACS URL for 3DS challenge"
+                  "description": "ACS URL for the 3DS challenge iframe"
                 },
                 "return_url": {
                   "type": "string",
                   "format": "uri",
-                  "description": "Callback after 3DS completion"
+                  "description": "Merchant callback URL after 3DS completion"
                 }
               },
               "required": ["url", "return_url"]
             }
-          }
+          },
+          "required": ["type", "redirect_to_url"]
         },
         "continue_url": {
           "type": "string",
           "format": "uri",
-          "description": "Fallback URL"
+          "description": "Fallback redirect URL if inline iframe is not supported"
         }
       },
-      "required": ["status", "payment_id", "razorpay_payment_id", "next_action"]
+      "required": ["status", "payment_id", "next_action"],
+      "example": {
+        "status": "requires_3ds_challenge",
+        "payment_id": "pay_NmtIbizJ5JUEmH",
+        "next_action": {
+          "type": "redirect_to_url",
+          "redirect_to_url": {
+            "url": "https://acs.bank.com/3ds/challenge?txid=abc123",
+            "return_url": "https://merchant.example.com/acp/3ds/callback"
+          }
+        },
+        "continue_url": "https://acs.bank.com/3ds/challenge?txid=abc123"
+      }
     },
     "SubmitOTPRequest": {
-      "description": "Request to submit_otp MCP tool after 3DS",
+      "description": "Request payload sent to the submit_otp MCP tool to complete a 3DS challenge",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "tool": {
           "type": "string",
-          "const": "submit_otp"
+          "const": "submit_otp",
+          "description": "MCP tool name, always 'submit_otp'"
         },
         "payment_id": {
           "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$"
+          "pattern": "^pay_[a-zA-Z0-9]+$",
+          "description": "Razorpay payment ID from the charge_card response"
         },
         "next_action_response": {
           "type": "object",
+          "additionalProperties": false,
+          "description": "Bank 3DS response parameters returned via the callback",
           "properties": {
             "razorpay_payment_id": {
               "type": "string",
-              "pattern": "^pay_[a-zA-Z0-9]+$"
+              "pattern": "^pay_[a-zA-Z0-9]+$",
+              "description": "Razorpay payment ID echoed from the ACS callback"
             },
             "razorpay_signature": {
               "type": "string",
-              "description": "Bank 3DS response token"
+              "description": "Bank 3DS response token from the ACS callback"
             }
           },
           "required": ["razorpay_payment_id", "razorpay_signature"]
         }
       },
-      "required": ["tool", "payment_id", "next_action_response"]
+      "required": ["tool", "payment_id", "next_action_response"],
+      "example": {
+        "tool": "submit_otp",
+        "payment_id": "pay_NmtIbizJ5JUEmH",
+        "next_action_response": {
+          "razorpay_payment_id": "pay_NmtIbizJ5JUEmH",
+          "razorpay_signature": "9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f795500537a9b53e"
+        }
+      }
     },
     "CompleteCheckoutPaymentData": {
-      "description": "Payment data for complete_checkout with S2S Cards",
+      "description": "Payment data passed to complete_checkout after S2S card payment is confirmed",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
-          "const": "s2s_card"
+          "const": "s2s_card",
+          "description": "Payment type, always 's2s_card'"
         },
         "provider": {
           "type": "string",
-          "const": "razorpay"
+          "const": "razorpay",
+          "description": "Payment provider, always 'razorpay'"
         },
         "payment_id": {
           "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$"
+          "pattern": "^pay_[a-zA-Z0-9]+$",
+          "description": "Razorpay payment ID"
         },
         "order_id": {
           "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$"
+          "pattern": "^order_[a-zA-Z0-9]+$",
+          "description": "Razorpay order ID"
         },
         "status": {
           "type": "string",
-          "enum": ["captured", "failed", "authorized"]
+          "enum": ["captured", "failed", "authorized"],
+          "description": "Final payment status"
         },
         "card_network": {
           "type": "string",
-          "enum": ["Visa", "MasterCard", "RuPay", "Amex"]
+          "enum": ["Visa", "MasterCard", "RuPay", "Amex"],
+          "description": "Card network used for the payment"
         },
         "card_last4": {
           "type": "string",
-          "pattern": "^[0-9]{4}$"
+          "pattern": "^[0-9]{4}$",
+          "description": "Last 4 digits of the card, for display only"
         },
         "card_type": {
           "type": "string",
-          "enum": ["credit", "debit"]
-        },
-        "emi_plan_id": {
-          "type": "string"
+          "enum": ["credit", "debit"],
+          "description": "Card funding type"
         },
         "token_id": {
           "type": "string",
-          "pattern": "^token_[a-zA-Z0-9]+$"
+          "pattern": "^token_[a-zA-Z0-9]+$",
+          "description": "Razorpay Token HQ token ID used for this payment"
+        },
+        "emi_plan_id": {
+          "type": "string",
+          "description": "EMI plan ID, present only if buyer selected EMI"
         },
         "amount": {
           "type": "integer",
-          "minimum": 100
+          "minimum": 100,
+          "description": "Charged amount in paise"
         },
         "currency": {
           "type": "string",
@@ -363,14 +487,130 @@
         },
         "signature": {
           "type": "string",
-          "description": "Razorpay HMAC-SHA256 signature for verification"
+          "description": "Razorpay HMAC-SHA256 signature for server-side verification"
         }
       },
-      "required": ["type", "provider", "payment_id", "order_id", "status", "card_network", "card_last4", "card_type", "amount", "currency"]
+      "required": ["type", "provider", "payment_id", "order_id", "status", "card_network", "card_last4", "card_type", "amount", "currency", "signature"],
+      "example": {
+        "type": "s2s_card",
+        "provider": "razorpay",
+        "payment_id": "pay_NmtIbizJ5JUEmH",
+        "order_id": "order_NmtIbizJ5JUEmX",
+        "status": "captured",
+        "card_network": "Visa",
+        "card_last4": "4242",
+        "card_type": "credit",
+        "token_id": "token_KNq2OQK30t5SXO",
+        "amount": 49900,
+        "currency": "INR",
+        "signature": "9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f795500537a9b53e"
+      }
+    },
+    "WebhookPaymentEntity": {
+      "description": "Razorpay payment entity embedded in webhook payloads",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^pay_[a-zA-Z0-9]+$",
+          "description": "Razorpay payment ID"
+        },
+        "order_id": {
+          "type": "string",
+          "pattern": "^order_[a-zA-Z0-9]+$",
+          "description": "Razorpay order ID"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["authorized", "captured", "failed"],
+          "description": "Payment status at the time of the event"
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Payment amount in paise"
+        },
+        "currency": {
+          "type": "string",
+          "const": "INR"
+        },
+        "method": {
+          "type": "string",
+          "const": "card",
+          "description": "Payment method, always 'card' for S2S card payments"
+        },
+        "card": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Card metadata (no raw PAN)",
+          "properties": {
+            "network": {
+              "type": "string",
+              "enum": ["Visa", "MasterCard", "RuPay", "Amex"],
+              "description": "Card network"
+            },
+            "last4": {
+              "type": "string",
+              "pattern": "^[0-9]{4}$",
+              "description": "Last 4 digits for display"
+            },
+            "issuer": {
+              "type": "string",
+              "description": "Issuing bank name"
+            },
+            "token_id": {
+              "type": "string",
+              "pattern": "^token_[a-zA-Z0-9]+$",
+              "description": "Razorpay Token HQ token ID"
+            }
+          },
+          "required": ["network", "last4"]
+        },
+        "error_code": {
+          "type": "string",
+          "description": "Razorpay error code, present only on failed payments"
+        },
+        "error_description": {
+          "type": "string",
+          "description": "Human-readable error description, present only on failed payments"
+        },
+        "notes": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Custom notes set when creating the Razorpay order",
+          "properties": {
+            "acp_checkout_id": {
+              "type": "string",
+              "description": "ACP checkout session ID for correlation"
+            }
+          },
+          "required": ["acp_checkout_id"]
+        }
+      },
+      "required": ["id", "order_id", "status", "amount", "currency", "method", "notes"],
+      "example": {
+        "id": "pay_NmtIbizJ5JUEmH",
+        "order_id": "order_NmtIbizJ5JUEmX",
+        "status": "captured",
+        "amount": 49900,
+        "currency": "INR",
+        "method": "card",
+        "card": {
+          "network": "Visa",
+          "last4": "4242",
+          "issuer": "HDFC Bank",
+          "token_id": "token_KNq2OQK30t5SXO"
+        },
+        "notes": {
+          "acp_checkout_id": "cs_01HV3P3XYZ789"
+        }
+      }
     },
     "WebhookPaymentAuthorized": {
-      "description": "Webhook payload for payment.authorized",
+      "description": "Razorpay webhook event fired when a card payment is authorized by the bank",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "event": {
           "type": "string",
@@ -378,36 +618,42 @@
         },
         "payload": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "payment": {
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "entity": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "order_id": { "type": "string" },
-                    "status": { "type": "string", "const": "authorized" },
-                    "amount": { "type": "integer" },
-                    "currency": { "type": "string", "const": "INR" },
-                    "method": { "type": "string", "const": "card" },
-                    "card": {
-                      "type": "object",
-                      "properties": {
-                        "network": { "type": "string" },
-                        "last4": { "type": "string" },
-                        "issuer": { "type": "string" },
-                        "token_id": { "type": "string" }
-                      }
-                    },
-                    "notes": {
-                      "type": "object",
-                      "properties": {
-                        "acp_checkout_id": { "type": "string" }
-                      }
-                    }
-                  }
+                  "$ref": "#/$defs/WebhookPaymentEntity"
                 }
+              },
+              "required": ["entity"]
+            }
+          },
+          "required": ["payment"]
+        }
+      },
+      "required": ["event", "payload"],
+      "example": {
+        "event": "payment.authorized",
+        "payload": {
+          "payment": {
+            "entity": {
+              "id": "pay_NmtIbizJ5JUEmH",
+              "order_id": "order_NmtIbizJ5JUEmX",
+              "status": "authorized",
+              "amount": 49900,
+              "currency": "INR",
+              "method": "card",
+              "card": {
+                "network": "Visa",
+                "last4": "4242",
+                "issuer": "HDFC Bank",
+                "token_id": "token_KNq2OQK30t5SXO"
+              },
+              "notes": {
+                "acp_checkout_id": "cs_01HV3P3XYZ789"
               }
             }
           }
@@ -415,8 +661,9 @@
       }
     },
     "WebhookPaymentCaptured": {
-      "description": "Webhook payload for payment.captured",
+      "description": "Razorpay webhook event fired when a card payment is captured (funds settled)",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "event": {
           "type": "string",
@@ -424,36 +671,42 @@
         },
         "payload": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "payment": {
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "entity": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "order_id": { "type": "string" },
-                    "status": { "type": "string", "const": "captured" },
-                    "amount": { "type": "integer" },
-                    "currency": { "type": "string", "const": "INR" },
-                    "method": { "type": "string", "const": "card" },
-                    "card": {
-                      "type": "object",
-                      "properties": {
-                        "network": { "type": "string" },
-                        "last4": { "type": "string" },
-                        "issuer": { "type": "string" },
-                        "token_id": { "type": "string" }
-                      }
-                    },
-                    "notes": {
-                      "type": "object",
-                      "properties": {
-                        "acp_checkout_id": { "type": "string" }
-                      }
-                    }
-                  }
+                  "$ref": "#/$defs/WebhookPaymentEntity"
                 }
+              },
+              "required": ["entity"]
+            }
+          },
+          "required": ["payment"]
+        }
+      },
+      "required": ["event", "payload"],
+      "example": {
+        "event": "payment.captured",
+        "payload": {
+          "payment": {
+            "entity": {
+              "id": "pay_NmtIbizJ5JUEmH",
+              "order_id": "order_NmtIbizJ5JUEmX",
+              "status": "captured",
+              "amount": 49900,
+              "currency": "INR",
+              "method": "card",
+              "card": {
+                "network": "Visa",
+                "last4": "4242",
+                "issuer": "HDFC Bank",
+                "token_id": "token_KNq2OQK30t5SXO"
+              },
+              "notes": {
+                "acp_checkout_id": "cs_01HV3P3XYZ789"
               }
             }
           }
@@ -461,8 +714,9 @@
       }
     },
     "WebhookPaymentFailed": {
-      "description": "Webhook payload for payment.failed",
+      "description": "Razorpay webhook event fired when a card payment fails",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "event": {
           "type": "string",
@@ -470,175 +724,101 @@
         },
         "payload": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "payment": {
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "entity": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "order_id": { "type": "string" },
-                    "status": { "type": "string", "const": "failed" },
-                    "error_code": { "type": "string" },
-                    "error_description": { "type": "string" },
-                    "notes": {
-                      "type": "object",
-                      "properties": {
-                        "acp_checkout_id": { "type": "string" }
-                      }
-                    }
-                  }
+                  "$ref": "#/$defs/WebhookPaymentEntity"
                 }
+              },
+              "required": ["entity"]
+            }
+          },
+          "required": ["payment"]
+        }
+      },
+      "required": ["event", "payload"],
+      "example": {
+        "event": "payment.failed",
+        "payload": {
+          "payment": {
+            "entity": {
+              "id": "pay_NmtIbizJ5JUEmH",
+              "order_id": "order_NmtIbizJ5JUEmX",
+              "status": "failed",
+              "amount": 49900,
+              "currency": "INR",
+              "method": "card",
+              "error_code": "BAD_REQUEST_ERROR",
+              "error_description": "Card declined by issuing bank",
+              "notes": {
+                "acp_checkout_id": "cs_01HV3P3XYZ789"
               }
             }
           }
         }
       }
     },
-    "RazorpayOrderRequest": {
-      "description": "Request to create Razorpay order",
+    "Error": {
+      "description": "Error response for S2S card payment operations",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "amount": {
-          "type": "integer",
-          "minimum": 100,
-          "description": "Amount in paise"
-        },
-        "currency": {
+        "type": {
           "type": "string",
-          "const": "INR"
+          "enum": [
+            "invalid_request",
+            "rate_limit_exceeded",
+            "processing_error",
+            "service_unavailable"
+          ],
+          "description": "High-level error category"
         },
-        "receipt": {
+        "code": {
           "type": "string",
-          "maxLength": 40
+          "enum": [
+            "invalid_token",
+            "cvv_required",
+            "card_declined",
+            "card_expired",
+            "insufficient_funds",
+            "authentication_failed",
+            "daily_limit_exceeded",
+            "international_blocked",
+            "duplicate_request",
+            "idempotency_conflict",
+            "too_many_requests",
+            "idempotency_key_required",
+            "idempotency_in_flight"
+          ],
+          "description": "Specific error code for programmatic handling"
         },
-        "notes": {
-          "type": "object",
-          "properties": {
-            "acp_checkout_id": { "type": "string" },
-            "merchant_order_ref": { "type": "string" }
-          }
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath of the offending field, if applicable"
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "description": "API versions supported by the server, newest first. Only present on version-related errors."
         }
       },
-      "required": ["amount", "currency"]
-    },
-    "RazorpayS2SPaymentRequest": {
-      "description": "Request to initiate S2S payment",
-      "type": "object",
-      "properties": {
-        "amount": {
-          "type": "integer",
-          "minimum": 100
-        },
-        "currency": {
-          "type": "string",
-          "const": "INR"
-        },
-        "order_id": {
-          "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$"
-        },
-        "method": {
-          "type": "string",
-          "const": "card"
-        },
-        "token": {
-          "type": "string",
-          "pattern": "^token_[a-zA-Z0-9]+$",
-          "description": "Razorpay Token HQ token_id"
-        },
-        "cvv": {
-          "type": "string",
-          "description": "Encrypted CVV (Razorpay.js encrypted)"
-        },
-        "ip": {
-          "type": "string",
-          "format": "ipv4"
-        },
-        "user_agent": {
-          "type": "string"
-        },
-        "referrer": {
-          "type": "string",
-          "format": "uri"
-        },
-        "description": {
-          "type": "string"
-        }
-      },
-      "required": ["amount", "currency", "order_id", "method", "token"]
-    },
-    "ErrorInvalidToken": {
-      "description": "Token expired or invalid",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "invalid_token" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "Card token expired or invalid. Please re-enter card details." }
-      }
-    },
-    "ErrorCVVRequired": {
-      "description": "CVV required",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "cvv_required" },
-        "severity": { "type": "string", "const": "requires_buyer_input" },
-        "message": { "type": "string", "const": "CVV required for this transaction. Please enter CVV." }
-      }
-    },
-    "ErrorInsufficientFunds": {
-      "description": "Insufficient card balance",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "insufficient_funds" },
-        "severity": { "type": "string", "const": "requires_buyer_input" },
-        "message": { "type": "string", "const": "Card has insufficient balance. Please use another card or payment method." }
-      }
-    },
-    "ErrorCardDeclined": {
-      "description": "Bank declined card",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "card_declined" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "Bank declined the transaction. Please retry or use another card." }
-      }
-    },
-    "Error3DSAuthFailed": {
-      "description": "3DS OTP incorrect or expired",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "authentication_failed" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "OTP incorrect or expired. Please retry with resend if available." }
-      }
-    },
-    "ErrorCardExpired": {
-      "description": "Card expired",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "card_expired" },
-        "severity": { "type": "string", "const": "requires_buyer_input" },
-        "message": { "type": "string", "const": "Card has expired. Please enter valid card details." }
-      }
-    },
-    "ErrorDailyLimitExceeded": {
-      "description": "Daily card limit reached",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "daily_limit_exceeded" },
-        "severity": { "type": "string", "const": "requires_buyer_input" },
-        "message": { "type": "string", "const": "Daily card limit reached. Please try again tomorrow or use another card." }
-      }
-    },
-    "ErrorInternationalBlocked": {
-      "description": "International transaction blocked",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "international_blocked" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "International transactions not allowed on this card. Please use domestic card or UPI." }
+      "required": ["type", "code", "message"],
+      "example": {
+        "type": "processing_error",
+        "code": "card_declined",
+        "message": "Bank declined the transaction. Please retry or use another card."
       }
     }
   }
