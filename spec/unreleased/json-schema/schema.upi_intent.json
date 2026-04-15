@@ -5,13 +5,13 @@
   "description": "JSON Schema definitions for the UPI Intent payment handler for ACP (Agentic Commerce Protocol). Enables UPI payments via deep links on mobile and QR codes on desktop.",
   "$defs": {
     "BusinessConfig": {
-      "description": "Configuration for the Razorpay UPI Intent handler provided by the business. Declared in the business's ACP handler configuration.",
+      "description": "Configuration for the UPI Intent handler provided by the business. Declared in the business's ACP handler configuration.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "key_id": {
           "type": "string",
-          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production)."
+          "description": "PSP API key identifier for this business account."
         },
         "merchant_vpa": {
           "type": "string",
@@ -21,12 +21,12 @@
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "Razorpay API environment. Use 'sandbox' for test mode, 'production' for live mode."
+          "description": "PSP API environment. Use 'sandbox' for test mode, 'production' for live mode."
         }
       },
       "required": ["key_id", "merchant_vpa", "environment"],
       "example": {
-        "key_id": "rzp_live_abc123xyz",
+        "key_id": "psp_live_abc123xyz",
         "merchant_vpa": "storename@icici",
         "environment": "production"
       }
@@ -39,7 +39,7 @@
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "Razorpay API environment. Must match the business config environment."
+          "description": "PSP API environment. Must match the business config environment."
         },
         "upi_apps": {
           "type": "array",
@@ -134,7 +134,7 @@
         "max_amount": 49900,
         "currency": "inr",
         "checkout_session_id": "csn_01HV3P3XYZ789",
-        "merchant_id": "rzp_live_abc123xyz",
+        "merchant_id": "psp_live_abc123xyz",
         "expires_at": "2026-04-15T10:45:00Z"
       }
     },
@@ -198,7 +198,7 @@
           "max_amount": 49900,
           "currency": "inr",
           "checkout_session_id": "csn_01HV3P3XYZ789",
-          "merchant_id": "rzp_live_abc123xyz",
+          "merchant_id": "psp_live_abc123xyz",
           "expires_at": "2026-04-15T10:45:00Z"
         },
         "risk_signals": [],
@@ -239,7 +239,7 @@
           "payment_id": "pay_P6WMPl2NNnnLFk",
           "upi_txn_id": "318219246640",
           "session_id": "sess_abc123",
-          "merchant_id": "rzp_live_abc123xyz"
+          "merchant_id": "psp_live_abc123xyz"
         }
       }
     },
