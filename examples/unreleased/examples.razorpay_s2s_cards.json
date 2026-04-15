@@ -51,12 +51,6 @@
     "message": "Card token expired or invalid. Please re-enter card details.",
     "param": "$.payment_method.token_id"
   },
-  "razorpay_s2s_cards_error_cvv_required": {
-    "type": "invalid_request",
-    "code": "cvv_required",
-    "message": "CVV required for this transaction. Please enter CVV.",
-    "param": "$.payment_method.cvv"
-  },
   "razorpay_s2s_cards_error_card_declined": {
     "type": "processing_error",
     "code": "card_declined",
@@ -72,11 +66,6 @@
     "type": "processing_error",
     "code": "insufficient_funds",
     "message": "Card has insufficient balance. Please use another card or payment method."
-  },
-  "razorpay_s2s_cards_error_authentication_failed": {
-    "type": "processing_error",
-    "code": "authentication_failed",
-    "message": "OTP incorrect or expired. Please retry with resend if available."
   },
   "razorpay_s2s_cards_error_daily_limit_exceeded": {
     "type": "processing_error",

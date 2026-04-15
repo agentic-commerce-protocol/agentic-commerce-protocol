@@ -303,11 +303,9 @@
           "type": "string",
           "enum": [
             "invalid_token",
-            "cvv_required",
             "card_declined",
             "card_expired",
             "insufficient_funds",
-            "authentication_failed",
             "daily_limit_exceeded",
             "international_blocked",
             "duplicate_request",
