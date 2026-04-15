@@ -18,6 +18,7 @@
       "merchant_id": "rzp_live_abc123xyz",
       "expires_at": "2026-04-15T11:00:00Z"
     },
+    "risk_signals": [],
     "metadata": {
       "session_id": "sess_abc123",
       "user_agent": "ChatGPT/4.0"

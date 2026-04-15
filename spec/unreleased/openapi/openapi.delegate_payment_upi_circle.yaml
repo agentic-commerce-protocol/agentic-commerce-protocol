@@ -1,0 +1,333 @@
+openapi: 3.1.0
+info:
+  title: Agentic Commerce — Delegate Payment (UPI Circle) API
+  version: unreleased
+  description: |
+    Delegate a UPI Circle payment using a pre-fetched one-time cryptogram and mandate reference.
+
+    This spec extends the base ACP Delegate Payment API (`openapi.delegate_payment.yaml`) with
+    a UPI Circle-specific payment method and credential. The endpoint path, headers, and response
+    envelope are identical to the base spec. The request body differs in `payment_method` type
+    and adds a `credential` field for the one-time cryptogram.
+
+    **Mandate setup is out-of-band** — it is a bilateral integration between the platform and
+    Razorpay, not part of the ACP protocol. Platforms store the returned `delegate_id` against
+    the user and present it in subsequent `DelegatePaymentRequest` calls.
+servers:
+  - url: https://merchant.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: DelegatePaymentUPICircle
+    description: Create delegated UPI Circle payment tokens
+paths:
+  /agentic_commerce/delegate_payment:
+    post:
+      tags:
+        - DelegatePaymentUPICircle
+      summary: Create a delegated UPI Circle payment
+      operationId: delegatePaymentUPICircle
+      description: |
+        Executes a delegated UPI Circle debit using a pre-authorized mandate and one-time cryptogram.
+
+        **Pre-conditions (platform responsibility, off-protocol):**
+        1. Platform has stored a `delegate_id` from Razorpay mandate onboarding against `acp_user_id`
+        2. Platform fetches a fresh `upi_circle_cryptogram` from Razorpay TSP using `delegate_id` and `key_id`
+        3. Platform verifies `credential.expires_at` is in the future before submitting
+
+        **Constraints:**
+        - Currency: `inr` only
+        - Maximum transaction: ₹15,000 per NPCI UPI Circle limit (enforced at mandate/bank level)
+        - Credentials are single-use — each cryptogram authorizes exactly one debit
+
+        **Idempotency:** The `Idempotency-Key` header is required. Use `checkout_session_id` as the key
+        or derive from it to prevent double fulfillment on retry.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/ContentType"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/Signature"
+        - $ref: "#/components/parameters/Timestamp"
+        - $ref: "#/components/parameters/APIVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DelegatePaymentRequest"
+            examples:
+              upi_circle_success:
+                summary: UPI Circle — success
+                value:
+                  payment_method:
+                    type: upi_circle
+                    delegate_id: ucirc_P6WA7b8Ys3qKm2
+                    user_vpa: user@okicici
+                  credential:
+                    type: upi_circle_cryptogram
+                    value: AQIDBAUGBwgJCgsMDQ4PEBESExQ=
+                    expires_at: "2026-04-15T10:35:00Z"
+                  allowance:
+                    reason: one_time
+                    max_amount: 49900
+                    currency: inr
+                    checkout_session_id: csn_01HV3P3XYZ789
+                    merchant_id: rzp_live_abc123xyz
+                    expires_at: "2026-04-15T11:00:00Z"
+                  risk_signals: []
+                  metadata:
+                    session_id: sess_abc123
+                    user_agent: ChatGPT/4.0
+      responses:
+        "201":
+          description: Created
+          headers:
+            Request-Id:
+              description: Echo of the request correlation ID
+              schema:
+                type: string
+            Idempotent-Replayed:
+              description: true when the response is a cached replay of a previous request with the same Idempotency-Key
+              required: false
+              schema:
+                type: string
+                enum:
+                  - "true"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DelegatePaymentResponse"
+              examples:
+                created:
+                  value:
+                    id: dp_ucirc_P6WMPl2NNnnLFk
+                    created: "2026-04-15T10:30:00Z"
+                    metadata:
+                      payment_id: pay_P6WMPl2NNnnLFk
+                      upi_txn_id: "318219246640"
+                      session_id: sess_abc123
+                      merchant_id: rzp_live_abc123xyz
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                invalid_delegate_id:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: invalid_delegate_id
+                      message: UPI Circle mandate not found for the provided delegate_id
+                      param: $.payment_method.delegate_id
+                credential_expired:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: credential_expired
+                      message: UPI Circle cryptogram has expired. Fetch a new cryptogram from Razorpay TSP before retrying.
+                      param: $.credential.expires_at
+                idempotency_key_required:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: idempotency_key_required
+                      message: Idempotency-Key header is required
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                unauthorized:
+                  value:
+                    error:
+                      type: unauthorized
+                      code: unauthorized
+                      message: Unauthorized
+        "409":
+          description: In-flight collision — original request still processing
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying
+              required: true
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                idempotency_in_flight:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: idempotency_in_flight
+                      message: A request with this Idempotency-Key is currently being processed
+        "422":
+          description: Semantic validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                delegate_id_expired:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: delegate_id_expired
+                      message: UPI Circle mandate has expired and cannot be used for new payments
+                      param: $.payment_method.delegate_id
+                delegate_id_revoked:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: delegate_id_revoked
+                      message: UPI Circle mandate has been revoked by the user
+                      param: $.payment_method.delegate_id
+                amount_exceeds_mandate_limit:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: amount_exceeds_mandate_limit
+                      message: Transaction amount exceeds the UPI Circle mandate ceiling
+                      param: $.allowance.max_amount
+                idempotency_conflict:
+                  value:
+                    error:
+                      type: invalid_request
+                      code: idempotency_conflict
+                      message: Idempotency-Key has already been used with a different request body
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                rate_limit_exceeded:
+                  value:
+                    error:
+                      type: rate_limit_exceeded
+                      code: too_many_requests
+                      message: Too many requests, please retry later
+        "500":
+          description: Processing error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                processing_error:
+                  value:
+                    error:
+                      type: processing_error
+                      code: processing_error
+                      message: Payment processing failed. Retry with a new credential.
+        "503":
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                service_unavailable:
+                  value:
+                    error:
+                      type: service_unavailable
+                      code: service_unavailable
+                      message: Service unavailable
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      description: Bearer token for API authentication (e.g., Bearer sk_live_123)
+      schema:
+        type: string
+        example: Bearer api_key_123
+    ContentType:
+      name: Content-Type
+      in: header
+      required: true
+      description: Must be application/json
+      schema:
+        type: string
+        example: application/json
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      description: Preferred language for response messages (e.g., en-US)
+      schema:
+        type: string
+        example: en-us
+    UserAgent:
+      name: User-Agent
+      in: header
+      required: false
+      description: Client application identifier
+      schema:
+        type: string
+        example: ChatGPT/4.0
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Idempotency key. MUST be present on all POST requests. Opaque string, max 255 characters. UUID v4 recommended. Scoped to authenticated identity + endpoint.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+        example: 550e8400-e29b-41d4-a716-446655440000
+    RequestId:
+      name: Request-Id
+      in: header
+      required: false
+      description: Unique identifier for request tracking and debugging
+      schema:
+        type: string
+        example: req_123
+    Signature:
+      name: Signature
+      in: header
+      required: false
+      description: Detached JSON signature for request verification
+      schema:
+        type: string
+        example: ZXltZX...
+    Timestamp:
+      name: Timestamp
+      in: header
+      required: false
+      description: ISO 8601 timestamp for request timing validation
+      schema:
+        type: string
+        format: date-time
+        example: "2026-04-15T10:30:00Z"
+    APIVersion:
+      name: API-Version
+      in: header
+      required: true
+      description: API version date in format YYYY-MM-DD (e.g., 2026-01-30)
+      schema:
+        type: string
+        example: "2025-09-29"
+  schemas:
+    DelegatePaymentRequest:
+      $ref: "../json-schema/schema.razorpay_upi_circle.json#/$defs/DelegatePaymentRequest"
+    DelegatePaymentResponse:
+      $ref: "../json-schema/schema.razorpay_upi_circle.json#/$defs/DelegatePaymentResponse"
+    Error:
+      $ref: "../json-schema/schema.razorpay_upi_circle.json#/$defs/Error"

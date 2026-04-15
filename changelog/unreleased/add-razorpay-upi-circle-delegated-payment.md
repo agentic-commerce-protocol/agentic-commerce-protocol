@@ -16,7 +16,7 @@ UPI Circle (launched by NPCI in 2024) allows a primary UPI account holder to gra
 - **Pre-Authorized Mandates**: User grants spending authority once, reuses for multiple purchases
 - **Credential-before-Checkout**: Platform fetches a one-time `upi_circle_cryptogram` from Razorpay TSP per transaction before submitting Complete Checkout — no per-transaction buyer interaction required
 - **India Market Coverage**: Supports 600M+ UPI users via NPCI infrastructure
-- **Instant Checkout Compatible**: Uses existing ACP `requestCheckout` with `checkout_type: instant`
+- **ACP Compatible**: Works with existing ACP `complete_checkout_session` MCP tool via the `delegate_payment` endpoint
 
 ### Handler Details
 
@@ -34,7 +34,7 @@ UPI Circle (launched by NPCI in 2024) allows a primary UPI account holder to gra
 - Added `PaymentMethodUPICircle` schema: payment method type with opaque `delegate_id` reference
 - Added `Credential` schema: `upi_circle_cryptogram` — one-time cryptogram fetched from Razorpay TSP before each checkout
 - Added `Allowance` schema: per-transaction constraints (amount, expiry, merchant)
-- Added `DelegatePaymentRequest` schema: combines `PaymentMethodUPICircle` + `Credential` + `Allowance` + `metadata`
+- Added `DelegatePaymentRequest` schema: combines `PaymentMethodUPICircle` + `Credential` + `Allowance` + `risk_signals` + `metadata` (extends base ACP `DelegatePaymentRequest` with a UPI Circle-specific `credential` field)
 - Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` response (PSP-specific values in metadata)
 - Added `Error` schema: aligned error types and codes with ACP delegate_payment pattern
 - Added examples: 1 request, 1 success response, 6 error cases

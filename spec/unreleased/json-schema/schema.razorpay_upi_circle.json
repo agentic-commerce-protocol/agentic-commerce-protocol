@@ -4,13 +4,13 @@
   "title": "Razorpay UPI Circle Handler \u2014 Schema Bundle",
   "$defs": {
     "BusinessConfig": {
-      "description": "Configuration for the Razorpay UPI Circle handler provided by the business. Declared in the business UCP profile at /.well-known/ucp.",
+      "description": "Configuration for the Razorpay UPI Circle handler provided by the business. Declared in the business's ACP handler configuration. The key_secret MUST remain on the business backend and MUST NOT be included here.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "key_id": {
           "type": "string",
-          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production). Safe to advertise in the UCP profile. The key_secret MUST remain on the business backend and MUST NOT be included here."
+          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production). Safe to include in the handler configuration. The key_secret MUST remain on the business backend and MUST NOT be included here."
         },
         "environment": {
           "type": "string",
@@ -35,7 +35,7 @@
       }
     },
     "PlatformConfig": {
-      "description": "Platform-level configuration for the UPI Circle handler. Declared in the platform UCP profile.",
+      "description": "Platform-level configuration for the UPI Circle handler. Declared in the platform's ACP handler configuration.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -113,7 +113,7 @@
       }
     },
     "Allowance": {
-      "description": "Constraints on how the UPI Circle mandate can be used for a single transaction (amount limit, expiration, merchant)",
+      "description": "Constraints on how the UPI Circle delegation can be used for a single transaction (amount limit, expiration, merchant)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -157,7 +157,7 @@
       }
     },
     "DelegatePaymentRequest": {
-      "description": "Request to initiate a delegated UPI Circle payment using a pre-fetched one-time credential",
+      "description": "Request to initiate a delegated UPI Circle payment using a pre-fetched one-time credential. Extends the base ACP DelegatePaymentRequest with a UPI Circle-specific credential field.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -167,11 +167,36 @@
         },
         "credential": {
           "$ref": "#/$defs/Credential",
-          "description": "One-time cryptogram fetched from Razorpay TSP for this specific transaction"
+          "description": "One-time cryptogram fetched from Razorpay TSP for this specific transaction. UPI Circle-specific extension — not present in the base ACP DelegatePaymentRequest."
         },
         "allowance": {
           "$ref": "#/$defs/Allowance",
-          "description": "Constraints on how this credential can be used for this transaction"
+          "description": "Constraints on how this delegation can be used for this transaction"
+        },
+        "risk_signals": {
+          "type": "array",
+          "description": "Risk assessment signals from the platform's fraud detection system. UPI Circle mandate-based payments do not carry card-testing signals — platforms SHOULD submit an empty array.",
+          "items": {
+            "type": "object",
+            "description": "Risk signal from fraud detection",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of risk signal detected"
+              },
+              "score": {
+                "type": "integer",
+                "description": "Risk score indicating severity level"
+              },
+              "action": {
+                "type": "string",
+                "enum": ["blocked", "manual_review", "authorized"],
+                "description": "Recommended action based on risk assessment"
+              }
+            },
+            "required": ["type", "score", "action"]
+          }
         },
         "metadata": {
           "type": "object",
@@ -182,7 +207,7 @@
           }
         }
       },
-      "required": ["payment_method", "credential", "allowance", "metadata"],
+      "required": ["payment_method", "credential", "allowance", "risk_signals", "metadata"],
       "example": {
         "payment_method": {
           "type": "upi_circle",
@@ -202,6 +227,7 @@
           "merchant_id": "rzp_live_abc123xyz",
           "expires_at": "2026-04-15T11:00:00Z"
         },
+        "risk_signals": [],
         "metadata": {
           "session_id": "sess_abc123",
           "user_agent": "ChatGPT/4.0"
