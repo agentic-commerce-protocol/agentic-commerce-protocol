@@ -446,113 +446,44 @@
         }
       }
     },
-    "ErrorMandateExpired": {
-      "description": "Error when UPI Circle mandate has expired",
+    "Error": {
+      "description": "Error structure for UPI Circle handler failures",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "mandate_error",
+            "limit_error",
+            "processing_error",
+            "security_error"
+          ],
+          "description": "High-level error category"
+        },
         "code": {
           "type": "string",
-          "const": "mandate_expired"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
+          "enum": [
+            "mandate_expired",
+            "mandate_revoked",
+            "mandate_amount_exceeded",
+            "mandate_not_found",
+            "upi_circle_limit_exceeded",
+            "invalid_signature",
+            "processing_error"
+          ],
+          "description": "Specific error code"
         },
         "message": {
           "type": "string",
-          "const": "UPI Circle mandate has expired. Please set up a new mandate."
+          "description": "Human-readable error description"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath to the offending field (if applicable)"
         }
-      }
-    },
-    "ErrorMandateRevoked": {
-      "description": "Error when user has revoked the mandate",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "mandate_revoked"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "UPI Circle mandate has been revoked. Please set up a new mandate."
-        }
-      }
-    },
-    "ErrorMandateExceeded": {
-      "description": "Error when transaction exceeds mandate ceiling",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "mandate_amount_exceeded"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "Transaction amount exceeds UPI Circle mandate maximum. Use redirect checkout or request mandate increase."
-        }
-      }
-    },
-    "ErrorUPICircleLimit": {
-      "description": "Error when amount exceeds NPCI UPI Circle per-transaction limit",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "upi_circle_limit_exceeded"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "Amount exceeds NPCI UPI Circle limit of ₹15,000 per transaction. Use standard UPI redirect instead."
-        }
-      }
-    },
-    "ErrorMandateNotFound": {
-      "description": "Error when mandate ID is not found or invalid",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "mandate_not_found"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "UPI Circle mandate not found. Please complete mandate onboarding first."
-        }
-      }
-    },
-    "ErrorInvalidSignature": {
-      "description": "Error when Razorpay signature verification fails",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "invalid_signature"
-        },
-        "severity": {
-          "type": "string",
-          "const": "error"
-        },
-        "message": {
-          "type": "string",
-          "const": "Payment signature verification failed. Please retry or contact support."
-        }
-      }
+      },
+      "required": ["type", "code", "message"]
     }
   }
 }
