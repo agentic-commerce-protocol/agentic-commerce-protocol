@@ -6,8 +6,8 @@
           "id": "razorpay_upi_circle_001",
           "name": "com.razorpay.upi_circle",
           "version": "2026-04-07",
-          "spec": "https://razorpay.com/acp/upi_circle/2026-04-07/spec.md",
-          "schema": "https://razorpay.com/acp/upi_circle/2026-04-07/schema.json",
+          "spec": "https://example.com/schemas/upi-circle/spec.md",
+          "schema": "https://example.com/schemas/upi-circle/bundle.schema.json",
           "config": {
             "environment": "production",
             "merchant_id": "rzp_live_abc123xyz",

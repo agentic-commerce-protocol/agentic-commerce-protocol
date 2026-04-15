@@ -81,7 +81,7 @@ UPI Circle (launched by NPCI in 2024) allows a primary UPI account holder to gra
 ### Reference
 
 - **PR**: #<pr-number>
-- **Handler Spec**: https://razorpay.com/acp/upi_circle/2026-04-07/
+- **Handler Spec**: https://example.com/schemas/upi-circle/bundle.schema.json
 - **UPI Circle Spec**: https://www.npci.org.in/what-we-do/upi/upi-circle-spec
 - **Razorpay UPI Circle Docs**: https://razorpay.com/docs/payments/upi-circle
 - **Author**: Razorpay Software Private Ltd

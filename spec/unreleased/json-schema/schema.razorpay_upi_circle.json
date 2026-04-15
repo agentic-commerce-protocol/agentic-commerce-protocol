@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://razorpay.com/acp/upi_circle/2026-04-07/schema.json",
+  "$id": "https://example.com/schemas/upi-circle/bundle.schema.json",
   "title": "Razorpay UPI Circle Handler - Schema Bundle",
   "description": "JSON Schema definitions for the Razorpay UPI Circle delegated payment handler for ACP (Agentic Commerce Protocol). Enables agent-initiated UPI payments within pre-authorized NPCI UPI Circle mandates.",
   "$defs": {
