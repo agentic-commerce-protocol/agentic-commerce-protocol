@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/razorpay-upi-intent/bundle.schema.json",
-  "title": "Razorpay UPI Intent Handler — Schema Bundle",
-  "description": "JSON Schema definitions for the Razorpay UPI Intent payment handler for ACP (Agentic Commerce Protocol). Enables UPI payments via deep links on mobile and QR codes on desktop.",
+  "$id": "https://example.com/schemas/upi-intent/bundle.schema.json",
+  "title": "UPI Intent Handler — Schema Bundle",
+  "description": "JSON Schema definitions for the UPI Intent payment handler for ACP (Agentic Commerce Protocol). Enables UPI payments via deep links on mobile and QR codes on desktop.",
   "$defs": {
     "BusinessConfig": {
       "description": "Configuration for the Razorpay UPI Intent handler provided by the business. Declared in the business's ACP handler configuration.",

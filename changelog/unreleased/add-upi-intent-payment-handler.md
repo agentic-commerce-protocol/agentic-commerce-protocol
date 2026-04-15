@@ -39,8 +39,8 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 
 ### Files Updated
 
-- `spec/unreleased/json-schema/schema.razorpay_upi_intent.json` (new file)
-- `examples/unreleased/examples.razorpay_upi_intent.json` (new file)
+- `spec/unreleased/json-schema/schema.upi_intent.json` (new file)
+- `examples/unreleased/examples.upi_intent.json` (new file)
 
 ### Integration Flow
 
