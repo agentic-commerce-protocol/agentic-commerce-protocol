@@ -11,7 +11,7 @@
           "config": {
             "environment": "production",
             "merchant_id": "rzp_live_abc123xyz",
-            "merchant_name": "BigBasket",
+            "merchant_name": "Demo Merchant",
             "delegate_vpa": "agent@razorpay",
             "supported_flows": ["mandate_onboard", "agent_initiated_debit"]
           },

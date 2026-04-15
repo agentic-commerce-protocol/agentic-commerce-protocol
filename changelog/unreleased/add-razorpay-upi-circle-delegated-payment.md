@@ -4,7 +4,7 @@ This change adds support for UPI Circle (NPCI's delegated payment system) as a d
 
 ### Problem Statement
 
-ACP's Instant Checkout supports delegated payment via Single-use Payment Tokens (SPT) from Stripe, Adyen, or Braintree, but no equivalent exists for India — 600M+ active UPI users, $2.6T annual transaction volume. Indian merchants must fall back to browser redirect for every transaction, even when users have expressed purchase intent in-chat.
+ACP's Instant Checkout supports delegated payment via Single-use Payment Tokens (SPT) from major payment processors, but no equivalent exists for India — 600M+ active UPI users, $2.6T annual transaction volume. Indian merchants must fall back to browser redirect for every transaction, even when users have expressed purchase intent in-chat.
 
 ### Solution: UPI Circle
 
