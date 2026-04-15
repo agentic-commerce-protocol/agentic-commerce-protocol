@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/s2s-cards/bundle.schema.json",
   "title": "S2S Cards Handler \u2014 Schema Bundle",
-  "description": "JSON Schema definitions for the Server-to-Server (S2S) card payment handler for ACP. Enables native in-chat tokenized card payments with 3DS support and Card-on-File Tokenization (CoFT) compliance.",
+  "description": "JSON Schema definitions for the Server-to-Server (S2S) card payment handler for ACP. Enables merchants to charge customer-saved card tokens directly via their PSP without any card data collection at checkout time.",
   "$defs": {
     "BusinessConfig": {
       "description": "Configuration for the S2S Cards handler provided by the business. Declared in the business's ACP handler configuration.",
@@ -35,16 +35,6 @@
             "enum": ["credit", "debit"]
           },
           "default": ["credit", "debit"]
-        },
-        "emi_enabled": {
-          "type": "boolean",
-          "description": "Whether to offer EMI plans on eligible cards",
-          "default": false
-        },
-        "save_cards": {
-          "type": "boolean",
-          "description": "Whether to offer save-card option via PSP tokenization",
-          "default": true
         }
       },
       "required": ["key_id", "environment"],
@@ -52,9 +42,7 @@
         "key_id": "psp_live_abc123xyz",
         "environment": "production",
         "supported_networks": ["visa", "mastercard", "rupay", "amex"],
-        "supported_types": ["credit", "debit"],
-        "emi_enabled": true,
-        "save_cards": true
+        "supported_types": ["credit", "debit"]
       }
     },
     "PlatformConfig": {
@@ -73,7 +61,7 @@
       }
     },
     "PaymentMethodS2SCard": {
-      "description": "Tokenized card payment method for S2S card payments. Raw PANs are never transmitted; all card data is represented via a PSP-issued token.",
+      "description": "Saved card payment method for S2S card payments. The merchant holds the customer's card token from a previous tokenization. No card data is collected at checkout time — the token is charged directly.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -84,12 +72,12 @@
         },
         "token_id": {
           "type": "string",
-          "description": "PSP token ID representing the tokenized card (never a raw PAN)"
+          "description": "PSP token ID for the customer's saved card, stored by the merchant. Never a raw PAN."
         },
         "card_network": {
           "type": "string",
           "enum": ["Visa", "MasterCard", "RuPay", "Amex"],
-          "description": "Card network"
+          "description": "Card network, for display purposes"
         },
         "card_last4": {
           "type": "string",
@@ -100,24 +88,6 @@
           "type": "string",
           "enum": ["credit", "debit"],
           "description": "Card funding type"
-        },
-        "cvv": {
-          "type": "string",
-          "description": "CVV encrypted by the PSP SDK; never transmitted as plaintext and never stored"
-        },
-        "emi_plan_id": {
-          "type": "string",
-          "description": "EMI plan ID from the PSP, if the buyer selected EMI"
-        },
-        "save_card": {
-          "type": "boolean",
-          "description": "Whether the buyer opted to save this card for future use",
-          "default": false
-        },
-        "recurring": {
-          "type": "boolean",
-          "description": "Whether this is a recurring mandate payment",
-          "default": false
         }
       },
       "required": ["type", "token_id", "card_network", "card_last4", "card_type"],
@@ -126,13 +96,11 @@
         "token_id": "tok_abc123xyz",
         "card_network": "Visa",
         "card_last4": "4242",
-        "card_type": "credit",
-        "save_card": true,
-        "recurring": false
+        "card_type": "credit"
       }
     },
     "RiskSignal": {
-      "description": "Device and session signals used for fraud detection on S2S card transactions",
+      "description": "Fraud detection signal indicating detected risk patterns and recommended actions",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -202,13 +170,13 @@
       }
     },
     "DelegatePaymentRequest": {
-      "description": "Request to initiate an S2S card payment. The platform tokenizes the card via the PSP SDK, then submits this request to charge the token.",
+      "description": "Request to charge a customer's saved card token via S2S. The merchant already holds the token from a prior tokenization — no card data collection happens at checkout time.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "payment_method": {
           "$ref": "#/$defs/PaymentMethodS2SCard",
-          "description": "The tokenized card payment method"
+          "description": "The saved card token to charge"
         },
         "allowance": {
           "$ref": "#/$defs/Allowance",
@@ -251,8 +219,7 @@
           "token_id": "tok_abc123xyz",
           "card_network": "Visa",
           "card_last4": "4242",
-          "card_type": "credit",
-          "save_card": true
+          "card_type": "credit"
         },
         "allowance": {
           "reason": "one_time",
@@ -314,43 +281,6 @@
           "order_id": "order_NmtIbizJ5JUEmX",
           "session_id": "sess_abc123",
           "merchant_id": "psp_live_abc123xyz"
-        }
-      }
-    },
-    "ThreeDSNextAction": {
-      "description": "3DS challenge details returned when the issuing bank requires authentication before capture. The platform renders the ACS URL in an inline iframe.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "redirect_to_url",
-          "description": "Always 'redirect_to_url' for 3DS inline iframe rendering"
-        },
-        "redirect_to_url": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "url": {
-              "type": "string",
-              "format": "uri",
-              "description": "ACS URL for the 3DS challenge iframe"
-            },
-            "return_url": {
-              "type": "string",
-              "format": "uri",
-              "description": "Merchant callback URL after 3DS completion"
-            }
-          },
-          "required": ["url", "return_url"]
-        }
-      },
-      "required": ["type", "redirect_to_url"],
-      "example": {
-        "type": "redirect_to_url",
-        "redirect_to_url": {
-          "url": "https://acs.bank.com/3ds/challenge?txid=abc123",
-          "return_url": "https://merchant.example.com/acp/3ds/callback"
         }
       }
     },

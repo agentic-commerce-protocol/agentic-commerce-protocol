@@ -5,10 +5,7 @@
       "token_id": "token_KNq2OQK30t5SXO",
       "card_network": "Visa",
       "card_last4": "4242",
-      "card_type": "credit",
-      "cvv": "<razorpay_js_encrypted_cvv>",
-      "save_card": true,
-      "recurring": false
+      "card_type": "credit"
     },
     "allowance": {
       "reason": "one_time",
@@ -44,56 +41,6 @@
     "metadata": {
       "payment_id": "pay_NmtIbizJ5JUEmH",
       "order_id": "order_NmtIbizJ5JUEmX",
-      "session_id": "sess_abc123",
-      "merchant_id": "rzp_live_abc123xyz"
-    }
-  },
-  "razorpay_s2s_cards_request_saved_card": {
-    "payment_method": {
-      "type": "s2s_card",
-      "token_id": "token_KNq2OQK30t5SXO",
-      "card_network": "Visa",
-      "card_last4": "4242",
-      "card_type": "credit",
-      "save_card": false
-    },
-    "allowance": {
-      "reason": "one_time",
-      "max_amount": 49900,
-      "currency": "inr",
-      "checkout_session_id": "csn_01HV3P3XYZ789",
-      "merchant_id": "rzp_live_abc123xyz",
-      "expires_at": "2026-04-15T10:45:00Z"
-    },
-    "billing_address": {
-      "name": "Priya Sharma",
-      "line_one": "12 MG Road",
-      "city": "Bengaluru",
-      "state": "Karnataka",
-      "country": "IN",
-      "postal_code": "560001"
-    },
-    "risk_signals": [
-      {
-        "type": "card_testing",
-        "score": 5,
-        "action": "authorized"
-      }
-    ],
-    "metadata": {
-      "session_id": "sess_abc123",
-      "user_agent": "ChatGPT/4.0"
-    }
-  },
-  "razorpay_s2s_cards_3ds_response": {
-    "id": "dp_card_NmtIbizJ5JUEmH",
-    "created": "2026-04-15T10:32:00Z",
-    "metadata": {
-      "payment_id": "pay_NmtIbizJ5JUEmH",
-      "order_id": "order_NmtIbizJ5JUEmX",
-      "requires_3ds": "true",
-      "acs_url": "https://acs.bank.com/3ds/challenge?tr=xyz123",
-      "return_url": "https://merchant.example.com/acp/3ds/callback",
       "session_id": "sess_abc123",
       "merchant_id": "rzp_live_abc123xyz"
     }

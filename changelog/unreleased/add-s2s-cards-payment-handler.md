@@ -1,22 +1,21 @@
 ## Add S2S Cards Payment Handler
 
-This change adds support for Server-to-Server (S2S) card payments as a delegated payment method within ACP. S2S card payments keep buyers entirely within the agent conversation flow — the platform renders a native card collection UI, tokenizes cards via the PSP SDK, and charges them directly via the PSP's S2S API without redirects. For India-issued cards, this handler is compliant with RBI's Card-on-File Tokenization (CoFT) mandate; raw PANs are never stored or transmitted through ACP.
+This change adds support for Server-to-Server (S2S) card payments as a delegated payment method within ACP. The handler enables merchants to charge a customer's previously saved card token directly via the PSP — no card data collection or UI rendering happens at checkout time. The buyer selects a saved card within the agent conversation, and the merchant charges the stored token server-to-server.
 
 ### Problem Statement
 
-ACP's `delegate_payment` endpoint supports card-based credentials via network tokens. For India, PSPs operate their own CoFT tokenization networks that must be used for all card-not-present transactions. Indian merchants have no ACP-native path for S2S card payments that satisfies this requirement; every transaction either requires a redirect or exposes raw card data.
+ACP's `delegate_payment` endpoint supports card-based credentials via network tokens. For India, PSPs operate their own Card-on-File Tokenization (CoFT) networks where merchants store customer card tokens. Indian merchants have no ACP-native path to charge these stored tokens without a redirect.
 
-### Solution: S2S Cards with PSP Tokenization
+### Solution: S2S Cards via Stored Merchant Token
 
-The platform tokenizes the card via the PSP SDK (e.g., Razorpay.js), which encrypts the raw PAN and issues a PSP token. The token is passed through ACP — never the raw PAN or plaintext CVV. For transactions requiring 3DS authentication, the PSP returns an ACS URL which the platform renders inline in a secure iframe, keeping the buyer in the conversation.
+The merchant already holds the customer's card `token_id` from a prior tokenization (done outside ACP during card save). At checkout, the merchant submits a `DelegatePaymentRequest` with that token — ACP validates the allowance, and the merchant charges the token via the PSP's S2S API. No card UI, no PSP SDK, no raw PAN at checkout time.
 
 ### Key Features
 
-- **No Redirect Required**: Card UI, tokenization, and 3DS challenge all rendered natively within the agent experience
-- **Zero PAN Exposure**: Only PSP token IDs exchanged through ACP; raw card numbers never transmitted or logged
-- **3DS 2.0 Inline**: Platform renders OTP/biometric challenge in isolated iframe — no context switch
-- **Saved Cards**: Returning buyers pay with one tap using previously tokenized cards
-- **Full Card Coverage**: Visa, Mastercard, RuPay, Amex; Debit and Credit; EMI support
+- **Zero Checkout Friction**: No card entry at checkout — buyer selects saved card, merchant charges token
+- **Zero PAN Exposure**: Only PSP token IDs transmitted through ACP; raw card numbers never present
+- **No Redirect Required**: Entire flow is server-to-server; buyer stays in the agent conversation
+- **Full Card Coverage**: Visa, Mastercard, RuPay, Amex; Debit and Credit
 - **ACP delegate_payment Compatible**: Uses `DelegatePaymentRequest` / `DelegatePaymentResponse` envelope — same shape as other delegated payment handlers
 
 ### Handler Details
@@ -29,16 +28,15 @@ The platform tokenizes the card via the PSP SDK (e.g., Razorpay.js), which encry
 
 ### Changes
 
-- Added `BusinessConfig` schema: handler config the business provides (`key_id`, `environment`, `supported_networks`, `supported_types`, `emi_enabled`, `save_cards`)
+- Added `BusinessConfig` schema: handler config the business provides (`key_id`, `environment`, `supported_networks`, `supported_types`)
 - Added `PlatformConfig` schema: platform-level config (`environment`)
-- Added `PaymentMethodS2SCard` schema: payment method with `token_id`, `card_network`, `card_last4`, `card_type`, `cvv`, `save_card`, `recurring`
+- Added `PaymentMethodS2SCard` schema: saved card token with `token_id`, `card_network`, `card_last4`, `card_type` — no raw card fields
 - Added `RiskSignal` schema: aligned with base ACP `RiskSignal` definition
 - Added `Allowance` schema: per-transaction constraints — identical shape to base ACP `Allowance`
 - Added `DelegatePaymentRequest` schema: `PaymentMethodS2SCard` + `Allowance` + optional `billing_address` + `risk_signals` + `metadata`
 - Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` envelope (PSP-specific values in metadata)
-- Added `ThreeDSNextAction` schema: ACS redirect details for inline iframe rendering
 - Added `Error` schema: single error object with `type` + `code` enums, aligned with base ACP `Error` schema
-- Added examples: 2 requests (new card, saved card), 1 success response, 1 3DS response, 9 error cases
+- Added examples: 1 request, 1 success response, 9 error cases
 
 ### Files Updated
 
@@ -50,29 +48,27 @@ The platform tokenizes the card via the PSP SDK (e.g., Razorpay.js), which encry
 **Each Transaction (ACP Protocol)**:
 
 1. Platform discovers `com.razorpay.s2s_cards` in business ACP handler configuration
-2. Platform renders card entry UI or saved card selector within the conversation
-3. Platform tokenizes card via PSP SDK → obtains `token_id` (raw PAN encrypted; never leaves SDK)
-4. Platform submits `DelegatePaymentRequest` with `PaymentMethodS2SCard`, `allowance`, and `risk_signals`
-5. PSP initiates S2S charge using `token_id`
-6. **Frictionless**: Bank approves without challenge → PSP returns captured → platform calls `complete_checkout`
-7. **3DS required**: PSP returns ACS URL → platform renders inline iframe → buyer completes OTP/biometric → platform polls for captured → calls `complete_checkout`
+2. Merchant presents buyer's saved cards (fetched from PSP token store) within the conversation
+3. Buyer selects a saved card
+4. Merchant submits `DelegatePaymentRequest` with `token_id`, `allowance`, and `risk_signals`
+5. ACP validates allowance (amount, expiry, merchant_id)
+6. Merchant charges `token_id` via PSP S2S API server-to-server
+7. PSP captures payment → merchant receives `payment_id`
+8. Merchant returns `DelegatePaymentResponse` with `payment_id` and `order_id` in metadata
+9. Platform calls `complete_checkout` → order fulfilled
 
 ### Security Considerations
 
-- **Intent URI Expiry**: Platforms MUST verify `allowance.expires_at` before submission; expired allowances are rejected
-- **No PAN in ACP**: Raw card numbers MUST NOT appear in any ACP MCP tool call, log, or metadata field
-- **CVV Handling**: CVV encrypted by PSP SDK before transmission; MUST NOT be stored at any point
-- **3DS Inline Rendering**: ACS iframe MUST be sandboxed with CSP headers; no parent-frame JavaScript access
-- **Idempotency**: Required via `Idempotency-Key` header; use `checkout_session_id` as the key
+- **No PAN in ACP**: Raw card numbers MUST NOT appear in any ACP field, log, or metadata
+- **Allowance Expiry**: Merchants MUST verify `allowance.expires_at` before submitting; expired allowances are rejected
+- **Idempotency**: Required via `Idempotency-Key` header; use `checkout_session_id` as the key to prevent double-charge
 - **Token Binding**: PSP token bound to customer + merchant; cross-merchant reuse blocked by PSP
 
-### Platform Requirements
+### Merchant Requirements
 
-- Platform MUST tokenize cards via the PSP SDK before submitting `DelegatePaymentRequest`
-- Platform MUST verify `allowance.expires_at` before submission
-- Platform MUST render 3DS challenges in an isolated iframe with appropriate CSP headers
-- Platform SHOULD poll for payment completion at max 5-second intervals after 3DS
-- Platform SHOULD use `checkout_session_id` as `Idempotency-Key` to prevent double-charge
+- Merchant MUST have customer's card token stored from a prior tokenization (out of band from ACP)
+- Merchant MUST verify `allowance.expires_at` before submission
+- Merchant SHOULD use `checkout_session_id` as `Idempotency-Key` to prevent double-charge
 
 ### Reference
 
