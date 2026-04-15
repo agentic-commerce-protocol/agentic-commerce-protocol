@@ -14,9 +14,9 @@ UPI Circle (launched by NPCI in 2024) allows a primary UPI account holder to gra
 
 - **Agent-Initiated Payments**: Execute UPI debits without real-time user PIN entry (within mandate limits)
 - **Pre-Authorized Mandates**: User grants spending authority once, reuses for multiple purchases
+- **Credential-before-Checkout**: Platform fetches a one-time `upi_circle_cryptogram` from Razorpay TSP per transaction before submitting Complete Checkout — no per-transaction buyer interaction required
 - **India Market Coverage**: Supports 600M+ UPI users via NPCI infrastructure
 - **Instant Checkout Compatible**: Uses existing ACP `requestCheckout` with `checkout_type: instant`
-- **Mandate Management**: Ceiling tracking, expiry handling, user-initiated revocation
 
 ### Handler Details
 
@@ -25,14 +25,19 @@ UPI Circle (launched by NPCI in 2024) allows a primary UPI account holder to gra
 - **ACP Version**: `2025-09` (GA) and later
 - **Currency Support**: INR only
 - **Checkout Type**: `instant` (delegated payment)
-- **Maximum Transaction**: ₹15,000 (NPCI UPI Circle limit)
+- **Maximum Transaction**: ₹15,000 (NPCI UPI Circle limit, enforced at mandate level)
 
 ### Changes
 
-- Added JSON Schema for UPI Circle handler configuration, mandate storage, and payment confirmation
-- Added payment_provider schema extension with `name: "razorpay"` and `payment_type: "upi_circle"`
-- Added complete_checkout MCP tool payload schema with UPI-specific fields (upi_txn_id, mandate_id, agent_initiated)
-- Added comprehensive examples for mandate onboarding, checkout flow, API calls, and error scenarios
+- Added `BusinessConfig` schema: handler config the business provides (`key_id`, `environment`)
+- Added `PlatformConfig` schema: platform-level config (`environment`, optional `upi_apps`)
+- Added `PaymentMethodUPICircle` schema: payment method type with opaque `delegate_id` reference
+- Added `Credential` schema: `upi_circle_cryptogram` — one-time cryptogram fetched from Razorpay TSP before each checkout
+- Added `Allowance` schema: per-transaction constraints (amount, expiry, merchant)
+- Added `DelegatePaymentRequest` schema: combines `PaymentMethodUPICircle` + `Credential` + `Allowance` + `metadata`
+- Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` response (PSP-specific values in metadata)
+- Added `Error` schema: aligned error types and codes with ACP delegate_payment pattern
+- Added examples: 1 request, 1 success response, 6 error cases
 
 ### Files Updated
 
@@ -41,48 +46,49 @@ UPI Circle (launched by NPCI in 2024) allows a primary UPI account holder to gra
 
 ### Integration Flow
 
-**Mandate Setup (One-Time)**:
-1. Merchant widget opens Razorpay UPI Circle onboarding URL via `window.openai.openExternal()`
-2. User authenticates with UPI PIN and approves mandate
-3. Razorpay returns `mandate_id` to merchant backend
-4. Merchant stores mandate against `acp_user_id`
+**Mandate Setup (One-Time, Outside ACP)**:
 
-**Subsequent Purchases**:
-1. Widget calls `window.openai.requestCheckout()` with `payment_type: upi_circle`
-2. Platform validates mandate (ceiling, expiry) and shows pre-confirmation
-3. User confirms, platform calls Razorpay UPI Circle debit API
-4. Platform calls `complete_checkout` MCP tool with payment confirmation
-5. Merchant verifies HMAC-SHA256 signature server-side
-6. Order fulfilled, user notified
+UPI Circle mandate setup is a one-time bilateral integration between the Platform and Razorpay — it is not part of the ACP protocol, just as saving a card on a platform is not part of the checkout protocol.
+
+1. User initiates UPI Circle setup with mobile number on the platform
+2. Platform calls Razorpay TSP to initiate OTP verification
+3. User receives OTP and provides it on the platform
+4. Razorpay returns a delegation intent URL
+5. User approves mandate in their UPI app (sets limits and confirms)
+6. Platform polls Razorpay for delegation status
+7. On confirmation, Razorpay returns `delegate_id` — platform stores against `acp_user_id`
+
+**Subsequent Purchases (ACP Protocol)**:
+
+1. Platform discovers `com.razorpay.upi_circle` handler in business UCP profile; confirms buyer has active `delegate_id`
+2. Platform fetches a fresh `upi_circle_cryptogram` from Razorpay TSP using stored `delegate_id` and `key_id`
+3. Platform submits `DelegatePaymentRequest` with `payment_method`, `credential`, `allowance`, `metadata`
+4. On success, receives `DelegatePaymentResponse` with `id`, `created`, `metadata`
+5. Merchant reconciles via `metadata.payment_id` and `metadata.upi_txn_id`
 
 ### Security Considerations
 
-- **HMAC-SHA256 Signature**: All `complete_checkout` calls include Razorpay signature for verification
-- **Server-Side Verification**: Merchants MUST verify signature before order fulfillment
-- **Mandate Validation**: Platform validates `mandate_max_amount` and `mandate_expiry` before each debit
-- **NPCI Limit Enforcement**: Hard limit of ₹15,000 per transaction (UPI Circle spec)
-- **Idempotency**: Recommended on `order_id` to prevent double fulfillment
+- **Credential Freshness**: Platforms MUST verify `credential.expires_at` before submission and fetch a new cryptogram if expired
+- **Opaque Identifiers**: `delegate_id` is an opaque reference issued by Razorpay. Platforms MUST NOT parse or pattern-match its value — the format is PSP-internal and may change
+- **Single-Use Credentials**: Each `upi_circle_cryptogram` authorizes exactly one debit. Platforms MUST fetch a new credential for each transaction; reuse will be rejected
+- **Idempotency**: Recommended on `checkout_session_id` to prevent double fulfillment
+- **Mandate Limits**: Per-transaction and monthly limits are enforced by NPCI and the buyer's bank at the mandate level — not by ACP config
 
 ### Business Rules
 
 - Mandate setup requires explicit user consent with clear display of: max amount, expiry, merchant
-- Auto-revocation or user notification when mandate expires or ceiling is consumed
-- Optional pre-confirmation when amount exceeds 80% of mandate ceiling
-- Post-payment user notification with amount, merchant, order ID
 - No recurring subscriptions — intended for agent-initiated single transactions within mandate window
 
 ### Platform Requirements
 
-- Add `"razorpay"` to payment_provider name enum in ACP schema
-- Add `"upi_circle"` to payment_type enum alongside existing types
-- Validate mandate constraints before executing debits
-- Surface mandate management UI for users to view/revoke active mandates
+- Platform MUST store `delegate_id` returned from Razorpay mandate onboarding against `acp_user_id`
+- Platform MUST fetch a fresh `upi_circle_cryptogram` from Razorpay TSP for each transaction using `delegate_id` and `key_id`
+- Platform MUST treat `delegate_id` as opaque — do not parse or pattern-match its value
+- Platform MUST check `credential.expires_at` before submitting `DelegatePaymentRequest`
 
 ### Reference
 
-- **PR**: #<pr-number>
-- **Handler Spec**: https://example.com/schemas/upi-circle/bundle.schema.json
+- **Handler Spec**: https://example.com/schemas/razorpay-upi-circle/bundle.schema.json
 - **UPI Circle Spec**: https://www.npci.org.in/what-we-do/upi/upi-circle-spec
 - **Razorpay UPI Circle Docs**: https://razorpay.com/docs/payments/upi-circle
 - **Author**: Razorpay Software Private Ltd
-- **Contact**: himanshu.shekhar@razorpay.com

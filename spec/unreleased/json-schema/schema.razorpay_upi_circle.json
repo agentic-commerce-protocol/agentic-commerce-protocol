@@ -1,300 +1,306 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/upi-circle/bundle.schema.json",
-  "title": "Razorpay UPI Circle Handler - Schema Bundle",
-  "description": "JSON Schema definitions for the Razorpay UPI Circle delegated payment handler for ACP (Agentic Commerce Protocol). Enables agent-initiated UPI payments within pre-authorized NPCI UPI Circle mandates.",
+  "$id": "https://example.com/schemas/razorpay-upi-circle/bundle.schema.json",
+  "title": "Razorpay UPI Circle Handler \u2014 Schema Bundle",
   "$defs": {
-    "HandlerConfig": {
-      "description": "Configuration for the Razorpay UPI Circle handler",
+    "BusinessConfig": {
+      "description": "Configuration for the Razorpay UPI Circle handler provided by the business. Declared in the business UCP profile at /.well-known/ucp.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production). Safe to advertise in the UCP profile. The key_secret MUST remain on the business backend and MUST NOT be included here."
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["sandbox", "production"],
+          "description": "Razorpay API environment. Use 'sandbox' for test mode, 'production' for live mode."
+        },
+        "merchant_name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name shown to users during the payment flow."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency accepted by this handler. Defaults to 'INR' — UPI only supports INR transactions.",
+          "default": "INR"
+        }
+      },
+      "required": ["key_id", "environment"],
+      "example": {
+        "key_id": "rzp_live_abc123xyz",
+        "environment": "production"
+      }
+    },
+    "PlatformConfig": {
+      "description": "Platform-level configuration for the UPI Circle handler. Declared in the platform UCP profile.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "Razorpay API environment"
+          "description": "Razorpay API environment. Must match the business config environment."
         },
-        "merchant_id": {
-          "type": "string",
-          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
-          "description": "Razorpay merchant identifier (e.g., rzp_live_abc123xyz)"
-        },
-        "merchant_name": {
-          "type": "string",
-          "maxLength": 100,
-          "description": "Display name shown to users"
-        },
-        "delegate_vpa": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+$",
-          "description": "Razorpay-managed agent UPI VPA (e.g., agent@razorpay)"
-        },
-        "supported_flows": {
+        "upi_apps": {
           "type": "array",
-          "description": "Supported UPI Circle flows",
+          "description": "Ordered list of UPI app identifiers the platform supports (e.g., 'phonepe', 'gpay', 'paytm', 'bhim'). Platform presents these in order.",
           "items": {
-            "type": "string",
-            "enum": ["mandate_onboard", "agent_initiated_debit"]
+            "type": "string"
           },
-          "default": ["mandate_onboard", "agent_initiated_debit"]
+          "uniqueItems": true
         }
       },
-      "required": ["environment", "merchant_id", "merchant_name", "delegate_vpa"],
       "example": {
         "environment": "production",
-        "merchant_id": "rzp_live_abc123xyz",
-        "merchant_name": "BigBasket",
-        "delegate_vpa": "agent@razorpay",
-        "supported_flows": ["mandate_onboard", "agent_initiated_debit"]
+        "upi_apps": ["phonepe", "gpay"]
       }
     },
-    "UPIPaymentProvider": {
-      "description": "Payment provider configuration for UPI Circle in requestCheckout",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "type": "string",
-          "const": "razorpay",
-          "description": "Payment provider name - must be 'razorpay'"
-        },
-        "merchant_id": {
-          "type": "string",
-          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
-          "description": "Razorpay merchant identifier"
-        },
-        "payment_type": {
-          "type": "string",
-          "const": "upi_circle",
-          "description": "Must be 'upi_circle' for this handler"
-        },
-        "delegate_vpa": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+$",
-          "description": "Razorpay-managed agent UPI VPA"
-        },
-        "mandate_id": {
-          "type": "string",
-          "pattern": "^mand_[a-zA-Z0-9]+$",
-          "description": "NPCI-issued UPI Circle mandate ID from onboarding"
-        },
-        "mandate_max_amount": {
-          "type": "integer",
-          "minimum": 100,
-          "maximum": 1500000,
-          "description": "User-approved spending ceiling in paise (max ₹15,000 per NPCI limit)"
-        },
-        "mandate_expiry": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 mandate expiry timestamp"
-        },
-        "order_id": {
-          "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$",
-          "description": "Pre-created Razorpay Order ID for reconciliation (recommended)"
-        }
-      },
-      "required": ["name", "merchant_id", "payment_type", "delegate_vpa", "mandate_id", "mandate_max_amount", "mandate_expiry"],
-      "example": {
-        "name": "razorpay",
-        "merchant_id": "rzp_live_XXXX",
-        "payment_type": "upi_circle",
-        "delegate_vpa": "agent@razorpay",
-        "mandate_id": "mand_P6WA7b8Ys3qKm2",
-        "mandate_max_amount": 500000,
-        "mandate_expiry": "2026-12-31T23:59:59Z",
-        "order_id": "order_P6WL8c9Xt4rUj1"
-      }
-    },
-    "MandateInfo": {
-      "description": "UPI Circle mandate information stored against user",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "mandate_id": {
-          "type": "string",
-          "pattern": "^mand_[a-zA-Z0-9]+$",
-          "description": "NPCI-issued mandate ID"
-        },
-        "user_vpa": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
-          "description": "User's UPI VPA (Virtual Payment Address)"
-        },
-        "delegate_vpa": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+$",
-          "description": "Agent VPA authorized to debit"
-        },
-        "max_amount": {
-          "type": "integer",
-          "minimum": 100,
-          "maximum": 1500000,
-          "description": "Maximum amount per transaction in paise"
-        },
-        "remaining_amount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Remaining authorized amount available for debits"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["active", "revoked", "expired", "consumed"],
-          "description": "Current mandate status"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Mandate creation timestamp"
-        },
-        "expires_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Mandate expiry timestamp"
-        },
-        "merchant_category": {
-          "type": "string",
-          "description": "Merchant category code (MCC) authorized"
-        }
-      },
-      "required": ["mandate_id", "user_vpa", "delegate_vpa", "max_amount", "status", "created_at", "expires_at"],
-      "example": {
-        "mandate_id": "mand_P6WA7b8Ys3qKm2",
-        "user_vpa": "user@okicici",
-        "delegate_vpa": "agent@razorpay",
-        "max_amount": 500000,
-        "remaining_amount": 450000,
-        "status": "active",
-        "created_at": "2026-04-01T10:00:00Z",
-        "expires_at": "2026-12-31T23:59:59Z",
-        "merchant_category": "retail"
-      }
-    },
-    "CompleteCheckoutPaymentData": {
-      "description": "Payment data for complete_checkout MCP tool with UPI Circle",
+    "PaymentMethodUPICircle": {
+      "description": "UPI Circle delegated payment method identifying the pre-authorized mandate. The delegate_id is an opaque persistent reference issued by Razorpay during one-time delegation setup — analogous to a card vault token.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
           "const": "upi_circle",
-          "description": "Must be 'upi_circle'"
+          "description": "Payment method type, always 'upi_circle'"
         },
-        "provider": {
+        "delegate_id": {
           "type": "string",
-          "const": "razorpay",
-          "description": "Must be 'razorpay'"
+          "description": "Opaque persistent identifier for the UPI Circle mandate, issued by Razorpay during one-time delegation setup. Used by the platform to fetch a one-time credential before each transaction. Platforms MUST NOT parse or pattern-match this value."
         },
-        "payment_id": {
+        "user_vpa": {
           "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$",
-          "description": "Razorpay payment ID (pay_XXXXXXXXXX)"
-        },
-        "order_id": {
+          "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
+          "description": "User's UPI Virtual Payment Address linked to this delegation mandate. Optional — included for display purposes only."
+        }
+      },
+      "required": ["type", "delegate_id"],
+      "example": {
+        "type": "upi_circle",
+        "delegate_id": "ucirc_P6WA7b8Ys3qKm2",
+        "user_vpa": "user@okicici"
+      }
+    },
+    "Credential": {
+      "description": "One-time UPI Circle cryptogram fetched from Razorpay TSP before submitting Complete Checkout. Single-use and short-lived — authorizes exactly one delegated debit. Platforms MUST fetch a fresh credential for each transaction and MUST NOT reuse or submit an expired credential.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
           "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$",
-          "description": "Razorpay order ID (order_XXXXXXXXX)"
+          "const": "upi_circle_cryptogram",
+          "description": "Credential type discriminator, always 'upi_circle_cryptogram'"
         },
-        "mandate_id": {
+        "value": {
           "type": "string",
-          "pattern": "^mand_[a-zA-Z0-9]+$",
-          "description": "Mandate ID used for this debit"
+          "description": "Base64-encoded one-time cryptogram issued by Razorpay TSP for this transaction"
         },
-        "upi_txn_id": {
+        "expires_at": {
           "type": "string",
-          "description": "NPCI transaction reference for reconciliation"
-        },
-        "agent_initiated": {
-          "type": "boolean",
-          "const": true,
-          "description": "Always true for UPI Circle debits"
-        },
-        "status": {
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this cryptogram expires. Platforms MUST check this before submitting and fetch a new credential if expired."
+        }
+      },
+      "required": ["type", "value"],
+      "example": {
+        "type": "upi_circle_cryptogram",
+        "value": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
+        "expires_at": "2026-04-15T10:35:00Z"
+      }
+    },
+    "Allowance": {
+      "description": "Constraints on how the UPI Circle mandate can be used for a single transaction (amount limit, expiration, merchant)",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
           "type": "string",
-          "enum": ["captured", "failed", "pending"],
-          "description": "Payment status"
+          "enum": ["one_time"],
+          "description": "Usage pattern for this allowance; currently only one_time is supported"
         },
-        "signature": {
-          "type": "string",
-          "description": "Razorpay HMAC-SHA256 signature for verification"
-        },
-        "amount": {
+        "max_amount": {
           "type": "integer",
-          "minimum": 100,
-          "description": "Amount debited in paise"
+          "description": "Maximum charge amount in minor units (paise for INR). For UPI Circle, per-transaction limits are enforced by NPCI and the buyer's bank at the mandate level."
         },
         "currency": {
           "type": "string",
-          "const": "INR",
-          "description": "Currency code - always INR for UPI"
+          "pattern": "^[a-z]{3}$",
+          "description": "ISO-4217 three-letter lowercase currency code (e.g., 'inr'). For UPI Circle, always 'inr'."
         },
-        "method": {
+        "checkout_session_id": {
           "type": "string",
-          "const": "upi",
-          "description": "Payment method - always UPI"
+          "description": "Identifier of the checkout session this payment is for"
         },
-        "vpa": {
+        "merchant_id": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
-          "description": "User's UPI VPA used for payment"
+          "maxLength": 256,
+          "description": "Unique identifier for the merchant authorized to use this delegation"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this allowance expires"
         }
       },
-      "required": ["type", "provider", "payment_id", "order_id", "mandate_id", "upi_txn_id", "agent_initiated", "status", "signature", "amount", "currency"],
+      "required": ["reason", "max_amount", "currency", "checkout_session_id", "merchant_id", "expires_at"],
       "example": {
-        "type": "upi_circle",
-        "provider": "razorpay",
-        "payment_id": "pay_P6WMPl2NNnnLFk",
-        "order_id": "order_P6WL8c9Xt4rUj1",
-        "mandate_id": "mand_P6WA7b8Ys3qKm2",
-        "upi_txn_id": "318219246640",
-        "agent_initiated": true,
-        "status": "captured",
-        "signature": "9ef4dabb240c2bbcb6f8e04a48d2f3e5dbc9a1f7...",
-        "amount": 49900,
-        "currency": "INR",
-        "method": "upi",
-        "vpa": "user@okicici"
+        "reason": "one_time",
+        "max_amount": 49900,
+        "currency": "inr",
+        "checkout_session_id": "csn_01HV3P3XYZ789",
+        "merchant_id": "rzp_live_abc123xyz",
+        "expires_at": "2026-04-15T11:00:00Z"
+      }
+    },
+    "DelegatePaymentRequest": {
+      "description": "Request to initiate a delegated UPI Circle payment using a pre-fetched one-time credential",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "payment_method": {
+          "$ref": "#/$defs/PaymentMethodUPICircle",
+          "description": "The UPI Circle payment method identifying the pre-authorized mandate"
+        },
+        "credential": {
+          "$ref": "#/$defs/Credential",
+          "description": "One-time cryptogram fetched from Razorpay TSP for this specific transaction"
+        },
+        "allowance": {
+          "$ref": "#/$defs/Allowance",
+          "description": "Constraints on how this credential can be used for this transaction"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata for the request",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Metadata value"
+          }
+        }
+      },
+      "required": ["payment_method", "credential", "allowance", "metadata"],
+      "example": {
+        "payment_method": {
+          "type": "upi_circle",
+          "delegate_id": "ucirc_P6WA7b8Ys3qKm2",
+          "user_vpa": "user@okicici"
+        },
+        "credential": {
+          "type": "upi_circle_cryptogram",
+          "value": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
+          "expires_at": "2026-04-15T10:35:00Z"
+        },
+        "allowance": {
+          "reason": "one_time",
+          "max_amount": 49900,
+          "currency": "inr",
+          "checkout_session_id": "csn_01HV3P3XYZ789",
+          "merchant_id": "rzp_live_abc123xyz",
+          "expires_at": "2026-04-15T11:00:00Z"
+        },
+        "metadata": {
+          "session_id": "sess_abc123",
+          "user_agent": "ChatGPT/4.0"
+        }
+      }
+    },
+    "DelegatePaymentResponse": {
+      "description": "Response confirming the delegated UPI Circle payment was accepted. PSP-specific confirmation values (e.g., payment_id, upi_txn_id) are returned in metadata for merchant reconciliation.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this delegated payment record"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this delegated payment record was created"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Metadata echoed from the request plus system-added fields. MAY include PSP-specific confirmation values such as payment_id and upi_txn_id for merchant reconciliation.",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Metadata value"
+          }
+        }
+      },
+      "required": ["id", "created", "metadata"],
+      "example": {
+        "id": "dp_ucirc_P6WMPl2NNnnLFk",
+        "created": "2026-04-15T10:30:00Z",
+        "metadata": {
+          "payment_id": "pay_P6WMPl2NNnnLFk",
+          "upi_txn_id": "318219246640",
+          "session_id": "sess_abc123",
+          "merchant_id": "rzp_live_abc123xyz"
+        }
       }
     },
     "Error": {
-      "description": "Error structure for UPI Circle handler failures",
+      "description": "Error response for UPI Circle delegated payment requests",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
           "enum": [
-            "mandate_error",
-            "limit_error",
+            "invalid_request",
+            "rate_limit_exceeded",
             "processing_error",
-            "security_error"
+            "service_unavailable"
           ],
           "description": "High-level error category"
         },
         "code": {
           "type": "string",
           "enum": [
-            "mandate_expired",
-            "mandate_revoked",
-            "mandate_amount_exceeded",
-            "mandate_not_found",
-            "upi_circle_limit_exceeded",
-            "invalid_signature",
+            "invalid_delegate_id",
+            "delegate_id_expired",
+            "delegate_id_revoked",
+            "credential_expired",
+            "credential_invalid",
+            "amount_exceeds_mandate_limit",
+            "duplicate_request",
+            "idempotency_conflict",
+            "idempotency_key_required",
+            "idempotency_in_flight",
+            "too_many_requests",
             "processing_error"
           ],
-          "description": "Specific error code"
+          "description": "Specific error code for programmatic handling"
         },
         "message": {
           "type": "string",
-          "description": "Human-readable error description"
+          "description": "Human-readable error message"
         },
         "param": {
           "type": "string",
-          "description": "JSONPath to the offending field (if applicable)"
+          "description": "JSONPath of offending field"
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "description": "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
         }
       },
-      "required": ["type", "code", "message"]
+      "required": ["type", "code", "message"],
+      "example": {
+        "type": "invalid_request",
+        "code": "delegate_id_expired",
+        "message": "UPI Circle mandate has expired and cannot be used for new payments",
+        "param": "$.payment_method.delegate_id"
+      }
     }
   }
 }
