@@ -1,454 +1,304 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://razorpay.com/acp/upi_intent/2026-04-07/schema.json",
-  "title": "Razorpay UPI Intent Handler - Schema Bundle",
+  "$id": "https://example.com/schemas/razorpay-upi-intent/bundle.schema.json",
+  "title": "Razorpay UPI Intent Handler — Schema Bundle",
   "description": "JSON Schema definitions for the Razorpay UPI Intent payment handler for ACP (Agentic Commerce Protocol). Enables UPI payments via deep links on mobile and QR codes on desktop.",
   "$defs": {
-    "HandlerConfig": {
-      "description": "Configuration for the Razorpay UPI Intent handler",
+    "BusinessConfig": {
+      "description": "Configuration for the Razorpay UPI Intent handler provided by the business. Declared in the business's ACP handler configuration.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "merchant_id": {
+        "key_id": {
           "type": "string",
-          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
-          "description": "Razorpay account identifier (MID / key_id)"
+          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production)."
         },
         "merchant_vpa": {
           "type": "string",
           "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
-          "description": "Merchant VPA (unique-name@bank-handle or mobile-number@bank-handle)"
+          "description": "Merchant UPI Virtual Payment Address (e.g., storename@icici). Used as the payee address in all UPI intent URIs generated for this business."
         },
         "environment": {
           "type": "string",
-          "enum": ["test", "production"],
-          "description": "Razorpay API environment"
+          "enum": ["sandbox", "production"],
+          "description": "Razorpay API environment. Use 'sandbox' for test mode, 'production' for live mode."
         }
       },
-      "required": ["merchant_id", "merchant_vpa", "environment"],
+      "required": ["key_id", "merchant_vpa", "environment"],
       "example": {
-        "merchant_id": "acc_KN2V9oR1g9n0qH",
+        "key_id": "rzp_live_abc123xyz",
         "merchant_vpa": "storename@icici",
         "environment": "production"
       }
     },
-    "UPIPaymentProvider": {
-      "description": "Payment provider configuration for UPI Intent in requestCheckout",
+    "PlatformConfig": {
+      "description": "Platform-level configuration for the UPI Intent handler. Declared in the platform's ACP handler configuration.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "environment": {
           "type": "string",
-          "const": "razorpay",
-          "description": "Payment provider name - must be 'razorpay'"
+          "enum": ["sandbox", "production"],
+          "description": "Razorpay API environment. Must match the business config environment."
         },
-        "merchant_id": {
-          "type": "string",
-          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
-          "description": "Razorpay merchant identifier"
-        },
-        "payment_type": {
-          "type": "string",
-          "const": "upi_intent",
-          "description": "Must be 'upi_intent' for this handler"
-        },
-        "handler_id": {
-          "type": "string",
-          "description": "Reference to handler configuration ID"
+        "upi_apps": {
+          "type": "array",
+          "description": "Ordered list of UPI app identifiers the platform supports for deep-link intent (e.g., 'phonepe', 'gpay', 'paytm', 'bhim'). Platform presents these in order for mobile intent flow.",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
         }
       },
-      "required": ["name", "merchant_id", "payment_type", "handler_id"]
+      "example": {
+        "environment": "production",
+        "upi_apps": ["phonepe", "gpay", "paytm"]
+      }
     },
-    "Credential": {
-      "description": "UPI Intent credential for credential-on-escalation flow",
+    "PaymentMethodUPIIntent": {
+      "description": "UPI Intent payment method. On mobile, the platform generates a UPI deep-link and opens the user's UPI app. On desktop, a QR code is rendered for the user to scan. No pre-authorization or stored credential is required — each transaction is user-initiated.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
           "const": "upi_intent",
-          "description": "Always 'upi_intent'"
+          "description": "Payment method type, always 'upi_intent'"
         },
         "intent_uri": {
           "type": "string",
           "format": "uri",
-          "description": "NPCI-compliant UPI intent URI (upi:// scheme) for mobile execution"
+          "description": "NPCI-compliant UPI intent URI (upi:// scheme) for mobile deep-link execution. Generated by the platform using merchant_vpa and transaction details."
         },
         "transaction_reference": {
           "type": "string",
           "maxLength": 35,
-          "description": "Transaction reference ID (max 35 alphanumeric chars per NPCI spec)"
+          "description": "Transaction reference ID (max 35 alphanumeric characters per NPCI UPI Linking Specification). Used to correlate the UPI payment with the ACP checkout session."
         },
         "qr_code_data": {
           "type": "string",
-          "description": "Base64-encoded PNG QR code image for desktop rendering"
-        },
-        "qr_code_string": {
-          "type": "string",
-          "description": "UPI intent URI string for QR code generation on desktop"
+          "description": "Base64-encoded PNG QR code image for desktop rendering. Encodes the same intent_uri for scanning with any UPI app."
         },
         "expires_at": {
           "type": "string",
           "format": "date-time",
-          "description": "Credential expiry timestamp (NPCI best practice: 15 minutes)"
+          "description": "ISO 8601 timestamp when this intent URI and QR code expire. Platforms SHOULD set a 15-minute expiry per NPCI best practice."
         }
       },
       "required": ["type", "intent_uri", "transaction_reference", "expires_at"],
       "example": {
         "type": "upi_intent",
-        "intent_uri": "upi://pay?pa=storename@icici&pn=MyStore&tr=ORD123456&am=500.00&cu=INR&tn=Order%20123456&mc=5411&mode=04",
-        "transaction_reference": "ORD123456",
-        "qr_code_data": "data:image/png;base64,iVBORw0KGgo...",
-        "qr_code_string": "upi://pay?pa=storename@icici&pn=MyStore&tr=ORD123456&am=500.00&cu=INR",
-        "expires_at": "2026-04-07T12:15:00Z"
+        "intent_uri": "upi://pay?pa=storename@icici&pn=MyStore&tr=csn_01HV3P3XYZ789&am=499.00&cu=INR&tn=Order%20payment&mc=5411",
+        "transaction_reference": "csn_01HV3P3XYZ789",
+        "qr_code_data": "iVBORw0KGgoAAAANSUhEUgAA...",
+        "expires_at": "2026-04-15T10:45:00Z"
       }
     },
-    "Instrument": {
-      "description": "Instrument for UPI Intent payment type",
+    "Allowance": {
+      "description": "Constraints on how the UPI Intent payment can be used for a single transaction (amount limit, expiration, merchant). Identical shape to the base ACP Allowance.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "id": {
+        "reason": {
           "type": "string",
-          "description": "Instrument identifier"
+          "enum": ["one_time"],
+          "description": "Usage pattern for this allowance; currently only one_time is supported"
         },
-        "handler_id": {
+        "max_amount": {
+          "type": "integer",
+          "description": "Maximum charge amount in minor units (paise for INR). Must match the amount encoded in the intent_uri."
+        },
+        "currency": {
           "type": "string",
-          "description": "Reference to the handler configuration ID"
+          "pattern": "^[a-z]{3}$",
+          "description": "ISO-4217 three-letter lowercase currency code. For UPI Intent, always 'inr'."
         },
-        "type": {
+        "checkout_session_id": {
           "type": "string",
-          "const": "upi_intent",
-          "description": "Always 'upi_intent'"
+          "description": "Identifier of the ACP checkout session this payment is for. SHOULD be used as transaction_reference in the intent URI."
         },
-        "selected": {
-          "type": "boolean",
-          "description": "Whether this instrument is selected"
+        "merchant_id": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Unique identifier for the merchant authorized to collect this payment"
         },
-        "display": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Display name"
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this allowance expires. SHOULD match PaymentMethodUPIIntent.expires_at."
+        }
+      },
+      "required": ["reason", "max_amount", "currency", "checkout_session_id", "merchant_id", "expires_at"],
+      "example": {
+        "reason": "one_time",
+        "max_amount": 49900,
+        "currency": "inr",
+        "checkout_session_id": "csn_01HV3P3XYZ789",
+        "merchant_id": "rzp_live_abc123xyz",
+        "expires_at": "2026-04-15T10:45:00Z"
+      }
+    },
+    "DelegatePaymentRequest": {
+      "description": "Request to initiate a UPI Intent payment. The platform generates a UPI intent URI and QR code, presents it to the user, and polls for payment completion before submitting this request.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "payment_method": {
+          "$ref": "#/$defs/PaymentMethodUPIIntent",
+          "description": "The UPI Intent payment method with intent URI and QR code"
+        },
+        "allowance": {
+          "$ref": "#/$defs/Allowance",
+          "description": "Constraints on how this payment can be used for this transaction"
+        },
+        "risk_signals": {
+          "type": "array",
+          "description": "Risk assessment signals from the platform's fraud detection system. UPI Intent payments do not carry card-testing signals — platforms SHOULD submit an empty array.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of risk signal detected"
+              },
+              "score": {
+                "type": "integer",
+                "description": "Risk score indicating severity level"
+              },
+              "action": {
+                "type": "string",
+                "enum": ["blocked", "manual_review", "authorized"],
+                "description": "Recommended action based on risk assessment"
+              }
             },
-            "logo": {
-              "type": "string",
-              "format": "uri",
-              "description": "Logo URL"
-            }
+            "required": ["type", "score", "action"]
           }
         },
-        "credential": {
-          "$ref": "#/$defs/Credential"
-        }
-      },
-      "required": ["id", "handler_id", "type"]
-    },
-    "RazorpayOrderRequest": {
-      "description": "Request to create Razorpay order for UPI Intent",
-      "type": "object",
-      "properties": {
-        "amount": {
-          "type": "integer",
-          "minimum": 100,
-          "description": "Amount in paise"
-        },
-        "currency": {
-          "type": "string",
-          "const": "INR"
-        },
-        "receipt": {
-          "type": "string",
-          "maxLength": 40,
-          "description": "Internal reference"
-        },
-        "notes": {
+        "metadata": {
           "type": "object",
+          "description": "Additional metadata for the request",
           "additionalProperties": {
-            "type": "string"
-          },
-          "properties": {
-            "acp_checkout_id": {
-              "type": "string",
-              "description": "ACP checkout session ID"
-            }
+            "type": "string",
+            "description": "Metadata value"
           }
         }
       },
-      "required": ["amount", "currency"]
-    },
-    "RazorpayOrderResponse": {
-      "description": "Response from Razorpay Orders API",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$"
+      "required": ["payment_method", "allowance", "risk_signals", "metadata"],
+      "example": {
+        "payment_method": {
+          "type": "upi_intent",
+          "intent_uri": "upi://pay?pa=storename@icici&pn=MyStore&tr=csn_01HV3P3XYZ789&am=499.00&cu=INR&tn=Order%20payment&mc=5411",
+          "transaction_reference": "csn_01HV3P3XYZ789",
+          "qr_code_data": "iVBORw0KGgoAAAANSUhEUgAA...",
+          "expires_at": "2026-04-15T10:45:00Z"
         },
-        "entity": {
-          "type": "string",
-          "const": "order"
+        "allowance": {
+          "reason": "one_time",
+          "max_amount": 49900,
+          "currency": "inr",
+          "checkout_session_id": "csn_01HV3P3XYZ789",
+          "merchant_id": "rzp_live_abc123xyz",
+          "expires_at": "2026-04-15T10:45:00Z"
         },
-        "amount": {
-          "type": "integer"
-        },
-        "amount_paid": {
-          "type": "integer"
-        },
-        "amount_due": {
-          "type": "integer"
-        },
-        "currency": {
-          "type": "string",
-          "const": "INR"
-        },
-        "receipt": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["created", "attempted", "paid"]
-        },
-        "attempts": {
-          "type": "integer"
-        },
-        "notes": {
-          "type": "object"
-        },
-        "created_at": {
-          "type": "integer",
-          "description": "Unix timestamp"
+        "risk_signals": [],
+        "metadata": {
+          "session_id": "sess_abc123",
+          "user_agent": "ChatGPT/4.0"
         }
       }
     },
-    "UPIIntentParameters": {
-      "description": "NPCI UPI Linking Specification parameters",
+    "DelegatePaymentResponse": {
+      "description": "Response confirming the UPI Intent payment was accepted. PSP-specific confirmation values (e.g., payment_id, upi_txn_id) are returned in metadata for merchant reconciliation.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "pa": {
+        "id": {
           "type": "string",
-          "description": "Payee VPA (mandatory)"
+          "description": "Unique identifier for this delegated payment record"
         },
-        "pn": {
+        "created": {
           "type": "string",
-          "description": "Payee display name (mandatory)"
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this delegated payment record was created"
         },
-        "am": {
-          "type": "string",
-          "description": "Amount in decimal (e.g., 500.00) - conditional"
-        },
-        "cu": {
-          "type": "string",
-          "const": "INR",
-          "description": "Currency code - must be INR"
-        },
-        "tr": {
-          "type": "string",
-          "maxLength": 35,
-          "description": "Transaction reference (max 35 alphanumeric chars) - conditional for merchant payments"
-        },
-        "tn": {
-          "type": "string",
-          "maxLength": 50,
-          "description": "Transaction note (max 50 chars) - optional"
-        },
-        "mc": {
-          "type": "string",
-          "pattern": "^[0-9]{4}$",
-          "description": "4-digit Merchant Category Code (MCC) - optional"
-        },
-        "mode": {
-          "type": "string",
-          "enum": ["04", "05"],
-          "description": "04 = Intent, 05 = Merchant QR - optional"
+        "metadata": {
+          "type": "object",
+          "description": "Metadata echoed from the request plus system-added fields. MAY include PSP-specific confirmation values such as payment_id and upi_txn_id for merchant reconciliation.",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Metadata value"
+          }
         }
       },
-      "required": ["pa", "pn"]
+      "required": ["id", "created", "metadata"],
+      "example": {
+        "id": "dp_upi_P6WMPl2NNnnLFk",
+        "created": "2026-04-15T10:32:00Z",
+        "metadata": {
+          "payment_id": "pay_P6WMPl2NNnnLFk",
+          "upi_txn_id": "318219246640",
+          "session_id": "sess_abc123",
+          "merchant_id": "rzp_live_abc123xyz"
+        }
+      }
     },
-    "CompleteCheckoutPaymentData": {
-      "description": "Payment data for complete_checkout MCP tool with UPI Intent",
+    "Error": {
+      "description": "Error response for UPI Intent delegated payment requests",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
-          "const": "upi_intent"
+          "enum": [
+            "invalid_request",
+            "rate_limit_exceeded",
+            "processing_error",
+            "service_unavailable"
+          ],
+          "description": "High-level error category"
         },
-        "provider": {
+        "code": {
           "type": "string",
-          "const": "razorpay"
+          "enum": [
+            "intent_uri_expired",
+            "intent_uri_invalid",
+            "payment_declined",
+            "payment_timeout",
+            "insufficient_funds",
+            "duplicate_request",
+            "idempotency_conflict",
+            "idempotency_key_required",
+            "idempotency_in_flight",
+            "too_many_requests",
+            "processing_error"
+          ],
+          "description": "Specific error code for programmatic handling"
         },
-        "payment_id": {
+        "message": {
           "type": "string",
-          "pattern": "^pay_[a-zA-Z0-9]+$",
-          "description": "Razorpay payment ID"
+          "description": "Human-readable error message"
         },
-        "order_id": {
+        "param": {
           "type": "string",
-          "pattern": "^order_[a-zA-Z0-9]+$",
-          "description": "Razorpay order ID"
+          "description": "JSONPath of offending field"
         },
-        "transaction_reference": {
-          "type": "string",
-          "maxLength": 35,
-          "description": "Transaction reference used in intent URI"
-        },
-        "upi_txn_id": {
-          "type": "string",
-          "description": "NPCI UPI transaction ID"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["captured", "failed", "pending"]
-        },
-        "signature": {
-          "type": "string",
-          "description": "Razorpay HMAC-SHA256 signature for verification"
-        },
-        "amount": {
-          "type": "integer",
-          "minimum": 100
-        },
-        "currency": {
-          "type": "string",
-          "const": "INR"
-        },
-        "method": {
-          "type": "string",
-          "const": "upi"
-        },
-        "vpa": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$",
-          "description": "User's UPI VPA used for payment"
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "description": "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
         }
       },
-      "required": ["type", "provider", "payment_id", "order_id", "transaction_reference", "upi_txn_id", "status", "signature", "amount", "currency"]
-    },
-    "WebhookPaymentAuthorized": {
-      "description": "Razorpay webhook event for successful UPI payment",
-      "type": "object",
-      "properties": {
-        "event": {
-          "type": "string",
-          "const": "payment.authorized"
-        },
-        "payload": {
-          "type": "object",
-          "properties": {
-            "payment": {
-              "type": "object",
-              "properties": {
-                "entity": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "order_id": { "type": "string" },
-                    "status": { "type": "string" },
-                    "amount": { "type": "integer" },
-                    "currency": { "type": "string", "const": "INR" },
-                    "method": { "type": "string", "const": "upi" },
-                    "vpa": { "type": "string" },
-                    "upi_transaction_id": { "type": "string" },
-                    "notes": {
-                      "type": "object",
-                      "properties": {
-                        "acp_checkout_id": { "type": "string" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "WebhookPaymentFailed": {
-      "description": "Razorpay webhook event for failed UPI payment",
-      "type": "object",
-      "properties": {
-        "event": {
-          "type": "string",
-          "const": "payment.failed"
-        },
-        "payload": {
-          "type": "object",
-          "properties": {
-            "payment": {
-              "type": "object",
-              "properties": {
-                "entity": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "order_id": { "type": "string" },
-                    "status": { "type": "string", "const": "failed" },
-                    "error_code": { "type": "string" },
-                    "error_description": { "type": "string" },
-                    "notes": {
-                      "type": "object",
-                      "properties": {
-                        "acp_checkout_id": { "type": "string" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "ErrorPaymentDeclined": {
-      "description": "User declined or UPI app declined payment",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "payment_declined" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "Payment was declined by the UPI app. Please retry or choose a different payment method." },
-        "npci_code": { "type": "string", "description": "NPCI response code (e.g., ZM, Z9, U28)" }
-      }
-    },
-    "ErrorInsufficientFunds": {
-      "description": "Insufficient funds in UPI account",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "insufficient_funds" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "Insufficient funds. Please add funds to your UPI account and retry." },
-        "npci_code": { "type": "string", "const": "Z9" }
-      }
-    },
-    "ErrorVPAInvalid": {
-      "description": "Merchant VPA misconfigured",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "merchant_configuration_error" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "Merchant UPI configuration error. Please contact merchant support." },
-        "npci_code": { "type": "string", "const": "U28" }
-      }
-    },
-    "ErrorTimeout": {
-      "description": "Buyer didn't complete payment in time",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "payment_timeout" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "Payment time expired. Please retry with a new QR code or intent link." }
-      }
-    },
-    "ErrorNetworkUnavailable": {
-      "description": "NPCI network unavailable",
-      "type": "object",
-      "properties": {
-        "code": { "type": "string", "const": "network_error" },
-        "severity": { "type": "string", "const": "recoverable" },
-        "message": { "type": "string", "const": "UPI network temporarily unavailable. Please retry in a few minutes." },
-        "npci_code": { "type": "string", "const": "BT" }
+      "required": ["type", "code", "message"],
+      "example": {
+        "type": "invalid_request",
+        "code": "intent_uri_expired",
+        "message": "UPI intent URI has expired. Generate a new intent URI and QR code before retrying.",
+        "param": "$.payment_method.expires_at"
       }
     }
   }
