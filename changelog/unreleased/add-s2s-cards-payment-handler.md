@@ -36,7 +36,7 @@ The merchant already holds the customer's card `token_id` from a prior tokenizat
 - Added `DelegatePaymentRequest` schema: `PaymentMethodS2SCard` + `Allowance` + optional `billing_address` + `risk_signals` + `metadata`
 - Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` envelope (PSP-specific values in metadata)
 - Added `Error` schema: single error object with `type` + `code` enums, aligned with base ACP `Error` schema
-- Added examples: 1 request, 1 success response, 9 error cases
+- Added examples: 1 request, 1 success response, 8 error cases (invalid_token, card_declined, card_expired, insufficient_funds, daily_limit_exceeded, international_blocked, idempotency_conflict, too_many_requests)
 
 ### Files Updated
 
