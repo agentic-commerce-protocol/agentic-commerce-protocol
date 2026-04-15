@@ -1,410 +1,154 @@
 {
-  "handler_declaration_app_manifest": {
-    "payment": {
-      "handlers": [
-        {
-          "id": "razorpay_s2s_cards_001",
-          "name": "com.razorpay.s2s_cards",
-          "version": "2026-04-07",
-          "spec": "https://razorpay.com/acp/s2s_cards/2026-04-07/spec.md",
-          "schema": "https://razorpay.com/acp/s2s_cards/2026-04-07/schema.json",
-          "config": {
-            "merchant_id": "rzp_live_abc123xyz",
-            "key_id": "rzp_live_abc123xyz",
-            "environment": "production",
-            "supported_networks": ["visa", "mastercard", "rupay", "amex"],
-            "supported_types": ["credit", "debit"],
-            "emi_enabled": true,
-            "save_cards": true
-          },
-          "requires_delegate_payment": true,
-          "requires_pci_compliance": false,
-          "psp": "razorpay"
-        }
-      ]
+  "razorpay_s2s_cards_request": {
+    "payment_method": {
+      "type": "s2s_card",
+      "token_id": "token_KNq2OQK30t5SXO",
+      "card_network": "Visa",
+      "card_last4": "4242",
+      "card_type": "credit",
+      "cvv": "<razorpay_js_encrypted_cvv>",
+      "save_card": true,
+      "recurring": false
     },
-    "checkout_config": {
-      "checkout_type": "instant",
-      "payment_provider": {
-        "name": "razorpay",
-        "payment_type": "s2s_card",
-        "handler_id": "razorpay_s2s_cards_001"
-      }
-    }
-  },
-  "request_checkout_with_s2s_card": {
-    "checkout_type": "instant",
-    "currency": "INR",
-    "amount": 49900,
-    "line_items": [
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 49900,
+      "currency": "inr",
+      "checkout_session_id": "csn_01HV3P3XYZ789",
+      "merchant_id": "rzp_live_abc123xyz",
+      "expires_at": "2026-04-15T10:45:00Z"
+    },
+    "billing_address": {
+      "name": "Priya Sharma",
+      "line_one": "12 MG Road",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "IN",
+      "postal_code": "560001"
+    },
+    "risk_signals": [
       {
-        "id": "sku_watch",
-        "name": "Titan Edge Watch",
-        "quantity": 1,
-        "unit_price": 49900
+        "type": "card_testing",
+        "score": 5,
+        "action": "authorized"
       }
     ],
-    "payment_provider": {
-      "name": "razorpay",
-      "payment_type": "s2s_card",
-      "handler_id": "razorpay_s2s_cards_001"
+    "metadata": {
+      "session_id": "sess_abc123",
+      "user_agent": "ChatGPT/4.0"
     }
   },
-  "razorpay_js_initialization": {
-    "code": "const razorpay = new Razorpay({\n  key: handler.config.key_id,  // Public key from handler config\n  image: 'https://your-logo-url.com/logo.png',\n  currency: 'INR'\n});",
-    "note": "ChatGPT runtime initializes Razorpay.js with merchant's public key_id"
-  },
-  "tokenize_new_card": {
-    "code": "const tokenResult = await razorpay.tokens.create({\n  method: 'card',\n  card: {\n    number:       '4111111111111111',  // Raw PAN encrypted by Razorpay.js\n    expiry_month: '12',\n    expiry_year:  '2028',\n    cvv:          '123',              // Encrypted; sent only at charge time\n    name:         'Priya Sharma'\n  },\n  customer_id: buyer_razorpay_customer_id\n});\n// Returns: tokenResult.id = 'token_XXXXXXXXXX'",
-    "note": "Raw PAN and CVV encrypted by Razorpay.js in browser; never leave runtime unencrypted",
-    "response": {
-      "id": "token_XXXXXXXXXX",
-      "entity": "token",
-      "token": "card_token_abc123",
-      "card": {
-        "network": "Visa",
-        "last4": "4242",
-        "type": "credit",
-        "issuer": "HDFC"
-      }
+  "razorpay_s2s_cards_success_response": {
+    "id": "dp_card_NmtIbizJ5JUEmH",
+    "created": "2026-04-15T10:32:00Z",
+    "metadata": {
+      "payment_id": "pay_NmtIbizJ5JUEmH",
+      "order_id": "order_NmtIbizJ5JUEmX",
+      "session_id": "sess_abc123",
+      "merchant_id": "rzp_live_abc123xyz"
     }
   },
-  "list_saved_cards": {
-    "code": "const savedCards = await razorpay.tokens.list({\n  customer_id: buyer_razorpay_customer_id\n});",
-    "note": "Runtime surfaces saved cards from Token HQ for returning buyers",
-    "response": {
-      "items": [
-        {
-          "id": "token_saved_001",
-          "card": {
-            "network": "Visa",
-            "last4": "4242",
-            "type": "credit",
-            "issuer": "HDFC"
-          }
-        }
-      ]
-    }
-  },
-  "select_saved_card": {
-    "note": "Buyer selects saved card; runtime only needs CVV for debit cards",
-    "selected_token": {
-      "token_id": "token_saved_001",
-      "card_network": "Visa",
-      "card_last4": "4242",
-      "card_type": "credit",
-      "cvv": "<razorpay_js_encrypted>"  // Only for new/saved debit cards
-    }
-  },
-  "charge_card_mcp_request": {
-    "tool": "charge_card",
-    "payment": {
-      "instruments": [
-        {
-          "id": "pi_001",
-          "handler_id": "razorpay_s2s_cards_001",
-          "type": "s2s_card",
-          "selected": true,
-          "token_id": "token_XXXXXXXXXX",
-          "card_network": "Visa",
-          "card_last4": "4242",
-          "card_type": "credit",
-          "cvv": "<razorpay_js_encrypted_cvv>",
-          "save_card": true,
-          "recurring": false
-        }
-      ]
-    },
-    "risk_signals": {
-      "ip_address": "203.0.113.42",
-      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
-      "device_id": "razorpay_fingerprint_token_abc123"
-    },
-    "order_context": {
-      "acp_checkout_id": "chk_abc123",
-      "amount": 49900,
-      "currency": "INR"
-    }
-  },
-  "razorpay_order_create_s2s": {
-    "request": {
-      "amount": 49900,
-      "currency": "INR",
-      "receipt": "rcpt_chk_abc123",
-      "notes": {
-        "acp_checkout_id": "chk_abc123",
-        "merchant_order_ref": "ORD-7890"
-      }
-    },
-    "response": {
-      "id": "order_xyz789",
-      "entity": "order",
-      "amount": 49900,
-      "amount_paid": 0,
-      "amount_due": 49900,
-      "currency": "INR",
-      "receipt": "rcpt_chk_abc123",
-      "status": "created",
-      "notes": {
-        "acp_checkout_id": "chk_abc123",
-        "merchant_order_ref": "ORD-7890"
-      }
-    }
-  },
-  "razorpay_s2s_payment_api_request": {
-    "endpoint": "POST /v1/payments",
-    "headers": {
-      "Authorization": "Basic {base64(key_id:key_secret)}",
-      "Content-Type": "application/json"
-    },
-    "body": {
-      "amount": 49900,
-      "currency": "INR",
-      "order_id": "order_xyz789",
-      "method": "card",
-      "token": "token_XXXXXXXXXX",
-      "cvv": "<encrypted_cvv_from_razorpay_js>",
-      "ip": "203.0.113.42",
-      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
-      "referrer": "https://merchant.example.com",
-      "description": "Order #ORD-7890"
-    }
-  },
-  "frictionless_response_no_3ds": {
-    "status": "captured",
-    "payment_id": "pay_XXXXXXXXXX",
-    "order_id": "order_xyz789",
-    "amount": 49900,
-    "currency": "INR",
-    "note": "Bank approved without 3DS challenge; runtime immediately calls complete_checkout"
-  },
-  "complete_checkout_frictionless": {
-    "tool": "complete_checkout",
-    "payment_data": {
+  "razorpay_s2s_cards_request_saved_card": {
+    "payment_method": {
       "type": "s2s_card",
-      "provider": "razorpay",
-      "payment_id": "pay_XXXXXXXXXX",
-      "order_id": "order_xyz789",
-      "status": "captured",
+      "token_id": "token_KNq2OQK30t5SXO",
       "card_network": "Visa",
       "card_last4": "4242",
       "card_type": "credit",
-      "token_id": "token_XXXXXXXXXX",
-      "amount": 49900,
-      "currency": "INR",
-      "signature": "9ef4dabb240c2bbcb6f8e04a48d2f3e5dbc9a1f7..."
+      "save_card": false
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 49900,
+      "currency": "inr",
+      "checkout_session_id": "csn_01HV3P3XYZ789",
+      "merchant_id": "rzp_live_abc123xyz",
+      "expires_at": "2026-04-15T10:45:00Z"
+    },
+    "billing_address": {
+      "name": "Priya Sharma",
+      "line_one": "12 MG Road",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "IN",
+      "postal_code": "560001"
+    },
+    "risk_signals": [
+      {
+        "type": "card_testing",
+        "score": 5,
+        "action": "authorized"
+      }
+    ],
+    "metadata": {
+      "session_id": "sess_abc123",
+      "user_agent": "ChatGPT/4.0"
     }
   },
-  "challenge_response_3ds_required": {
-    "status": "requires_3ds_challenge",
-    "payment_id": "pay_XXXXXXXXXX",
-    "razorpay_payment_id": "pay_XXXXXXXXXX",
-    "next_action": {
-      "type": "redirect_to_url",
-      "redirect_to_url": {
-        "url": "https://acs.bank.com/3ds/challenge?tr=xyz123",
-        "return_url": "https://merchant.example.com/acp/3ds/callback"
-      }
-    },
-    "continue_url": "https://merchant.example.com/acp/checkout/chk_abc123/3ds",
-    "note": "Bank requires 3DS; runtime renders ACS URL in inline iframe"
-  },
-  "render_3ds_inline": {
-    "method": "Inline iframe rendering",
-    "html": "<iframe src='https://acs.bank.com/3ds/challenge?tr=xyz123' sandbox='allow-same-origin allow-scripts' style='width:100%;height:400px;border:none;'></iframe>",
-    "security": {
-      "csp": "frame-src 'self' *.bank.com *.razorpay.com",
-      "isolation": "No parent-frame JS access to iframe content",
-      "input": "Buyer enters OTP/biometric in secure iframe within conversation"
+  "razorpay_s2s_cards_3ds_response": {
+    "id": "dp_card_NmtIbizJ5JUEmH",
+    "created": "2026-04-15T10:32:00Z",
+    "metadata": {
+      "payment_id": "pay_NmtIbizJ5JUEmH",
+      "order_id": "order_NmtIbizJ5JUEmX",
+      "requires_3ds": "true",
+      "acs_url": "https://acs.bank.com/3ds/challenge?tr=xyz123",
+      "return_url": "https://merchant.example.com/acp/3ds/callback",
+      "session_id": "sess_abc123",
+      "merchant_id": "rzp_live_abc123xyz"
     }
   },
-  "submit_otp_mcp_request": {
-    "tool": "submit_otp",
-    "payment_id": "pay_XXXXXXXXXX",
-    "next_action_response": {
-      "razorpay_payment_id": "pay_XXXXXXXXXX",
-      "razorpay_signature": "bank_3ds_response_token_xyz789"
-    }
-  },
-  "polling_after_3ds": {
-    "code": "async function pollAfter3DS(paymentId) {\n  for (let i = 0; i < 36; i++) {  // max 3 min at 5s intervals\n    await sleep(5000);\n    const res = await callMerchantMCP('get_checkout', { payment_id: paymentId });\n    if (res.status === 'captured') return { success: true };\n    if (res.status === 'failed') return { success: false, reason: res.error_code };\n  }\n  return { success: false, reason: 'timeout' };\n}",
-    "max_duration": "3 minutes",
-    "poll_interval": "5 seconds"
-  },
-  "complete_checkout_after_3ds": {
-    "tool": "complete_checkout",
-    "payment_data": {
-      "type": "s2s_card",
-      "provider": "razorpay",
-      "payment_id": "pay_XXXXXXXXXX",
-      "order_id": "order_xyz789",
-      "status": "captured",
-      "card_network": "Visa",
-      "card_last4": "4242",
-      "card_type": "credit",
-      "token_id": "token_XXXXXXXXXX",
-      "emi_plan_id": null,
-      "amount": 49900,
-      "currency": "INR",
-      "signature": "9ef4dabb240c2bbcb6f8e04a48d2f3e5dbc9a1f7..."
-    }
-  },
-  "webhook_payment_authorized": {
-    "event": "payment.authorized",
-    "payload": {
-      "payment": {
-        "entity": {
-          "id": "pay_XXXXXXXXXX",
-          "order_id": "order_xyz789",
-          "status": "authorized",
-          "amount": 49900,
-          "currency": "INR",
-          "method": "card",
-          "card": {
-            "network": "Visa",
-            "last4": "4242",
-            "issuer": "HDFC",
-            "token_id": "token_XXXXXXXXXX"
-          },
-          "notes": {
-            "acp_checkout_id": "chk_abc123"
-          },
-          "created_at": 1712505900
-        }
-      }
-    },
-    "merchant_action": "Optionally auto-capture; or capture separately via POST /v1/payments/{id}/capture"
-  },
-  "webhook_payment_captured": {
-    "event": "payment.captured",
-    "payload": {
-      "payment": {
-        "entity": {
-          "id": "pay_XXXXXXXXXX",
-          "order_id": "order_xyz789",
-          "status": "captured",
-          "amount": 49900,
-          "currency": "INR",
-          "method": "card",
-          "card": {
-            "network": "Visa",
-            "last4": "4242",
-            "issuer": "HDFC",
-            "token_id": "token_XXXXXXXXXX"
-          },
-          "notes": {
-            "acp_checkout_id": "chk_abc123"
-          },
-          "created_at": 1712505900
-        }
-      }
-    },
-    "merchant_action": "Extract order_id from notes → look up acp_checkout_id → call complete_checkout MCP tool"
-  },
-  "webhook_payment_failed": {
-    "event": "payment.failed",
-    "payload": {
-      "payment": {
-        "entity": {
-          "id": "pay_def456",
-          "order_id": "order_xyz789",
-          "status": "failed",
-          "amount": 49900,
-          "currency": "INR",
-          "method": "card",
-          "error_code": "BAD_REQUEST_ERROR",
-          "error_description": "Card declined by bank",
-          "notes": {
-            "acp_checkout_id": "chk_abc123"
-          }
-        }
-      }
-    },
-    "merchant_action": "Update checkout status to canceled; surface error via get_checkout response"
-  },
-  "error_invalid_token": {
+  "razorpay_s2s_cards_error_invalid_token": {
+    "type": "invalid_request",
     "code": "invalid_token",
-    "severity": "recoverable",
     "message": "Card token expired or invalid. Please re-enter card details.",
-    "resolution": "Prompt re-tokenization via card entry UI"
+    "param": "$.payment_method.token_id"
   },
-  "error_cvv_required": {
+  "razorpay_s2s_cards_error_cvv_required": {
+    "type": "invalid_request",
     "code": "cvv_required",
-    "severity": "requires_buyer_input",
     "message": "CVV required for this transaction. Please enter CVV.",
-    "resolution": "Prompt buyer to re-enter CVV"
+    "param": "$.payment_method.cvv"
   },
-  "error_insufficient_funds": {
-    "code": "insufficient_funds",
-    "severity": "requires_buyer_input",
-    "message": "Card has insufficient balance. Please use another card or payment method.",
-    "resolution": "Suggest alternative card or payment method"
-  },
-  "error_card_declined": {
+  "razorpay_s2s_cards_error_card_declined": {
+    "type": "processing_error",
     "code": "card_declined",
-    "severity": "recoverable",
-    "message": "Bank declined the transaction. Please retry or use another card.",
-    "resolution": "Offer retry or alternative payment"
+    "message": "Bank declined the transaction. Please retry or use another card."
   },
-  "error_3ds_auth_failed": {
-    "code": "authentication_failed",
-    "severity": "recoverable",
-    "message": "OTP incorrect or expired. Please retry with resend if available.",
-    "resolution": "Offer retry (resend OTP if bank permits)"
-  },
-  "error_card_expired": {
+  "razorpay_s2s_cards_error_card_expired": {
+    "type": "invalid_request",
     "code": "card_expired",
-    "severity": "requires_buyer_input",
     "message": "Card has expired. Please enter valid card details.",
-    "resolution": "Prompt card re-entry with valid card"
+    "param": "$.payment_method.token_id"
   },
-  "error_daily_limit": {
+  "razorpay_s2s_cards_error_insufficient_funds": {
+    "type": "processing_error",
+    "code": "insufficient_funds",
+    "message": "Card has insufficient balance. Please use another card or payment method."
+  },
+  "razorpay_s2s_cards_error_authentication_failed": {
+    "type": "processing_error",
+    "code": "authentication_failed",
+    "message": "OTP incorrect or expired. Please retry with resend if available."
+  },
+  "razorpay_s2s_cards_error_daily_limit_exceeded": {
+    "type": "processing_error",
     "code": "daily_limit_exceeded",
-    "severity": "requires_buyer_input",
-    "message": "Daily card limit reached. Please try again tomorrow or use another card.",
-    "resolution": "Suggest tomorrow retry or alternative card"
+    "message": "Daily card limit reached. Please try again tomorrow or use another card."
   },
-  "error_international_blocked": {
+  "razorpay_s2s_cards_error_international_blocked": {
+    "type": "processing_error",
     "code": "international_blocked",
-    "severity": "recoverable",
-    "message": "International transactions not allowed on this card. Please use domestic card or UPI.",
-    "resolution": "Suggest domestic card or UPI alternative"
+    "message": "International transactions not allowed on this card. Please use a domestic card."
   },
-  "token_hq_coft_compliance": {
-    "note": "RBI CoFT (Card-on-File Tokenization) compliance",
-    "description": "All India-issued cards tokenized via Razorpay Token HQ; raw PANs replaced with network tokens",
-    "lifecycle": {
-      "step_1": "First-time entry: Raw PAN encrypted by Razorpay.js; Token HQ issues token_id",
-      "step_2": "Storage: Token stored against customer_id; raw PAN never written to merchant or ACP",
-      "step_3": "Subsequent purchase: Runtime retrieves token_id from Token HQ; no PAN re-entry needed",
-      "step_4": "S2S charge: Merchant calls POST /v1/payments with token_id; Razorpay de-tokenizes internally",
-      "step_5": "Auto-refresh: Razorpay auto-refreshes tokens on network updates (card replacement, expiry)"
-    },
-    "security": {
-      "no_pan_in_acp": "Raw card numbers MUST NOT appear in any ACP MCP tool call or log",
-      "cvv_encrypted": "CVV encrypted by Razorpay.js before transmission; never stored",
-      "token_binding": "token_id bound to customer_id + merchant; cross-merchant reuse blocked"
-    }
+  "razorpay_s2s_cards_error_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Idempotency-Key has already been used with a different request body."
   },
-  "flow_summary": {
-    "frictionless_flow": [
-      "1. Widget calls requestCheckout with payment_type: s2s_card",
-      "2. Runtime renders card UI and tokenizes via Razorpay.js",
-      "3. Runtime calls charge_card MCP tool with token_id",
-      "4. Merchant creates order + initiates S2S charge",
-      "5. Bank approves without 3DS (frictionless)",
-      "6. Runtime calls complete_checkout → Order fulfilled"
-    ],
-    "challenge_flow": [
-      "1-4. Same as frictionless flow",
-      "5. Bank requires 3DS; Razorpay returns ACS URL",
-      "6. Merchant returns requires_3ds_challenge",
-      "7. Runtime renders 3DS challenge in inline iframe",
-      "8. Buyer enters OTP/biometric",
-      "9. Runtime calls submit_otp MCP tool",
-      "10. Runtime polls get_checkout for final status",
-      "11. Webhook confirms payment.captured",
-      "12. Runtime calls complete_checkout → Order fulfilled"
-    ]
+  "razorpay_s2s_cards_error_rate_limit": {
+    "type": "rate_limit_exceeded",
+    "code": "too_many_requests",
+    "message": "Too many requests. Please retry later."
   }
 }
