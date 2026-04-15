@@ -15,6 +15,14 @@
       "merchant_id": "rzp_live_abc123xyz",
       "expires_at": "2026-04-15T10:45:00Z"
     },
+    "billing_address": {
+      "name": "Ravi Kumar",
+      "line_one": "12 MG Road",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "IN",
+      "postal_code": "560001"
+    },
     "risk_signals": [],
     "metadata": {
       "session_id": "sess_abc123",

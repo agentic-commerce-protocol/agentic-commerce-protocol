@@ -31,8 +31,9 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 - Added `BusinessConfig` schema: handler config the business provides (`key_id`, `merchant_vpa`, `environment`)
 - Added `PlatformConfig` schema: platform-level config (`environment`, optional `upi_apps` ordering)
 - Added `PaymentMethodUPIIntent` schema: payment method with `intent_uri`, `transaction_reference`, `qr_code_data`, `expires_at`
+- Added `RiskSignal` schema: aligned with base ACP `RiskSignal` definition
 - Added `Allowance` schema: per-transaction constraints — identical shape to base ACP `Allowance`
-- Added `DelegatePaymentRequest` schema: `PaymentMethodUPIIntent` + `Allowance` + `risk_signals` + `metadata`
+- Added `DelegatePaymentRequest` schema: `PaymentMethodUPIIntent` + `Allowance` + optional `billing_address` + `risk_signals` + `metadata`
 - Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` envelope (PSP-specific values in metadata)
 - Added `Error` schema: single error object with `type` + `code` enums, aligned with base ACP `Error` schema
 - Added examples: 1 request, 1 success response, 7 error cases
