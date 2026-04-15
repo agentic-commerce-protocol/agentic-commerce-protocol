@@ -4,13 +4,13 @@
   "title": "Razorpay UPI Circle Handler \u2014 Schema Bundle",
   "$defs": {
     "BusinessConfig": {
-      "description": "Configuration for the Razorpay UPI Circle handler provided by the business. Declared in the business's ACP handler configuration. The key_secret MUST remain on the business backend and MUST NOT be included here.",
+      "description": "Configuration for the Razorpay UPI Circle handler provided by the business. Declared in the business's ACP handler configuration.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "key_id": {
           "type": "string",
-          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production). Safe to include in the handler configuration. The key_secret MUST remain on the business backend and MUST NOT be included here."
+          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production)."
         },
         "environment": {
           "type": "string",
