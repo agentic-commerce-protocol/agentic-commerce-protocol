@@ -1,59 +1,75 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://razorpay.com/acp/magic_checkout/2026-04-07/schema.json",
-  "title": "Razorpay Magic Checkout Handler - Schema Bundle",
-  "description": "JSON Schema definitions for the Razorpay Magic Checkout payment handler for ACP (Agentic Commerce Protocol). Implements hosted checkout redirect pattern for the India market.",
+  "$id": "https://acp.commerce/redirect_checkout/2026-04-07/schema.json",
+  "title": "Redirect Checkout Handler - Schema Bundle",
+  "description": "JSON Schema definitions for the Redirect Checkout payment handler for ACP (Agentic Commerce Protocol). Implements hosted checkout redirect pattern for universal payment processing.",
   "$defs": {
-    "HandlerConfig": {
-      "description": "Configuration for the Razorpay Magic Checkout handler",
+    "PaymentMethodRedirect": {
+      "description": "Configuration for the Redirect Checkout handler",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "Razorpay API environment"
+          "description": "Payment API environment"
         },
         "merchant_id": {
           "type": "string",
-          "pattern": "^rzp_(test_|live_)?[a-zA-Z0-9]+$",
-          "description": "Razorpay merchant identifier (e.g., rzp_live_abc123xyz)"
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Merchant identifier (e.g., merchant_abc123xyz)"
         },
         "merchant_name": {
           "type": "string",
           "maxLength": 100,
-          "description": "Display name shown in Magic Checkout UI"
+          "description": "Display name shown in Checkout UI"
         },
         "supported_methods": {
           "type": "array",
           "description": "Payment methods supported by this handler",
           "items": {
             "type": "string",
-            "enum": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
+            "enum": [
+              "upi",
+              "card",
+              "netbanking",
+              "wallet",
+              "emi",
+              "bnpl",
+              "cod"
+            ]
           }
         }
       },
       "required": ["environment", "merchant_id", "merchant_name"],
       "example": {
         "environment": "production",
-        "merchant_id": "rzp_live_abc123xyz",
-        "merchant_name": "BigBasket",
-        "supported_methods": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
+        "merchant_id": "merchant_live_abc123xyz",
+        "merchant_name": "Demo Merchant",
+        "supported_methods": [
+          "upi",
+          "card",
+          "netbanking",
+          "wallet",
+          "emi",
+          "bnpl",
+          "cod"
+        ]
       }
     },
     "PrefillData": {
-      "description": "Prefill data for Magic Checkout to skip entry steps and auto-load saved data",
+      "description": "Prefill data for Checkout to skip entry steps and auto-load saved data",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "email": {
           "type": "string",
           "format": "email",
-          "description": "Skips email entry step in Magic Checkout"
+          "description": "Skips email entry step in Checkout"
         },
         "contact": {
           "type": "string",
-          "description": "Auto-login trigger. If phone matches a Magic Checkout account, saved addresses and payment methods are loaded"
+          "description": "Auto-login trigger. If phone matches a Checkout account, saved addresses and payment methods are loaded"
         },
         "name": {
           "type": "string",
@@ -62,8 +78,8 @@
       },
       "example": {
         "email": "buyer@example.com",
-        "contact": "+919876543210",
-        "name": "Priya Sharma"
+        "contact": "+1234567890",
+        "name": "Jane Smith"
       }
     },
     "RetryConfig": {
@@ -88,7 +104,7 @@
       }
     },
     "Notes": {
-      "description": "Custom key-value metadata on the Razorpay order (max 15 pairs, 256 chars per value)",
+      "description": "Custom key-value metadata on the order (max 15 pairs, 256 chars per value)",
       "type": "object",
       "additionalProperties": {
         "type": "string",
@@ -120,50 +136,28 @@
       }
     },
     "Credential": {
-      "description": "Credential schema extending ACP hosted_checkout_credential with Razorpay-specific fields",
+      "description": "Credential schema extending ACP hosted_checkout_credential with Redirect Checkout-specific fields",
       "type": "object",
       "additionalProperties": false,
-      "allOf": [
-        {
-          "properties": {
-            "type": {
-              "type": "string",
-              "const": "hosted_checkout",
-              "description": "Always 'hosted_checkout' for this handler"
-            },
-            "session_id": {
-              "type": "string",
-              "description": "Razorpay Order ID (e.g., order_xyz789). Used for webhook correlation."
-            },
-            "return_url": {
-              "type": "string",
-              "format": "uri",
-              "description": "HTTPS URL — buyer returns here after successful payment"
-            },
-            "cancel_url": {
-              "type": "string",
-              "format": "uri",
-              "description": "HTTPS URL — buyer returns here on abandonment or cancel"
-            }
-          },
-          "required": ["type", "return_url"]
-        }
-      ],
       "properties": {
         "type": {
           "type": "string",
-          "const": "hosted_checkout"
+          "const": "hosted_checkout",
+          "description": "Always 'hosted_checkout' for this handler"
         },
         "session_id": {
-          "type": "string"
+          "type": "string",
+          "description": "Payment Provider Order ID (e.g., order_xyz789). Used for webhook correlation."
         },
         "return_url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "HTTPS URL - buyer returns here after successful payment"
         },
         "cancel_url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "HTTPS URL - buyer returns here on abandonment or cancel"
         },
         "prefill": {
           "$ref": "#/$defs/PrefillData"
@@ -182,12 +176,12 @@
       "example": {
         "type": "hosted_checkout",
         "session_id": "order_xyz789",
-        "return_url": "https://merchant.example.com/acp/checkout/chk_abc123/return",
-        "cancel_url": "https://merchant.example.com/acp/checkout/chk_abc123/cancel",
+        "return_url": "https://api.example.com/acp/checkout/chk_abc123/return",
+        "cancel_url": "https://api.example.com/acp/checkout/chk_abc123/cancel",
         "prefill": {
           "email": "buyer@example.com",
-          "contact": "+919876543210",
-          "name": "Priya Sharma"
+          "contact": "+1234567890",
+          "name": "Jane Doe"
         },
         "retry": {
           "enabled": true,
@@ -195,16 +189,16 @@
         },
         "notes": {
           "acp_checkout_id": "chk_abc123",
-          "merchant_order_ref": "BIGBASKET-ORD-7890"
+          "merchant_order_ref": "MERCHANT-ORD-7890"
         },
         "integration": {
           "source": "chatgpt_app",
-          "referer": "https://bigbasket.com/cart"
+          "referer": "https://example.com/cart"
         }
       }
     },
     "Instrument": {
-      "description": "Instrument schema for Magic Checkout. Uses ACP hosted_checkout_instrument type.",
+      "description": "Instrument schema for Redirect Checkout. Uses ACP hosted_checkout_instrument type.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -228,30 +222,33 @@
       "required": ["id", "handler_id", "type", "credential"],
       "example": {
         "id": "inst_hosted_001",
-        "handler_id": "razorpay_magic_001",
+        "handler_id": "redirect_checkout_001",
         "type": "hosted_checkout",
         "credential": {
           "type": "hosted_checkout",
           "session_id": "order_xyz789",
-          "return_url": "https://merchant.example.com/acp/checkout/chk_abc123/return",
-          "cancel_url": "https://merchant.example.com/acp/checkout/chk_abc123/cancel"
+          "return_url": "https://api.example.com/acp/checkout/chk_abc123/return",
+          "cancel_url": "https://api.example.com/acp/checkout/chk_abc123/cancel",
+          "notes": {
+            "acp_checkout_id": "chk_abc123"
+          }
         }
       }
     },
-    "RazorpayOrderRequest": {
-      "description": "Request to create a Razorpay order via the Orders API",
+    "OrderRequest": {
+      "description": "Request to create a payment order via the Payment Provider Orders API",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "amount": {
           "type": "integer",
-          "minimum": 100,
-          "description": "Amount in paise (INR). Minimum ₹1 (100 paise)"
+          "minimum": 1,
+          "description": "Amount in smallest currency unit (e.g., cents, paise). Minimum 1 unit."
         },
         "currency": {
           "type": "string",
-          "const": "INR",
-          "description": "Currency code. Only INR supported for Magic Checkout"
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency code (e.g., USD, EUR, INR)"
         },
         "receipt": {
           "type": "string",
@@ -264,18 +261,19 @@
       },
       "required": ["amount", "currency", "notes"],
       "example": {
-        "amount": 57700,
-        "currency": "INR",
+        "amount": 10000,
+        "currency": "USD",
         "receipt": "rcpt_chk_abc123",
         "notes": {
           "acp_checkout_id": "chk_abc123",
-          "merchant_order_ref": "BIGBASKET-ORD-7890"
+          "merchant_order_ref": "MERCHANT-ORD-7890"
         }
       }
     },
-    "RazorpayWebhookEvent": {
-      "description": "Razorpay webhook event structure",
+    "WebhookEvent": {
+      "description": "Webhook event structure from Payment Provider",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "event": {
           "type": "string",
@@ -284,6 +282,7 @@
         },
         "payload": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
             "payment": {
               "type": "object",
@@ -293,27 +292,41 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "description": "Razorpay payment ID (e.g., pay_abc123)"
+                      "description": "Payment ID (e.g., pay_abc123)"
                     },
                     "order_id": {
                       "type": "string",
-                      "description": "Razorpay order ID (e.g., order_xyz789)"
+                      "description": "Order ID (e.g., order_xyz789)"
                     },
                     "status": {
                       "type": "string",
-                      "enum": ["created", "authorized", "captured", "refunded", "failed"]
+                      "enum": [
+                        "created",
+                        "authorized",
+                        "captured",
+                        "refunded",
+                        "failed"
+                      ]
                     },
                     "amount": {
                       "type": "integer",
-                      "description": "Amount in paise"
+                      "description": "Amount in smallest currency unit"
                     },
                     "currency": {
                       "type": "string",
-                      "const": "INR"
+                      "pattern": "^[A-Z]{3}$"
                     },
                     "method": {
                       "type": "string",
-                      "enum": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
+                      "enum": [
+                        "upi",
+                        "card",
+                        "netbanking",
+                        "wallet",
+                        "emi",
+                        "bnpl",
+                        "cod"
+                      ]
                     },
                     "notes": {
                       "type": "object",
@@ -340,9 +353,9 @@
               "id": "pay_abc123",
               "order_id": "order_xyz789",
               "status": "captured",
-              "amount": 57700,
-              "currency": "INR",
-              "method": "upi",
+              "amount": 10000,
+              "currency": "USD",
+              "method": "card",
               "notes": {
                 "acp_checkout_id": "chk_abc123"
               }
@@ -351,94 +364,62 @@
         }
       }
     },
-    "ErrorInvalidMerchantId": {
-      "description": "Error when merchant ID is invalid or inactive",
+    "Error": {
+      "description": "Error response for redirect checkout API requests",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "invalid_request",
+            "rate_limit_exceeded",
+            "processing_error",
+            "service_unavailable"
+          ],
+          "description": "High-level error category"
+        },
         "code": {
           "type": "string",
-          "const": "invalid_merchant_id"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
+          "enum": [
+            "invalid_merchant_id",
+            "checkout_disabled",
+            "unsupported_currency",
+            "order_creation_failed",
+            "checkout_expired",
+            "invalid_card",
+            "duplicate_request",
+            "idempotency_conflict",
+            "too_many_requests",
+            "idempotency_key_required",
+            "idempotency_in_flight"
+          ],
+          "description": "Specific error code for programmatic handling"
         },
         "message": {
           "type": "string",
-          "const": "Merchant ID not found or inactive. Verify account and key mode (test vs. live)."
+          "description": "Human-readable error message"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath of offending field"
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "description": "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
         }
-      }
-    },
-    "ErrorMagicCheckoutDisabled": {
-      "description": "Error when Magic Checkout is not enabled on account",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "magic_checkout_disabled"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "Magic Checkout not enabled on account. Activate in Dashboard → Settings → Magic Checkout."
-        }
-      }
-    },
-    "ErrorUnsupportedCurrency": {
-      "description": "Error when currency is not supported (only INR supported)",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "unsupported_currency"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "Currency not supported. This handler supports INR only."
-        }
-      }
-    },
-    "ErrorOrderCreationFailed": {
-      "description": "Error when Razorpay order creation fails",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "order_creation_failed"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "Razorpay order creation failed. Verify amount ≥ 100 paise; retry with exponential backoff."
-        }
-      }
-    },
-    "ErrorCheckoutExpired": {
-      "description": "Error when checkout session has expired",
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "const": "checkout_expired"
-        },
-        "severity": {
-          "type": "string",
-          "const": "recoverable"
-        },
-        "message": {
-          "type": "string",
-          "const": "ACP checkout session or Razorpay order expired. Create a new checkout session."
-        }
+      },
+      "required": ["type", "code", "message"],
+      "example": {
+        "type": "invalid_request",
+        "code": "invalid_merchant_id",
+        "message": "Merchant ID not found or inactive. Verify account and key mode (test vs. live).",
+        "param": "$.config.merchant_id"
       }
     }
   }
