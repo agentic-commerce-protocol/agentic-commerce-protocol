@@ -86,5 +86,5 @@ Standard error structure (`Error` in schema) with:
 
 ### References
 
-- Handler Spec: https://acp.commerce/redirect_checkout/2026-04-07/
+- Handler Spec: https://example.com/schemas/redirect-checkout/bundle.schema.json
 - ACP External Checkout Docs: https://developers.openai.com/commerce#external-checkout

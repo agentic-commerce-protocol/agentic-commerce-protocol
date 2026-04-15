@@ -7,7 +7,7 @@
           "name": "com.razorpay.magic_checkout",
           "version": "2026-04-07",
           "spec": "https://razorpay.com/acp/magic_checkout/2026-04-07/spec.md",
-          "schema": "https://acp.commerce/redirect_checkout/2026-04-07/schema.json",
+          "schema": "https://example.com/schemas/redirect-checkout/bundle.schema.json",
           "config": {
             "environment": "production",
             "merchant_id": "rzp_live_abc123xyz",

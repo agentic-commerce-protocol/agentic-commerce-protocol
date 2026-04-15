@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://acp.commerce/redirect_checkout/2026-04-07/schema.json",
+  "$id": "https://example.com/schemas/redirect-checkout/bundle.schema.json",
   "title": "Redirect Checkout Handler - Schema Bundle",
   "description": "JSON Schema definitions for the Redirect Checkout payment handler for ACP (Agentic Commerce Protocol). Implements hosted checkout redirect pattern for universal payment processing.",
   "$defs": {
