@@ -3131,6 +3131,7 @@
       }
     },
     "MarketingConsentOption": {
+      "description": "Seller-declared marketing consent option that specifies an available channel for which the seller must obtain the buyer's consent before sending marketing content",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -3157,9 +3158,16 @@
         "channel",
         "description",
         "privacy_policy_url"
-      ]
+      ],
+      "example": {
+        "channel": "email",
+        "description": "Promotional emails, product launches, and exclusive offers",
+        "privacy_policy_url": "https://www.example.com/privacy",
+        "is_subscribed": false
+      }
     },
     "MarketingConsent": {
+      "description": "Buyer's marketing consent decision for a specific channel submitted at checkout completion",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -3176,7 +3184,11 @@
       "required": [
         "channel",
         "opted_in"
-      ]
+      ],
+      "example": {
+        "channel": "email",
+        "opted_in": true
+      }
     },
     "CheckoutSessionBase": {
       "description": "Base checkout session model containing common fields for all checkout session states",
