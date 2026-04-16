@@ -3134,14 +3134,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": {
+        "channel": {
           "type": "string",
-          "enum": [
-            "email",
-            "sms",
-            "whatsapp"
-          ],
-          "description": "Channel for marketing consent."
+          "description": "Channel for marketing consent.",
+          "examples": ["email", "sms", "whatsapp"]
         },
         "description": {
           "type": "string",
@@ -3158,7 +3154,7 @@
         }
       },
       "required": [
-        "type",
+        "channel",
         "description",
         "privacy_policy_url"
       ]
@@ -3167,14 +3163,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": {
+        "channel": {
           "type": "string",
-          "enum": [
-            "email",
-            "sms",
-            "whatsapp"
-          ],
-          "description": "Channel matching the consent option type."
+          "description": "Channel matching the consent option channel.",
+          "examples": ["email", "sms", "whatsapp"]
         },
         "opted_in": {
           "type": "boolean",
@@ -3182,7 +3174,7 @@
         }
       },
       "required": [
-        "type",
+        "channel",
         "opted_in"
       ]
     },

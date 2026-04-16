@@ -258,7 +258,7 @@
     ],
     "marketing_consent_options": [
       {
-        "type": "email",
+        "channel": "email",
         "description": "Promotional emails, product launches, and exclusive offers",
         "privacy_policy_url": "https://www.testshop.com/privacy",
         "is_subscribed": false
@@ -448,7 +448,7 @@
     "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer.",
     "marketing_consents": [
       {
-        "type": "email",
+        "channel": "email",
         "opted_in": true
       }
     ]

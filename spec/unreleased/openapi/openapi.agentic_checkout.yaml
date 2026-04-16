@@ -2755,13 +2755,13 @@ components:
       type: object
       additionalProperties: false
       properties:
-        type:
+        channel:
           type: string
-          enum:
+          description: Channel for marketing consent.
+          examples:
             - email
             - sms
             - whatsapp
-          description: Channel for marketing consent.
         description:
           type: string
           description: "What the buyer is consenting to receive, e.g., 'promotional emails, product launches, and exclusive offers'. Agents MAY use this to compose their own display text."
@@ -2775,25 +2775,25 @@ components:
             channel. When true, agents SHOULD render the consent checkbox as pre-checked.
             Defaults to false if omitted.
       required:
-        - type
+        - channel
         - description
         - privacy_policy_url
     MarketingConsent:
       type: object
       additionalProperties: false
       properties:
-        type:
+        channel:
           type: string
-          enum:
+          description: Channel matching the consent option channel.
+          examples:
             - email
             - sms
             - whatsapp
-          description: Channel matching the consent option type.
         opted_in:
           type: boolean
           description: Whether the buyer consented to receive marketing via this channel.
       required:
-        - type
+        - channel
         - opted_in
     CheckoutSessionBase:
       type: object

@@ -6,9 +6,9 @@ Add marketing consent support to enable sellers to offer opt-in marketing subscr
 
 ## New Schemas
 
-- **MarketingConsentOption**: Seller-declared consent option with `type` (email, sms, whatsapp),
+- **MarketingConsentOption**: Seller-declared consent option with `channel` (open enum, e.g. email, sms, whatsapp),
   `description`, `privacy_policy_url`, and optional `is_subscribed` boolean for returning buyers.
-- **MarketingConsent**: Agent-submitted consent decision with `type` and `opted_in` boolean.
+- **MarketingConsent**: Agent-submitted consent decision with `channel` and `opted_in` boolean.
 
 ## CheckoutSession Changes
 
