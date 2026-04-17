@@ -3130,6 +3130,9 @@ components:
       properties:
         buyer:
           $ref: "#/components/schemas/Buyer"
+        fulfillment_details:
+          $ref: "#/components/schemas/FulfillmentDetails"
+          description: "Final fulfillment contact and address details. When present, the seller MUST apply these updates before processing payment."
         payment_data:
           $ref: "#/components/schemas/PaymentData"
         authentication_result:
