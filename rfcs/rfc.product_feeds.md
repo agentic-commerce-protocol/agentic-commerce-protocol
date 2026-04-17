@@ -93,7 +93,8 @@ decide which checkout request to create.
 1. A buyer saves a recommendation and returns later.
 2. The merchant has since applied an incremental feed update marking the
    selected variant as `out_of_stock`.
-3. Before checkout, the agent refreshes the feed metadata or product set.
+3. Before checkout, the agent refreshes its local index from its current
+   agent-hosted feed state.
 4. The agent sees the updated availability and asks the buyer to choose a
    substitute rather than starting a checkout that is likely to fail.
 
@@ -121,7 +122,8 @@ decide which checkout request to create.
 4. **Publication flexibility**: Support both offline full-snapshot ingestion and
    API-based incremental upserts.
 5. **Fresh-enough agent indexes**: Provide metadata and update semantics that
-   let agents detect when cached catalog data should be refreshed.
+   let merchants and agents coordinate the latest catalog state known to the
+   agent.
 6. **Additive protocol surface**: Introduce feeds as an optional ACP service that
    existing checkout integrations can adopt incrementally.
 
@@ -140,9 +142,9 @@ decide which checkout request to create.
   inventory. Reservation semantics, if any, occur during checkout.
 - **Order, payment, or fulfillment lifecycle changes**: These remain covered by
   existing ACP checkout and order specifications.
-- **Delta cursors for consumers**: This proposal supports publisher-side
-  incremental upserts. Consumer-facing change streams or cursor-based deltas are
-  deferred.
+- **Delta cursors for feed reads**: This proposal supports publisher-side
+  incremental upserts and merchant readback of current state. Cursor-based
+  deltas are deferred.
 
 ---
 
@@ -150,8 +152,12 @@ decide which checkout request to create.
 
 ### 3.1 Feed Resource
 
-A feed is a merchant- or seller-platform-managed product catalog resource. A
-feed has server-managed metadata and a current product set.
+A feed is an agent-managed product catalog resource populated by a merchant or
+seller platform. A feed has server-managed metadata and a current product set.
+The Product Feed API is hosted by the agent. Merchants and seller platforms call
+these endpoints to create feeds, upsert product data, and inspect the latest
+feed state known to the agent. Agents MUST NOT call Product Feed API endpoints
+on merchants.
 
 Feed metadata contains:
 
@@ -163,7 +169,7 @@ Feed metadata contains:
 
 Merchants MAY create multiple feeds for different markets, storefronts,
 languages, sellers, or marketplace partitions. When multiple feeds are
-available, agents SHOULD select the feed that best matches the buyer's market,
+available, agents SHOULD use the feed that best matches the buyer's market,
 locale, and merchant context.
 
 ### 3.2 Product and Variant Model
@@ -230,7 +236,8 @@ for large catalogs and batch-oriented merchant systems.
 
 #### API-Based Incremental Upserts
 
-The merchant uses the Feed API to create metadata and partially upsert products:
+The merchant uses the agent-hosted Feed API to create metadata, inspect the
+latest feed state known to the agent, and partially upsert products:
 
 | Operation | Method | Endpoint | Description |
 |---|---|---|---|
@@ -267,12 +274,14 @@ supports feeds SHOULD include `"feeds"` in `capabilities.services`:
 }
 ```
 
-The initial Feed API assumes an agent has a feed identifier from discovery,
-merchant onboarding, a seller platform registry, or another trusted channel.
-A follow-up discovery update SHOULD define a standard way to advertise available
-feed descriptors, including feed ID, target country, locale, and product
-endpoint. Until that descriptor exists, sellers and platforms SHOULD document
-which feed IDs agents are expected to consume.
+The initial Feed API assumes the merchant has an agent-hosted Feed API base URL
+and feed identifier from agent onboarding, a seller platform registry, or another
+trusted channel. Discovery advertises that the seller supports feeds, but it does
+not make the merchant's ACP API a Product Feed API host. A follow-up discovery
+update SHOULD define a standard way to advertise available feed descriptors,
+including feed ID, target country, locale, and agent-hosted product endpoint.
+Until that descriptor exists, sellers and platforms SHOULD document which feed
+IDs merchants are expected to populate and inspect on the agent.
 
 ---
 
@@ -282,7 +291,7 @@ which feed IDs agents are expected to consume.
 
 1. Merchant chooses feed scope, such as US catalog, UK catalog, or marketplace
    seller subset.
-2. Merchant creates a feed:
+2. Merchant creates a feed on the agent-hosted Feed API:
 
 ```http
 POST /feeds HTTP/1.1
@@ -295,7 +304,7 @@ Content-Type: application/json
 }
 ```
 
-3. Seller platform returns feed metadata:
+3. Agent-hosted feed service returns feed metadata:
 
 ```http
 HTTP/1.1 201 Created
@@ -308,7 +317,7 @@ Content-Type: application/json
 }
 ```
 
-4. Merchant publishes an initial product set by either:
+4. Merchant publishes an initial product set to the agent by either:
    - uploading `metadata.json` and `products.jsonl` as a full replacement, or
    - calling `PATCH /feeds/{id}/products` with product records.
 
@@ -358,44 +367,51 @@ Content-Type: application/json
 }
 ```
 
-5. Feed service updates the current product set and advances `updated_at`.
+5. Agent-hosted feed service updates the current product set and advances
+   `updated_at`.
 6. Seller advertises feed support in discovery and makes the feed ID available
-   to authorized consuming agents or indexes.
+   to authorized merchant systems or seller platforms that will populate and
+   inspect the agent-hosted feed.
 
-### 4.2 Agent Discovers and Consumes the Feed
+### 4.2 Merchant Inspects Agent-Known Feed State
 
-1. Agent starts with a seller domain, such as `merchant.example`.
-2. Agent fetches `https://merchant.example/.well-known/acp.json`.
-3. Agent verifies:
-   - ACP is supported.
-   - The agent's preferred API version is supported.
-   - `capabilities.services` contains `"feeds"` and `"checkout"`.
-4. Agent obtains the relevant feed ID from discovery, seller platform
-   onboarding, registry metadata, or another trusted channel.
-5. Agent retrieves feed metadata:
+The Product Feed API call direction is merchant-to-agent. The agent never calls
+`GET /feeds/{id}`, `GET /feeds/{id}/products`, or any other Product Feed API
+endpoint on the merchant.
+
+1. Merchant starts with an agent-hosted Feed API base URL and feed ID from agent
+   onboarding, seller platform registry metadata, or another trusted channel.
+2. Merchant may verify its own ACP discovery document advertises feed support so
+   agents know feed-backed checkout can be used for this seller.
+3. Merchant retrieves the current feed metadata known to the agent:
 
 ```http
 GET /feeds/feed_8f3K2x HTTP/1.1
 API-Version: 2026-01-30
 ```
 
-6. Agent retrieves the current product set:
+4. Merchant retrieves the current product set known to the agent:
 
 ```http
 GET /feeds/feed_8f3K2x/products HTTP/1.1
 API-Version: 2026-01-30
 ```
 
-7. Agent indexes the returned `Product[]` and stores the last observed
-   `updated_at` value.
-8. When the buyer asks a product question, the agent searches the index and
-   grounds recommendations in feed-provided product and variant data.
+5. Merchant compares the returned `FeedMetadata.updated_at` and `Product[]`
+   state with its source catalog.
+6. Merchant calls `PATCH /feeds/{id}/products` or publishes a full replacement
+   when the agent-known state is stale or incomplete.
+7. The agent indexes its own current product set and stores the last observed
+   `updated_at` value internally.
+8. When the buyer asks a product question, the agent searches its local index and
+   grounds recommendations in the feed-provided product and variant data it has
+   received.
 
 ### 4.3 Agent Creates Checkout From Feed Data
 
 1. Buyer chooses the red medium Classic Tee.
-2. Agent refreshes or validates the selected variant if the cached feed state is
-   stale.
+2. Agent refreshes or validates the selected variant from its current
+   agent-hosted feed state if the cached index is stale.
 3. Agent creates a checkout session using the checkout-compatible item ID:
 
 ```http
@@ -477,9 +493,10 @@ Content-Type: application/json
 }
 ```
 
-3. Feed service upserts the product by `Product.id` and advances `updated_at`.
-4. Agent detects the changed `updated_at`.
-5. Agent refreshes `GET /feeds/{id}/products` and updates its index.
+3. Agent-hosted feed service upserts the product by `Product.id` and advances
+   `updated_at`.
+4. Agent detects that its agent-hosted feed state has a changed `updated_at`.
+5. Agent refreshes its local index from the current feed state it already hosts.
 6. Future recommendations avoid the unavailable variant or explain that it is
    out of stock.
 7. If the buyer had already selected the variant, the agent asks for a substitute
@@ -489,12 +506,17 @@ Content-Type: application/json
 
 ## 5. HTTP Interface
 
+The endpoints in this section are implemented by the agent-hosted Feed API.
+Merchants and seller platforms call them on the agent to publish product data
+and read back the latest state known to the agent. Agents MUST NOT call these
+endpoints on merchants.
+
 All endpoints follow ACP REST conventions:
 
 - HTTPS required.
 - JSON request and response bodies.
-- Bearer authorization in the `Authorization` header required unless a seller
-  explicitly publishes a public read-only feed.
+- Bearer authorization in the `Authorization` header required unless the seller
+  explicitly authorizes public read-only access to the agent-hosted feed.
 - `API-Version` required.
 - Mutating requests SHOULD use idempotency where supported.
 - Errors use ACP's flat error shape:
@@ -533,11 +555,14 @@ Response:
 
 ### 5.2 Get Feed
 
-`GET /feeds/{id}` returns the feed metadata.
+`GET /feeds/{id}` returns the feed metadata known to the agent. This endpoint is
+for merchant or seller-platform readback against the agent-hosted Feed API.
 
 ### 5.3 Get Feed Products
 
-`GET /feeds/{id}/products` returns the full current product set:
+`GET /feeds/{id}/products` returns the full current product set known to the
+agent. This endpoint is for merchant or seller-platform readback against the
+agent-hosted Feed API:
 
 ```json
 {
@@ -592,10 +617,10 @@ two avoids ambiguous item selection.
 
 ### 6.3 Why Full Snapshot Reads?
 
-Full snapshot reads are easy for consumers to reason about and match existing
-feed ingestion systems. Publisher-side incremental upserts reduce merchant
-write cost without requiring a more complex consumer cursor protocol in the
-first version.
+Full snapshot reads are easy for merchants and seller platforms to reason about
+when checking the latest feed state known to the agent. Publisher-side
+incremental upserts reduce merchant write cost without requiring a more complex
+cursor protocol in the first version.
 
 ### 6.4 Why Checkout Remains Authoritative?
 
@@ -612,8 +637,9 @@ making feeds responsible for transactional guarantees they cannot provide.
   session-specific data.
 - **Management authorization**: Feed creation and product upserts MUST require
   merchant or seller-platform authorization.
-- **Read authorization**: Sellers MAY publish public read-only feeds, but private
-  or restricted feeds MUST require authorization.
+- **Read authorization**: Sellers MAY authorize public read-only access to
+  agent-hosted feeds, but private or restricted feed reads MUST require
+  authorization.
 - **Discovery enumeration**: Public discovery documents SHOULD avoid exposing
   private feed IDs or merchant-specific data that would create enumeration risk.
 - **HTML and markdown safety**: Agents that render `description.html` or
@@ -623,8 +649,8 @@ making feeds responsible for transactional guarantees they cannot provide.
 - **Staleness handling**: Agents MUST NOT represent feed price or availability as
   guaranteed. Buyer-facing UI SHOULD make clear that checkout confirms final
   availability and totals.
-- **Abuse controls**: Feed endpoints SHOULD support rate limiting and pagination
-  or file-based transfer for large catalogs.
+- **Abuse controls**: Agent-hosted feed endpoints SHOULD support rate limiting
+  and pagination or file-based transfer for large catalogs.
 
 ---
 
@@ -632,7 +658,8 @@ making feeds responsible for transactional guarantees they cannot provide.
 
 Product feeds are additive:
 
-- New endpoints under `/feeds` do not conflict with existing ACP endpoints.
+- New agent-hosted endpoints under `/feeds` do not conflict with existing ACP
+  endpoints.
 - The `"feeds"` discovery service value can be introduced in an unreleased or
   future API version without changing existing service semantics.
 - Existing checkout sessions, order APIs, delegate payment, and delegate
@@ -647,8 +674,8 @@ Product feeds are additive:
 - [ ] `spec/unreleased/json-schema/schema.feed.json` - Define `FeedMetadata`,
   `CreateFeedRequest`, `Product`, `Variant`, product response, upsert request,
   and upsert response schemas.
-- [ ] `spec/unreleased/openapi/openapi.feed.yaml` - Define `/feeds`,
-  `/feeds/{id}`, and `/feeds/{id}/products` REST endpoints.
+- [ ] `spec/unreleased/openapi/openapi.feed.yaml` - Define the agent-hosted
+  `/feeds`, `/feeds/{id}`, and `/feeds/{id}/products` REST endpoints.
 - [ ] `examples/unreleased/examples.feed.json` - Add feed creation, product
   retrieval, product upsert, and error examples.
 - [ ] `changelog/unreleased/add-feed-api.md` - Document the new feed API
@@ -664,10 +691,11 @@ Product feeds are additive:
 
 **MUST requirements:**
 
-- [ ] Feed management implementations MUST create feed metadata with stable feed
-  IDs.
+- [ ] Agent-hosted feed management implementations MUST create feed metadata
+  with stable feed IDs.
+- [ ] Agents MUST NOT call Product Feed API endpoints on merchants.
 - [ ] `GET /feeds/{id}` MUST return the current `FeedMetadata` or `404` if the
-  feed does not exist.
+  feed does not exist when called on the agent-hosted Feed API.
 - [ ] `GET /feeds/{id}/products` MUST return the full current product set.
 - [ ] `PATCH /feeds/{id}/products` MUST upsert products by `Product.id`.
 - [ ] Product records MUST include stable `Product.id` values.
@@ -679,19 +707,22 @@ Product feeds are additive:
 
 - [ ] Sellers SHOULD advertise feed support with `"feeds"` in discovery
   `capabilities.services`.
-- [ ] Sellers SHOULD make feed IDs discoverable through a trusted channel.
+- [ ] Sellers SHOULD make feed IDs discoverable to authorized merchant systems
+  or seller platforms through a trusted channel.
 - [ ] Sellers SHOULD update `updated_at` after successful full replacements or
   product upserts.
 - [ ] Sellers SHOULD keep variant IDs stable across updates.
-- [ ] Agents SHOULD refresh stale feed data before creating checkout sessions.
+- [ ] Agents SHOULD refresh stale local indexes from their agent-hosted feed
+  state before creating checkout sessions.
 - [ ] Agents SHOULD sanitize rich descriptions before rendering.
 
 **MAY requirements:**
 
 - [ ] Sellers MAY publish multiple feeds for different target countries,
   storefronts, sellers, or locales.
-- [ ] Sellers MAY publish public read-only feeds.
-- [ ] Sellers MAY require authorization for feed reads.
+- [ ] Sellers MAY authorize public read-only access to agent-hosted feeds.
+- [ ] Agent-hosted Feed API implementations MAY require authorization for feed
+  reads.
 - [ ] Sellers MAY use full replacement file ingestion for large catalogs.
 - [ ] Sellers MAY use `PATCH /feeds/{id}/products` for small incremental
   updates.
