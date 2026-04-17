@@ -274,22 +274,6 @@ feed descriptors, including feed ID, target country, locale, and product
 endpoint. Until that descriptor exists, sellers and platforms SHOULD document
 which feed IDs agents are expected to consume.
 
-### 3.6 Caching and Freshness
-
-Feed responses SHOULD be cacheable. Servers SHOULD include validators such as
-`ETag` or `Last-Modified` where possible, and agents SHOULD use conditional
-requests when refreshing large feeds.
-
-Agents SHOULD use `updated_at` on `FeedMetadata` as a coarse freshness signal:
-
-1. Cache the last observed `updated_at`.
-2. Poll `GET /feeds/{id}` or use platform-provided notifications.
-3. If `updated_at` changes, refresh `GET /feeds/{id}/products`.
-4. Re-index changed product data.
-
-Because this RFC does not define consumer-facing deltas, agents SHOULD assume
-`GET /feeds/{id}/products` returns the full current product set.
-
 ---
 
 ## 4. End-to-End Flow
