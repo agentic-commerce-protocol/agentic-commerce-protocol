@@ -1,0 +1,125 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Hotel CheckoutResponse Schema
+type: object
+additionalProperties: false
+required:
+- mode
+- status
+properties:
+  mode:
+    type: string
+    enum:
+    - native
+    - redirect
+  status:
+    type: string
+    enum:
+    - confirmed
+    - failed
+    - processing
+    - redirect
+    - requires_acknowledgement
+    - requires_input
+    - requires_payment
+  final_pricing:
+    type: object
+    properties:
+      currency:
+        type: string
+      total_amount:
+        type: number
+      tax_amount:
+        type: number
+      fee_amount:
+        type: number
+  reservation:
+    type: object
+    description: Returned when booking is confirmed.
+    properties:
+      reservation_id:
+        type: string
+      supplier_confirmation_number:
+        type: string
+      checkin:
+        type: string
+        format: date
+      checkout:
+        type: string
+        format: date
+      cancellation_deadline:
+        type: string
+        format: date-time
+  redirect:
+    type: object
+    description: Used when mode=redirect.
+    properties:
+      redirect_url:
+        type: string
+        format: uri
+      expires_at:
+        type: string
+        format: date-time
+  errors:
+    type: array
+    items:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+  quote:
+    type: object
+    additionalProperties: false
+    description: Optional quote snapshot returned/confirmed during checkout initiation.
+    properties:
+      quote_token:
+        type: string
+      expires_at:
+        type: string
+        format: date-time
+      currency:
+        type: string
+        pattern: ^[A-Z]{3}$
+      total_amount:
+        type: number
+        minimum: 0
+  payment:
+    type: object
+    additionalProperties: false
+    description: Payment-related outputs for native checkout.
+    properties:
+      payment_required:
+        type: boolean
+      payment_flow:
+        type: string
+        enum:
+        - delegated
+        - tokenized
+        - none
+      allowance:
+        type: object
+        additionalProperties: false
+        properties:
+          currency:
+            type: string
+            pattern: ^[A-Z]{3}$
+          max_amount:
+            type: number
+            minimum: 0
+          expires_at:
+            type: string
+            format: date-time
+  order:
+    type: object
+    additionalProperties: false
+    description: Returned when booking is confirmed or an Order is created.
+    properties:
+      order_id:
+        type: string
+      status:
+        type: string
+      reservation_id:
+        type: string
+      supplier_confirmation_number:
+        type: string
