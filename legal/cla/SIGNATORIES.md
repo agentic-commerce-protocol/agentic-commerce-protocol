@@ -2,7 +2,7 @@
 
 This file tracks contributors who have signed the Agentic Commerce Protocol Contributor License Agreement as required by Section 2.4 of the Collaboration and Governance Agreement dated November 21, 2025.
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 ## Corporate CLA Signatories
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-16
 | OpenCommerce Network Inc. | 2026-02-26 | Barak Ben-Rachel | Barak-OC,dean-harel-nekuda-ai,ilayalog,vladikk,Idan-Levin | #163 |
 | Affirm Inc. | 2026-03-09 | Ethan Melnick | vcello,mirzar,tlevy | #172 |
 | Meta Platforms, Inc. | 2026-03-19 | poshannessy | lhwa,jamesandersen,srikun,kaichen2000,bretlorimore | #185 |
+| Agentic Commerce Inc. (Catalog) | 2026-03-30 | Dylan Farrell | dylanfarrell,h-gunasekara,jaycatalog,lukecatalog | #206 |
 | PayPal, Inc. | 2026-04-16 | cmonty-paypal | cmonty-paypal,sjparsons,bbcoumes,pranshu-10,jvujjini,sioked,wsbrunson,shubhamkokul,wenjiezhou,remotevision,zvuki,nmikhol,praneethiyyapu,mokinator | #210 |
 
 
