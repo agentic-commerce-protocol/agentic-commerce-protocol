@@ -4,10 +4,14 @@
 
 ## New API Surface
 
-- `POST /feeds` to create feed metadata
-- `GET /feeds/{id}` to retrieve feed metadata
-- `GET /feeds/{id}/products` to retrieve the current product set
-- `PATCH /feeds/{id}/products` to partially upsert products by `Product.id`
+These endpoints are hosted by Agents and called by merchants. The Feed API is a
+push model: merchants push product catalog metadata and product records to
+Agents, rather than Agents pulling catalog data from merchant-hosted endpoints.
+
+- `POST /feeds` for merchants to create feed metadata on an Agent-hosted feed service
+- `GET /feeds/{id}` for merchants to retrieve feed metadata from the Agent
+- `GET /feeds/{id}/products` for merchants to retrieve the current Agent-hosted product set
+- `PATCH /feeds/{id}/products` for merchants to partially upsert products by `Product.id` into the Agent-hosted feed
 
 ## File Ingestion Format
 
