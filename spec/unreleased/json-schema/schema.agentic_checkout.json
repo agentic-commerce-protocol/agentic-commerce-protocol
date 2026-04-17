@@ -178,7 +178,7 @@
         },
         "company": {
           "type": "string",
-          "description": "Postal or ZIP code"
+          "description": "Company or organization name"
         }
       },
       "required": [
