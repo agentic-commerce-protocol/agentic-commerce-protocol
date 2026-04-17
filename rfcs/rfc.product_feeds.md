@@ -386,8 +386,8 @@ GET /feeds/feed_8f3K2x/products HTTP/1.1
 API-Version: 2026-01-30
 ```
 
-7. Agent indexes the returned `Product[]` and stores freshness metadata such as
-   `updated_at`, `ETag`, or `Last-Modified`.
+7. Agent indexes the returned `Product[]` and stores the last observed
+   `updated_at` value.
 8. When the buyer asks a product question, the agent searches the index and
    grounds recommendations in feed-provided product and variant data.
 
@@ -478,7 +478,7 @@ Content-Type: application/json
 ```
 
 3. Feed service upserts the product by `Product.id` and advances `updated_at`.
-4. Agent detects the changed `updated_at` or cache validator.
+4. Agent detects the changed `updated_at`.
 5. Agent refreshes `GET /feeds/{id}/products` and updates its index.
 6. Future recommendations avoid the unavailable variant or explain that it is
    out of stock.
@@ -623,8 +623,8 @@ making feeds responsible for transactional guarantees they cannot provide.
 - **Staleness handling**: Agents MUST NOT represent feed price or availability as
   guaranteed. Buyer-facing UI SHOULD make clear that checkout confirms final
   availability and totals.
-- **Abuse controls**: Feed endpoints SHOULD support rate limiting, cache
-  validators, and pagination or file-based transfer for large catalogs.
+- **Abuse controls**: Feed endpoints SHOULD support rate limiting and pagination
+  or file-based transfer for large catalogs.
 
 ---
 
@@ -682,8 +682,6 @@ Product feeds are additive:
 - [ ] Sellers SHOULD make feed IDs discoverable through a trusted channel.
 - [ ] Sellers SHOULD update `updated_at` after successful full replacements or
   product upserts.
-- [ ] Sellers SHOULD include `ETag` or `Last-Modified` validators for large feed
-  responses.
 - [ ] Sellers SHOULD keep variant IDs stable across updates.
 - [ ] Agents SHOULD refresh stale feed data before creating checkout sessions.
 - [ ] Agents SHOULD sanitize rich descriptions before rendering.
