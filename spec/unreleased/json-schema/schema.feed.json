@@ -592,6 +592,290 @@
         ]
       }
     },
+    "DateTimeRange": {
+      "description": "Time range describing when a promotion is effective.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_time", "end_time"],
+      "properties": {
+        "start_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the promotion becomes active."
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the promotion stops being active."
+        }
+      },
+      "example": {
+        "start_time": "2026-03-01T00:00:00Z",
+        "end_time": "2026-03-31T23:59:59Z"
+      }
+    },
+    "PromotionStatus": {
+      "description": "Extensible promotion lifecycle state. Known values include draft, scheduled, active, expired, and disabled.",
+      "type": "string",
+      "example": "active"
+    },
+    "AmountOffBenefit": {
+      "description": "Promotion benefit that reduces the price by a fixed monetary amount.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount_off"],
+      "properties": {
+        "type": {
+          "const": "amount_off",
+          "description": "Discriminator identifying a fixed-amount discount benefit."
+        },
+        "amount_off": {
+          "$ref": "#/$defs/Price",
+          "description": "Fixed monetary amount discounted from the applicable item or order."
+        }
+      },
+      "example": {
+        "type": "amount_off",
+        "amount_off": {
+          "amount": 1000,
+          "currency": "USD"
+        }
+      }
+    },
+    "PercentOffBenefit": {
+      "description": "Promotion benefit that reduces the price by a percentage.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "percent_off"],
+      "properties": {
+        "type": {
+          "const": "percent_off",
+          "description": "Discriminator identifying a percentage discount benefit."
+        },
+        "percent_off": {
+          "type": "number",
+          "description": "Percentage discount applied by the promotion."
+        }
+      },
+      "example": {
+        "type": "percent_off",
+        "percent_off": 20
+      }
+    },
+    "FreeShippingBenefit": {
+      "description": "Promotion benefit that waives shipping cost.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "const": "free_shipping",
+          "description": "Discriminator identifying a free-shipping promotion benefit."
+        }
+      },
+      "example": {
+        "type": "free_shipping"
+      }
+    },
+    "PromotionBenefit": {
+      "description": "Union of supported promotion benefit shapes.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/AmountOffBenefit"
+        },
+        {
+          "$ref": "#/$defs/PercentOffBenefit"
+        },
+        {
+          "$ref": "#/$defs/FreeShippingBenefit"
+        }
+      ],
+      "example": {
+        "type": "amount_off",
+        "amount_off": {
+          "amount": 1000,
+          "currency": "USD"
+        }
+      }
+    },
+    "ProductTarget": {
+      "description": "Target product and optional subset of variants to which a promotion applies.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["product_id"],
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "description": "Identifier of the product targeted by the promotion."
+        },
+        "variant_ids": {
+          "type": "array",
+          "description": "Optional subset of variant identifiers targeted by the promotion. When omitted, the promotion applies to all variants of the product.",
+          "items": {
+            "type": "string",
+            "description": "Stable global identifier for a targeted variant."
+          }
+        }
+      },
+      "example": {
+        "product_id": "prod_classic_tee",
+        "variant_ids": ["sku123-red-s"]
+      }
+    },
+    "Promotion": {
+      "description": "Promotion associated with a feed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "effective_period", "benefits"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable global identifier for this promotion."
+        },
+        "title": {
+          "type": "string",
+          "description": "Display title for the promotion."
+        },
+        "description": {
+          "$ref": "#/$defs/Description",
+          "description": "Structured description content for the promotion."
+        },
+        "status": {
+          "$ref": "#/$defs/PromotionStatus",
+          "description": "Extensible lifecycle status for the promotion."
+        },
+        "effective_period": {
+          "$ref": "#/$defs/DateTimeRange",
+          "description": "Time range during which the promotion should apply."
+        },
+        "benefits": {
+          "type": "array",
+          "description": "One or more benefits granted by the promotion.",
+          "items": {
+            "$ref": "#/$defs/PromotionBenefit"
+          }
+        },
+        "applies_to": {
+          "type": "array",
+          "description": "Optional list of product or variant targets to which the promotion applies.",
+          "items": {
+            "$ref": "#/$defs/ProductTarget"
+          }
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical URL for the promotion detail or landing page."
+        }
+      },
+      "example": {
+        "id": "promo_spring_sale",
+        "title": "Spring Sale",
+        "status": "active",
+        "effective_period": {
+          "start_time": "2026-03-01T00:00:00Z",
+          "end_time": "2026-03-31T23:59:59Z"
+        },
+        "benefits": [
+          {
+            "type": "percent_off",
+            "percent_off": 20
+          }
+        ],
+        "applies_to": [
+          {
+            "product_id": "prod_classic_tee"
+          }
+        ]
+      }
+    },
+    "PromotionsResponse": {
+      "description": "Response envelope containing the current promotions for a feed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["promotions"],
+      "properties": {
+        "promotions": {
+          "type": "array",
+          "description": "Full list of promotions currently associated with the feed.",
+          "items": {
+            "$ref": "#/$defs/Promotion"
+          }
+        }
+      },
+      "example": {
+        "promotions": [
+          {
+            "id": "promo_spring_sale",
+            "title": "Spring Sale",
+            "effective_period": {
+              "start_time": "2026-03-01T00:00:00Z",
+              "end_time": "2026-03-31T23:59:59Z"
+            },
+            "benefits": [
+              {
+                "type": "percent_off",
+                "percent_off": 20
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "UpsertPromotionsRequest": {
+      "description": "Request payload that partially upserts promotions into a feed. Promotions omitted from the request remain unchanged.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["promotions"],
+      "properties": {
+        "promotions": {
+          "type": "array",
+          "description": "Subset of promotions to create or update within the feed, matched by Promotion.id.",
+          "items": {
+            "$ref": "#/$defs/Promotion"
+          }
+        }
+      },
+      "example": {
+        "promotions": [
+          {
+            "id": "promo_spring_sale",
+            "title": "Spring Sale",
+            "status": "active",
+            "effective_period": {
+              "start_time": "2026-03-01T00:00:00Z",
+              "end_time": "2026-03-31T23:59:59Z"
+            },
+            "benefits": [
+              {
+                "type": "percent_off",
+                "percent_off": 20
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "UpsertPromotionsResponse": {
+      "description": "Acknowledgement returned after accepting a promotion upsert payload for a feed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "accepted"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifier for the feed whose promotion upsert was processed."
+        },
+        "accepted": {
+          "type": "boolean",
+          "description": "Whether the submitted promotion upsert payload was accepted for processing."
+        }
+      },
+      "example": {
+        "id": "feed_8f3K2x",
+        "accepted": true
+      }
+    },
     "Error": {
       "description": "Structured error returned when a feed request cannot be fulfilled.",
       "type": "object",

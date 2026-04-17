@@ -92,6 +92,107 @@
       }
     ]
   },
+  "get_promotions_response": {
+    "promotions": [
+      {
+        "id": "promo_spring_sale",
+        "title": "Spring Sale",
+        "status": "active",
+        "effective_period": {
+          "start_time": "2026-03-01T00:00:00Z",
+          "end_time": "2026-03-31T23:59:59Z"
+        },
+        "benefits": [
+          {
+            "type": "percent_off",
+            "percent_off": 20
+          }
+        ],
+        "applies_to": [
+          {
+            "product_id": "prod_classic_tee"
+          }
+        ]
+      }
+    ]
+  },
+  "upsert_promotions_request_amount_off": {
+    "promotions": [
+      {
+        "id": "promo_save10",
+        "title": "Save 10",
+        "status": "active",
+        "effective_period": {
+          "start_time": "2026-03-01T00:00:00Z",
+          "end_time": "2026-03-31T23:59:59Z"
+        },
+        "benefits": [
+          {
+            "type": "amount_off",
+            "amount_off": {
+              "amount": 1000,
+              "currency": "USD"
+            }
+          }
+        ],
+        "applies_to": [
+          {
+            "product_id": "prod_classic_tee",
+            "variant_ids": [
+              "sku123-red-s"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "upsert_promotions_request_percent_off": {
+    "promotions": [
+      {
+        "id": "promo_spring_sale",
+        "title": "Spring Sale",
+        "status": "active",
+        "effective_period": {
+          "start_time": "2026-03-01T00:00:00Z",
+          "end_time": "2026-03-31T23:59:59Z"
+        },
+        "benefits": [
+          {
+            "type": "percent_off",
+            "percent_off": 20
+          }
+        ],
+        "applies_to": [
+          {
+            "product_id": "prod_classic_tee"
+          }
+        ]
+      }
+    ]
+  },
+  "upsert_promotions_request_free_shipping": {
+    "promotions": [
+      {
+        "id": "promo_free_ship",
+        "title": "Free Shipping",
+        "status": "scheduled",
+        "effective_period": {
+          "start_time": "2026-03-15T00:00:00Z",
+          "end_time": "2026-03-31T23:59:59Z"
+        },
+        "benefits": [
+          {
+            "type": "free_shipping"
+          }
+        ],
+        "applies_to": [
+          {
+            "product_id": "prod_classic_tee"
+          }
+        ]
+      }
+    ]
+  },
   "feed_error_not_found": {
     "type": "invalid_request",
     "code": "feed_not_found",
@@ -103,5 +204,11 @@
     "code": "invalid_product_payload",
     "message": "products must contain at least one valid Product",
     "param": "products"
+  },
+  "feed_error_invalid_promotion_request": {
+    "type": "invalid_request",
+    "code": "invalid_promotion_payload",
+    "message": "promotions must contain at least one valid Promotion",
+    "param": "promotions"
   }
 }
