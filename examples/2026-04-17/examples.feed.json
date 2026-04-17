@@ -1,0 +1,107 @@
+{
+  "create_feed_request_minimal": {
+    "target_country": "US"
+  },
+  "create_feed_response": {
+    "id": "feed_8f3K2x",
+    "target_country": "US",
+    "updated_at": "2026-03-01T00:00:00Z"
+  },
+  "get_feed_response": {
+    "id": "feed_8f3K2x",
+    "target_country": "US",
+    "updated_at": "2026-03-01T00:00:00Z"
+  },
+  "get_products_response": {
+    "products": [
+      {
+        "id": "prod_classic_tee",
+        "title": "Classic Tee",
+        "variants": [
+          {
+            "id": "sku123-red-s",
+            "title": "Classic Tee - Red / Small"
+          }
+        ]
+      }
+    ]
+  },
+  "upsert_products_request_single_product": {
+    "products": [
+      {
+        "id": "prod_classic_tee",
+        "title": "Classic Tee",
+        "description": {
+          "plain": "A classic cotton tee with a soft feel and relaxed fit."
+        },
+        "url": "https://merchant.com/products/classic-tee",
+        "media": [
+          {
+            "type": "image",
+            "url": "https://cdn.merchant.com/products/classic-tee/main.jpg",
+            "alt_text": "Classic Tee front view"
+          }
+        ],
+        "variants": [
+          {
+            "id": "sku124-red-m",
+            "title": "Classic Tee - Red / Medium",
+            "description": {
+              "plain": "Classic cotton tee in red, size medium."
+            },
+            "url": "https://merchant.com/products/classic-tee?variant=sku124-red-m",
+            "barcodes": [
+              {
+                "type": "GTIN",
+                "value": "00012345600029"
+              }
+            ],
+            "price": {
+              "amount": 1999,
+              "currency": "USD"
+            },
+            "availability": {
+              "available": false,
+              "status": "out_of_stock"
+            },
+            "variant_options": [
+              {
+                "name": "Color",
+                "value": "Red"
+              },
+              {
+                "name": "Size",
+                "value": "Medium"
+              }
+            ],
+            "media": [
+              {
+                "type": "image",
+                "url": "https://cdn.merchant.com/products/classic-tee/red-medium-1.jpg",
+                "alt_text": "Classic Tee in red, size medium"
+              }
+            ],
+            "seller": {
+              "name": "Example Merchant"
+            },
+            "marketplace": {
+              "name": "Example Marketplace"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "feed_error_not_found": {
+    "type": "invalid_request",
+    "code": "feed_not_found",
+    "message": "Feed not found",
+    "param": "id"
+  },
+  "feed_error_invalid_request": {
+    "type": "invalid_request",
+    "code": "invalid_product_payload",
+    "message": "products must contain at least one valid Product",
+    "param": "products"
+  }
+}

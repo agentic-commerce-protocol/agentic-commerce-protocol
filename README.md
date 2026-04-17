@@ -34,6 +34,7 @@ spec/
 ├── 2025-12-12/              # Fulfillment enhancements
 ├── 2026-01-16/              # Capability negotiation
 ├── 2026-01-30/              # Extensions, discounts, payment handlers
+├── 2026-04-17/              # Cart, feed, orders, authentication, and MCP
 └── unreleased/              # Current development
 
 examples/
@@ -41,12 +42,14 @@ examples/
 ├── 2025-12-12/
 ├── 2026-01-16/
 ├── 2026-01-30/
+├── 2026-04-17/
 └── unreleased/
 
 changelog/
 ├── 2025-09-29.md
 ├── 2025-12-12.md
 ├── 2026-01-30.md
+├── 2026-04-17.md
 └── unreleased/              # Individual changelog entries (current development)
 
 docs/
@@ -67,9 +70,9 @@ legal/cla/
 | Spec Type          | Latest Stable                                        | Description                                                        |
 | ------------------ | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | **RFC (Markdown)** | [rfcs/](rfcs/)                                       | Human-readable design doc with rationale, flows, and rollout plan. |
-| **OpenAPI (YAML)** | [spec/2026-01-30/openapi/](spec/2026-01-30/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
-| **JSON Schema**    | [spec/2026-01-30/json-schema/](spec/2026-01-30/json-schema/) | Data models for payloads, events, and reusable objects.    |
-| **Examples**       | [examples/2026-01-30/](examples/2026-01-30/)         | Sample requests, responses.                                        |
+| **OpenAPI (YAML)** | [spec/2026-04-17/openapi/](spec/2026-04-17/openapi/) | Machine-readable HTTP API spec for integrating checkout endpoints. |
+| **JSON Schema**    | [spec/2026-04-17/json-schema/](spec/2026-04-17/json-schema/) | Data models for payloads, events, and reusable objects.    |
+| **Examples**       | [examples/2026-04-17/](examples/2026-04-17/)         | Sample requests, responses.                                        |
 | **Changelog**      | [changelog/](changelog/)                             | API version history and breaking changes.                          |
 
 ---
@@ -104,12 +107,12 @@ ACP has been **first implemented by both OpenAI and Stripe**, providing producti
 
 To start building with ACP:
 
-1. Review this repo's [OpenAPI specs](spec/2026-01-30/openapi/) and [JSON Schemas](spec/2026-01-30/json-schema/) for the latest stable version.
+1. Review this repo's [OpenAPI specs](spec/2026-04-17/openapi/) and [JSON Schemas](spec/2026-04-17/json-schema/) for the latest stable version.
 2. Choose a reference implementation:
    - Use OpenAI's implementation to integrate with ChatGPT and other AI agent surfaces.
    - Use Stripe's implementation to leverage its payment and merchant tooling.
 3. Follow the guides provided in the linked documentation.
-4. Test using the [examples](examples/2026-01-30/) provided in this repo.
+4. Test using the [examples](examples/2026-04-17/) provided in this repo.
 
 ---
 
@@ -117,8 +120,8 @@ To start building with ACP:
 
 | Area                  | Resource                                                                                                               |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Checkout API Spec     | [spec/2026-01-30/openapi/openapi.agentic_checkout.yaml](spec/2026-01-30/openapi/openapi.agentic_checkout.yaml)         |
-| Delegate Payment Spec | [spec/2026-01-30/openapi/openapi.delegate_payment.yaml](spec/2026-01-30/openapi/openapi.delegate_payment.yaml)         |
+| Checkout API Spec     | [spec/2026-04-17/openapi/openapi.agentic_checkout.yaml](spec/2026-04-17/openapi/openapi.agentic_checkout.yaml)         |
+| Delegate Payment Spec | [spec/2026-04-17/openapi/openapi.delegate_payment.yaml](spec/2026-04-17/openapi/openapi.delegate_payment.yaml)         |
 | Governance            | [docs/governance.md](docs/governance.md)                                                                               |
 | Project Principles    | [docs/principles-mission.md](docs/principles-mission.md)                                                               |
 | SEP Guidelines        | [docs/sep-guidelines.md](docs/sep-guidelines.md)                                                                       |
@@ -184,4 +187,3 @@ ACP is jointly governed by **OpenAI** and **Stripe** as Founding Maintainers, wi
 ## 📜 License
 
 Licensed under the [Apache 2.0 License](LICENSE).
-

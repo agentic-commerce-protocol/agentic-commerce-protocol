@@ -21,7 +21,7 @@ const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
 const yaml = require('js-yaml');
 
-const VERSIONS = ['2025-09-29', '2025-12-12', '2026-01-16', '2026-01-30', 'unreleased'];
+const VERSIONS = ['2025-09-29', '2025-12-12', '2026-01-16', '2026-01-30', '2026-04-17', 'unreleased'];
 const PROHIBITED_SCHEMAS = {
   'agentic_checkout': ['Refund'] // Refund should only be in webhook spec
 };
