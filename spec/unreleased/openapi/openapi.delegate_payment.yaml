@@ -555,7 +555,6 @@ components:
         - reason
         - max_amount
         - currency
-        - checkout_session_id
         - merchant_id
         - expires_at
       example:
