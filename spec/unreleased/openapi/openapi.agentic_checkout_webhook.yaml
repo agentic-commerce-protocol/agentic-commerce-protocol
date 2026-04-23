@@ -83,7 +83,7 @@ paths:
                     line_items:
                       - id: "li_shoes"
                         title: "Running Shoes"
-                        quantity: { ordered: 1, shipped: 0 }
+                        quantity: { ordered: 1, current: 1, fulfilled: 0 }
                         unit_price: 9900
                         subtotal: 9900
                     totals:
@@ -104,10 +104,10 @@ paths:
                     line_items:
                       - id: "li_shoes"
                         title: "Running Shoes"
-                        quantity: { ordered: 1, shipped: 1 }
+                        quantity: { ordered: 1, current: 1, fulfilled: 1 }
                         unit_price: 9900
                         subtotal: 9900
-                        status: "shipped"
+                        status: "fulfilled"
                     fulfillments:
                       - id: "ful_1"
                         type: "shipping"
@@ -136,7 +136,7 @@ paths:
                     id: "ord_456"
                     checkout_session_id: "checkout_session_456"
                     permalink_url: "https://example.com/orders/456"
-                    status: delivered
+                    status: completed
                     adjustments:
                       - id: "adj_1"
                         type: "refund"
@@ -236,8 +236,7 @@ components:
           type: "order"
           checkout_session_id: "cs_01HV3P3ABC123"
           permalink_url: "https://merchant.example.com/orders/ord_123456"
-          status: "shipped"
-          refunds: []
+          status: "processing"
 
     Error:
       type: object

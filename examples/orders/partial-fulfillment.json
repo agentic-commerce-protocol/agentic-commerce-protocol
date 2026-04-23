@@ -12,17 +12,17 @@
       "title": "Running Shoes - Size 10",
       "product_id": "prod_shoes_10",
       "image_url": "https://merchant.example.com/images/shoes.jpg",
-      "quantity": { "ordered": 3, "shipped": 3 },
+      "quantity": { "ordered": 3, "current": 3, "fulfilled": 3 },
       "unit_price": 12900,
       "subtotal": 38700,
-      "status": "shipped"
+      "status": "fulfilled"
     },
     {
       "id": "li_shirts",
       "title": "Cotton T-Shirt - Blue - Medium",
       "product_id": "prod_shirt_blue_m",
       "image_url": "https://merchant.example.com/images/shirt-blue.jpg",
-      "quantity": { "ordered": 2, "shipped": 0 },
+      "quantity": { "ordered": 2, "current": 2, "fulfilled": 0 },
       "unit_price": 2900,
       "subtotal": 5800,
       "status": "processing"

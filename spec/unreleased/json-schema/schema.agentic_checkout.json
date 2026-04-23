@@ -2512,10 +2512,10 @@
             "manual_review",
             "processing",
             "shipped",
-            "delivered",
+            "completed",
             "canceled"
           ],
-          "description": "Order-level status. Can be derived from line item and fulfillment statuses."
+          "description": "Order-level status. 'completed' means all items have been delivered/received regardless of fulfillment method. Distinct from LineItem.status 'fulfilled', which indicates the seller has dispatched the item."
         },
         "estimated_delivery": {
           "$ref": "#/$defs/EstimatedDelivery",
@@ -2627,11 +2627,10 @@
           "enum": [
             "processing",
             "partial",
-            "shipped",
-            "delivered",
-            "canceled"
+            "fulfilled",
+            "removed"
           ],
-          "description": "Derived: processing if shipped=0, partial if 0<shipped<ordered, shipped if shipped=ordered"
+          "description": "Derived from quantity fields: 'removed' if current==0, 'fulfilled' if fulfilled==current, 'partial' if 0<fulfilled<current, 'processing' otherwise."
         }
       },
       "required": [
@@ -2641,10 +2640,11 @@
       ],
       "example": {
         "id": "oli_001",
-        "line_item_id": "item_001",
+        "title": "Running Shoes",
         "status": "fulfilled",
         "quantity": {
           "ordered": 2,
+          "current": 2,
           "fulfilled": 2
         }
       }
@@ -2652,27 +2652,33 @@
     "OrderLineItemQuantity": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Quantity tracking for an order line item.",
+      "description": "Quantity tracking for an order line item. Uses a 3-field model: ordered (original), current (active after cancellations/returns), fulfilled (completed).",
       "properties": {
         "ordered": {
           "type": "integer",
           "minimum": 1,
-          "description": "How many the customer ordered"
+          "description": "Quantity originally ordered by the customer"
         },
-        "shipped": {
+        "current": {
           "type": "integer",
           "minimum": 0,
-          "description": "How many have been handed to carrier (optional, default 0)"
+          "description": "Current active quantity on the order. May be less than ordered due to cancellations or returns. A value of 0 means the line item has been fully removed."
+        },
+        "fulfilled": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Quantity that has been fulfilled (shipped, picked up, or digitally delivered). Applies to all fulfillment types, not just shipping."
         }
       },
       "required": [
-        "ordered"
+        "ordered",
+        "current"
       ],
       "example": {
-        "ordered": 2,
-        "fulfilled": 2,
-        "cancelled": 0,
-        "returned": 0
+        "ordered": 3,
+        "current": 3,
+        "fulfilled": 2
       }
     },
     "LineItemReference": {
@@ -2822,9 +2828,11 @@
             "ready_for_pickup",
             "delivered",
             "failed_attempt",
-            "returned"
+            "returned_to_sender",
+            "canceled",
+            "undeliverable"
           ],
-          "description": "Event type"
+          "description": "Event type. Common fulfillment lifecycle values. 'out_for_delivery' and 'ready_for_pickup' are ACP extensions for richer agent experiences."
         },
         "occurred_at": {
           "type": "string",
@@ -2864,15 +2872,14 @@
           "type": "string",
           "enum": [
             "refund",
-            "partial_refund",
-            "store_credit",
+            "credit",
             "return",
             "exchange",
+            "price_adjustment",
             "cancellation",
-            "dispute",
-            "chargeback"
+            "dispute"
           ],
-          "description": "Type of adjustment"
+          "description": "Type of adjustment. Use 'refund' for both full and partial refunds (distinguish by amount). 'credit' replaces 'store_credit'. 'dispute' covers chargebacks."
         },
         "occurred_at": {
           "type": "string",

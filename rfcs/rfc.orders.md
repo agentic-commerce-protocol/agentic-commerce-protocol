@@ -12,7 +12,7 @@ tracking, and refund visibility to buyers.
 
 ## 1. Scope & Goals
 
-- Enable **per-line-item tracking** with `quantity.ordered` and `quantity.shipped`
+- Enable **per-line-item tracking** with `quantity.ordered`, `quantity.current`, and `quantity.fulfilled`
 - Provide **fulfillment tracking** for shipping, pickup, and digital delivery
 - Support **fulfillment events** as an append-only log of delivery progress
 - Track **adjustments** for refunds, credits, returns, and disputes
@@ -33,7 +33,7 @@ Agents need to answer post-purchase questions:
 |----------|---------------|
 | "Where's my order?" | `fulfillments[]` with tracking info and events |
 | "What did I order?" | `line_items[]` with product details |
-| "Which items shipped?" | `line_items[].quantity.shipped` and fulfillment line item refs |
+| "Which items shipped?" | `line_items[].quantity.fulfilled` and fulfillment line item refs |
 | "Did I get a refund?" | `adjustments[]` with status |
 | "When will it arrive?" | `fulfillments[].estimated_delivery` and event history |
 
@@ -80,15 +80,19 @@ response and progressively add richer data as their systems support it:
 
 ### 3.2 Clear Quantity Semantics
 
-The `quantity` object uses explicit field names:
+The `quantity` object uses a 3-field model:
 
 | Field | Meaning | Mutable? |
 |-------|---------|----------|
-| `ordered` | Quantity originally ordered | Yes (if partially canceled) |
-| `shipped` | Quantity handed to carrier | Yes (increases over time) |
+| `ordered` | Quantity originally ordered | No (immutable) |
+| `current` | Active quantity on the order (may decrease via cancellations/returns) | Yes |
+| `fulfilled` | Quantity that has been fulfilled (shipped, picked up, or digitally delivered) | Yes (increases over time) |
 
-Future-extensible: `delivered`, `returned`, `canceled` can be added as optional
-fields without breaking existing implementations.
+**Status derivation from quantity:**
+- `removed` if `current == 0`
+- `fulfilled` if `fulfilled == current`
+- `partial` if `0 < fulfilled < current`
+- `processing` otherwise
 
 ### 3.3 Fulfillments, Not Shipments
 
@@ -128,7 +132,7 @@ The existing `Order` schema gains optional fields:
 - `manual_review` — Order held for fraud or manual review
 - `processing` — Being prepared
 - `shipped` — All items handed to carrier
-- `delivered` — All items delivered
+- `completed` — All items delivered/received by the buyer regardless of fulfillment method
 - `canceled` — Order canceled
 
 ### 4.2 OrderLineItem
@@ -151,15 +155,17 @@ The existing `Order` schema gains optional fields:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `ordered` | integer (≥1) | Yes | Quantity ordered |
-| `shipped` | integer (≥0) | No | Quantity shipped (default 0) |
+| `ordered` | integer (≥1) | Yes | Quantity originally ordered |
+| `current` | integer (≥0) | Yes | Active quantity (may decrease via cancellations/returns) |
+| `fulfilled` | integer (≥0) | No | Quantity fulfilled (default 0) |
+
+**Line item status values:** `processing`, `partial`, `fulfilled`, `removed`
 
 **Line item status derivation:**
-- `processing` — `shipped == 0`
-- `partial` — `0 < shipped < ordered`
-- `shipped` — `shipped == ordered`
-- `delivered` — All units delivered (derived from fulfillment events)
-- `canceled` — Line item canceled
+- `removed` — `current == 0`
+- `fulfilled` — `fulfilled == current`
+- `partial` — `0 < fulfilled < current`
+- `processing` — otherwise
 
 ### 4.3 Fulfillment
 
@@ -235,11 +241,13 @@ applicable statuses for each type:
 - `processing` — Being prepared
 - `shipped` — Handed to carrier
 - `in_transit` — In carrier network
-- `out_for_delivery` — On delivery vehicle
-- `ready_for_pickup` — Ready for customer pickup
+- `out_for_delivery` — On delivery vehicle (ACP extension)
+- `ready_for_pickup` — Ready for customer pickup (ACP extension)
 - `delivered` — Successfully delivered
 - `failed_attempt` — Delivery attempt failed
-- `returned` — Returned to sender
+- `returned_to_sender` — Returned to sender
+- `canceled` — Fulfillment canceled
+- `undeliverable` — Cannot be delivered
 
 ### 4.5 Adjustment
 
@@ -256,14 +264,13 @@ applicable statuses for each type:
 | `reason` | string | No | Structured reason code |
 
 **Adjustment type values:**
-- `refund` — Full refund
-- `partial_refund` — Partial refund
-- `store_credit` — Store credit issued
+- `refund` — Refund (full or partial — distinguish by amount)
+- `credit` — Store credit issued
 - `return` — Item return processed
 - `exchange` — Item exchanged
+- `price_adjustment` — Price change (e.g., price match, coupon applied post-purchase)
 - `cancellation` — Order/item canceled
-- `dispute` — Dispute opened
-- `chargeback` — Chargeback received
+- `dispute` — Dispute or chargeback
 
 **Adjustment status values:**
 - `pending` — In progress
@@ -317,15 +324,15 @@ Order with one fulfilled and one pending fulfillment:
     {
       "id": "li_shoes",
       "title": "Running Shoes",
-      "quantity": { "ordered": 3, "shipped": 3 },
+      "quantity": { "ordered": 3, "current": 3, "fulfilled": 3 },
       "unit_price": 9900,
       "subtotal": 29700,
-      "status": "shipped"
+      "status": "fulfilled"
     },
     {
       "id": "li_shirts",
       "title": "Cotton T-Shirt",
-      "quantity": { "ordered": 2, "shipped": 0 },
+      "quantity": { "ordered": 2, "current": 2, "fulfilled": 0 },
       "unit_price": 2500,
       "subtotal": 5000,
       "status": "processing"
@@ -376,15 +383,15 @@ original charged amount:
   "id": "ord_456",
   "checkout_session_id": "cs_789",
   "permalink_url": "https://merchant.com/orders/456",
-  "status": "delivered",
+  "status": "completed",
   "line_items": [
     {
       "id": "li_headphones",
       "title": "Wireless Headphones",
-      "quantity": { "ordered": 2, "shipped": 2 },
+      "quantity": { "ordered": 2, "current": 2, "fulfilled": 2 },
       "unit_price": 14900,
       "subtotal": 29800,
-      "status": "delivered"
+      "status": "fulfilled"
     }
   ],
   "adjustments": [
@@ -419,15 +426,15 @@ Order with a software license delivered digitally:
   "id": "ord_789",
   "checkout_session_id": "cs_012",
   "permalink_url": "https://merchant.com/orders/789",
-  "status": "delivered",
+  "status": "completed",
   "line_items": [
     {
       "id": "li_software",
       "title": "Pro Photo Editor - Annual License",
-      "quantity": { "ordered": 1, "shipped": 1 },
+      "quantity": { "ordered": 1, "current": 1, "fulfilled": 1 },
       "unit_price": 9900,
       "subtotal": 9900,
-      "status": "delivered"
+      "status": "fulfilled"
     }
   ],
   "fulfillments": [
@@ -485,24 +492,24 @@ Existing integrations that previously used `refunds[]` MUST migrate to
 
 ### 7.1 Status Derivation
 
-Merchants MAY derive `status` fields from the event log:
+Merchants MAY derive `status` fields from the quantity fields:
 
 **Line item status:**
 ```
-if (shipped == 0) → "processing"
-if (shipped > 0 && shipped < ordered) → "partial"
-if (shipped == ordered) → "shipped"
-// Check fulfillment events for "delivered" status
+if (current == 0) → "removed"
+if (fulfilled == current) → "fulfilled"
+if (fulfilled > 0 && fulfilled < current) → "partial"
+else → "processing"
 ```
 
 **Order status:**
 ```
 if (order just received) → "created"
 if (held for review) → "manual_review"
-if (all line items canceled) → "canceled"
-if (all line items delivered) → "delivered"
-if (all line items shipped) → "shipped"
-if (any line item shipped) → "processing"
+if (all line items removed) → "canceled"
+if (all fulfillments delivered) → "completed"
+if (all line items fulfilled but not all delivered) → "shipped"
+if (any line item in progress) → "processing"
 else → "confirmed"
 ```
 
@@ -520,6 +527,7 @@ An empty `adjustments: []` array means no post-order changes have occurred.
 
 ## 8. Change Log
 
+- **2026-04-23**: Post-checkout alignment — 3-field quantity model (`ordered`/`current`/`fulfilled`), line item status (`processing`/`partial`/`fulfilled`/`removed`), order status `delivered`→`completed`, fulfillment event types (add `canceled`/`undeliverable`, rename `returned`→`returned_to_sender`), adjustment types (merge `refund`+`partial_refund`, rename `store_credit`→`credit`, add `price_adjustment`, merge `chargeback` into `dispute`)
 - **2026-02-11**: Totals alignment — Replaced flat `OrderTotals` object with `Total[]` array (reusing checkout spec's `Total` schema); added `amount_refunded` to `Total.type` enum
 - **2026-02-10**: Review feedback — Extended Order.status enum (`created`, `manual_review`); added `amount_refunded` to OrderTotals; documented `total` as original charge amount; added `digital_delivery` sub-object to Fulfillment; added `ready_for_pickup` status; documented per-type status applicability; clarified `Adjustment.amount` as tax-inclusive; updated webhook spec to compose Order via `$ref`; removed `refunds[]` in favor of `adjustments[]`
 - **2026-02-05**: Initial draft — Added OrderLineItem, Fulfillment, FulfillmentEvent, Adjustment, OrderTotals schemas

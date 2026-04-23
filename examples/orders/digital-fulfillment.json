@@ -5,7 +5,7 @@
   "checkout_session_id": "cs_mno456",
   "permalink_url": "https://merchant.example.com/orders/ord_digital_201",
   "order_number": "ORD-2026-00201",
-  "status": "delivered",
+  "status": "completed",
   "line_items": [
     {
       "id": "li_software",
@@ -13,10 +13,10 @@
       "product_id": "prod_photo_editor_pro",
       "image_url": "https://merchant.example.com/images/photo-editor.jpg",
       "url": "https://merchant.example.com/products/photo-editor-pro",
-      "quantity": { "ordered": 1, "shipped": 1 },
+      "quantity": { "ordered": 1, "current": 1, "fulfilled": 1 },
       "unit_price": 9900,
       "subtotal": 9900,
-      "status": "delivered"
+      "status": "fulfilled"
     }
   ],
   "fulfillments": [

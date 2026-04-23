@@ -5,26 +5,26 @@
   "checkout_session_id": "cs_jkl789",
   "permalink_url": "https://merchant.example.com/orders/ord_refund_101",
   "order_number": "ORD-2026-00101",
-  "status": "delivered",
+  "status": "completed",
   "line_items": [
     {
       "id": "li_headphones",
       "title": "Wireless Noise-Canceling Headphones",
       "product_id": "prod_headphones_nc",
       "image_url": "https://merchant.example.com/images/headphones.jpg",
-      "quantity": { "ordered": 2, "shipped": 2 },
+      "quantity": { "ordered": 2, "current": 2, "fulfilled": 2 },
       "unit_price": 29900,
       "subtotal": 59800,
-      "status": "delivered"
+      "status": "fulfilled"
     },
     {
       "id": "li_cable",
       "title": "USB-C Charging Cable",
       "product_id": "prod_cable_usbc",
-      "quantity": { "ordered": 1, "shipped": 1 },
+      "quantity": { "ordered": 1, "current": 1, "fulfilled": 1 },
       "unit_price": 1900,
       "subtotal": 1900,
-      "status": "delivered"
+      "status": "fulfilled"
     }
   ],
   "fulfillments": [
