@@ -5,7 +5,7 @@
   "checkout_session_id": "cs_def123",
   "permalink_url": "https://merchant.example.com/orders/ord_shipped_456",
   "order_number": "ORD-2026-00456",
-  "status": "delivered",
+  "status": "completed",
   "line_items": [
     {
       "id": "li_laptop",
@@ -14,19 +14,19 @@
       "description": "Apple MacBook Pro 16-inch with M3 Pro chip",
       "image_url": "https://merchant.example.com/images/mbp16.jpg",
       "url": "https://merchant.example.com/products/macbook-pro-16",
-      "quantity": { "ordered": 1, "shipped": 1 },
+      "quantity": { "ordered": 1, "current": 1, "fulfilled": 1 },
       "unit_price": 249900,
       "subtotal": 249900,
-      "status": "delivered"
+      "status": "fulfilled"
     },
     {
       "id": "li_case",
       "title": "Laptop Sleeve",
       "product_id": "prod_sleeve",
-      "quantity": { "ordered": 1, "shipped": 1 },
+      "quantity": { "ordered": 1, "current": 1, "fulfilled": 1 },
       "unit_price": 4900,
       "subtotal": 4900,
-      "status": "delivered"
+      "status": "fulfilled"
     }
   ],
   "fulfillments": [
