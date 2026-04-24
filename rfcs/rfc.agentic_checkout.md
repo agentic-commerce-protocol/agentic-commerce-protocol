@@ -200,6 +200,21 @@ Message resolution values:
 Intervention-related error codes:
 - `intervention_required`: Returned as a session message when the session requires an intervention that the agent cannot handle. The merchant declares required interventions via `capabilities.interventions.required` and `enforcement` on the session response. If the agent's declared `capabilities.interventions.supported` does not include a required type and `enforcement` is `always`, the merchant **SHOULD** include a message with `code: "intervention_required"`. This is distinct from `requires_3ds`, which is returned when the agent calls `complete_checkout_session` without `authentication_result` while the session is in `authentication_required` state.
 
+### 5.1 Markdown Content Specification
+
+When `content_type` is `"markdown"` on Disclosure, MessageInfo, MessageWarning, or MessageError, the `content` field:
+
+- **MUST** conform to [CommonMark version 0.31.2](https://spec.commonmark.org/0.31.2/).
+- **MUST NOT** contain [raw HTML elements](https://spec.commonmark.org/0.31.2/#raw-html) (e.g., `<script>`, `<div>`, `<img>`, `<iframe>`).
+
+**Shared responsibility model:**
+
+- **Sellers** MUST author CommonMark-compliant markdown without raw HTML.
+- **Servers** MUST validate inbound markdown and reject content containing raw HTML.
+- **Agents** MUST render markdown using a CommonMark-compliant parser with raw HTML output disabled or sanitized.
+
+When `content_type` is `"plain"`, the `content` field is plain text with no formatting semantics.
+
 - **Link**: `type` (`terms_of_use|privacy_policy|return_policy`), `url`
 - **Total**: `type`, `display_text`, `amount` (**int**), `description?`
 

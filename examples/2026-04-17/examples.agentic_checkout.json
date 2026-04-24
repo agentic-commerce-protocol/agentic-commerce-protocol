@@ -57,7 +57,7 @@
   "create_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {
       "payment": {
@@ -295,7 +295,7 @@
   "update_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {
       "payment": { "handlers": [] },
@@ -518,7 +518,7 @@
   "complete_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {
       "payment": { "handlers": [] },
@@ -678,7 +678,7 @@
   "get_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {
       "payment": { "handlers": [] },
@@ -831,7 +831,7 @@
   "cancel_checkout_session_response": {
     "id": "checkout_session_123",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {
       "payment": { "handlers": [] },
@@ -983,7 +983,7 @@
   "checkout_session_authentication_required": {
     "id": "checkout_session_3ds_001",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {
       "payment": {
@@ -1245,7 +1245,7 @@
   "checkout_session_with_out_of_stock": {
     "id": "checkout_session_oos_001",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {},
     "status": "not_ready_for_payment",
@@ -1364,7 +1364,7 @@
   "checkout_session_with_payment_declined": {
     "id": "checkout_session_pd_001",
     "protocol": {
-      "version": "2026-01-30"
+      "version": "2026-04-17"
     },
     "capabilities": {},
     "status": "ready_for_payment",
@@ -1487,12 +1487,13 @@
   "discovery_response_full": {
     "protocol": {
       "name": "acp",
-      "version": "2026-01-30",
+      "version": "2026-04-17",
       "supported_versions": [
         "2025-09-29",
         "2025-12-12",
         "2026-01-16",
-        "2026-01-30"
+        "2026-01-30",
+        "2026-04-17"
       ],
       "documentation_url": "https://agenticcommerce.dev"
     },

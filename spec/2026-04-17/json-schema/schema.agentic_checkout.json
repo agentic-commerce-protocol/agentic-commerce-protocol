@@ -178,7 +178,7 @@
         },
         "company": {
           "type": "string",
-          "description": "Company or organization name"
+          "description": "Postal or ZIP code"
         }
       },
       "required": [
@@ -2142,7 +2142,7 @@
         "version"
       ],
       "example": {
-        "version": "2026-01-30"
+        "version": "2026-04-17"
       }
     },
     "DiscountAllocation": {
@@ -3766,8 +3766,8 @@
       "example": {
         "protocol": {
           "name": "acp",
-          "version": "2026-01-30",
-          "supported_versions": ["2025-09-29", "2026-01-30"]
+          "version": "2026-04-17",
+          "supported_versions": ["2025-09-29", "2026-01-30", "2026-04-17"]
         },
         "api_base_url": "https://acp.stripe.com/api",
         "transports": ["rest"],
@@ -3869,8 +3869,8 @@
       "required": ["name", "version", "supported_versions"],
       "example": {
         "name": "acp",
-        "version": "2026-01-30",
-        "supported_versions": ["2025-09-29", "2026-01-30"],
+        "version": "2026-04-17",
+        "supported_versions": ["2025-09-29", "2026-01-30", "2026-04-17"],
         "documentation_url": "https://agenticcommerce.dev"
       }
     },

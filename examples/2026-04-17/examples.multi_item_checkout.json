@@ -1,0 +1,212 @@
+{
+  "create_multi_item_checkout_request": {
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "item_123",
+        "unit_amount": 300
+      },
+      {
+        "id": "item_456",
+        "unit_amount": 500
+      }
+    ],
+    "fulfillment_details": {
+      "name": "John Doe",
+      "phone_number": "15551234567",
+      "email": "johndoe@example.com",
+      "address": {
+        "name": "John Doe",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    }
+  },
+  "create_multi_item_checkout_response": {
+    "id": "checkout_session_multi_001",
+    "protocol": {
+      "version": "2026-01-22",
+      "capabilities": []
+    },
+    "status": "ready_for_payment",
+    "currency": "usd",
+    "line_items": [
+      {
+        "id": "line_item_123",
+        "item": {
+          "id": "item_123",
+          "unit_amount": 300
+        },
+        "quantity": 2,
+        "name": "Vintage Denim Jacket",
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg"
+        ],
+        "unit_amount": 300,
+        "custom_attributes": [
+          {
+            "display_name": "Size",
+            "value": "Medium"
+          }
+        ],
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 600
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 0
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 600
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 60
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 660
+          }
+        ]
+      },
+      {
+        "id": "line_item_456",
+        "item": {
+          "id": "item_456",
+          "unit_amount": 500
+        },
+        "quantity": 1,
+        "name": "Leather Belt",
+        "description": "Hand-stitched brown leather belt with antique brass buckle",
+        "images": [
+          "https://www.testshop.com/products/item_456/image1.jpg"
+        ],
+        "unit_amount": 500,
+        "custom_attributes": [
+          {
+            "display_name": "Size",
+            "value": "32"
+          }
+        ],
+        "totals": [
+          {
+            "type": "base_amount",
+            "display_text": "Base Amount",
+            "amount": 500
+          },
+          {
+            "type": "discount",
+            "display_text": "Discount",
+            "amount": 50
+          },
+          {
+            "type": "subtotal",
+            "display_text": "Subtotal",
+            "amount": 450
+          },
+          {
+            "type": "tax",
+            "display_text": "Tax",
+            "amount": 45
+          },
+          {
+            "type": "total",
+            "display_text": "Total",
+            "amount": 495
+          }
+        ]
+      }
+    ],
+    "fulfillment_details": {
+      "name": "John Doe",
+      "phone_number": "15551234567",
+      "email": "johndoe@example.com",
+      "address": {
+        "name": "John Doe",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US",
+        "postal_code": "94131"
+      }
+    },
+    "selected_fulfillment_options": [
+      {
+        "type": "shipping",
+        "option_id": "fulfillment_option_combined",
+        "item_ids": ["item_123", "item_456"]
+      }
+    ],
+    "totals": [
+      {
+        "type": "items_base_amount",
+        "display_text": "Item(s) total",
+        "amount": 1100
+      },
+      {
+        "type": "discount",
+        "display_text": "Discount",
+        "amount": 50
+      },
+      {
+        "type": "subtotal",
+        "display_text": "Subtotal",
+        "amount": 1050
+      },
+      {
+        "type": "tax",
+        "display_text": "Tax",
+        "amount": 105
+      },
+      {
+        "type": "fulfillment",
+        "display_text": "Fulfillment",
+        "amount": 150
+      },
+      {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 1305
+      }
+    ],
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "fulfillment_option_combined",
+        "title": "Standard Shipping",
+        "description": "Arrives in 4-5 days",
+        "carrier": "USPS",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "totals": [
+          { "type": "total", "display_text": "Shipping", "amount": 150 }
+        ]
+      }
+    ],
+    "messages": [],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
+      }
+    ]
+  }
+}

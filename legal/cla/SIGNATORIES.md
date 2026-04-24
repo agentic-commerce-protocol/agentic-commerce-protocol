@@ -2,7 +2,7 @@
 
 This file tracks contributors who have signed the Agentic Commerce Protocol Contributor License Agreement as required by Section 2.4 of the Collaboration and Governance Agreement dated November 21, 2025.
 
-Last updated: 2026-01-06
+Last updated: 2026-04-17
 
 ## Corporate CLA Signatories
 
@@ -10,7 +10,15 @@ Last updated: 2026-01-06
 |------------------|-------------|------------------|-------------------------|-----------|
 | Stripe, Inc. | 2025-11-21 | prasad-stripe | prasad-stripe,bharath-stripe,stevekaliski-stripe,nvp-stripe,elorakelkel-stripe,mfix-stripe | NA |
 | OpenAI LLC | 2025-11-21 | aravindrao-oai | aravindrao-oai,riley-oai,bhavinmodi-oai,brianlin-oai | NA |
-| Adyen N.V. | 2026-01-28 | pedroreis-adyen | jose-adyen,johnny-adyen,dean-adyen,pedroreis-adyen | NA |
+| Adyen N.V. | 2026-01-28 | pedroreis-adyen | jose-adyen,johnny-adyen,dean-adyen,pedroreis-adyen | #87 |
+| Wix.com Ltd. | 2026-02-19 | nazark-wix | nazark-wix,olehtarapata,shayh3,evgenywix,avivfa-wix,oleksandrba | #155 |
+| commercetools Inc. | 2026-02-19 | prateek-ct | prateek-ct,lgiavedoni | #145 |
+| OpenCommerce Network Inc. | 2026-02-26 | Barak Ben-Rachel | Barak-OC,dean-harel-nekuda-ai,ilayalog,vladikk,Idan-Levin | #163 |
+| Affirm Inc. | 2026-03-09 | Ethan Melnick | vcello,mirzar,tlevy | #172 |
+| Meta Platforms, Inc. | 2026-03-19 | poshannessy | lhwa,jamesandersen,srikun,kaichen2000,bretlorimore | #185 |
+| Agentic Commerce Inc. (Catalog) | 2026-03-30 | Dylan Farrell | dylanfarrell,h-gunasekara,jaycatalog,lukecatalog | #206 |
+| PayPal, Inc. | 2026-04-16 | cmonty-paypal | cmonty-paypal,sjparsons,bbcoumes,pranshu-10,jvujjini,sioked,wsbrunson,shubhamkokul,wenjiezhou,remotevision,zvuki,nmikhol,praneethiyyapu,mokinator | #210 |
+
 
 
 ## Individual CLA Signatories

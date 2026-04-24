@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Agentic Checkout API
-  version: unreleased
+  version: "2026-04-17"
   description: |
     Merchant-implemented REST API for ChatGPT-driven checkout.
     Implements create, update (POST), retrieve (GET), complete, and cancel of checkout sessions.
@@ -440,7 +440,7 @@ components:
       schema:
         type: string
         format: date-time
-        example: "2026-01-30T10:30:00Z"
+        example: "2026-04-17T10:30:00Z"
     APIVersion:
       name: API-Version
       in: header
@@ -2525,7 +2525,7 @@ components:
       required:
         - version
       example:
-        version: "2026-01-30"
+        version: "2026-04-17"
     DiscountAllocation:
       type: object
       additionalProperties: false
