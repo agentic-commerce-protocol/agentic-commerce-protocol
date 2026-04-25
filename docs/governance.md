@@ -97,6 +97,7 @@ TSC or Founding Maintainers for more details on the process.
 |------|-------------|-------------------|
 | 1    | OpenAI      | aravindrao-openai |
 | 2    | Stripe      | prasad-stripe     |
+| 3    | Meta        | lhwa              |
 
 ---
 

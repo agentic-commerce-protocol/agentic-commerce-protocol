@@ -6,3 +6,4 @@ Below are the current maintainers of the Agentic Commerce Protocol.
 
 - OpenAI
 - Stripe
+- Meta

@@ -1,0 +1,116 @@
+{
+  "cancel_with_price_sensitivity_request": {
+    "intent_trace": {
+      "reason_code": "price_sensitivity",
+      "trace_summary": "Found same headphones at Best Buy for $30 less with member pricing.",
+      "metadata": {
+        "max_budget": 17999,
+        "competitor_source": "bestbuy.com",
+        "competitor_price": 16999
+      }
+    }
+  },
+
+  "cancel_with_shipping_cost_request": {
+    "intent_trace": {
+      "reason_code": "shipping_cost",
+      "trace_summary": "$12.99 shipping on a $25 order. Amazon has same item with free Prime shipping.",
+      "metadata": {
+        "shipping_amount": 1299,
+        "order_subtotal": 2500,
+        "target_shipping_cost": 0,
+        "competitor_reference": "amazon_prime"
+      }
+    }
+  },
+
+  "cancel_with_shipping_speed_request": {
+    "intent_trace": {
+      "reason_code": "shipping_speed",
+      "trace_summary": "Earliest delivery is 8 days out. Need this by Friday for a birthday.",
+      "metadata": {
+        "earliest_delivery_days": 8,
+        "needed_by": "2026-02-21"
+      }
+    }
+  },
+
+  "cancel_with_comparison_request": {
+    "intent_trace": {
+      "reason_code": "comparison",
+      "trace_summary": "Checking two other stores before deciding. This is the second of three.",
+      "metadata": {
+        "comparison_count": 3,
+        "current_position": 2
+      }
+    }
+  },
+
+  "cancel_with_timing_deferred_request": {
+    "intent_trace": {
+      "reason_code": "timing_deferred",
+      "trace_summary": "Buyer wants to wait for next month's paycheck. Plans to purchase after March 1.",
+      "metadata": {
+        "intended_purchase_after": "2026-03-01"
+      }
+    }
+  },
+
+  "cancel_with_payment_options_request": {
+    "intent_trace": {
+      "reason_code": "payment_options",
+      "trace_summary": "Buyer wants to pay with Afterpay (buy-now-pay-later). Merchant only accepts card and PayPal.",
+      "metadata": {
+        "desired_payment_method": "afterpay",
+        "available_methods": "card,paypal"
+      }
+    }
+  },
+
+  "cancel_with_trust_security_request": {
+    "intent_trace": {
+      "reason_code": "trust_security",
+      "trace_summary": "No HTTPS padlock on checkout page. No visible reviews or ratings for this merchant.",
+      "metadata": {
+        "concern": "merchant_credibility"
+      }
+    }
+  },
+
+  "cancel_with_returns_policy_request": {
+    "intent_trace": {
+      "reason_code": "returns_policy",
+      "trace_summary": "Final sale, no returns. Buyer unsure about sizing for this brand.",
+      "metadata": {
+        "return_window_days": 0,
+        "reason": "sizing_uncertainty"
+      }
+    }
+  },
+
+  "cancel_with_product_fit_request": {
+    "intent_trace": {
+      "reason_code": "product_fit",
+      "trace_summary": "Laptop specs don't match what buyer needs. 8GB RAM, buyer needs 16GB minimum for development work.",
+      "metadata": {
+        "required_spec": "ram_16gb",
+        "offered_spec": "ram_8gb"
+      }
+    }
+  },
+
+  "cancel_with_minimal_trace_request": {
+    "intent_trace": {
+      "reason_code": "other"
+    }
+  },
+
+  "cancel_without_trace_request": {},
+
+  "cancel_malformed_trace_error": {
+    "type": "invalid_request",
+    "code": "invalid_type",
+    "message": "metadata values must be strings, numbers, or booleans. Found object at $.intent_trace.metadata.nested_object",
+    "param": "$.intent_trace.metadata.nested_object"
+  }
+}
