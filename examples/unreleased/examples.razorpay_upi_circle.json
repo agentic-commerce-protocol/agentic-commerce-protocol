@@ -1,0 +1,71 @@
+{
+  "razorpay_upi_circle_request": {
+    "payment_method": {
+      "type": "upi_circle",
+      "delegate_id": "ucirc_P6WA7b8Ys3qKm2",
+      "user_vpa": "user@okicici"
+    },
+    "credential": {
+      "type": "upi_circle_cryptogram",
+      "value": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
+      "expires_at": "2026-04-15T10:35:00Z"
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 49900,
+      "currency": "inr",
+      "checkout_session_id": "csn_01HV3P3XYZ789",
+      "merchant_id": "rzp_live_abc123xyz",
+      "expires_at": "2026-04-15T11:00:00Z"
+    },
+    "risk_signals": [],
+    "metadata": {
+      "session_id": "sess_abc123",
+      "user_agent": "ChatGPT/4.0"
+    }
+  },
+  "razorpay_upi_circle_success_response": {
+    "id": "dp_ucirc_P6WMPl2NNnnLFk",
+    "created": "2026-04-15T10:30:00Z",
+    "metadata": {
+      "payment_id": "pay_P6WMPl2NNnnLFk",
+      "upi_txn_id": "318219246640",
+      "session_id": "sess_abc123",
+      "merchant_id": "rzp_live_abc123xyz"
+    }
+  },
+  "razorpay_upi_circle_error_invalid_delegate_id": {
+    "type": "invalid_request",
+    "code": "invalid_delegate_id",
+    "message": "UPI Circle mandate not found for the provided delegate_id",
+    "param": "$.payment_method.delegate_id"
+  },
+  "razorpay_upi_circle_error_delegate_id_expired": {
+    "type": "invalid_request",
+    "code": "delegate_id_expired",
+    "message": "UPI Circle mandate has expired and cannot be used for new payments",
+    "param": "$.payment_method.delegate_id"
+  },
+  "razorpay_upi_circle_error_credential_expired": {
+    "type": "invalid_request",
+    "code": "credential_expired",
+    "message": "UPI Circle cryptogram has expired. Fetch a new cryptogram from Razorpay TSP before retrying.",
+    "param": "$.credential.expires_at"
+  },
+  "razorpay_upi_circle_error_amount_exceeds_mandate_limit": {
+    "type": "invalid_request",
+    "code": "amount_exceeds_mandate_limit",
+    "message": "Transaction amount exceeds the UPI Circle mandate ceiling",
+    "param": "$.allowance.max_amount"
+  },
+  "razorpay_upi_circle_error_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Idempotency-Key has already been used with a different request body"
+  },
+  "razorpay_upi_circle_error_rate_limit": {
+    "type": "rate_limit_exceeded",
+    "code": "too_many_requests",
+    "message": "Too many requests, please retry later"
+  }
+}
