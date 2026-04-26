@@ -105,6 +105,44 @@
               "supports_3ds": true
             },
             "display_order": 0
+          },
+          {
+            "id": "razorpay_upi",
+            "name": "in.razorpay.upi",
+            "display_name": "UPI",
+            "version": "2026-04-06",
+            "spec": "https://acp.dev/handlers/razorpay/upi",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "razorpay",
+            "config_schema": "https://acp.dev/schemas/handlers/razorpay/upi/config.json",
+            "instrument_schemas": ["https://acp.dev/schemas/handlers/razorpay/upi/instrument.json"],
+            "config": {
+              "merchant_id": "rzp_live_abc123xyz",
+              "psp": "razorpay",
+              "accepted_flows": ["collect", "intent", "upi_number", "qr_code"],
+              "environment": "production"
+            },
+            "display_order": 2
+          },
+          {
+            "id": "razorpay_reserve_pay",
+            "name": "in.razorpay.reserve_pay",
+            "display_name": "Reserve Pay",
+            "version": "2026-04-06",
+            "spec": "https://acp.dev/handlers/razorpay/reserve_pay",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "psp": "razorpay",
+            "config_schema": "https://acp.dev/schemas/handlers/razorpay/reserve_pay/config.json",
+            "instrument_schemas": ["https://acp.dev/schemas/handlers/razorpay/reserve_pay/instrument.json"],
+            "config": {
+              "merchant_id": "rzp_live_abc123xyz",
+              "psp": "razorpay",
+              "accepted_instruments": ["card", "upi", "netbanking", "wallet", "paylater"],
+              "environment": "production"
+            },
+            "display_order": 3
           }
         ]
       },
@@ -478,6 +516,47 @@
           "type": "spt",
           "token": "vt_01J8Z3WXYZ9ABC"
         }
+      }
+    }
+  },
+  "complete_checkout_session_request_razorpay_upi": {
+    "buyer": {
+      "first_name": "Raj",
+      "last_name": "Kumar",
+      "email": "raj.kumar@example.com",
+      "phone_number": "+919876543210"
+    },
+    "payment_data": {
+      "handler_id": "razorpay_upi",
+      "instrument": {
+        "type": "upi",
+        "credential": {
+          "type": "spt",
+          "token": "vt_upi_razorpay_abc123"
+        },
+        "upi_id": "raj.kumar@upi",
+        "flow": "collect"
+      }
+    }
+  },
+  "complete_checkout_session_request_razorpay_reserve_pay": {
+    "buyer": {
+      "first_name": "Priya",
+      "last_name": "Sharma",
+      "email": "priya.sharma@example.com",
+      "phone_number": "+919123456789"
+    },
+    "payment_data": {
+      "handler_id": "razorpay_reserve_pay",
+      "instrument": {
+        "type": "tokenized_card",
+        "credential": {
+          "type": "spt",
+          "token": "vt_rzp_reserve_xyz789"
+        },
+        "instrument_type": "card",
+        "display_last4": "4242",
+        "display_brand": "visa"
       }
     }
   },
