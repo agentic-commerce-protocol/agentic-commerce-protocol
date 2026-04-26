@@ -77,6 +77,12 @@ paths:
                     - type: card_testing
                       score: 10
                       action: manual_review
+                  risk_context:
+                    ip_address: 203.0.113.45
+                    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
+                    accept_language: "en-US,en;q=0.9"
+                    session_id: sess_abc123
+                    device_fingerprint: fp_xyz789
                   metadata:
                     campaign: q4
       responses:
@@ -319,6 +325,9 @@ components:
           description: List of risk assessment signals from fraud detection
           items:
             $ref: "#/components/schemas/RiskSignal"
+        risk_context:
+          $ref: "#/components/schemas/RiskContext"
+          description: Optional raw buyer and device telemetry available at delegation time. Carries the same shape as complete_checkout.risk_signals so platforms that already collect this data can forward it without overloading risk_signals or metadata.
         metadata:
           type: object
           description: Additional metadata for the request
@@ -366,6 +375,12 @@ components:
           - type: card_testing
             score: 5
             action: authorized
+        risk_context:
+          ip_address: 203.0.113.45
+          user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
+          accept_language: "en-US,en;q=0.9"
+          session_id: sess_abc123
+          device_fingerprint: fp_xyz789
         metadata:
           session_id: sess_abc123
           user_agent: ChatGPT/2.0
@@ -594,6 +609,32 @@ components:
         score: 15
         action: manual_review
       description: Fraud detection signal indicating detected risk patterns and recommended actions
+    RiskContext:
+      type: object
+      additionalProperties: false
+      properties:
+        ip_address:
+          type: string
+          description: IP address of the buyer
+        user_agent:
+          type: string
+          description: User agent string of the buyer's browser
+        accept_language:
+          type: string
+          description: Accept-Language header from the buyer's browser
+        session_id:
+          type: string
+          description: Session identifier for the buyer
+        device_fingerprint:
+          type: string
+          description: Device fingerprint for fraud detection
+      example:
+        ip_address: 203.0.113.45
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
+        accept_language: "en-US,en;q=0.9"
+        session_id: sess_abc123
+        device_fingerprint: fp_xyz789
+      description: Raw buyer and device telemetry that merchants or PSP-side systems may use as input to fraud evaluation. Distinct from risk_signals, which carries normalized fraud assessment output.
     DelegatePaymentResponse:
       type: object
       additionalProperties: false

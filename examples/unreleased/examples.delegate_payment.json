@@ -43,6 +43,13 @@
         "action": "manual_review"
       }
     ],
+    "risk_context": {
+      "ip_address": "203.0.113.45",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+      "accept_language": "en-US,en;q=0.9",
+      "session_id": "sess_abc123",
+      "device_fingerprint": "fp_xyz789"
+    },
     "metadata": {
       "campaign": "q4",
       "source": "chatgpt_checkout"

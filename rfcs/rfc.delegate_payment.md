@@ -87,13 +87,14 @@ POST /agentic_commerce/delegate_payment
 
 Exactly **one** credential type is supported today: **card**.
 
-| Field             | Type                 | Req | Description                                        |
-| ----------------- | -------------------- | :-: | -------------------------------------------------- |
-| `payment_method`  | PaymentMethodCard    | ✅  | The credential to tokenize. (type MUST be `card`.) |
-| `allowance`       | Allowance            | ✅  | Constraints on how the token may be used.          |
-| `billing_address` | Address              | ❌  | Address associated with the payment method.        |
-| `risk_signals`    | RiskSignal[]         | ✅  | One or more risk signals.                          |
-| `metadata`        | object (map<string>) | ✅  | Arbitrary key/values for correlation.              |
+| Field             | Type                 | Req | Description                                                                                  |
+| ----------------- | -------------------- | :-: | -------------------------------------------------------------------------------------------- |
+| `payment_method`  | PaymentMethodCard    | ✅  | The credential to tokenize. (type MUST be `card`.)                                           |
+| `allowance`       | Allowance            | ✅  | Constraints on how the token may be used.                                                    |
+| `billing_address` | Address              | ❌  | Address associated with the payment method.                                                  |
+| `risk_signals`    | RiskSignal[]         | ✅  | Normalized fraud assessment output.                                                          |
+| `risk_context`    | RiskContext          | ❌  | Raw buyer/device telemetry available at delegation time. See §3.7.                           |
+| `metadata`        | object (map<string>) | ✅  | Arbitrary key/values for correlation.                                                        |
 
 ### 3.3 PaymentMethodCard (REQUIRED)
 
@@ -133,7 +134,23 @@ Exactly **one** credential type is supported today: **card**.
 - `score`: integer
 - `action`: `blocked` | `manual_review` | `authorized`
 
-### 3.7 Metadata (REQUIRED)
+`risk_signals` carries normalized fraud assessment output (a recommendation such as `blocked`, `manual_review`, or `authorized`). For raw buyer/device telemetry at delegation time, use `risk_context` (§3.7).
+
+### 3.7 RiskContext (OPTIONAL)
+
+Raw buyer and device telemetry that the agent or platform already collects during checkout. Provided so merchant and PSP-side fraud systems can receive the same context they already get from `complete_checkout.risk_signals`, without overloading `risk_signals` (which carries assessment output) or `metadata` (which is untyped).
+
+All fields are optional strings. Clients SHOULD only include fields they have collected; absent fields MUST NOT be sent as empty strings.
+
+- `ip_address`: buyer IP address as observed by the client
+- `user_agent`: buyer's `User-Agent` header
+- `accept_language`: buyer's `Accept-Language` header
+- `session_id`: client-side session identifier
+- `device_fingerprint`: device fingerprint from the client's fraud SDK
+
+`risk_context` is additive. Servers that do not recognize it MUST ignore it. Clients targeting older API versions that do not include `risk_context` MUST omit the field.
+
+### 3.8 Metadata (REQUIRED)
 
 - Free-form key/value pairs (strings). Store correlation fields (e.g., `source`, `campaign`, `merchant_id`).
 
@@ -339,6 +356,13 @@ All idempotency errors use `type: "invalid_request"` and the following codes:
   "risk_signals": [
     { "type": "card_testing", "score": 10, "action": "manual_review" }
   ],
+  "risk_context": {
+    "ip_address": "203.0.113.45",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+    "accept_language": "en-US,en;q=0.9",
+    "session_id": "sess_abc123",
+    "device_fingerprint": "fp_xyz789"
+  },
   "metadata": { "campaign": "q4" }
 }
 ```
@@ -400,5 +424,6 @@ All idempotency errors use `type: "invalid_request"` and the following codes:
 
 ## 10. Change Log
 
+- **Unreleased**: Added optional `risk_context` to `DelegatePaymentRequest` with `ip_address`, `user_agent`, `accept_language`, `session_id`, `device_fingerprint`. Aligns telemetry with `complete_checkout.risk_signals`. Preserves the existing meaning of `risk_signals` (normalized fraud assessment). See SEP #180.
 - **Unreleased**: Rewrote §5 (Idempotency & Retries) with full normative rules: mandatory `Idempotency-Key` on all POST requests, request equivalence semantics, replay behavior with `Idempotent-Replayed` header, IETF-aligned error codes (`idempotency_key_required`, `idempotency_conflict`, `idempotency_in_flight`), 5xx caching prohibition, and 24-hour key retention. Added `idempotency_key_required` and `idempotency_in_flight` to `Error.code` enum. See SEP #120.
 - **2025-09-29**: Initial draft. Errors changed to **flat object** (no envelope). Tightened allowance and card display requirements.
