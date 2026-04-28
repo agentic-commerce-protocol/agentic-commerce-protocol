@@ -588,7 +588,7 @@ from the request remain unchanged. Merchants SHOULD submit complete current
 product objects for each upserted product unless the seller platform documents
 field-level merge behavior.
 
-Response:
+The response uses the `UpsertProductsResponse` schema:
 
 ```json
 {
