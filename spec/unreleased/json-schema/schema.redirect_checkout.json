@@ -1,0 +1,426 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/redirect-checkout/bundle.schema.json",
+  "title": "Redirect Checkout Handler - Schema Bundle",
+  "description": "JSON Schema definitions for the Redirect Checkout payment handler for ACP (Agentic Commerce Protocol). Implements hosted checkout redirect pattern for universal payment processing.",
+  "$defs": {
+    "PaymentMethodRedirect": {
+      "description": "Configuration for the Redirect Checkout handler",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": ["sandbox", "production"],
+          "description": "Payment API environment"
+        },
+        "merchant_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Merchant identifier (e.g., merchant_abc123xyz)"
+        },
+        "merchant_name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name shown in Checkout UI"
+        },
+        "supported_methods": {
+          "type": "array",
+          "description": "Payment methods supported by this handler",
+          "items": {
+            "type": "string",
+            "enum": [
+              "upi",
+              "card",
+              "netbanking",
+              "wallet",
+              "emi",
+              "bnpl",
+              "cod"
+            ]
+          }
+        }
+      },
+      "required": ["environment", "merchant_id", "merchant_name"],
+      "example": {
+        "environment": "production",
+        "merchant_id": "merchant_live_abc123xyz",
+        "merchant_name": "Demo Merchant",
+        "supported_methods": [
+          "upi",
+          "card",
+          "netbanking",
+          "wallet",
+          "emi",
+          "bnpl",
+          "cod"
+        ]
+      }
+    },
+    "PrefillData": {
+      "description": "Prefill data for Checkout to skip entry steps and auto-load saved data",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Skips email entry step in Checkout"
+        },
+        "contact": {
+          "type": "string",
+          "description": "Auto-login trigger. If phone matches a Checkout account, saved addresses and payment methods are loaded"
+        },
+        "name": {
+          "type": "string",
+          "description": "Pre-fills the name field in address capture"
+        }
+      },
+      "example": {
+        "email": "buyer@example.com",
+        "contact": "+1234567890",
+        "name": "Jane Smith"
+      }
+    },
+    "RetryConfig": {
+      "description": "Retry configuration for failed payments",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow retry on payment failure"
+        },
+        "max_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Max retry attempts before redirect to cancel_url. When absent, no limit enforced."
+        }
+      },
+      "example": {
+        "enabled": true,
+        "max_count": 3
+      }
+    },
+    "Notes": {
+      "description": "Custom key-value metadata on the order (max 15 pairs, 256 chars per value)",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "maxProperties": 15,
+      "properties": {
+        "acp_checkout_id": {
+          "type": "string",
+          "description": "ACP checkout session ID. Required for webhook-to-session binding."
+        }
+      },
+      "required": ["acp_checkout_id"]
+    },
+    "IntegrationMetadata": {
+      "description": "Integration metadata for analytics and attribution",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Platform identifier for analytics (e.g., 'chatgpt_app')"
+        },
+        "referer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Originating page URL for analytics attribution"
+        }
+      }
+    },
+    "Credential": {
+      "description": "Credential schema extending ACP hosted_checkout_credential with Redirect Checkout-specific fields",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "hosted_checkout",
+          "description": "Always 'hosted_checkout' for this handler"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Payment Provider Order ID (e.g., order_xyz789). Used for webhook correlation."
+        },
+        "return_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS URL - buyer returns here after successful payment"
+        },
+        "cancel_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS URL - buyer returns here on abandonment or cancel"
+        },
+        "prefill": {
+          "$ref": "#/$defs/PrefillData"
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryConfig"
+        },
+        "notes": {
+          "$ref": "#/$defs/Notes"
+        },
+        "integration": {
+          "$ref": "#/$defs/IntegrationMetadata"
+        }
+      },
+      "required": ["type", "return_url", "notes"],
+      "example": {
+        "type": "hosted_checkout",
+        "session_id": "order_xyz789",
+        "return_url": "https://api.example.com/acp/checkout/chk_abc123/return",
+        "cancel_url": "https://api.example.com/acp/checkout/chk_abc123/cancel",
+        "prefill": {
+          "email": "buyer@example.com",
+          "contact": "+1234567890",
+          "name": "Jane Doe"
+        },
+        "retry": {
+          "enabled": true,
+          "max_count": 3
+        },
+        "notes": {
+          "acp_checkout_id": "chk_abc123",
+          "merchant_order_ref": "MERCHANT-ORD-7890"
+        },
+        "integration": {
+          "source": "chatgpt_app",
+          "referer": "https://example.com/cart"
+        }
+      }
+    },
+    "Instrument": {
+      "description": "Instrument schema for Redirect Checkout. Uses ACP hosted_checkout_instrument type.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Instrument identifier"
+        },
+        "handler_id": {
+          "type": "string",
+          "description": "Reference to the handler configuration ID"
+        },
+        "type": {
+          "type": "string",
+          "const": "hosted_checkout",
+          "description": "Always 'hosted_checkout' for this handler"
+        },
+        "credential": {
+          "$ref": "#/$defs/Credential"
+        }
+      },
+      "required": ["id", "handler_id", "type", "credential"],
+      "example": {
+        "id": "inst_hosted_001",
+        "handler_id": "redirect_checkout_001",
+        "type": "hosted_checkout",
+        "credential": {
+          "type": "hosted_checkout",
+          "session_id": "order_xyz789",
+          "return_url": "https://api.example.com/acp/checkout/chk_abc123/return",
+          "cancel_url": "https://api.example.com/acp/checkout/chk_abc123/cancel",
+          "notes": {
+            "acp_checkout_id": "chk_abc123"
+          }
+        }
+      }
+    },
+    "OrderRequest": {
+      "description": "Request to create a payment order via the Payment Provider Orders API",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Amount in smallest currency unit (e.g., cents, paise). Minimum 1 unit."
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency code (e.g., USD, EUR, INR)"
+        },
+        "receipt": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Internal reference. Must be unique."
+        },
+        "notes": {
+          "$ref": "#/$defs/Notes"
+        }
+      },
+      "required": ["amount", "currency", "notes"],
+      "example": {
+        "amount": 10000,
+        "currency": "USD",
+        "receipt": "rcpt_chk_abc123",
+        "notes": {
+          "acp_checkout_id": "chk_abc123",
+          "merchant_order_ref": "MERCHANT-ORD-7890"
+        }
+      }
+    },
+    "WebhookEvent": {
+      "description": "Webhook event structure from Payment Provider",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event": {
+          "type": "string",
+          "enum": ["payment.captured", "order.paid", "payment.failed"],
+          "description": "Webhook event type"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "payment": {
+              "type": "object",
+              "properties": {
+                "entity": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Payment ID (e.g., pay_abc123)"
+                    },
+                    "order_id": {
+                      "type": "string",
+                      "description": "Order ID (e.g., order_xyz789)"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "created",
+                        "authorized",
+                        "captured",
+                        "refunded",
+                        "failed"
+                      ]
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "description": "Amount in smallest currency unit"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "method": {
+                      "type": "string",
+                      "enum": [
+                        "upi",
+                        "card",
+                        "netbanking",
+                        "wallet",
+                        "emi",
+                        "bnpl",
+                        "cod"
+                      ]
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "acp_checkout_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": ["id", "order_id", "status", "amount", "currency"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": ["event", "payload"],
+      "example": {
+        "event": "payment.captured",
+        "payload": {
+          "payment": {
+            "entity": {
+              "id": "pay_abc123",
+              "order_id": "order_xyz789",
+              "status": "captured",
+              "amount": 10000,
+              "currency": "USD",
+              "method": "card",
+              "notes": {
+                "acp_checkout_id": "chk_abc123"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Error": {
+      "description": "Error response for redirect checkout API requests",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "invalid_request",
+            "rate_limit_exceeded",
+            "processing_error",
+            "service_unavailable"
+          ],
+          "description": "High-level error category"
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "invalid_merchant_id",
+            "checkout_disabled",
+            "unsupported_currency",
+            "order_creation_failed",
+            "checkout_expired",
+            "invalid_card",
+            "duplicate_request",
+            "idempotency_conflict",
+            "too_many_requests",
+            "idempotency_key_required",
+            "idempotency_in_flight"
+          ],
+          "description": "Specific error code for programmatic handling"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath of offending field"
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "description": "List of API versions supported by the server, ordered by preference (newest first). Only included in version-related errors."
+        }
+      },
+      "required": ["type", "code", "message"],
+      "example": {
+        "type": "invalid_request",
+        "code": "invalid_merchant_id",
+        "message": "Merchant ID not found or inactive. Verify account and key mode (test vs. live).",
+        "param": "$.config.merchant_id"
+      }
+    }
+  }
+}
