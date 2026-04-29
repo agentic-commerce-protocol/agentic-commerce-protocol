@@ -1,0 +1,90 @@
+{
+  "razorpay_s2s_cards_request": {
+    "payment_method": {
+      "type": "s2s_card",
+      "token_id": "token_KNq2OQK30t5SXO",
+      "card_network": "Visa",
+      "card_last4": "4242",
+      "card_type": "credit"
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 49900,
+      "currency": "inr",
+      "checkout_session_id": "csn_01HV3P3XYZ789",
+      "merchant_id": "rzp_live_abc123xyz",
+      "expires_at": "2026-04-15T10:45:00Z"
+    },
+    "billing_address": {
+      "name": "Priya Sharma",
+      "line_one": "12 MG Road",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "IN",
+      "postal_code": "560001"
+    },
+    "risk_signals": [
+      {
+        "type": "card_testing",
+        "score": 5,
+        "action": "authorized"
+      }
+    ],
+    "metadata": {
+      "session_id": "sess_abc123",
+      "user_agent": "ChatGPT/4.0"
+    }
+  },
+  "razorpay_s2s_cards_success_response": {
+    "id": "dp_card_NmtIbizJ5JUEmH",
+    "created": "2026-04-15T10:32:00Z",
+    "metadata": {
+      "payment_id": "pay_NmtIbizJ5JUEmH",
+      "order_id": "order_NmtIbizJ5JUEmX",
+      "session_id": "sess_abc123",
+      "merchant_id": "rzp_live_abc123xyz"
+    }
+  },
+  "razorpay_s2s_cards_error_invalid_token": {
+    "type": "invalid_request",
+    "code": "invalid_token",
+    "message": "Card token expired or invalid. Please re-enter card details.",
+    "param": "$.payment_method.token_id"
+  },
+  "razorpay_s2s_cards_error_card_declined": {
+    "type": "processing_error",
+    "code": "card_declined",
+    "message": "Bank declined the transaction. Please retry or use another card."
+  },
+  "razorpay_s2s_cards_error_card_expired": {
+    "type": "invalid_request",
+    "code": "card_expired",
+    "message": "Card has expired. Please enter valid card details.",
+    "param": "$.payment_method.token_id"
+  },
+  "razorpay_s2s_cards_error_insufficient_funds": {
+    "type": "processing_error",
+    "code": "insufficient_funds",
+    "message": "Card has insufficient balance. Please use another card or payment method."
+  },
+  "razorpay_s2s_cards_error_daily_limit_exceeded": {
+    "type": "processing_error",
+    "code": "daily_limit_exceeded",
+    "message": "Daily card limit reached. Please try again tomorrow or use another card."
+  },
+  "razorpay_s2s_cards_error_international_blocked": {
+    "type": "processing_error",
+    "code": "international_blocked",
+    "message": "International transactions not allowed on this card. Please use a domestic card."
+  },
+  "razorpay_s2s_cards_error_idempotency_conflict": {
+    "type": "invalid_request",
+    "code": "idempotency_conflict",
+    "message": "Idempotency-Key has already been used with a different request body."
+  },
+  "razorpay_s2s_cards_error_rate_limit": {
+    "type": "rate_limit_exceeded",
+    "code": "too_many_requests",
+    "message": "Too many requests. Please retry later."
+  }
+}
