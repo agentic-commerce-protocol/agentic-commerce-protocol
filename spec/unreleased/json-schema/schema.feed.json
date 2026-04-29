@@ -606,6 +606,26 @@
         ]
       }
     },
+    "UpsertProductsResponse": {
+      "description": "Acknowledgement returned after accepting an upsert payload for a feed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "accepted"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifier for the feed whose product upsert was processed."
+        },
+        "accepted": {
+          "type": "boolean",
+          "description": "Whether the submitted product upsert payload was accepted for processing."
+        }
+      },
+      "example": {
+        "id": "feed_8f3K2x",
+        "accepted": true
+      }
+    },
     "Error": {
       "description": "Structured error returned when a feed request cannot be fulfilled.",
       "type": "object",
