@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/feed/app_link.schema.json",
+  "title": "AppLink",
+  "description": "Platform-specific deep link URI for launching a native or embedded app experience from a product or variant.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["platform", "uri"],
+  "properties": {
+    "platform": {
+      "type": "string",
+      "description": "Target answer engine platform for this deep link entry. Use `chatgpt` for ChatGPT embedded apps or `other` as a catch-all.",
+      "enum": ["chatgpt", "other"]
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "Deep link URI using the merchant's registered custom scheme for the target platform. The scheme must match the scheme the merchant registered with the answer engine at app submission time. Clients that cannot open the scheme fall back to the product or variant `url`."
+    }
+  },
+  "example": {
+    "platform": "chatgpt",
+    "uri": "merchant://checkout/prod_123"
+  }
+}

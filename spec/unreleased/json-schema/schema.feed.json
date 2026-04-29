@@ -323,7 +323,14 @@
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "Canonical URL for the variant detail page."
+          "description": "Canonical URL for the variant detail page. Used as the default webview target and the final fallback when no app_links entry applies."
+        },
+        "app_links": {
+          "type": "array",
+          "description": "Ordered list of platform-specific deep link targets for this variant. Evaluated before `url`; falls back to `url` if no entry matches.",
+          "items": {
+            "$ref": "./schema.app_link.json"
+          }
         },
         "barcodes": {
           "type": "array",
@@ -453,7 +460,14 @@
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "Canonical URL for the product detail page."
+          "description": "Canonical URL for the product detail page. Used as the default webview target and the final fallback when no app_links entry applies."
+        },
+        "app_links": {
+          "type": "array",
+          "description": "Ordered list of platform-specific deep link targets for this product. Evaluated before `url`; falls back to `url` if no entry matches.",
+          "items": {
+            "$ref": "./schema.app_link.json"
+          }
         },
         "media": {
           "type": "array",
