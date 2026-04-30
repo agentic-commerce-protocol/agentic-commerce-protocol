@@ -49,6 +49,11 @@ This change addresses five categories of misalignment in the order schema:
 - **Adjustment type**: `partial_refund` merged into `refund` (distinguish by amount).
   `store_credit` → `credit`. `chargeback` merged into `dispute`. Added `price_adjustment`.
 
+- **Open enums**: All order-related status and type fields are now open enums (`type: string`
+  with defined values in descriptions) rather than closed enums. Implementations MUST accept
+  unrecognized values gracefully. This enables forward and backward compatibility as the
+  protocol evolves without requiring schema-breaking changes for new values.
+
 ### Semantic model
 
 The order schema now has distinct terminology at each level to avoid ambiguity:

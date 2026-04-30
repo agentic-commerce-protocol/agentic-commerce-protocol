@@ -2506,16 +2506,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "created",
-            "confirmed",
-            "manual_review",
-            "processing",
-            "shipped",
-            "completed",
-            "canceled"
-          ],
-          "description": "Order-level status. 'completed' means all items have been delivered/received regardless of fulfillment method. Distinct from LineItem.status 'fulfilled', which indicates the seller has dispatched the item."
+          "description": "Order-level status. Implementations MUST accept unrecognized values gracefully. Defined values: 'created', 'confirmed', 'manual_review', 'processing', 'shipped', 'completed', 'canceled'. 'completed' means all items have been delivered/received regardless of fulfillment method. Distinct from LineItem.status 'fulfilled', which indicates the seller has dispatched the item."
         },
         "estimated_delivery": {
           "$ref": "#/$defs/EstimatedDelivery",
@@ -2624,13 +2615,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "processing",
-            "partial",
-            "fulfilled",
-            "removed"
-          ],
-          "description": "Derived from quantity fields: 'removed' if current==0, 'fulfilled' if fulfilled==current, 'partial' if 0<fulfilled<current, 'processing' otherwise."
+          "description": "Derived from quantity fields. Implementations MUST accept unrecognized values gracefully. Defined values: 'processing', 'partial', 'fulfilled', 'removed'. Rules: 'removed' if current==0, 'fulfilled' if fulfilled==current, 'partial' if 0<fulfilled<current, 'processing' otherwise."
         }
       },
       "required": [
@@ -2725,18 +2710,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "pending",
-            "processing",
-            "shipped",
-            "in_transit",
-            "out_for_delivery",
-            "ready_for_pickup",
-            "delivered",
-            "failed",
-            "canceled"
-          ],
-          "description": "Current fulfillment status. Not all statuses apply to all types."
+          "description": "Current fulfillment status. Implementations MUST accept unrecognized values gracefully. Defined values: 'pending', 'processing', 'shipped', 'in_transit', 'out_for_delivery', 'ready_for_pickup', 'delivered', 'failed', 'canceled'. Not all statuses apply to all types."
         },
         "line_items": {
           "type": "array",
@@ -2820,19 +2794,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "processing",
-            "shipped",
-            "in_transit",
-            "out_for_delivery",
-            "ready_for_pickup",
-            "delivered",
-            "failed_attempt",
-            "returned_to_sender",
-            "canceled",
-            "undeliverable"
-          ],
-          "description": "Event type. Common fulfillment lifecycle values. 'out_for_delivery' and 'ready_for_pickup' are ACP extensions for richer agent experiences."
+          "description": "Event type. Implementations MUST accept unrecognized values gracefully. Defined values: 'processing', 'shipped', 'in_transit', 'out_for_delivery', 'ready_for_pickup', 'delivered', 'failed_attempt', 'returned_to_sender', 'canceled', 'undeliverable'. 'out_for_delivery' and 'ready_for_pickup' are ACP extensions for richer agent experiences."
         },
         "occurred_at": {
           "type": "string",
@@ -2870,16 +2832,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "refund",
-            "credit",
-            "return",
-            "exchange",
-            "price_adjustment",
-            "cancellation",
-            "dispute"
-          ],
-          "description": "Type of adjustment. Use 'refund' for both full and partial refunds (distinguish by amount). 'credit' replaces 'store_credit'. 'dispute' covers chargebacks."
+          "description": "Type of adjustment. Implementations MUST accept unrecognized values gracefully. Defined values: 'refund', 'credit', 'return', 'exchange', 'price_adjustment', 'cancellation', 'dispute'. Use 'refund' for both full and partial refunds (distinguish by amount). 'credit' replaces 'store_credit'. 'dispute' covers chargebacks."
         },
         "occurred_at": {
           "type": "string",
@@ -2888,12 +2841,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "pending",
-            "completed",
-            "failed"
-          ],
-          "description": "Adjustment status"
+          "description": "Adjustment status. Implementations MUST accept unrecognized values gracefully. Defined values: 'pending', 'completed', 'failed'."
         },
         "line_items": {
           "type": "array",

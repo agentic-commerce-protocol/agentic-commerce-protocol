@@ -527,6 +527,7 @@ An empty `adjustments: []` array means no post-order changes have occurred.
 
 ## 8. Change Log
 
+- **2026-04-30**: Open enums — Converted all order-related status and type fields from closed enums to open enums (string with documented values). Implementations MUST accept unrecognized values gracefully for forward/backward compatibility.
 - **2026-04-23**: Post-checkout alignment — 3-field quantity model (`ordered`/`current`/`fulfilled`), line item status (`processing`/`partial`/`fulfilled`/`removed`), order status `delivered`→`completed`, fulfillment event types (add `canceled`/`undeliverable`, rename `returned`→`returned_to_sender`), adjustment types (merge `refund`+`partial_refund`, rename `store_credit`→`credit`, add `price_adjustment`, merge `chargeback` into `dispute`)
 - **2026-02-11**: Totals alignment — Replaced flat `OrderTotals` object with `Total[]` array (reusing checkout spec's `Total` schema); added `amount_refunded` to `Total.type` enum
 - **2026-02-10**: Review feedback — Extended Order.status enum (`created`, `manual_review`); added `amount_refunded` to OrderTotals; documented `total` as original charge amount; added `digital_delivery` sub-object to Fulfillment; added `ready_for_pickup` status; documented per-type status applicability; clarified `Adjustment.amount` as tax-inclusive; updated webhook spec to compose Order via `$ref`; removed `refunds[]` in favor of `adjustments[]`

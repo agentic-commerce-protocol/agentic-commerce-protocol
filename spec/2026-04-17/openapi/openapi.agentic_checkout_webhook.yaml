@@ -224,8 +224,7 @@ components:
       properties:
         type:
           type: string
-          enum: [order_create, order_update]
-          description: "Event type: order_create for new orders, order_update for changes to existing orders"
+          description: "Event type. Implementations MUST accept unrecognized values gracefully. Defined values: 'order_create', 'order_update'. order_create for new orders, order_update for changes to existing orders."
         data:
           $ref: "#/components/schemas/EventDataOrder"
           description: "The order object associated with this event"
