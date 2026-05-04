@@ -3101,7 +3101,7 @@ components:
         buyer:
           email: customer@example.com
       description: Request to update an existing checkout session
-    RiskSignals:
+    SessionContext:
       type: object
       additionalProperties: false
       properties:
@@ -3123,7 +3123,7 @@ components:
       example:
         ip_country: US
         device_fingerprint: fp_abc123
-      description: Risk and fraud detection signals for the checkout session
+      description: Raw buyer and device telemetry collected during the checkout session. Sellers MAY forward these values to fraud, analytics, or attribution systems. Distinct from any normalized fraud assessment output.
     CheckoutSessionCompleteRequest:
       type: object
       additionalProperties: false
@@ -3136,8 +3136,8 @@ components:
           $ref: "#/components/schemas/AuthenticationResult"
         affiliate_attribution:
           $ref: "#/components/schemas/AffiliateAttribution"
-        risk_signals:
-          $ref: "#/components/schemas/RiskSignals"
+        session_context:
+          $ref: "#/components/schemas/SessionContext"
         marketing_consents:
           type: array
           items:

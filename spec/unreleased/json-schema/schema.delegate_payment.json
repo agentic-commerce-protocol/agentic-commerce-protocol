@@ -258,8 +258,8 @@
         "action": "manual_review"
       }
     },
-    "RiskContext": {
-      "description": "Raw buyer and device telemetry that merchants or PSP-side systems may use as input to fraud evaluation. Distinct from risk_signals, which carries normalized fraud assessment output.",
+    "SessionContext": {
+      "description": "Raw buyer and device telemetry collected by the agent or platform during checkout. Same shape as complete_checkout.session_context. Distinct from risk_signals on this endpoint, which carries normalized fraud assessment output.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -316,9 +316,9 @@
             "$ref": "#/$defs/RiskSignal"
           }
         },
-        "risk_context": {
-          "$ref": "#/$defs/RiskContext",
-          "description": "Optional raw buyer and device telemetry available at delegation time. Carries the same shape as complete_checkout.risk_signals so platforms that already collect this data can forward it without overloading risk_signals or metadata."
+        "session_context": {
+          "$ref": "#/$defs/SessionContext",
+          "description": "Optional raw buyer and device telemetry available at delegation time. Carries the same shape as complete_checkout.session_context so platforms that already collect this data can forward it without overloading risk_signals or metadata."
         },
         "metadata": {
           "type": "object",
@@ -370,7 +370,7 @@
             "action": "authorized"
           }
         ],
-        "risk_context": {
+        "session_context": {
           "ip_address": "203.0.113.45",
           "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
           "accept_language": "en-US,en;q=0.9",
