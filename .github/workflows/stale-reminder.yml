@@ -1,0 +1,42 @@
+name: Stale PR Reminder
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview only — no comments posted, no labels added'
+        type: boolean
+        default: true
+
+permissions:
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v10
+        with:
+          debug-only: ${{ inputs.dry_run }}
+
+          # PRs only — disable issues entirely
+          days-before-pr-stale: 90
+          days-before-pr-close: -1          # Never auto-close
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+
+          stale-pr-label: 'stale'
+          exempt-draft-pr: true
+          operations-per-run: 50
+
+          stale-pr-message: |
+            Hi 👋 — Thank you for your contribution to ACP!
+
+            This PR has been inactive (no commits, comments, or reviews) for over 90 days. If this work is still relevant, please:
+            - Rebase onto `main` to resolve any merge conflicts
+            - Address any outstanding review feedback
+            - Leave a comment confirming you'd like to keep this open
+
+            If we don't hear back within **30 days**, this PR may be closed to keep the backlog manageable. You're always welcome to reopen or submit a new PR — no work is lost!
+
+            Thanks for your patience and contributions.
