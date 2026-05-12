@@ -65,7 +65,7 @@ paths:
                     status: shipped
                     refunds:
                       - type: original_payment
-                        amount: "1.00"
+                        amount: 100
       responses:
         "200":
           description: Event accepted
