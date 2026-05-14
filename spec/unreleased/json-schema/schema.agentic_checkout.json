@@ -2442,8 +2442,8 @@
         "handlers": []
       }
     },
-    "RiskSignals": {
-      "description": "Risk and fraud detection signals for the checkout session",
+    "SessionContext": {
+      "description": "Raw buyer and device telemetry collected during the checkout session. Sellers MAY forward these values to fraud, analytics, or attribution systems. Distinct from any normalized fraud assessment output.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -3602,9 +3602,9 @@
           "$ref": "#/$defs/AffiliateAttribution",
           "description": "Affiliate attribution data for last-touch tracking"
         },
-        "risk_signals": {
-          "$ref": "#/$defs/RiskSignals",
-          "description": "Risk and fraud signals"
+        "session_context": {
+          "$ref": "#/$defs/SessionContext",
+          "description": "Raw buyer and device telemetry collected during checkout (IP, user agent, accept-language, session id, device fingerprint). Same shape as delegate_payment.session_context."
         },
         "marketing_consents": {
           "type": "array",
