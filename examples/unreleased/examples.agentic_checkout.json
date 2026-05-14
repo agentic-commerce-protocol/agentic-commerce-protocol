@@ -432,6 +432,11 @@
       "email": "johnsmith@mail.com",
       "phone_number": "15552003434"
     },
+    "fulfillment_details": {
+      "name": "John Smith",
+      "phone_number": "15559876543",
+      "email": "john.smith.new@mail.com"
+    },
     "payment_data": {
       "handler_id": "card_tokenized",
       "instrument": {

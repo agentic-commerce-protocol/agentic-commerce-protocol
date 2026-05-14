@@ -3590,6 +3590,10 @@
           "$ref": "#/$defs/Buyer",
           "description": "Final buyer information"
         },
+        "fulfillment_details": {
+          "$ref": "#/$defs/FulfillmentDetails",
+          "description": "Final fulfillment contact and address details. When present, the seller MUST apply these updates before processing payment."
+        },
         "payment_data": {
           "$ref": "#/$defs/PaymentData",
           "description": "Payment method and details"
