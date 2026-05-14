@@ -239,6 +239,7 @@
         "carrier": "USPS",
         "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
         "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "is_default": true,
         "totals": [
           { "type": "total", "display_text": "Shipping", "amount": 100 }
         ]
