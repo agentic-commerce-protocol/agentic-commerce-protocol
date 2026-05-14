@@ -96,6 +96,22 @@
     "id": "feed_8f3K2x",
     "accepted": true
   },
+  "get_feed_response_with_extensions": {
+    "id": "feed_8f3K2x",
+    "target_country": "US",
+    "updated_at": "2026-04-07T00:00:00Z",
+    "extensions": [
+      {
+        "name": "image_attributes",
+        "extends": [
+          "$.Media.description",
+          "$.Media.shot_style"
+        ],
+        "schema": "https://example.com/schemas/feed-extensions/image-attributes/2026-04-07.json",
+        "spec": "https://example.com/specs/feed-extensions/image-attributes"
+      }
+    ]
+  },
   "feed_error_not_found": {
     "type": "invalid_request",
     "code": "feed_not_found",

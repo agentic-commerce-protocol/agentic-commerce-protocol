@@ -507,12 +507,31 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp of the most recent update applied to this feed."
+        },
+        "extensions": {
+          "type": "array",
+          "description": "Extension declarations active for this feed. Each entry identifies an extension and the fields it adds to feed schema objects.",
+          "items": {
+            "$ref": "schema.extension.json#/$defs/extension_declaration"
+          },
+          "uniqueItems": true
         }
       },
       "example": {
         "id": "feed_8f3K2x",
         "target_country": "US",
-        "updated_at": "2026-03-01T00:00:00Z"
+        "updated_at": "2026-04-07T00:00:00Z",
+        "extensions": [
+          {
+            "name": "image_attributes",
+            "extends": [
+              "$.Media.description",
+              "$.Media.shot_style"
+            ],
+            "schema": "https://example.com/schemas/feed-extensions/image-attributes/2026-04-07.json",
+            "spec": "https://example.com/specs/feed-extensions/image-attributes"
+          }
+        ]
       }
     },
     "CreateFeedRequest": {
