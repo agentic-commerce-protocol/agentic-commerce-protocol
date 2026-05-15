@@ -1,4 +1,4 @@
-## Add UPI Intent Payment Handler (Reference Implementation: Razorpay)
+## Add UPI Intent Payment Handler
 
 This change adds support for UPI Intent payments as a delegated payment method within ACP. UPI (Unified Payments Interface) is India's real-time payment system with 600M+ users and $2.6T annual transaction volume. This handler enables buyers to complete payment by launching their preferred UPI app via a deep link on mobile or scanning a QR code on desktop — with no card data or pre-authorization required.
 
@@ -14,13 +14,14 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 
 - **No Pre-Authorization Required**: Each transaction is user-initiated via deep link or QR scan — no mandate setup needed
 - **OS-Native UPI App Selection**: Platforms use Android implicit intents or iOS URL schemes; the OS presents all installed UPI apps automatically
-- **Desktop QR Fallback**: Cross-device payment via QR code for non-mobile contexts
+- **Desktop QR Fallback**: Cross-device payment via QR code for non-mobile contexts; platforms MAY derive the QR locally from the intent URI
 - **Zero PCI-DSS Scope**: VPA-based addressing; no card data in any ACP message
 - **ACP delegate_payment Compatible**: Uses `DelegatePaymentRequest` / `DelegatePaymentResponse` envelope — same shape as card handler
 
 ### Handler Details
 
-- **Handler Category**: UPI Intent Payment Handler (PSP-agnostic; `com.razorpay.upi_intent` is the Razorpay reference implementation)
+- **Handler Category**: UPI Intent Payment Handler
+- **Reference Implementation**: `com.razorpay.upi_intent` (Razorpay)
 - **Version**: `2026-04-07`
 - **ACP Version**: `2025-09` (GA) and later
 - **Currency Support**: `INR` only
@@ -30,7 +31,7 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 
 - Added `BusinessConfig` schema: handler config the business provides (`key_id`, `merchant_vpa`, `environment`)
 - Added `PlatformConfig` schema: platform-level config (`environment`, optional `upi_apps` ordering)
-- Added `PaymentMethodUPIIntent` schema: payment method with `intent_uri`, `transaction_reference`, `qr_code_data`, `expires_at`
+- Added `PaymentMethodUPIIntent` schema: payment method with `intent_uri`, `transaction_reference`, optional `qr_code_data`, `expires_at`
 - Added `RiskSignal` schema: aligned with base ACP `RiskSignal` definition
 - Added `Allowance` schema: per-transaction constraints — identical shape to base ACP `Allowance`
 - Added `DelegatePaymentRequest` schema: `PaymentMethodUPIIntent` + `Allowance` + optional `billing_address` + `risk_signals` + `metadata`
@@ -41,18 +42,18 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 ### Files Updated
 
 - `spec/unreleased/json-schema/schema.upi_intent.json` (new file)
-- `examples/unreleased/examples.razorpay_upi_intent.json` (new file)
+- `examples/unreleased/examples.razorpay_upi_intent.json` (new file — Razorpay reference implementation)
 
 ### Integration Flow
 
 **Each Transaction (ACP Protocol)**:
 
-1. Platform discovers `com.razorpay.upi_intent` in business ACP handler configuration
+1. Platform discovers a UPI Intent handler in business ACP handler configuration
 2. Platform generates NPCI-compliant `upi://` intent URI using `merchant_vpa` (assigned by acquiring bank/PSP during onboarding) and `checkout_session_id`; platform MAY derive a QR code locally from the intent URI for desktop rendering
 3. Platform presents deep link (mobile) or QR code (desktop) to the user
 4. User approves payment in their UPI app
-5. Platform submits `DelegatePaymentRequest` with `PaymentMethodUPIIntent`, `allowance`, and empty `risk_signals`
-6. On success, receives `DelegatePaymentResponse` with `id`, `created`, `metadata` (including `payment_id` and `upi_txn_id`)
+5. Platform submits `DelegatePaymentRequest` with `PaymentMethodUPIIntent`, `allowance`, and `risk_signals`
+6. On success, receives `DelegatePaymentResponse` with `id`, `created`, and `metadata`
 
 ### Security Considerations
 
@@ -63,7 +64,7 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 
 ### Platform Requirements
 
-- Platform MUST generate a fresh `upi://` intent URI and QR code per transaction
+- Platform MUST generate a fresh `upi://` intent URI per transaction
 - Platform MUST verify `payment_method.expires_at` before submitting `DelegatePaymentRequest`
 - Platform SHOULD set 15-minute expiry on intent URIs per NPCI best practice
 - Platform MAY poll for payment completion; implementers SHOULD consult NPCI operational guidelines for recommended polling intervals and retry limits
@@ -72,5 +73,3 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 ### Reference
 
 - **NPCI UPI Linking Specification**: https://www.npci.org.in/what-we-do/upi/product-overview
-- **Razorpay UPI Docs**: https://razorpay.com/docs/payments/payment-methods/upi/
-- **Author**: Razorpay Software Private Ltd

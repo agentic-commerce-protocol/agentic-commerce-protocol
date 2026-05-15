@@ -30,11 +30,11 @@
     }
   },
   "razorpay_upi_intent_success_response": {
-    "id": "dp_upi_P6WMPl2NNnnLFk",
+    "id": "dp_01HV3P3XYZ001",
     "created": "2026-04-15T10:32:00Z",
     "metadata": {
-      "payment_id": "pay_P6WMPl2NNnnLFk",
-      "order_id": "order_P6WL8c9Xt4rUj1",
+      "payment_id": "pay_01HV3P3XYZ001",
+      "order_id": "ord_01HV3P3XYZ001",
       "upi_txn_id": "318219246640",
       "session_id": "sess_abc123",
       "merchant_id": "psp_live_abc123xyz"

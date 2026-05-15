@@ -21,7 +21,7 @@
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "PSP API environment. Use 'sandbox' for test mode, 'production' for live mode."
+          "description": "Deployment environment for this handler configuration. Use 'sandbox' for test mode, 'production' for live transactions."
         }
       },
       "required": ["key_id", "merchant_vpa", "environment"],
@@ -39,7 +39,7 @@
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "PSP API environment. Must match the business config environment."
+          "description": "Deployment environment for this platform configuration. Must match the business config environment."
         },
         "upi_apps": {
           "type": "array",
@@ -251,10 +251,10 @@
       },
       "required": ["id", "created", "metadata"],
       "example": {
-        "id": "dp_upi_P6WMPl2NNnnLFk",
+        "id": "dp_01HV3P3XYZ001",
         "created": "2026-04-15T10:32:00Z",
         "metadata": {
-          "payment_id": "pay_P6WMPl2NNnnLFk",
+          "payment_id": "pay_01HV3P3XYZ001",
           "upi_txn_id": "318219246640",
           "session_id": "sess_abc123",
           "merchant_id": "psp_live_abc123xyz"
