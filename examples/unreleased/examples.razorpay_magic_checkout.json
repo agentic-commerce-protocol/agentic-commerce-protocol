@@ -12,15 +12,7 @@
             "environment": "production",
             "merchant_id": "rzp_live_abc123xyz",
             "merchant_name": "Razorpay Demo Store",
-            "supported_methods": [
-              "upi",
-              "card",
-              "netbanking",
-              "wallet",
-              "emi",
-              "bnpl",
-              "cod"
-            ]
+            "supported_methods": ["upi", "card", "netbanking", "wallet", "emi", "bnpl", "cod"]
           }
         }
       ]
@@ -34,6 +26,7 @@
       }
     }
   },
+
   "request_checkout_from_widget": {
     "checkout_type": "redirect",
     "currency": "INR",
@@ -52,6 +45,48 @@
       "handler_id": "razorpay_magic_001"
     }
   },
+
+  "mcp_initiate_checkout_escalation_response": {
+    "status": "requires_escalation",
+    "payment": {
+      "instruments": [
+        {
+          "id": "inst_hosted_001",
+          "handler_id": "razorpay_magic_001",
+          "type": "hosted_checkout",
+          "credential": {
+            "type": "hosted_checkout",
+            "checkout_url": "https://checkout.razorpay.com/v1/checkout/order_xyz789?prefill%5Bemail%5D=buyer%40example.com&prefill%5Bcontact%5D=%2B919876543210&prefill%5Bname%5D=Priya%20Sharma&retry=true&callback_url=https%3A%2F%2Fapi.merchant.com%2Facp%2Fchk_abc123%2Freturn&cancel_url=https%3A%2F%2Fapi.merchant.com%2Facp%2Fchk_abc123%2Fcancel",
+            "session_id": "order_xyz789",
+            "return_url": "https://api.merchant.com/acp/chk_abc123/return",
+            "cancel_url": "https://api.merchant.com/acp/chk_abc123/cancel"
+          }
+        }
+      ]
+    }
+  },
+
+  "complete_checkout_mcp_request": {
+    "tool": "complete_checkout",
+    "payment_data": {
+      "type": "hosted_checkout",
+      "provider": "razorpay",
+      "session_id": "order_xyz789",
+      "status": "captured",
+      "amount": 57700,
+      "currency": "INR"
+    }
+  },
+
+  "get_checkout_completed_response": {
+    "id": "chk_abc123",
+    "status": "completed",
+    "order": {
+      "id": "ord_chk_abc123",
+      "permalink_url": "https://dashboard.razorpay.com/orders/ord_chk_abc123"
+    }
+  },
+
   "razorpay_order_create_request": {
     "amount": 57700,
     "currency": "INR",
@@ -61,6 +96,7 @@
       "merchant_order_ref": "RZP-ORD-7890"
     }
   },
+
   "razorpay_order_create_response": {
     "id": "order_xyz789",
     "entity": "order",
@@ -77,49 +113,7 @@
     },
     "created_at": 1712505600
   },
-  "magic_checkout_url_construction": {
-    "base_url": "https://checkout.razorpay.com/v1/checkout/order_xyz789",
-    "query_parameters": {
-      "callback_url": "https://api.razorpay.com/v1/acp/chk_abc123/return",
-      "cancel_url": "https://api.razorpay.com/v1/acp/chk_abc123/cancel",
-      "prefill[email]": "buyer@example.com",
-      "prefill[contact]": "+919876543210",
-      "prefill[name]": "Priya Sharma",
-      "retry": "true"
-    },
-    "final_url": "https://checkout.razorpay.com/v1/checkout/order_xyz789?callback_url=https%3A%2F%2Fapi.razorpay.com%2Fv1%2Facp%2Fchk_abc123%2Freturn&cancel_url=https%3A%2F%2Fapi.razorpay.com%2Fv1%2Facp%2Fchk_abc123%2Fcancel&prefill[email]=buyer%40example.com&prefill[contact]=%2B919876543210&prefill[name]=Priya%20Sharma&retry=true"
-  },
-  "mcp_initiate_checkout_escalation_response": {
-    "status": "requires_escalation",
-    "continue_url": "https://checkout.razorpay.com/v1/checkout/order_xyz789?callback_url=https%3A%2F%2Fapi.razorpay.com%2Fv1%2Facp%2Fchk_abc123%2Freturn&cancel_url=https%3A%2F%2Fapi.razorpay.com%2Fv1%2Facp%2Fchk_abc123%2Fcancel&prefill[email]=buyer%40example.com&prefill[contact]=%2B919876543210&prefill[name]=Priya%20Sharma&retry=true",
-    "messages": [
-      {
-        "type": "error",
-        "code": "payment_authorization_required",
-        "severity": "requires_buyer_review",
-        "content": "Buyer must complete payment in Razorpay Magic Checkout."
-      }
-    ],
-    "payment": {
-      "instruments": [
-        {
-          "id": "inst_hosted_001",
-          "handler_id": "razorpay_magic_001",
-          "type": "hosted_checkout",
-          "credential": {
-            "type": "hosted_checkout",
-            "session_id": "order_xyz789",
-            "return_url": "https://api.razorpay.com/v1/acp/chk_abc123/return",
-            "cancel_url": "https://api.razorpay.com/v1/acp/chk_abc123/cancel",
-            "notes": {
-              "acp_checkout_id": "chk_abc123",
-              "merchant_order_ref": "RZP-ORD-7890"
-            }
-          }
-        }
-      ]
-    }
-  },
+
   "webhook_payment_captured_event": {
     "event": "payment.captured",
     "payload": {
@@ -145,6 +139,7 @@
       "X-Razorpay-Signature": "t=1712505900,v1=8f7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6"
     }
   },
+
   "webhook_order_paid_event": {
     "event": "order.paid",
     "payload": {
@@ -165,6 +160,7 @@
       }
     }
   },
+
   "webhook_payment_failed_event": {
     "event": "payment.failed",
     "payload": {
@@ -186,57 +182,33 @@
       }
     }
   },
-  "complete_checkout_mcp_request": {
-    "tool": "complete_checkout",
-    "payment_data": {
-      "type": "hosted_checkout",
-      "provider": "razorpay",
-      "payment_id": "pay_abc123",
-      "order_id": "order_xyz789",
-      "status": "captured",
-      "method": "upi",
-      "amount": 57700,
-      "currency": "INR"
-    }
-  },
-  "get_checkout_completed_response": {
-    "id": "chk_abc123",
-    "status": "completed",
-    "order": {
-      "id": "ord_chk_abc123",
-      "permalink_url": "https://dashboard.razorpay.com/orders/ord_chk_abc123",
-      "payment_details": {
-        "payment_id": "pay_abc123",
-        "razorpay_order_id": "order_xyz789",
-        "method": "upi",
-        "status": "captured",
-        "amount": 57700,
-        "currency": "INR"
-      }
-    }
-  },
+
   "error_invalid_merchant_id": {
     "type": "invalid_request",
     "code": "invalid_merchant_id",
     "message": "Merchant ID not found or inactive. Verify account and key mode (test vs. live).",
     "param": "$.config.merchant_id"
   },
+
   "error_magic_checkout_disabled": {
     "type": "invalid_request",
     "code": "checkout_disabled",
     "message": "Magic Checkout not enabled on account. Activate in Dashboard → Settings → Magic Checkout."
   },
+
   "error_unsupported_currency": {
     "type": "invalid_request",
     "code": "unsupported_currency",
     "message": "Currency not supported. This handler supports INR only.",
     "param": "$.currency"
   },
+
   "error_order_creation_failed": {
     "type": "processing_error",
     "code": "order_creation_failed",
     "message": "Razorpay order creation failed. Verify amount ≥ 100 paise; retry with exponential backoff."
   },
+
   "error_checkout_expired": {
     "type": "invalid_request",
     "code": "checkout_expired",
