@@ -1,21 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/razorpay-upi-circle/bundle.schema.json",
-  "title": "Razorpay UPI Circle Handler \u2014 Schema Bundle",
+  "$id": "https://example.com/schemas/upi-circle/bundle.schema.json",
+  "title": "UPI Circle Delegated Payment Handler \u2014 Schema Bundle",
   "$defs": {
     "BusinessConfig": {
-      "description": "Configuration for the Razorpay UPI Circle handler provided by the business. Declared in the business's ACP handler configuration.",
+      "description": "Configuration for the UPI Circle handler provided by the business. Declared in the business's ACP handler configuration.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "key_id": {
           "type": "string",
-          "description": "Razorpay API key identifier for this business account (rzp_test_* for sandbox, rzp_live_* for production)."
+          "description": "PSP API key identifier for this business account. Format is PSP-specific (see examples)."
         },
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "Razorpay API environment. Use 'sandbox' for test mode, 'production' for live mode."
+          "description": "API environment. Use 'sandbox' for test mode, 'production' for live mode."
         },
         "merchant_name": {
           "type": "string",
@@ -42,7 +42,7 @@
         "environment": {
           "type": "string",
           "enum": ["sandbox", "production"],
-          "description": "Razorpay API environment. Must match the business config environment."
+          "description": "API environment. Must match the business config environment."
         },
         "upi_apps": {
           "type": "array",
@@ -59,7 +59,7 @@
       }
     },
     "PaymentMethodUPICircle": {
-      "description": "UPI Circle delegated payment method identifying the pre-authorized mandate. The delegate_id is an opaque persistent reference issued by Razorpay during one-time delegation setup — analogous to a card vault token.",
+      "description": "UPI Circle delegated payment method identifying the pre-authorized mandate. The delegate_id is an opaque persistent reference issued by the PSP during one-time delegation setup — analogous to a card vault token.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -70,7 +70,7 @@
         },
         "delegate_id": {
           "type": "string",
-          "description": "Opaque persistent identifier for the UPI Circle mandate, issued by Razorpay during one-time delegation setup. Used by the platform to fetch a one-time credential before each transaction. Platforms MUST NOT parse or pattern-match this value."
+          "description": "Opaque persistent identifier for the UPI Circle mandate, issued by the PSP during one-time delegation setup. Used by the platform to fetch a one-time credential before each transaction. Platforms MUST NOT parse or pattern-match this value."
         },
         "user_vpa": {
           "type": "string",
@@ -86,18 +86,22 @@
       }
     },
     "Credential": {
-      "description": "One-time UPI Circle cryptogram fetched from Razorpay TSP before submitting Complete Checkout. Single-use and short-lived — authorizes exactly one delegated debit. Platforms MUST fetch a fresh credential for each transaction and MUST NOT reuse or submit an expired credential.",
+      "description": "One-time delegated payment credential fetched from the PSP's Token Service Provider (TSP) before submitting Complete Checkout. Single-use and short-lived — authorizes exactly one delegated debit. Platforms MUST fetch a fresh credential for each transaction and MUST NOT reuse or submit an expired credential.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string",
-          "const": "upi_circle_cryptogram",
-          "description": "Credential type discriminator, always 'upi_circle_cryptogram'"
+          "const": "delegated_payment_credential",
+          "description": "Credential type for delegated mandate payments"
+        },
+        "provider": {
+          "type": "string",
+          "description": "PSP or network that issued this credential (e.g., 'razorpay', 'phonepe'). Identifies which PSP's cryptogram format is in use."
         },
         "value": {
           "type": "string",
-          "description": "Base64-encoded one-time cryptogram issued by Razorpay TSP for this transaction"
+          "description": "Base64-encoded one-time cryptogram issued by the PSP's TSP for this transaction"
         },
         "expires_at": {
           "type": "string",
@@ -105,9 +109,10 @@
           "description": "ISO 8601 timestamp when this cryptogram expires. Platforms MUST check this before submitting and fetch a new credential if expired."
         }
       },
-      "required": ["type", "value"],
+      "required": ["type", "provider", "value"],
       "example": {
-        "type": "upi_circle_cryptogram",
+        "type": "delegated_payment_credential",
+        "provider": "razorpay",
         "value": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
         "expires_at": "2026-04-15T10:35:00Z"
       }
@@ -167,7 +172,7 @@
         },
         "credential": {
           "$ref": "#/$defs/Credential",
-          "description": "One-time cryptogram fetched from Razorpay TSP for this specific transaction. UPI Circle-specific extension — not present in the base ACP DelegatePaymentRequest."
+          "description": "One-time credential fetched from the PSP's TSP for this specific transaction. UPI Circle-specific extension — not present in the base ACP DelegatePaymentRequest."
         },
         "allowance": {
           "$ref": "#/$defs/Allowance",
@@ -215,7 +220,8 @@
           "user_vpa": "user@okicici"
         },
         "credential": {
-          "type": "upi_circle_cryptogram",
+          "type": "delegated_payment_credential",
+          "provider": "razorpay",
           "value": "AQIDBAUGBwgJCgsMDQ4PEBESExQ=",
           "expires_at": "2026-04-15T10:35:00Z"
         },
