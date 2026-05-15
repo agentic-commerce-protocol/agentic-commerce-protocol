@@ -1,4 +1,4 @@
-## Add UPI Intent Payment Handler
+## Add UPI Intent Payment Handler (Reference Implementation: Razorpay)
 
 This change adds support for UPI Intent payments as a delegated payment method within ACP. UPI (Unified Payments Interface) is India's real-time payment system with 600M+ users and $2.6T annual transaction volume. This handler enables buyers to complete payment by launching their preferred UPI app via a deep link on mobile or scanning a QR code on desktop — with no card data or pre-authorization required.
 
@@ -20,7 +20,7 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 
 ### Handler Details
 
-- **Handler Name**: `com.razorpay.upi_intent`
+- **Handler Category**: UPI Intent Payment Handler (PSP-agnostic; `com.razorpay.upi_intent` is the Razorpay reference implementation)
 - **Version**: `2026-04-07`
 - **ACP Version**: `2025-09` (GA) and later
 - **Currency Support**: `INR` only
@@ -48,7 +48,7 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 **Each Transaction (ACP Protocol)**:
 
 1. Platform discovers `com.razorpay.upi_intent` in business ACP handler configuration
-2. Platform generates NPCI-compliant `upi://` intent URI and QR code using `merchant_vpa` and `checkout_session_id`
+2. Platform generates NPCI-compliant `upi://` intent URI using `merchant_vpa` (assigned by acquiring bank/PSP during onboarding) and `checkout_session_id`; platform MAY derive a QR code locally from the intent URI for desktop rendering
 3. Platform presents deep link (mobile) or QR code (desktop) to the user
 4. User approves payment in their UPI app
 5. Platform submits `DelegatePaymentRequest` with `PaymentMethodUPIIntent`, `allowance`, and empty `risk_signals`
@@ -66,7 +66,7 @@ UPI Intent uses NPCI's UPI Linking Specification to generate a `upi://` deep lin
 - Platform MUST generate a fresh `upi://` intent URI and QR code per transaction
 - Platform MUST verify `payment_method.expires_at` before submitting `DelegatePaymentRequest`
 - Platform SHOULD set 15-minute expiry on intent URIs per NPCI best practice
-- Platform SHOULD poll for payment completion at max 5-second intervals per NPCI best practice
+- Platform MAY poll for payment completion; implementers SHOULD consult NPCI operational guidelines for recommended polling intervals and retry limits
 - Platform SHOULD use `checkout_session_id` as `transaction_reference` in the intent URI for correlation
 
 ### Reference

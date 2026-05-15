@@ -12,7 +12,7 @@
       "max_amount": 49900,
       "currency": "inr",
       "checkout_session_id": "csn_01HV3P3XYZ789",
-      "merchant_id": "rzp_live_abc123xyz",
+      "merchant_id": "psp_live_abc123xyz",
       "expires_at": "2026-04-15T10:45:00Z"
     },
     "billing_address": {
@@ -37,7 +37,7 @@
       "order_id": "order_P6WL8c9Xt4rUj1",
       "upi_txn_id": "318219246640",
       "session_id": "sess_abc123",
-      "merchant_id": "rzp_live_abc123xyz"
+      "merchant_id": "psp_live_abc123xyz"
     }
   },
   "razorpay_upi_intent_error_intent_uri_expired": {
