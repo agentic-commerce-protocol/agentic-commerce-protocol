@@ -4,7 +4,21 @@ This change adds support for Server-to-Server (S2S) card payments as a delegated
 
 ### Problem Statement
 
-ACP's `delegate_payment` endpoint supports card-based credentials via network tokens. For India, PSPs operate their own Card-on-File Tokenization (CoFT) networks where merchants store customer card tokens. Indian merchants have no ACP-native path to charge these stored tokens without a redirect.
+ACP's `delegate_payment` endpoint supports card-based credentials via network tokens. PSPs operating Card-on-File Tokenization (CoFT) networks — where merchants store customer card tokens under PSP custody — have no ACP-native path to charge those tokens without a redirect. The existing `dev.acp.seller_backed.saved_card` handler covers the generic case but does not address PSP-specific auth flows and token formats required by CoFT deployments.
+
+### Relationship to `dev.acp.seller_backed.saved_card`
+
+ACP already defines `dev.acp.seller_backed.saved_card` for merchant-stored card tokens charged server-to-server without card UI. This handler is a **PSP-specific implementation** of that pattern for PSPs operating CoFT networks under national regulatory frameworks.
+
+| Dimension | `dev.acp.seller_backed.saved_card` | `com.razorpay.s2s_cards` |
+|---|---|---|
+| PSP identity | PSP-agnostic (seller-managed) | Razorpay CoFT |
+| Token format | PSP-opaque `payment_method_id` | PSP-opaque `token_id` (MUST NOT be parsed) |
+| BusinessConfig | Generic merchant fields | `key_id` + `environment` for Razorpay API auth |
+| 3DS step-up | Via `delegate_authentication` flow | `authentication_required` error code; caller redirects |
+| Networks | Not constrained | `visa`, `mastercard`, `rupay`, `amex` (configurable) |
+
+The `com.razorpay.s2s_cards` name belongs only in the handler manifest `name` field. The schema itself is generic and can be adopted by any PSP supporting CoFT.
 
 ### Solution: S2S Cards via Stored Merchant Token
 
@@ -15,16 +29,16 @@ The merchant already holds the customer's card `token_id` from a prior tokenizat
 - **Zero Checkout Friction**: No card entry at checkout — buyer selects saved card, merchant charges token
 - **Zero PAN Exposure**: Only PSP token IDs transmitted through ACP; raw card numbers never present
 - **No Redirect Required**: Entire flow is server-to-server; buyer stays in the agent conversation
-- **Full Card Coverage**: Visa, Mastercard, RuPay, Amex; Debit and Credit
+- **Configurable Card Coverage**: Supported networks (`visa`, `mastercard`, `rupay`, `amex`) and types (`credit`, `debit`) declared in `BusinessConfig`
 - **ACP delegate_payment Compatible**: Uses `DelegatePaymentRequest` / `DelegatePaymentResponse` envelope — same shape as other delegated payment handlers
 
 ### Handler Details
 
-- **Handler Name**: `com.razorpay.s2s_cards`
+- **Handler Name**: `com.razorpay.s2s_cards` (declared in ACP handler manifest only — schema is generic)
+- **Handler Schema**: `s2s_cards` (implementable by any PSP supporting CoFT)
 - **Version**: `2026-04-07`
 - **ACP Version**: `2025-09` (GA) and later
-- **Currency Support**: `INR` only
-- **Maximum Transaction**: ₹1,00,000 (bank-configurable per RBI guidelines)
+- **Currency**: ISO-4217 three-letter lowercase code. Supported currencies and transaction limits are config-level per deployment — not enforced by the schema.
 
 ### Changes
 
@@ -36,7 +50,8 @@ The merchant already holds the customer's card `token_id` from a prior tokenizat
 - Added `DelegatePaymentRequest` schema: `PaymentMethodS2SCard` + `Allowance` + optional `billing_address` + `risk_signals` + `metadata`
 - Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` envelope (PSP-specific values in metadata)
 - Added `Error` schema: single error object with `type` + `code` enums, aligned with base ACP `Error` schema
-- Added examples: 1 request, 1 success response, 8 error cases (invalid_token, card_declined, card_expired, insufficient_funds, daily_limit_exceeded, international_blocked, idempotency_conflict, too_many_requests)
+- Added `authentication_required` to `Error.code` enum: type=`processing_error`. Signals card issuer requires 3DS step-up; caller MUST redirect user to authenticate.
+- Added examples: 1 request, 1 success response, 9 error cases (invalid_token, card_declined, card_expired, insufficient_funds, daily_limit_exceeded, international_blocked, idempotency_conflict, too_many_requests, authentication_required)
 
 ### Files Updated
 

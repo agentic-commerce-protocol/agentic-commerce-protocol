@@ -2,8 +2,8 @@
   "razorpay_s2s_cards_request": {
     "payment_method": {
       "type": "s2s_card",
-      "token_id": "token_KNq2OQK30t5SXO",
-      "card_network": "Visa",
+      "token_id": "tok_abc123xyz",
+      "card_network": "visa",
       "card_last4": "4242",
       "card_type": "credit"
     },
@@ -86,5 +86,10 @@
     "type": "rate_limit_exceeded",
     "code": "too_many_requests",
     "message": "Too many requests. Please retry later."
+  },
+  "razorpay_s2s_cards_error_authentication_required": {
+    "type": "processing_error",
+    "code": "authentication_required",
+    "message": "Card issuer requires 3DS authentication for this transaction. Redirect user to authenticate."
   }
 }

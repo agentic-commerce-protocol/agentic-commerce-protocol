@@ -72,11 +72,11 @@
         },
         "token_id": {
           "type": "string",
-          "description": "PSP token ID for the customer's saved card, stored by the merchant. Never a raw PAN."
+          "description": "PSP token ID for the customer's saved card, stored by the merchant. Format is PSP-opaque — platforms and agents MUST NOT parse, pattern-match, or construct token_id values. Never a raw PAN."
         },
         "card_network": {
           "type": "string",
-          "enum": ["Visa", "MasterCard", "RuPay", "Amex"],
+          "enum": ["visa", "mastercard", "rupay", "amex"],
           "description": "Card network, for display purposes"
         },
         "card_last4": {
@@ -94,7 +94,7 @@
       "example": {
         "type": "s2s_card",
         "token_id": "tok_abc123xyz",
-        "card_network": "Visa",
+        "card_network": "visa",
         "card_last4": "4242",
         "card_type": "credit"
       }
@@ -126,7 +126,7 @@
       }
     },
     "Allowance": {
-      "description": "Constraints on how the S2S card payment can be used for a single transaction (amount limit, expiration, merchant). Identical shape to the base ACP Allowance.",
+      "description": "Constraints on how the S2S card payment can be used for a single transaction. Supported currencies and transaction limits are config-level per deployment — not enforced by this schema.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -217,7 +217,7 @@
         "payment_method": {
           "type": "s2s_card",
           "token_id": "tok_abc123xyz",
-          "card_network": "Visa",
+          "card_network": "visa",
           "card_last4": "4242",
           "card_type": "credit"
         },
@@ -312,7 +312,8 @@
             "idempotency_conflict",
             "too_many_requests",
             "idempotency_key_required",
-            "idempotency_in_flight"
+            "idempotency_in_flight",
+            "authentication_required"
           ],
           "description": "Specific error code for programmatic handling"
         },
