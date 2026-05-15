@@ -4,7 +4,6 @@
       "type": "upi_intent",
       "intent_uri": "upi://pay?pa=storename@icici&pn=MyStore&tr=csn_01HV3P3XYZ789&am=499.00&cu=INR&tn=Order%20payment&mc=5411",
       "transaction_reference": "csn_01HV3P3XYZ789",
-      "qr_code_data": "iVBORw0KGgoAAAANSUhEUgAA...",
       "expires_at": "2026-04-15T10:45:00Z"
     },
     "allowance": {
