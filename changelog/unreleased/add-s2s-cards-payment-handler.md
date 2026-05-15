@@ -46,7 +46,7 @@ The merchant already holds the customer's card `token_id` from a prior tokenizat
 - Added `PlatformConfig` schema: platform-level config (`environment`)
 - Added `PaymentMethodS2SCard` schema: saved card token with `token_id`, `card_network`, `card_last4`, `card_type` — no raw card fields
 - Added `RiskSignal` schema: aligned with base ACP `RiskSignal` definition
-- Added `Allowance` schema: per-transaction constraints — identical shape to base ACP `Allowance`
+- Added `Allowance` schema: per-transaction constraints (amount, currency, expiry, merchant_id) — currency and limits are config-level per deployment
 - Added `DelegatePaymentRequest` schema: `PaymentMethodS2SCard` + `Allowance` + optional `billing_address` + `risk_signals` + `metadata`
 - Added `DelegatePaymentResponse` schema: generic `id` + `created` + `metadata` envelope (PSP-specific values in metadata)
 - Added `Error` schema: single error object with `type` + `code` enums, aligned with base ACP `Error` schema
