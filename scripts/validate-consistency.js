@@ -13,6 +13,7 @@
  * 7. All data models in unreleased JSON schemas have at least one example
  * 8. All fields in unreleased OpenAPI schemas have descriptions
  * 9. All schemas in unreleased OpenAPI specs have at least one example
+ * 10. Inline examples under requestBody/responses validate against the schema they $ref
  */
 
 const fs = require('fs');
@@ -30,6 +31,34 @@ const CRITICAL_AMOUNT_FIELDS = [
   'base_amount', 'discount', 'subtotal', 'tax', 'total',
   'amount', 'max_amount', 'unit_amount'
 ];
+
+// Pre-existing OpenAPI inline-example failures that the new inline-example check (see
+// `validateOpenApiInlineExamples` below) surfaces but that are out of scope for the PR
+// that introduced the check. Each entry corresponds to a real schema/example mismatch
+// already present in the repo. Tracked separately so the check can land green and follow-up
+// PRs can remove entries as they land. Match key: `${spec}|${schemaRef}|${exampleName}`.
+const KNOWN_INLINE_EXAMPLE_FAILURES = new Set([
+  // agentic_checkout: request examples use `items:` but schema renamed the field to `line_items`.
+  'agentic_checkout|#/components/schemas/CheckoutSessionCreateRequest|minimal',
+  'agentic_checkout|#/components/schemas/CheckoutSessionCreateRequest|with_address',
+  'agentic_checkout|#/components/schemas/CheckoutSessionCreateRequest|with_first_touch_attribution',
+  // agentic_checkout: update/complete examples missing required fields (option_id, handler_id).
+  'agentic_checkout|#/components/schemas/CheckoutSessionUpdateRequest|set_fulfillment_option',
+  'agentic_checkout|#/components/schemas/CheckoutSessionCompleteRequest|basic',
+  'agentic_checkout|#/components/schemas/CheckoutSessionCompleteRequest|with_affiliate_attribution',
+  // agentic_checkout_webhook: refund amount expressed as string "1.00"; schema requires integer minor units.
+  // Same pattern as #249 (fixed for 2026-01-30); older versions remain.
+  'agentic_checkout_webhook|#/components/schemas/WebhookEvent|order_updated',
+  // delegate_authentication: examples carry fields not in their respective schemas.
+  'delegate_authentication|#/components/schemas/DelegateAuthenticationCreateRequest|minimal',
+  'delegate_authentication|#/components/schemas/DelegateAuthenticationSessionWithResult|authenticated',
+  'delegate_authentication|#/components/schemas/DelegateAuthenticationSessionWithResult|not_authenticated',
+  // delegate_payment unreleased: Error.type/code enum gaps for 401/500/503 tracked in #161.
+  'delegate_payment|#/components/schemas/Error|unauthorized',
+  'delegate_payment|#/components/schemas/Error|internal_server_error',
+  'delegate_payment|#/components/schemas/Error|service_unavailable',
+  'delegate_payment|#/components/schemas/Error|rate_limit_exceeded'
+]);
 
 let errors = [];
 let warnings = [];
@@ -539,7 +568,164 @@ function validateOpenApiExamples() {
   });
 }
 
-// 10. Validate examples against schemas
+// 10. Validate OpenAPI inline examples (under requestBody / responses) against the schemas they $ref.
+// The existing example validator only covers `examples/<version>/examples.<spec>.json`.
+// Examples embedded directly in OpenAPI YAML — under `content[mediaType].example(s)` — were not
+// being validated against the schema declared on the same content block, which is how the
+// wrapped-error-envelope bug fixed in #243 slipped past CI.
+function validateOpenApiInlineExamples() {
+  console.log('\n📝 Validating OpenAPI Inline Examples Against $ref Schemas...\n');
+
+  VERSIONS.forEach(version => {
+    const openApiSpecs = getOpenApiFiles(version);
+
+    openApiSpecs.forEach(spec => {
+      const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
+      if (!fs.existsSync(openApiPath)) return;
+
+      let openapi;
+      try {
+        openapi = yaml.load(fs.readFileSync(openApiPath, 'utf8'));
+      } catch (err) {
+        // Syntax issues are already caught by validateOpenApiSyntax; bail out here.
+        return;
+      }
+
+      if (!openapi.components || !openapi.components.schemas || !openapi.paths) return;
+
+      // Deep-clone components.schemas so we can normalize without mutating the source.
+      const componentSchemas = JSON.parse(JSON.stringify(openapi.components.schemas));
+      normalizeOpenApiSchemas(componentSchemas);
+
+      const ajv = new Ajv({ strict: false, allErrors: true, validateSchema: false });
+      addFormats(ajv);
+
+      // Wrap the component schemas so internal $refs (`#/components/schemas/X`) resolve
+      // against a single root document. The $id is local to this run and stable per file.
+      const rootId = `https://acp.local/openapi/${version}/${spec}.yaml`;
+      try {
+        ajv.addSchema({ $id: rootId, components: { schemas: componentSchemas } });
+      } catch (err) {
+        // Don't fail validation pipeline if AJV rejects something exotic; surface in OpenAPI syntax check instead.
+        return;
+      }
+
+      let checked = 0;
+      let bad = 0;
+
+      const walk = (node, where) => {
+        if (!node || typeof node !== 'object') return;
+        if (node.content && typeof node.content === 'object') {
+          Object.entries(node.content).forEach(([mediaType, mediaBlock]) => {
+            if (!mediaBlock || typeof mediaBlock !== 'object') return;
+            const schemaRef = mediaBlock.schema && mediaBlock.schema.$ref;
+            // Only validate when the content block points at a named component via $ref.
+            // Inline schemas, oneOf/allOf, and cross-file $refs are skipped (no false positives).
+            if (!schemaRef || !schemaRef.startsWith('#/')) return;
+
+            let validate;
+            try {
+              validate = ajv.getSchema(rootId + schemaRef);
+            } catch (compileErr) {
+              // The referenced schema (or one it transitively references) can't be compiled here —
+              // typically because it $refs across files. Skip silently so unrelated specs still get
+              // validated; the OpenAPI syntax check covers actual file-level breakage.
+              return;
+            }
+            if (!validate) return;
+
+            const cases = [];
+            if (Object.prototype.hasOwnProperty.call(mediaBlock, 'example')) {
+              cases.push({ name: '<inline>', value: mediaBlock.example });
+            }
+            if (mediaBlock.examples && typeof mediaBlock.examples === 'object') {
+              Object.entries(mediaBlock.examples).forEach(([name, def]) => {
+                if (def && Object.prototype.hasOwnProperty.call(def, 'value')) {
+                  cases.push({ name, value: def.value });
+                }
+              });
+            }
+
+            cases.forEach(({ name, value }) => {
+              checked++;
+              let ok;
+              try {
+                ok = validate(value);
+              } catch (runErr) {
+                // Lazy compilation can throw here if a transitive $ref is unresolvable; skip.
+                return;
+              }
+              if (!ok) {
+                const key = `${spec}|${schemaRef}|${name}`;
+                if (KNOWN_INLINE_EXAMPLE_FAILURES.has(key)) {
+                  // Known pre-existing failure; tracked for follow-up. Don't fail CI on it.
+                  return;
+                }
+                bad++;
+                error(
+                  `OpenAPI inline example "${name}" at ${where}.content[${mediaType}] does not validate against ${schemaRef}`,
+                  {
+                    version,
+                    spec,
+                    example: name,
+                    schemaRef,
+                    location: where,
+                    errors: validate.errors
+                  }
+                );
+              }
+            });
+          });
+        }
+        // Recurse into nested objects (paths -> path item -> operation -> requestBody/responses/...).
+        Object.keys(node).forEach(key => {
+          if (node[key] && typeof node[key] === 'object') walk(node[key], `${where}.${key}`);
+        });
+      };
+
+      Object.entries(openapi.paths).forEach(([p, item]) => {
+        walk(item, `paths['${p}']`);
+      });
+
+      if (bad === 0) {
+        success(`OpenAPI inline examples validated for ${version}/${spec} (${checked} checked)`);
+      }
+    });
+  });
+}
+
+// Normalize OpenAPI-3.0 schema conventions in-place so AJV (draft 2020-12) can compile them.
+// OpenAPI 3.0 uses boolean exclusiveMin/Max and `nullable: true`; JSON Schema draft 2020-12 uses
+// numeric exclusiveMin/Max and a `null` type. Operates on a clone supplied by the caller.
+function normalizeOpenApiSchemas(obj) {
+  if (!obj || typeof obj !== 'object') return;
+  if (Array.isArray(obj)) { obj.forEach(normalizeOpenApiSchemas); return; }
+  if (typeof obj.exclusiveMinimum === 'boolean') {
+    if (obj.exclusiveMinimum === true && typeof obj.minimum === 'number') {
+      obj.exclusiveMinimum = obj.minimum;
+      delete obj.minimum;
+    } else {
+      delete obj.exclusiveMinimum;
+    }
+  }
+  if (typeof obj.exclusiveMaximum === 'boolean') {
+    if (obj.exclusiveMaximum === true && typeof obj.maximum === 'number') {
+      obj.exclusiveMaximum = obj.maximum;
+      delete obj.maximum;
+    } else {
+      delete obj.exclusiveMaximum;
+    }
+  }
+  if (obj.nullable === true && typeof obj.type === 'string') {
+    obj.type = [obj.type, 'null'];
+    delete obj.nullable;
+  } else if (obj.nullable !== undefined) {
+    delete obj.nullable;
+  }
+  Object.keys(obj).forEach(k => normalizeOpenApiSchemas(obj[k]));
+}
+
+// 11. Validate examples against schemas
 function validateExamples() {
   console.log('\n📝 Validating Examples Against Schemas...\n');
 
@@ -652,6 +838,7 @@ validateFieldDescriptions();
 validateModelExamples();
 validateOpenApiDescriptions();
 validateOpenApiExamples();
+validateOpenApiInlineExamples();
 validateExamples();
 
 console.log('\n' + '='.repeat(60));
