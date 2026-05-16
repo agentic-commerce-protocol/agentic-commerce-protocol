@@ -48,6 +48,7 @@ examples/
 changelog/
 ├── 2025-09-29.md
 ├── 2025-12-12.md
+├── 2026-01-16.md
 ├── 2026-01-30.md
 ├── 2026-04-17.md
 └── unreleased/              # Individual changelog entries (current development)
