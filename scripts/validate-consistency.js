@@ -13,6 +13,7 @@
  * 7. All data models in unreleased JSON schemas have at least one example
  * 8. All fields in unreleased OpenAPI schemas have descriptions
  * 9. All schemas in unreleased OpenAPI specs have at least one example
+ * 10. Embedded examples in unreleased schemas validate against their models
  */
 
 const fs = require('fs');
@@ -30,6 +31,60 @@ const CRITICAL_AMOUNT_FIELDS = [
   'base_amount', 'discount', 'subtotal', 'tax', 'total',
   'amount', 'max_amount', 'unit_amount'
 ];
+
+const SHARED_AGENTIC_CHECKOUT_EMBEDDED_EXAMPLE_FAILURES = [
+  'PaymentHandler|0|/:required,/:required,/:required',
+  'LineItem|0|/:required,/:required,/:additionalProperties',
+  'TaxBreakdownItem|0|/:required,/:additionalProperties',
+  'Total|0|/:required,/:required,/:required',
+  'FulfillmentOptionPickup|0|/:required,/:required,/:required',
+  'FulfillmentOptionLocalDelivery|0|/:required,/:required,/:additionalProperties',
+  'FulfillmentOptionShipping|0|/:required,/:required,/:additionalProperties',
+  'FulfillmentOptionDigital|0|/:required,/:required,/:additionalProperties',
+  'SelectedFulfillmentOption|0|/:required,/:additionalProperties',
+  'GiftWrap|0|/:required,/:additionalProperties,/:additionalProperties',
+  'SplitPayment|0|/:required,/:additionalProperties,/:additionalProperties',
+  'FulfillmentGroup|0|/:required,/:additionalProperties',
+  'EstimatedDelivery|0|/earliest:format,/latest:format',
+  'OrderConfirmation|0|/:additionalProperties,/:additionalProperties,/:additionalProperties',
+  'SupportInfo|0|/:additionalProperties',
+  'MessageInfo|0|/:required,/:required,/:required',
+  'MessageWarning|0|/:required,/:required,/:required',
+  'MessageError|0|/:required,/:required,/:required',
+  'Link|0|/:required,/:additionalProperties,/:additionalProperties',
+  'PaymentData|0|/:required,/:required,/:required',
+  'DiscountAllocation|0|/:required,/:additionalProperties,/:additionalProperties',
+  'Coupon|0|/:required,/:required,/:additionalProperties',
+  'AppliedDiscount|0|/:required,/:required',
+  'RiskSignals|0|/:additionalProperties',
+  'Order|0|/:required,/:required,/:additionalProperties',
+  'LineItemReference|0|/:required,/:additionalProperties',
+  'FulfillmentEvent|0|/:required,/:required,/:required',
+  'Adjustment|0|/:required,/:required,/:additionalProperties',
+  'AuthenticationMetadata|0|/:required,/:required',
+  'AuthenticationResult|0|/:required,/:if,/:required',
+  'CheckoutSessionBase|0|/totals:type',
+  'CheckoutSession|0|/totals:type',
+  'CheckoutSessionCreateRequest|0|/:required,/:additionalProperties',
+  'CheckoutSessionCompleteRequest|0|/payment_data:required,/payment_data:required,/payment_data:required',
+  'IntentTrace|0|/reason_code:enum',
+  'CancelSessionRequest|0|/intent_trace/reason_code:enum'
+];
+
+// Current model-level example drift in unreleased specs. Keys include the first
+// validation-error fingerprints so different future failures are not hidden.
+const KNOWN_EMBEDDED_EXAMPLE_FAILURES = new Set([
+  ...SHARED_AGENTIC_CHECKOUT_EMBEDDED_EXAMPLE_FAILURES.flatMap(failure => [
+    `json-schema|agentic_checkout|${failure}`,
+    `openapi|agentic_checkout|${failure}`
+  ]),
+  'json-schema|agentic_checkout|CheckoutSessionWithOrder|0|/totals:type,/order:required,/order:required',
+  'openapi|agentic_checkout|CheckoutSessionWithOrder|0|/:additionalProperties,/totals:type,/order:required',
+  'json-schema|delegate_authentication|DelegateAuthenticationSessionWithResult|0|/:additionalProperties',
+  'json-schema|delegate_authentication|DelegateAuthenticationSessionWithResult|1|/:additionalProperties',
+  'openapi|delegate_authentication|DelegateAuthenticationSessionWithResult|0|/:additionalProperties',
+  'openapi|delegate_authentication|Channel|0|/browser:required,/browser:required,/browser:required'
+]);
 
 let errors = [];
 let warnings = [];
@@ -86,6 +141,37 @@ function checkProperties(obj, path = [], options = {}) {
   }
   
   return missingDescriptions;
+}
+
+function getEmbeddedExamples(schemaDef) {
+  const examples = [];
+
+  if (schemaDef.example !== undefined) {
+    examples.push(schemaDef.example);
+  }
+
+  if (Array.isArray(schemaDef.examples)) {
+    examples.push(...schemaDef.examples);
+  }
+
+  if (schemaDef.examples && typeof schemaDef.examples === 'object') {
+    examples.push(...Object.values(schemaDef.examples));
+  }
+
+  return examples;
+}
+
+function embeddedExampleFailureKey(kind, spec, schemaName, index, validationErrors) {
+  const fingerprint = (validationErrors || [])
+    .slice(0, 3)
+    .map(err => `${err.instancePath || '/'}:${err.keyword}`)
+    .join(',');
+
+  return `${kind}|${spec}|${schemaName}|${index}|${fingerprint}`;
+}
+
+function schemaRefKey(schema, ref) {
+  return schema.$id ? schema.$id + ref : ref;
 }
 
 // Helper function to get all JSON schema files in a directory
@@ -539,7 +625,147 @@ function validateOpenApiExamples() {
   });
 }
 
-// 10. Validate examples against schemas
+// 10. Validate embedded examples against their model schemas
+function validateEmbeddedSchemaExamples() {
+  console.log('\n🧪 Validating Embedded Schema Examples in unreleased specs...\n');
+
+  const version = 'unreleased';
+  let knownFailures = 0;
+  let skippedRefs = 0;
+
+  const jsonSpecs = getJsonSchemaFiles(version);
+  const jsonSchemas = [];
+  const jsonAjv = new Ajv({
+    strict: false,
+    allErrors: true,
+    validateSchema: false
+  });
+  addFormats(jsonAjv);
+
+  jsonSpecs.forEach(spec => {
+    const schemaPath = path.join(__dirname, '..', 'spec', version, 'json-schema', `schema.${spec}.json`);
+
+    if (!fs.existsSync(schemaPath)) return;
+
+    try {
+      const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+      jsonSchemas.push({ spec, schema });
+      jsonAjv.addSchema(schema);
+    } catch (err) {
+      error(`Error loading JSON Schema for embedded example validation: ${err.message}`, { version, spec });
+    }
+  });
+
+  jsonSchemas.forEach(({ spec, schema }) => {
+    Object.entries(schema.$defs || {}).forEach(([schemaName, schemaDef]) => {
+      const examples = getEmbeddedExamples(schemaDef);
+      if (examples.length === 0) return;
+
+      let validate;
+      try {
+        validate = jsonAjv.getSchema(schemaRefKey(schema, `#/$defs/${schemaName}`));
+      } catch (err) {
+        skippedRefs += 1;
+        return;
+      }
+
+      if (!validate) {
+        skippedRefs += 1;
+        return;
+      }
+
+      examples.forEach((exampleValue, index) => {
+        if (validate(exampleValue)) return;
+
+        const key = embeddedExampleFailureKey('json-schema', spec, schemaName, index, validate.errors);
+
+        if (KNOWN_EMBEDDED_EXAMPLE_FAILURES.has(key)) {
+          knownFailures += 1;
+          return;
+        }
+
+        error(
+          `Embedded JSON Schema example for "${schemaName}" does not validate`,
+          { version, spec, schema: schemaName, exampleIndex: index, errors: validate.errors }
+        );
+      });
+    });
+  });
+
+  const openApiSpecs = getOpenApiFiles(version);
+
+  openApiSpecs.forEach(spec => {
+    const openApiPath = path.join(__dirname, '..', 'spec', version, 'openapi', `openapi.${spec}.yaml`);
+
+    if (!fs.existsSync(openApiPath)) return;
+
+    try {
+      const openapi = yaml.load(fs.readFileSync(openApiPath, 'utf8'));
+      const schemas = openapi.components && openapi.components.schemas;
+
+      if (!schemas) return;
+
+      const openApiAjv = new Ajv({
+        strict: false,
+        allErrors: true,
+        validateSchema: false
+      });
+      addFormats(openApiAjv);
+
+      Object.entries(schemas).forEach(([schemaName, schemaDef]) => {
+        try {
+          openApiAjv.addSchema(schemaDef, `#/components/schemas/${schemaName}`);
+        } catch (err) {
+          skippedRefs += 1;
+        }
+      });
+
+      Object.entries(schemas).forEach(([schemaName, schemaDef]) => {
+        const examples = getEmbeddedExamples(schemaDef);
+        if (examples.length === 0) return;
+
+        let validate;
+        try {
+          validate = openApiAjv.getSchema(`#/components/schemas/${schemaName}`);
+        } catch (err) {
+          skippedRefs += 1;
+          return;
+        }
+
+        if (!validate) {
+          skippedRefs += 1;
+          return;
+        }
+
+        examples.forEach((exampleValue, index) => {
+          if (validate(exampleValue)) return;
+
+          const key = embeddedExampleFailureKey('openapi', spec, schemaName, index, validate.errors);
+
+          if (KNOWN_EMBEDDED_EXAMPLE_FAILURES.has(key)) {
+            knownFailures += 1;
+            return;
+          }
+
+          error(
+            `Embedded OpenAPI schema example for "${schemaName}" does not validate`,
+            { version, spec, schema: schemaName, exampleIndex: index, errors: validate.errors }
+          );
+        });
+      });
+    } catch (err) {
+      error(`Error validating embedded OpenAPI examples for ${version}/${spec}: ${err.message}`, { version, spec });
+    }
+  });
+
+  if (knownFailures > 0 || skippedRefs > 0) {
+    success(`Embedded schema examples checked (${knownFailures} known failure(s), ${skippedRefs} unresolved ref(s) skipped)`);
+  } else {
+    success(`All embedded schema examples validate in ${version} specs`);
+  }
+}
+
+// 11. Validate examples against schemas
 function validateExamples() {
   console.log('\n📝 Validating Examples Against Schemas...\n');
 
@@ -652,6 +878,7 @@ validateFieldDescriptions();
 validateModelExamples();
 validateOpenApiDescriptions();
 validateOpenApiExamples();
+validateEmbeddedSchemaExamples();
 validateExamples();
 
 console.log('\n' + '='.repeat(60));
