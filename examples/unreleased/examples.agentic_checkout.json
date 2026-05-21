@@ -6,8 +6,13 @@
         "id": "item_123",
         "suggested_price": {
           "amount": 7999,
-          "source": "feed_upload_session:7829461035",
-          "observed_at": "2026-03-23T08:30:00Z"
+          "source": {
+            "feed_id": "feed_8f3K2x",
+            "channel": "feed_api",
+            "feed_update_id": "upd_7kQ9mR",
+            "updated_at": "2026-05-20T14:30:01Z"
+          },
+          "observed_at": "2026-05-20T14:35:00Z"
         }
       }
     ],

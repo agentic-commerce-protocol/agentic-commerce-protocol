@@ -988,6 +988,31 @@ components:
         providers:
           - stripe
           - adyen
+    PriceSource:
+      type: object
+      additionalProperties: false
+      description: Structured provenance describing where the agent obtained a price. Connects to the Feed API identifiers for protocol-level verification.
+      properties:
+        feed_id:
+          type: string
+          description: Identifier of the product feed from which the price was obtained.
+        channel:
+          type: string
+          description: Feed update channel through which the data was published. Known values include api, file, and partner_platform.
+        feed_update_id:
+          type: string
+          description: Version identifier of the specific feed update that contained this price. Corresponds to the feed_update_id returned by PATCH /feeds/{id}/products.
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp of the feed update from which the price was observed.
+      required:
+        - feed_id
+      example:
+        feed_id: feed_8f3K2x
+        channel: feed_api
+        feed_update_id: upd_7kQ9mR
+        updated_at: "2026-05-20T14:30:01Z"
     SuggestedPrice:
       type: object
       additionalProperties: false
@@ -997,8 +1022,8 @@ components:
           type: integer
           description: Suggested price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for yen 100). This is the price the agent displayed to the buyer.
         source:
-          type: string
-          description: URI or identifier of the catalog source where the agent obtained this price. Examples: a product feed URL, catalog API endpoint, catalog snapshot ID, or seller-provided price list identifier.
+          $ref: "#/components/schemas/PriceSource"
+          description: Structured provenance describing the catalog source where the agent obtained this price.
         observed_at:
           type: string
           format: date-time
@@ -1009,8 +1034,12 @@ components:
         - observed_at
       example:
         amount: 5999
-        source: "feed_upload_session:7829461035"
-        observed_at: "2026-03-23T08:30:00Z"
+        source:
+          feed_id: feed_8f3K2x
+          channel: feed_api
+          feed_update_id: upd_7kQ9mR
+          updated_at: "2026-05-20T14:30:01Z"
+        observed_at: "2026-05-20T14:35:00Z"
     Item:
       type: object
       additionalProperties: false
