@@ -870,7 +870,7 @@
         },
         "suggested_price": {
           "$ref": "#/$defs/SuggestedPrice",
-          "description": "Agent-provided price expectation with catalog source provenance. When present, the seller SHOULD verify the source and honor this price if it falls within the seller's acceptable time window."
+          "description": "Agent-provided price expectation with catalog source provenance. When present, it is RECOMMENDED that the seller verify the source and honor this price if it falls within the seller's acceptable time window."
         }
       },
       "required": [

@@ -1055,7 +1055,7 @@ components:
           description: Price per unit in minor currency units (e.g. 100 cents for $1.00 or 100 for ¥100)
         suggested_price:
           $ref: "#/components/schemas/SuggestedPrice"
-          description: Agent-provided price expectation with catalog source provenance. When present, the seller SHOULD verify the source and honor this price if it falls within the seller's acceptable time window.
+          description: Agent-provided price expectation with catalog source provenance. When present, it is RECOMMENDED that the seller verify the source and honor this price if it falls within the seller's acceptable time window.
       required:
         - id
       example:
