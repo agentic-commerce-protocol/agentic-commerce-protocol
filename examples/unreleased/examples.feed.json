@@ -17,6 +17,7 @@
       {
         "id": "prod_classic_tee",
         "title": "Classic Tee",
+        "last_update_id": "upd_7kQ9mR",
         "variants": [
           {
             "id": "sku123-red-s",
@@ -94,7 +95,8 @@
   },
   "upsert_products_response": {
     "id": "feed_8f3K2x",
-    "accepted": true
+    "accepted": true,
+    "feed_update_id": "upd_7kQ9mR"
   },
   "feed_error_not_found": {
     "type": "invalid_request",

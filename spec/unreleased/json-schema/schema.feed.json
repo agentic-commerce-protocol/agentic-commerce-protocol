@@ -468,6 +468,10 @@
           "items": {
             "$ref": "#/$defs/Variant"
           }
+        },
+        "last_update_id": {
+          "type": "string",
+          "description": "The feed_update_id of the most recent product upsert that touched this product. Absent if the agent does not support product feed update versioning."
         }
       },
       "example": {

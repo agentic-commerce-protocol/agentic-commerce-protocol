@@ -170,6 +170,7 @@ paths:
                   value:
                     id: feed_8f3K2x
                     accepted: true
+                    feed_update_id: upd_7kQ9mR
         "400":
           description: Invalid product payload
           content:
@@ -586,6 +587,9 @@ components:
           description: Purchasable variants grouped under this product.
           items:
             $ref: "#/components/schemas/Variant"
+        last_update_id:
+          type: string
+          description: The feed_update_id of the most recent product upsert that touched this product. Absent if the agent does not support product feed update versioning.
       example:
         id: prod_classic_tee
         title: Classic Tee
@@ -662,9 +666,13 @@ components:
         accepted:
           type: boolean
           description: Whether the submitted product upsert payload was accepted for processing.
+        feed_update_id:
+          type: string
+          description: Agent generated version identifier for this accepted upsert. Unique within the agent's namespace. The merchant stores this as the version of the update and can verify it against Product.last_update_id on each product returned by GET /feeds/{id}/products.
       example:
         id: feed_8f3K2x
         accepted: true
+        feed_update_id: upd_7kQ9mR
     UpsertProductsRequest:
       description: Request payload that partially upserts products into a feed. Products omitted from the request remain unchanged.
       type: object
