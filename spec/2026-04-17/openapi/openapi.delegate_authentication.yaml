@@ -522,6 +522,8 @@ components:
 
     DelegateAuthenticationSessionWithResult:
       description: Response object containing the full session state and final result.
+      type: object
+      additionalProperties: false
       example:
         authentication_session_id: "auth_session_abc123"
         status: "authenticated"
@@ -530,13 +532,35 @@ components:
           transaction_id: "c4e59ceb-a382-4d6a-bc87-385d591fa09d"
           three_ds_server_trans_id: "6edcc246-23ee-4e94-ac5d-8ae620bea7d9"
           version: "2.2.0"
-      allOf:
-        - $ref: "#/components/schemas/DelegateAuthenticationSessionBase"
-        - type: object
-          description: Extension containing the authentication result data.
-          properties:
-            authentication_result:
-              $ref: "#/components/schemas/AuthenticationResult"
+      properties:
+        authentication_session_id:
+          type: string
+          description: Session ID for subsequent requests
+        status:
+          type: string
+          enum:
+            [
+              action_required,
+              pending,
+              not_supported,
+              authenticated,
+              attempted,
+              not_authenticated,
+              rejected,
+              unavailable,
+              expired,
+              challenge_abandoned,
+            ]
+          description: |
+            Current state of the session.
+            - action_required: Browser action needed.
+            - pending: Awaiting completion.
+            - not_supported: Method not available.
+        action:
+          $ref: "#/components/schemas/Action"
+        authentication_result:
+          $ref: "#/components/schemas/AuthenticationResult"
+      required: [authentication_session_id, status]
 
     # Data Models
     PaymentMethod:

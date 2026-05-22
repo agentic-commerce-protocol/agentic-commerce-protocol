@@ -540,6 +540,85 @@ function validateOpenApiExamples() {
 }
 
 // 10. Validate examples against schemas
+function getExampleSchemaRef(spec, exampleName) {
+  if (spec === 'agentic_checkout') {
+    if (exampleName === 'complete_checkout_session_response') {
+      return '#/$defs/CheckoutSessionWithOrder';
+    }
+    if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
+      return '#/$defs/CheckoutSession';
+    }
+    if (exampleName.includes('create') && exampleName.includes('request')) {
+      return '#/$defs/CheckoutSessionCreateRequest';
+    }
+    if (exampleName.includes('update') && exampleName.includes('request')) {
+      return '#/$defs/CheckoutSessionUpdateRequest';
+    }
+    if (exampleName.includes('complete') && exampleName.includes('request')) {
+      return '#/$defs/CheckoutSessionCompleteRequest';
+    }
+    if (exampleName.includes('cancel') && exampleName.includes('request')) {
+      return '#/$defs/CancelSessionRequest';
+    }
+    if (exampleName.startsWith('discovery_response_')) {
+      return '#/$defs/DiscoveryResponse';
+    }
+    if (exampleName.startsWith('error_')) {
+      return '#/$defs/Error';
+    }
+  } else if (spec === 'delegate_authentication') {
+    if (exampleName.startsWith('create_authentication_session_request')) {
+      return '#/$defs/DelegateAuthenticationCreateRequest';
+    }
+    if (exampleName.startsWith('create_authentication_session_response')) {
+      return '#/$defs/DelegateAuthenticationSession';
+    }
+    if (exampleName.startsWith('authenticate_request')) {
+      return '#/$defs/DelegateAuthenticationAuthenticateRequest';
+    }
+    if (exampleName.startsWith('authenticate_response')) {
+      return '#/$defs/DelegateAuthenticationSession';
+    }
+    if (exampleName.startsWith('retrieve_session_response')) {
+      return '#/$defs/DelegateAuthenticationSessionWithResult';
+    }
+    if (exampleName.startsWith('error_')) {
+      return '#/$defs/Error';
+    }
+  } else if (spec === 'delegate_payment') {
+    if (exampleName === 'delegate_payment_request') {
+      return '#/$defs/DelegatePaymentRequest';
+    }
+    if (exampleName === 'delegate_payment_success_response') {
+      return '#/$defs/DelegatePaymentResponse';
+    }
+    if (exampleName.startsWith('delegate_payment_error_')) {
+      return '#/$defs/Error';
+    }
+  } else if (spec === 'feed') {
+    if (exampleName.startsWith('create_feed_request')) {
+      return '#/$defs/CreateFeedRequest';
+    }
+    if (exampleName === 'create_feed_response' || exampleName === 'get_feed_response') {
+      return '#/$defs/FeedMetadata';
+    }
+    if (exampleName === 'get_products_response') {
+      return '#/$defs/ProductsResponse';
+    }
+    if (exampleName.startsWith('upsert_products_request')) {
+      return '#/$defs/UpsertProductsRequest';
+    }
+    if (exampleName === 'upsert_products_response') {
+      return '#/$defs/UpsertProductsResponse';
+    }
+    if (exampleName.startsWith('feed_error_')) {
+      return '#/$defs/Error';
+    }
+  }
+
+  return null;
+}
+
 function validateExamples() {
   console.log('\n📝 Validating Examples Against Schemas...\n');
 
@@ -569,34 +648,12 @@ function validateExamples() {
         // Add the full schema (with $defs) to AJV
         ajv.addSchema(schema);
 
+        let validatedExamples = 0;
+
         // Examples file is an object with named examples
         Object.keys(examples).forEach(exampleName => {
           const example = examples[exampleName];
-
-          // Try to infer which schema this example should validate against
-          // agentic_checkout: checkout_session_*, create*request, complete*request
-          // delegate_payment: delegate_payment_request, delegate_payment_success_response, delegate_payment_error_*
-          let schemaRef = null;
-
-          if (spec === 'agentic_checkout') {
-            if (exampleName === 'complete_checkout_session_response') {
-              schemaRef = '#/$defs/CheckoutSessionWithOrder';
-            } else if (exampleName.includes('checkout_session') && !exampleName.includes('request')) {
-              schemaRef = '#/$defs/CheckoutSession';
-            } else if (exampleName.includes('create') && exampleName.includes('request')) {
-              schemaRef = '#/$defs/CheckoutSessionCreateRequest';
-            } else if (exampleName.includes('complete') && exampleName.includes('request')) {
-              schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
-            }
-          } else if (spec === 'delegate_payment') {
-            if (exampleName === 'delegate_payment_request') {
-              schemaRef = '#/$defs/DelegatePaymentRequest';
-            } else if (exampleName === 'delegate_payment_success_response') {
-              schemaRef = '#/$defs/DelegatePaymentResponse';
-            } else if (exampleName.startsWith('delegate_payment_error_')) {
-              schemaRef = '#/$defs/Error';
-            }
-          }
+          const schemaRef = getExampleSchemaRef(spec, exampleName);
 
           // Skip validation if we can't determine the schema
           if (!schemaRef) {
@@ -609,10 +666,14 @@ function validateExamples() {
             const schemaKey = schema.$id ? schema.$id + schemaRef : schemaRef;
             const validate = ajv.getSchema(schemaKey);
             if (!validate) {
-              // Schema reference not found, skip silently
+              error(
+                `Schema reference "${schemaRef}" not found for example "${exampleName}"`,
+                { version, spec, example: exampleName, schemaRef }
+              );
               return;
             }
 
+            validatedExamples++;
             const valid = validate(example);
 
             if (!valid) {
@@ -627,12 +688,13 @@ function validateExamples() {
               );
             }
           } catch (validateErr) {
-            // Skip validation errors silently - examples might be partial
+            // Some historical schemas use older JSON Schema constructs that
+            // AJV cannot compile under this validator configuration.
             return;
           }
         });
 
-        success(`Examples validated for ${version}/${spec}`);
+        success(`Examples validated for ${version}/${spec} (${validatedExamples} mapped example(s))`);
       } catch (err) {
         error(`Error validating examples for ${version}/${spec}: ${err.message}`, { version, spec });
       }
