@@ -471,7 +471,8 @@
         },
         "last_update_id": {
           "type": "string",
-          "description": "The feed_update_id of the most recent product upsert that touched this product. Absent if the agent does not support product feed update versioning."
+          "readOnly": true,
+          "description": "The feed_update_id of the most recent product upsert that touched this product. Absent if the agent does not support product feed update versioning. Response only — agents MUST ignore this field if present on input."
         }
       },
       "example": {
@@ -609,11 +610,16 @@
         "accepted": {
           "type": "boolean",
           "description": "Whether the submitted product upsert payload was accepted for processing."
+        },
+        "feed_update_id": {
+          "type": "string",
+          "description": "Agent-generated version identifier for this accepted upsert. Unique within the agent's namespace. The merchant stores this as the version of the update and can verify it against Product.last_update_id on each product returned by GET /feeds/{id}/products."
         }
       },
       "example": {
         "id": "feed_8f3K2x",
-        "accepted": true
+        "accepted": true,
+        "feed_update_id": "upd_7kQ9mR"
       }
     },
     "Error": {

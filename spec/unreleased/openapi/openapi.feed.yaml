@@ -589,7 +589,8 @@ components:
             $ref: "#/components/schemas/Variant"
         last_update_id:
           type: string
-          description: The feed_update_id of the most recent product upsert that touched this product. Absent if the agent does not support product feed update versioning.
+          readOnly: true
+          description: The feed_update_id of the most recent product upsert that touched this product. Absent if the agent does not support product feed update versioning. Response only — agents MUST ignore this field if present on input.
       example:
         id: prod_classic_tee
         title: Classic Tee
