@@ -92,9 +92,61 @@
       }
     ]
   },
-  "upsert_products_response": {
-    "id": "feed_8f3K2x",
-    "accepted": true
+  "upsert_products_request_with_app_links": {
+    "products": [
+      {
+        "id": "prod_123",
+        "title": "Performance Running Shoe",
+        "description": {
+          "plain": "A lightweight performance running shoe with responsive cushioning."
+        },
+        "url": "https://merchant.com/products/prod_123",
+        "app_links": [
+          {
+            "platform": "chatgpt",
+            "uri": "merchant://checkout/prod_123"
+          }
+        ],
+        "media": [
+          {
+            "type": "image",
+            "url": "https://cdn.merchant.com/products/prod_123/main.jpg",
+            "alt_text": "Performance Running Shoe front view"
+          }
+        ],
+        "variants": [
+          {
+            "id": "var_123_blue_9",
+            "title": "Blue / 9",
+            "url": "https://merchant.com/products/prod_123?variant=var_123_blue_9",
+            "app_links": [
+              {
+                "platform": "chatgpt",
+                "uri": "merchant://checkout/var_123_blue_9"
+              }
+            ],
+            "price": {
+              "amount": 11900,
+              "currency": "USD"
+            },
+            "availability": {
+              "available": true,
+              "status": "in_stock"
+            },
+            "variant_options": [
+              {
+                "name": "Color",
+                "value": "Blue"
+              },
+              {
+                "name": "Size",
+                "value": "9"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   "feed_error_not_found": {
     "type": "invalid_request",
