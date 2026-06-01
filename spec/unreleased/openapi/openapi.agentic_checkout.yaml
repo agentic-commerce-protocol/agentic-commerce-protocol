@@ -1813,9 +1813,9 @@ components:
         - content_type
         - content
       example:
-        id: msg_info_01
-        message: Free shipping on orders over $50
-        display_context: banner
+        type: info
+        content_type: plain
+        content: Free shipping on orders over $50
       description: Informational message to display to the buyer during checkout
     MessageWarning:
       type: object
@@ -1886,9 +1886,10 @@ components:
         - content_type
         - content
       example:
-        id: msg_warn_01
-        message: Only 2 items left in stock
+        type: warning
         code: low_stock
+        content_type: plain
+        content: Only 2 items left in stock
         param: $.items[0]
       description: Warning message to display to the buyer during checkout (non-blocking)
     MessageError:
@@ -1975,9 +1976,10 @@ components:
         - content_type
         - content
       example:
-        id: msg_err_01
-        message: Invalid email address format
+        type: error
         code: invalid
+        content_type: plain
+        content: Invalid email address format
         param: $.buyer.email
     GiftWrap:
       type: object
