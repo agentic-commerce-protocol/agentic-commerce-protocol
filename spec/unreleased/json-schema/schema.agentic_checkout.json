@@ -3672,7 +3672,7 @@
       ],
       "example": {
         "reason_code": "buyer_initiated",
-        "description": "Customer requested to complete checkout",
+        "trace_summary": "Customer requested to complete checkout",
         "metadata": {}
       }
     },
@@ -3687,7 +3687,7 @@
       "example": {
         "intent_trace": {
           "reason_code": "buyer_cancelled",
-          "description": "Customer decided not to purchase"
+          "trace_summary": "Customer decided not to purchase"
         }
       }
     },
