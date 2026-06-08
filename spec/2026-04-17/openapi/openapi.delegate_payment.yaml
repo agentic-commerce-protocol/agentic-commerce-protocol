@@ -116,17 +116,15 @@ paths:
               examples:
                 invalid_request_missing_field:
                   value:
-                    error:
-                      type: invalid_request
-                      code: invalid_card
-                      message: card field is required when payment_method.type=card
-                      param: payment_method.number
+                    type: invalid_request
+                    code: invalid_card
+                    message: card field is required when payment_method.type=card
+                    param: payment_method.number
                 idempotency_key_required:
                   value:
-                    error:
-                      type: invalid_request
-                      code: idempotency_key_required
-                      message: Idempotency-Key header is required
+                    type: invalid_request
+                    code: idempotency_key_required
+                    message: Idempotency-Key header is required
         "401":
           description: Unauthorized
           content:
@@ -136,10 +134,9 @@ paths:
               examples:
                 unauthorized:
                   value:
-                    error:
-                      type: unauthorized
-                      code: unauthorized
-                      message: Unauthorized
+                    type: unauthorized
+                    code: unauthorized
+                    message: Unauthorized
         "409":
           description: In-flight collision — original request still processing
           headers:
@@ -155,10 +152,9 @@ paths:
               examples:
                 idempotency_in_flight:
                   value:
-                    error:
-                      type: invalid_request
-                      code: idempotency_in_flight
-                      message: A request with this Idempotency-Key is currently being processed
+                    type: invalid_request
+                    code: idempotency_in_flight
+                    message: A request with this Idempotency-Key is currently being processed
         "422":
           description: Semantic validation error
           content:
@@ -168,17 +164,15 @@ paths:
               examples:
                 invalid_request:
                   value:
-                    error:
-                      type: invalid_request
-                      code: invalid_card
-                      message: Invalid card expiration month
-                      param: payment_method.exp_month
+                    type: invalid_request
+                    code: invalid_card
+                    message: Invalid card expiration month
+                    param: payment_method.exp_month
                 idempotency_conflict:
                   value:
-                    error:
-                      type: invalid_request
-                      code: idempotency_conflict
-                      message: Idempotency-Key has already been used with a different request body
+                    type: invalid_request
+                    code: idempotency_conflict
+                    message: Idempotency-Key has already been used with a different request body
         "429":
           description: Rate limit exceeded
           content:
@@ -188,10 +182,9 @@ paths:
               examples:
                 rate_limit_exceeded:
                   value:
-                    error:
-                      type: rate_limit_exceeded
-                      code: rate_limit_exceeded
-                      message: Rate limit exceeded
+                    type: rate_limit_exceeded
+                    code: rate_limit_exceeded
+                    message: Rate limit exceeded
         "500":
           description: Processing error
           content:
@@ -201,10 +194,9 @@ paths:
               examples:
                 internal_server_error:
                   value:
-                    error:
-                      type: internal_server_error
-                      code: internal_server_error
-                      message: Internal server error
+                    type: internal_server_error
+                    code: internal_server_error
+                    message: Internal server error
         "503":
           description: Service unavailable
           content:
@@ -214,10 +206,9 @@ paths:
               examples:
                 service_unavailable:
                   value:
-                    error:
-                      type: service_unavailable
-                      code: service_unavailable
-                      message: Service unavailable
+                    type: service_unavailable
+                    code: service_unavailable
+                    message: Service unavailable
 components:
   securitySchemes:
     bearerAuth:
