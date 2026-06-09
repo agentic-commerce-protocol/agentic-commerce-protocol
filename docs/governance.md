@@ -433,7 +433,7 @@ consensus, even if they have enough votes to pass in TSC
 **Q: Can the veto be used to push through a change that the TSC has rejected?**
 
 A: No. The veto can only be used to block a change, never to override the TSC
-and force one through. If the Founding Mainterners want to see a change adopted,
+and force one through. If the Founding Maintainers want to see a change adopted,
 they advocate for it through the same TSC process as everyone else.
 
 **Q: What does a veto scenario look like in practice?**
