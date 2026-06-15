@@ -80,7 +80,7 @@ Fixes/Addresses: #[issue number]
 
 Before submitting, ensure:
 
-- [ ] I have signed the [Contributor License Agreement (CLA)](../legal/cla/INDIVIDUAL.md)
+- [ ] I have signed the [Contributor License Agreement (CLA)](../../legal/cla/INDIVIDUAL.md)
 - [ ] My change follows the project's code style and conventions
 - [ ] I have updated relevant documentation (if applicable)
 - [ ] I have added/updated examples (if applicable)
@@ -119,4 +119,4 @@ Before submitting, ensure:
 
 ---
 
-**Review Process**: Minor changes require approval from a Steward (may be from the same organization for efficiency). See [governance.md](../docs/governance.md) for details.
+**Review Process**: Minor changes require approval from a Steward (may be from the same organization for efficiency). See [governance.md](../../docs/governance.md) for details.
