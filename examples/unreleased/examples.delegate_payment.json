@@ -82,5 +82,20 @@
     "type": "invalid_request",
     "code": "idempotency_in_flight",
     "message": "A request with this Idempotency-Key is currently being processed"
+  },
+  "delegate_payment_error_unauthorized": {
+    "type": "unauthorized",
+    "code": "unauthorized",
+    "message": "Unauthorized"
+  },
+  "delegate_payment_error_internal_server_error": {
+    "type": "internal_server_error",
+    "code": "internal_server_error",
+    "message": "Internal server error"
+  },
+  "delegate_payment_error_service_unavailable": {
+    "type": "service_unavailable",
+    "code": "service_unavailable",
+    "message": "Service unavailable"
   }
 }
