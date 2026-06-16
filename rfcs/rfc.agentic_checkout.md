@@ -788,6 +788,7 @@ If a client calls `POST /checkout_sessions/{id}/complete` while `session.status 
 
 ## 11. Change Log
 
+- **Unreleased**: Renamed the `risk_signals` object on `CheckoutSessionCompleteRequest` (raw buyer/device telemetry) to `session_context`, and renamed the `RiskSignals` schema to `SessionContext`. Field shape and semantics are unchanged; the new name is more accurate (the data has uses beyond fraud) and aligns with the new `delegate_payment.session_context` field. See SEP #180.
 - **Unreleased**: Rewrote §6 (Idempotency, Retries & Concurrency) with full normative rules: mandatory `Idempotency-Key` on all POST requests, request equivalence semantics, replay behavior with `Idempotent-Replayed` header, IETF-aligned error codes (`idempotency_key_required`, `idempotency_conflict`, `idempotency_in_flight`), 5xx caching prohibition, 24-hour key retention, and extension field participation. Removed `request_not_idempotent` from `Error.type` enum. See SEP #120.
 - **2026-02-04**: Added optional `resolution` field to Message schemas (info, warning, error) to indicate who resolves the message (`recoverable`, `requires_buyer_input`, `requires_buyer_review`). This enables agents to programmatically determine appropriate error handling strategies.
 - **2026-01-12**: Breaking changes for v2:
