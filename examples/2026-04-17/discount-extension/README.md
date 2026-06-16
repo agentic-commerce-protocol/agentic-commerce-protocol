@@ -124,6 +124,6 @@ When multiple discounts are stacked, `priority` determines calculation order:
 
 ## Related Documentation
 
-- [RFC: Extensions Framework](../../rfcs/rfc.extensions.md)
-- [RFC: Discount Extension](../../rfcs/rfc.discount_extension.md)
+- [RFC: Extensions Framework](../../../rfcs/rfc.extensions.md)
+- [RFC: Discount Extension](../../../rfcs/rfc.discount_extension.md)
 - [JSON Schema](../../../spec/2026-04-17/json-schema/schema.discount.json)
