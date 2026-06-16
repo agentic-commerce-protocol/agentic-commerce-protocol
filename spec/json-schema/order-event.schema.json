@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Order Event Schema (Hotel)",
+  "description": "Webhook event payload for hotel order lifecycle updates (confirm/modify/cancel/refund/no-show).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "type",
+    "timestamp",
+    "order_id",
+    "data"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique event identifier (idempotency key)."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "order.confirmed",
+        "order.modified",
+        "order.cancelled",
+        "order.refunded",
+        "order.partially_refunded",
+        "order.no_show",
+        "order.failed"
+      ],
+      "description": "Event type."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp (ISO-8601)."
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Order identifier."
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "Optional correlation id for tracing a user session/checkout."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Origin metadata for routing/audit.",
+      "properties": {
+        "publisher": {
+          "type": "string",
+          "description": "Who emitted the event (e.g., sabre, supplier)."
+        },
+        "channel": {
+          "type": "string",
+          "description": "Channel (e.g., chatgpt, gemini)."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Underlying provider (CRS/PMS/aggregator)."
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Event payload. Includes a minimal order snapshot and optional delta.",
+      "required": [
+        "order_snapshot"
+      ],
+      "properties": {
+        "order_snapshot": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "A current snapshot of the order (may be full HotelOrder or minimal fields)."
+        },
+        "delta": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional change details (what changed vs previous)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Optional human-readable reason (e.g., policy, user request)."
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional webhook signature metadata.",
+      "properties": {
+        "algo": {
+          "type": "string",
+          "description": "Signing algorithm, e.g., HMAC-SHA256."
+        },
+        "value": {
+          "type": "string",
+          "description": "Signature value."
+        },
+        "key_id": {
+          "type": "string",
+          "description": "Key identifier used for verification."
+        }
+      }
+    }
+  }
+}

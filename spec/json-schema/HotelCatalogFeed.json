@@ -1,0 +1,334 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hotel Catalog Schema (Product + Variant + Location) — OpenAI-Compatible",
+  "description": "Governance-ready hierarchical hotel catalog schema. Product = property-level. Variant = room offer-level. Location is required at the Product level. Designed for export into OpenAI row-based product feeds.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["products"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version identifier for governance and compatibility tracking.",
+      "default": "1.0"
+    },
+    "products": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/Product" }
+    }
+  },
+  "definitions": {
+    "ISO2Country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code (uppercase)."
+    },
+    "ISO3Currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 currency code (uppercase)."
+    },
+    "URI": {
+      "type": "string",
+      "format": "uri"
+    },
+    "Location": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Property-level structured location metadata used for geo reasoning, filtering, and ranking.",
+      "required": ["city", "country", "latitude", "longitude"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Street address or address line."
+        },
+        "city": {
+          "type": "string",
+          "description": "City/locality."
+        },
+        "region": {
+          "type": "string",
+          "description": "Region/state/province (if applicable)."
+        },
+        "country": {
+          "$ref": "#/definitions/ISO2Country"
+        },
+        "postal_code": {
+          "type": "string",
+          "description": "Postal/ZIP code (if applicable)."
+        },
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "Latitude in decimal degrees."
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "description": "Longitude in decimal degrees."
+        }
+      }
+    },
+    "Reviews": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional review aggregates. Avoid misrepresenting third-party sources; include attribution via 'source'.",
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Aggregate review score (scale defined by source)."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of reviews."
+        },
+        "source": {
+          "type": "string",
+          "description": "Attribution/source system for the review aggregate (e.g., first_party, partner, public_aggregator)."
+        }
+      }
+    },
+    "DataFreshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional freshness metadata to help agents reason about staleness/trust.",
+      "required": ["last_updated"],
+      "properties": {
+        "last_updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 / ISO 8601 timestamp of last update."
+        },
+        "source": {
+          "type": "string",
+          "description": "Source system identifier (e.g., hotel_crs, partner_feed)."
+        }
+      }
+    },
+    "VariantAttributes": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Compact, structured room attributes for filtering and ranking (catalog-safe).",
+      "properties": {
+        "bed_type": { "type": "string" },
+        "max_occupancy": { "type": "integer", "minimum": 1 },
+        "room_size_sqm": { "type": "number", "minimum": 0 },
+        "view_type": { "type": "string" },
+        "refundable": { "type": "boolean" }
+      }
+    },
+    "PolicySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Short-form, catalog-safe policy summary (not a legal contract).",
+      "properties": {
+        "cancellation": { "type": "string" },
+        "payment": { "type": "string" },
+        "check_in_time": { "type": "string" },
+        "check_out_time": { "type": "string" }
+      }
+    },
+    "PriceInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Supplemental pricing metadata. Does not replace required lead price fields.",
+      "properties": {
+        "pricing_model": {
+          "type": "string",
+          "enum": ["per_night", "per_stay"],
+          "description": "How the lead price should be interpreted."
+        },
+        "tax_included": { "type": "boolean" },
+        "fees_included": { "type": "boolean" }
+      }
+    },
+    "PricingReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional pointer/reference used to request a confirmation-ready quotation from live pricing systems.",
+      "properties": {
+        "quote_key": { "type": "string" },
+        "offer_ref": { "type": "string" },
+        "inventory_ref": { "type": "string" }
+      }
+    },
+    "Variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Room-offer variant intended to become a feed row at export time (OpenAI row-based). Do not duplicate Product-level fields here in the internal model.",
+      "required": [
+        "item_id",
+        "title",
+        "description",
+        "url",
+        "image_url",
+        "price",
+        "currency",
+        "availability"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "description": "Unique identifier per variant / per feed row."
+        },
+        "room_type_code": {
+          "type": "string",
+          "description": "Stable room type identifier used for quoting and mapping."
+        },
+        "rate_plan_code": {
+          "type": "string",
+          "description": "Optional rate plan identifier if publishing rate-plan variants."
+        },
+        "title": {
+          "type": "string",
+          "description": "Room-level title."
+        },
+        "description": {
+          "type": "string",
+          "description": "Room-level description."
+        },
+        "url": {
+          "$ref": "#/definitions/URI",
+          "description": "Deep link to room selection context."
+        },
+        "image_url": {
+          "$ref": "#/definitions/URI",
+          "description": "Primary image URL for the variant."
+        },
+        "additional_image_urls": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/URI" },
+          "description": "Additional images for the variant."
+        },
+        "price": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Lead/from price (non-binding). Confirmation pricing comes from quotation."
+        },
+        "currency": {
+          "$ref": "#/definitions/ISO3Currency"
+        },
+        "availability": {
+          "type": "string",
+          "enum": ["in_stock", "out_of_stock", "pre_order", "backorder", "unknown"],
+          "description": "High-level availability state aligned to OpenAI feed enums."
+        },
+        "variant_attributes": { "$ref": "#/definitions/VariantAttributes" },
+        "inclusions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Catalog-safe inclusions (e.g., breakfast_included, wifi_included)."
+        },
+        "policy_summary": { "$ref": "#/definitions/PolicySummary" },
+        "requires_identity_for_benefits": {
+          "type": "boolean",
+          "description": "If true, loyalty/corp identity may change final benefits and/or quoted price."
+        },
+        "eligible_programs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Optional list of loyalty/corporate programs applicable."
+        },
+        "sustainability_flags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Optional sustainability flags applicable to this variant."
+        },
+        "data_freshness": { "$ref": "#/definitions/DataFreshness" },
+        "price_info": { "$ref": "#/definitions/PriceInfo" },
+        "pricing_reference": { "$ref": "#/definitions/PricingReference" }
+      }
+    },
+    "Product": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Hotel property (product) containing one or more room-offer variants.",
+      "required": [
+        "id",
+        "title",
+        "brand",
+        "seller_name",
+        "seller_url",
+        "return_policy",
+        "store_country",
+        "target_countries",
+        "location",
+        "variants"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique property identifier. Used as group_id at export."
+        },
+        "title": {
+          "type": "string",
+          "description": "Hotel display name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Property-level description."
+        },
+        "brand": {
+          "type": "string",
+          "description": "Hotel chain/brand."
+        },
+        "seller_name": {
+          "type": "string",
+          "description": "Merchant display name."
+        },
+        "seller_url": {
+          "$ref": "#/definitions/URI",
+          "description": "Merchant/homepage URL."
+        },
+        "return_policy": {
+          "$ref": "#/definitions/URI",
+          "description": "Cancellation/refund policy URL (hotel-appropriate)."
+        },
+        "store_country": {
+          "$ref": "#/definitions/ISO2Country",
+          "description": "Merchant operating country."
+        },
+        "target_countries": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/ISO2Country" },
+          "description": "Selling markets."
+        },
+        "location": { "$ref": "#/definitions/Location" },
+        "amenities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Property-level amenities taxonomy."
+        },
+        "experience_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Property-level traveler intent tags (e.g., family, romantic, business)."
+        },
+        "sustainability_flags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Property-level sustainability flags/certifications."
+        },
+        "star_rating": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 7,
+          "description": "Optional star rating."
+        },
+        "reviews": { "$ref": "#/definitions/Reviews" },
+        "data_freshness": { "$ref": "#/definitions/DataFreshness" },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/Variant" },
+          "description": "Room-offer variants for this property."
+        }
+      }
+    }
+  }
+}

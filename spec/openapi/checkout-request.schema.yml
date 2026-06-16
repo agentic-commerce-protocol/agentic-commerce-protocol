@@ -1,0 +1,280 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Hotel CheckoutRequest Schema
+type: object
+additionalProperties: false
+required:
+- mode
+- item_id
+- stay
+- occupancy
+properties:
+  mode:
+    type: string
+    enum:
+    - native
+    - redirect
+    description: 'Execution mode: native Agent Checkout or redirect deep-link.'
+  item_id:
+    type: string
+    description: Variant identifier from catalog.
+  quote_token:
+    type: string
+    description: Optional short-lived quote token from rate hydration.
+  stay:
+    type: object
+    required:
+    - checkin
+    - checkout
+    properties:
+      checkin:
+        type: string
+        format: date
+      checkout:
+        type: string
+        format: date
+  occupancy:
+    type: object
+    required:
+    - adults
+    properties:
+      rooms:
+        type: integer
+        minimum: 1
+      adults:
+        type: integer
+        minimum: 1
+      children:
+        type: integer
+        minimum: 0
+      child_ages:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          maximum: 17
+  guest_details:
+    type: object
+    description: Required for native checkout.
+    properties:
+      primary_guest:
+        type: object
+        required:
+        - first_name
+        - last_name
+        properties:
+          first_name:
+            type: string
+          last_name:
+            type: string
+          email:
+            type: string
+            format: email
+          phone:
+            type: string
+      additional_guests:
+        type: array
+        items:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+  identity_context:
+    type: object
+    properties:
+      loyalty_program:
+        type: string
+      loyalty_number:
+        type: string
+      tier:
+        type: string
+  payment:
+    type: object
+    description: Payment context. For native checkout with prepaid/deposit, supports Delegated Payment (OpenAI) or tokenized
+      instrument, depending on merchant/PSP setup.
+    properties:
+      payment_method_type:
+        type: string
+        enum:
+        - prepaid
+        - pay_at_property
+        - guarantee_only
+      payment_token:
+        type: string
+        description: Tokenized payment instrument (if applicable). Not used for delegated payment.
+      payment_timing:
+        type: string
+        enum:
+        - prepay
+        - pay_at_property
+        - deposit
+        - guarantee_only
+        description: Explicit payment timing semantics for lodging.
+      guarantee_type:
+        type: string
+        enum:
+        - card_guarantee
+        - deposit_required
+        - none
+        description: Guarantee semantics when payment is not fully prepaid.
+      deposit:
+        type: object
+        additionalProperties: false
+        description: Deposit details when payment_timing=deposit.
+        properties:
+          amount:
+            type: number
+            minimum: 0
+          currency:
+            type: string
+            pattern: ^[A-Z]{3}$
+          due_at:
+            type: string
+            format: date-time
+      payment_flow:
+        type: string
+        enum:
+        - delegated
+        - tokenized
+        - none
+        description: How payment will be executed. 'delegated' indicates OpenAI Delegated Payment token is provided at execution
+          time.
+      delegated_payment:
+        type: object
+        additionalProperties: false
+        description: Delegated Payment payload provided by the agent runtime during native execution. Merchant/PSP uses this
+          to charge the customer.
+        properties:
+          provider:
+            type: string
+            description: Payment provider/PSP identifier (e.g., stripe).
+          delegated_payment_token:
+            type: string
+            description: Opaque delegated payment token (single-use) suitable for charging up to the allowance amount.
+          allowance:
+            type: object
+            additionalProperties: false
+            description: Spending constraints for delegated payment token.
+            required:
+            - currency
+            - max_amount
+            - expires_at
+            properties:
+              currency:
+                type: string
+                pattern: ^[A-Z]{3}$
+              max_amount:
+                type: number
+                minimum: 0
+              expires_at:
+                type: string
+                format: date-time
+          merchant_id:
+            type: string
+            description: Merchant identifier used when minting the delegated payment allowance.
+  acknowledgements:
+    type: array
+    description: Required confirmations for rate policies.
+    items:
+      type: object
+      required:
+      - type
+      - accepted
+      properties:
+        type:
+          type: string
+        accepted:
+          type: boolean
+  tracking:
+    type: object
+    description: Used primarily for redirect attribution.
+    properties:
+      utm_source:
+        type: string
+      utm_medium:
+        type: string
+      utm_campaign:
+        type: string
+  product_id:
+    type: string
+    description: Product (hotel) identifier from catalog. Optional if item_id already uniquely identifies a variant.
+  pricing_reference:
+    type: string
+    description: Optional stable pricing reference from Variant (e.g., supplier rate key) to support execution/validation
+      without bloating the request.
+  price_expectation:
+    type: object
+    description: Optional pricing expectation derived from QuoteResponse to support delegated payment allowance and re-price
+      checks.
+    additionalProperties: false
+    properties:
+      currency:
+        type: string
+        pattern: ^[A-Z]{3}$
+      total_amount:
+        type: number
+        minimum: 0
+      expires_at:
+        type: string
+        format: date-time
+        description: When the quoted total is no longer valid.
+  reprice:
+    type: object
+    additionalProperties: false
+    description: Controls optional re-price / re-validation at execution boundary (recommended for hotels).
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      tolerance:
+        type: object
+        additionalProperties: false
+        properties:
+          max_increase_amount:
+            type: number
+            minimum: 0
+          max_increase_percent:
+            type: number
+            minimum: 0
+allOf:
+- if:
+    properties:
+      mode:
+        const: native
+  then:
+    required:
+    - guest_details
+  else: {}
+- if:
+    properties:
+      mode:
+        const: native
+      payment:
+        type: object
+        properties:
+          payment_timing:
+            enum:
+            - prepay
+            - deposit
+        required:
+        - payment_timing
+    required:
+    - mode
+    - payment
+  then:
+    required:
+    - payment
+    properties:
+      payment:
+        required:
+        - delegated_payment
+        - payment_flow
+        properties:
+          payment_flow:
+            const: delegated
+          delegated_payment:
+            required:
+            - delegated_payment_token
+            - allowance
+  else: {}
