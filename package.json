@@ -4,15 +4,16 @@
   "scripts": {
     "compile:schema": "ajv compile --spec=draft2020 -c ajv-formats -s 'spec/unreleased/json-schema/*.json'",
     "validate:json-schema": "ajv compile --spec=draft2020 -c ajv-formats -s 'spec/**/json-schema/*.json'",
-    "validate:openapi": "echo 'OpenAPI validation requires additional tooling - see scripts/validate-consistency.js'",
+    "validate:openapi": "node scripts/validate-openapi.js",
     "validate:examples": "node scripts/validate-consistency.js",
     "validate:consistency": "node scripts/validate-consistency.js",
     "validate:prohibited-schemas": "node scripts/validate-consistency.js",
     "validate:field-types": "node scripts/validate-consistency.js",
     "report:consistency": "node scripts/validate-consistency.js",
-    "validate:all": "node scripts/validate-consistency.js"
+    "validate:all": "node scripts/validate-consistency.js && node scripts/validate-openapi.js"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
     "ajv": "^8.17.1",
     "ajv-cli": "^5.0.0",
     "ajv-formats": "^3.0.1",
