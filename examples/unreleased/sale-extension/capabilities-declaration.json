@@ -1,0 +1,79 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Both sale and discount extensions declared in capabilities. Simple checkout with one sale item and no discount codes.",
+
+  "response": {
+    "id": "checkout_session_sale001",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "sale",
+          "extends": [
+            "$.CheckoutSession.sales",
+            "$.LineItem.sale"
+          ]
+        },
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts",
+            "$.LineItem.discount_eligible"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "customer@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_tote"},
+        "name": "Leather Tote Bag",
+        "quantity": 1,
+        "unit_amount": 7000,
+        "sale": {
+          "id": "sale_spring_launch",
+          "compare_at_amount": 10000
+        },
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 7000},
+          {"type": "total", "display_text": "Total", "amount": 7000}
+        ]
+      }
+    ],
+    "sales": [
+      {
+        "id": "sale_spring_launch",
+        "name": "Spring Launch"
+      }
+    ],
+    "discounts": {
+      "codes": [],
+      "applied": []
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 7000},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 7000},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "total", "display_text": "Total", "amount": 7000}
+    ],
+    "messages": [],
+    "links": []
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "$schema": "../../spec/unreleased/json-schema/schema.agentic_checkout.json",
+  "description": "Example: Two concurrent sales (Black Friday and Cyber Monday) with array priority ordering, metadata, and a 365-day Omnibus lookback",
+
+  "response": {
+    "id": "checkout_session_sale006",
+    "status": "ready_for_payment",
+    "capabilities": {
+      "payment_methods": ["card"],
+      "extensions": [
+        {
+          "name": "sale",
+          "extends": [
+            "$.CheckoutSession.sales",
+            "$.LineItem.sale"
+          ]
+        },
+        {
+          "name": "discount",
+          "extends": [
+            "$.CheckoutSessionCreateRequest.discounts",
+            "$.CheckoutSessionUpdateRequest.discounts",
+            "$.CheckoutSession.discounts",
+            "$.LineItem.discount_eligible"
+          ]
+        }
+      ]
+    },
+    "currency": "usd",
+    "buyer": {
+      "email": "shopper@example.com"
+    },
+    "line_items": [
+      {
+        "id": "li_1",
+        "item": {"id": "item_tv"},
+        "name": "4K Smart TV",
+        "quantity": 1,
+        "unit_amount": 49900,
+        "sale": {
+          "id": "sale_bf2026",
+          "compare_at_amount": 79900,
+          "lowest_recent_amount": 59900,
+          "lowest_recent_period_days": 365
+        },
+        "discount_eligible": false,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 49900},
+          {"type": "total", "display_text": "Total", "amount": 49900}
+        ]
+      },
+      {
+        "id": "li_2",
+        "item": {"id": "item_speaker"},
+        "name": "Bluetooth Speaker",
+        "quantity": 1,
+        "unit_amount": 2900,
+        "sale": {
+          "id": "sale_cm2026",
+          "compare_at_amount": 4900
+        },
+        "discount_eligible": false,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 2900},
+          {"type": "total", "display_text": "Total", "amount": 2900}
+        ]
+      },
+      {
+        "id": "li_3",
+        "item": {"id": "item_cable"},
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "unit_amount": 1200,
+        "totals": [
+          {"type": "subtotal", "display_text": "Subtotal", "amount": 1200},
+          {"type": "total", "display_text": "Total", "amount": 1200}
+        ]
+      }
+    ],
+    "sales": [
+      {
+        "id": "sale_bf2026",
+        "name": "Black Friday",
+        "start": "2026-11-27T00:00:00Z",
+        "end": "2026-11-28T23:59:59Z",
+        "metadata": {
+          "campaign_id": "bf_2026"
+        }
+      },
+      {
+        "id": "sale_cm2026",
+        "name": "Cyber Monday",
+        "start": "2026-11-30T00:00:00Z",
+        "end": "2026-12-01T23:59:59Z",
+        "metadata": {
+          "campaign_id": "cm_2026"
+        }
+      }
+    ],
+    "discounts": {
+      "codes": [],
+      "applied": []
+    },
+    "fulfillment_options": [
+      {
+        "type": "shipping",
+        "id": "shipping_standard",
+        "title": "Standard Shipping",
+        "totals": [
+          {"type": "fulfillment", "display_text": "Shipping", "amount": 0}
+        ]
+      }
+    ],
+    "totals": [
+      {"type": "items_base_amount", "display_text": "Items", "amount": 54000},
+      {"type": "subtotal", "display_text": "Subtotal", "amount": 54000},
+      {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
+      {"type": "total", "display_text": "Total", "amount": 54000}
+    ],
+    "messages": [],
+    "links": []
+  }
+}
