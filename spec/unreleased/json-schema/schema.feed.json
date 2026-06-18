@@ -465,6 +465,7 @@
         "variants": {
           "type": "array",
           "description": "Purchasable variants grouped under this product.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/Variant"
           }
@@ -573,6 +574,7 @@
         "products": {
           "type": "array",
           "description": "Subset of products to create or update within the feed, matched by Product.id.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/Product"
           }

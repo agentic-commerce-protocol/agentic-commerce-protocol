@@ -11,7 +11,7 @@ info:
     `products.jsonl` contains one `Product` object per line. File ingestion replaces the full product
     set. Partial updates are only supported through `PATCH /feeds/{id}/products`.
 servers:
-  - url: https://merchant.example.com
+  - url: https://agent.example.com
 tags:
   - name: Feeds
     description: Create and manage feed resources and product catalogs
@@ -584,6 +584,7 @@ components:
         variants:
           type: array
           description: Purchasable variants grouped under this product.
+          minItems: 1
           items:
             $ref: "#/components/schemas/Variant"
       example:
@@ -675,6 +676,7 @@ components:
         products:
           type: array
           description: Subset of products to create or update within the feed, matched by Product.id.
+          minItems: 1
           items:
             $ref: "#/components/schemas/Product"
       example:
