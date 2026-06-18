@@ -123,7 +123,7 @@ Before submitting this SEP PR, ensure:
 - [ ] I have created a GitHub Issue with the `SEP` and `proposal` tags
 - [ ] I have linked the SEP issue number above
 - [ ] I have discussed this proposal in the community (Discord/GitHub Discussions)
-- [ ] I have signed the [Contributor License Agreement (CLA)](../legal/cla/INDIVIDUAL.md)
+- [ ] I have signed the [Contributor License Agreement (CLA)](../../legal/cla/INDIVIDUAL.md)
 - [ ] This PR includes updates to OpenAPI/JSON schemas (if applicable)
 - [ ] This PR includes example requests/responses (if applicable)
 - [ ] This PR includes a changelog entry file in `changelog/unreleased/your-change-description.md`
@@ -155,4 +155,4 @@ Before submitting this SEP PR, ensure:
 
 ---
 
-**Note**: SEPs require unanimous approval from Founding Maintainers. See [governance.md](../docs/governance.md) and [sep-guidelines.md](../docs/sep-guidelines.md) for the full process.
+**Note**: SEPs require unanimous approval from Founding Maintainers. See [governance.md](../../docs/governance.md) and [sep-guidelines.md](../../docs/sep-guidelines.md) for the full process.
