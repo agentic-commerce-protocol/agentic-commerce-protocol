@@ -121,6 +121,15 @@
           "type": "string",
           "description": "The discount code entered by the user. Omitted for automatic discounts."
         },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the discount (e.g., '20% off with code SAVE20')."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["percentage", "fixed"],
+          "description": "The type of discount applied."
+        },
         "coupon": {
           "$ref": "#/$defs/coupon",
           "description": "Details about the underlying coupon/promotion."
@@ -129,11 +138,6 @@
           "type": "integer",
           "minimum": 0,
           "description": "Total discount amount in minor (cents) currency units."
-        },
-        "automatic": {
-          "type": "boolean",
-          "default": false,
-          "description": "True if applied automatically by merchant rules (no code required)."
         },
         "start": {
           "type": "string",
