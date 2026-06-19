@@ -1984,7 +1984,7 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer", description: "Buyer information" }
         line_items:
           type: array
-          items: { $ref: "#/components/schemas/Item" }
+          items: { $ref: "#/components/schemas/LineItem" }
           minItems: 1
           description: "Items to add to the checkout session"
         currency: { type: string, description: "ISO 4217 currency code" }
@@ -2013,9 +2013,16 @@ components:
       required: [line_items, currency, capabilities]
       example:
         line_items:
-          - id: "item_123"
-            name: "Wireless Headphones"
-            unit_amount: 7999
+          - id: "li_001"
+            item:
+              id: "item_123"
+              name: "Wireless Headphones"
+              unit_amount: 7999
+            quantity: 2
+            totals:
+              - type: "subtotal"
+                display_text: "Subtotal"
+                amount: 15998
         currency: "usd"
         capabilities:
           payment:
@@ -2041,7 +2048,7 @@ components:
         buyer: { $ref: "#/components/schemas/Buyer", description: "Updated buyer information" }
         line_items:
           type: array
-          items: { $ref: "#/components/schemas/Item" }
+          items: { $ref: "#/components/schemas/LineItem" }
           description: "Items to update in the checkout session"
         fulfillment_details: { $ref: "#/components/schemas/FulfillmentDetails", description: "Updated fulfillment contact and address" }
         fulfillment_groups:

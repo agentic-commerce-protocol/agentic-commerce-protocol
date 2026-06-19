@@ -3032,7 +3032,7 @@ components:
         line_items:
           type: array
           items:
-            $ref: "#/components/schemas/Item"
+            $ref: "#/components/schemas/LineItem"
           minItems: 1
           description: Items to add to the checkout session
         currency:
@@ -3076,9 +3076,17 @@ components:
         - currency
         - capabilities
       example:
-        items:
-          - product_id: prod_tshirt_blue_m
+        line_items:
+          - id: item_001
+            item:
+              id: prod_tshirt_blue_m
+              name: Organic Cotton T-Shirt
+              unit_amount: 2900
             quantity: 2
+            totals:
+              - type: subtotal
+                display_text: Subtotal
+                amount: 5800
         currency: usd
         capabilities: {}
       description: Request to create a new checkout session
@@ -3091,7 +3099,7 @@ components:
         line_items:
           type: array
           items:
-            $ref: "#/components/schemas/Item"
+            $ref: "#/components/schemas/LineItem"
           description: Items to update in the checkout session
         fulfillment_details:
           $ref: "#/components/schemas/FulfillmentDetails"
