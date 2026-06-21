@@ -613,18 +613,37 @@
     },
     "DelegateAuthenticationSessionWithResult": {
       "description": "The session details including the final 3DS authentication result.",
-      "allOf": [
-        { "$ref": "#/$defs/DelegateAuthenticationSessionBase" },
-        {
-          "type": "object",
-          "description": "Container for the authentication outcome",
-          "properties": {
-            "authentication_result": {
-              "$ref": "#/$defs/AuthenticationResult"
-            }
-          }
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authentication_session_id": {
+          "type": "string",
+          "description": "Session ID for subsequent requests"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "action_required",
+            "pending",
+            "not_supported",
+            "authenticated",
+            "attempted",
+            "not_authenticated",
+            "rejected",
+            "unavailable",
+            "expired",
+            "challenge_abandoned"
+          ],
+          "description": "Session status indicating current state and next action"
+        },
+        "action": {
+          "$ref": "#/$defs/Action"
+        },
+        "authentication_result": {
+          "$ref": "#/$defs/AuthenticationResult"
         }
-      ],
+      },
+      "required": ["authentication_session_id", "status"],
       "examples": [
         {
           "authentication_session_id": "auth_session_abc123",
