@@ -589,6 +589,10 @@
         },
         "action": {
           "$ref": "#/$defs/Action"
+        },
+        "authentication_result": {
+          "$ref": "#/$defs/AuthenticationResult",
+          "description": "Final 3DS authentication result. Only present once the session has reached a terminal state, e.g. on the retrieve session response."
         }
       },
       "required": ["authentication_session_id", "status"],
