@@ -37,6 +37,9 @@ paths:
       responses:
         "201":
           description: Feed created
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -72,6 +75,9 @@ paths:
       responses:
         "200":
           description: Feed metadata
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -107,6 +113,9 @@ paths:
       responses:
         "200":
           description: Feed products
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -161,6 +170,9 @@ paths:
       responses:
         "200":
           description: Product upsert accepted
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -198,6 +210,13 @@ paths:
                     message: Feed not found
                     param: id
 components:
+  headers:
+    ServerTiming:
+      required: false
+      description: Optional feed-service-reported processing duration using the W3C Server-Timing header. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing. ACP responses SHOULD use the `acp` metric with `dur` in milliseconds, for example `acp;dur=42.3`. This excludes network time and is informational; callers SHOULD measure client-observed latency independently.
+      schema:
+        type: string
+        example: acp;dur=42.3
   parameters:
     FeedId:
       name: id

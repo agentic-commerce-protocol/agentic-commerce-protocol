@@ -126,6 +126,7 @@ All endpoints follow ACP's existing HTTP conventions:
 - `Authorization: Bearer <token>` required.
 - `API-Version` header required.
 - `Idempotency-Key` required on all POST requests.
+- Responses MAY include `Server-Timing` with the `acp` metric and `dur` in milliseconds, for example `Server-Timing: acp;dur=42.3`. This value excludes network time and is informational; agents SHOULD measure client-observed latency independently.
 - Amounts in minor currency units (cents).
 
 ### 4.2 Create Cart

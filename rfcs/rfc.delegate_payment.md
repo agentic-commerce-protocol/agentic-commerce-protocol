@@ -58,6 +58,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **MAY** are to be interpreted 
 
 - On success, server **MUST** return `201 Created` with a unique token `id` and `created` timestamp.
 - Response **MUST** echo correlation data under `metadata` when applicable (e.g., `merchant_id`, `idempotency_key`).
+- Response **MAY** include `Server-Timing` with the `acp` metric and `dur` in milliseconds, for example `Server-Timing: acp;dur=42.3`. This value excludes network time and is informational; clients **SHOULD** measure client-observed latency independently.
 
 ### 2.5 Usage & Expiry
 
