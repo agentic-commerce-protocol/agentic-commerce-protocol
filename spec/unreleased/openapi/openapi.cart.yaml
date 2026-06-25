@@ -61,6 +61,9 @@ paths:
       responses:
         "201":
           description: Cart created successfully
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -130,6 +133,9 @@ paths:
       responses:
         "200":
           description: Cart retrieved successfully
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -172,6 +178,9 @@ paths:
       responses:
         "200":
           description: Cart updated successfully
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -218,6 +227,9 @@ paths:
       responses:
         "200":
           description: Cart canceled successfully
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -233,6 +245,14 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API Key
+
+  headers:
+    ServerTiming:
+      required: false
+      description: Optional seller-reported server processing duration using the W3C Server-Timing header. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing. ACP responses SHOULD use the `acp` metric with `dur` in milliseconds, for example `acp;dur=42.3`. This excludes network time and is informational; agents SHOULD measure client-observed latency independently.
+      schema:
+        type: string
+        example: acp;dur=42.3
 
   parameters:
     CartId:

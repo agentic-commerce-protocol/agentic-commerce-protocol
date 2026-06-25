@@ -72,6 +72,7 @@ All endpoints **MUST** use HTTPS and return JSON.
 
 - `Idempotency-Key` - echo if provided
 - `Request-Id` - echo if provided
+- `Server-Timing` - optional server processing duration. When present, ACP responses **SHOULD** use the `acp` metric with `dur` in milliseconds, for example `Server-Timing: acp;dur=42.3`. This value excludes network time and is informational; clients **SHOULD** measure client-observed latency independently.
 
 **Error Shape (flat):**
 

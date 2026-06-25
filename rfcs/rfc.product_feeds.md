@@ -519,6 +519,10 @@ All endpoints follow ACP REST conventions:
   explicitly authorizes public read-only access to the agent-hosted feed.
 - `API-Version` required.
 - Mutating requests SHOULD use idempotency where supported.
+- Responses MAY include `Server-Timing` with the `acp` metric and `dur` in
+  milliseconds, for example `Server-Timing: acp;dur=42.3`. This value excludes
+  network time and is informational; callers SHOULD measure client-observed
+  latency independently.
 - Errors use ACP's flat error shape:
 
 ```json
