@@ -1056,12 +1056,17 @@ components:
         suggested_price:
           $ref: "#/components/schemas/SuggestedPrice"
           description: Agent-provided price expectation with catalog source provenance. When present, it is RECOMMENDED that the seller verify the source and honor this price if it falls within the seller's acceptable time window.
+        url:
+          type: string
+          format: uri
+          description: Product page URL for this item. When present, sellers MAY use it to resolve the specific product the line item refers to (for example, to disambiguate when the same item identifier or SKU is cross-listed across multiple brands or storefronts under a single seller account).
       required:
         - id
       example:
         id: item_123
         name: Wireless Headphones
         unit_amount: 7999
+        url: https://merchant.example.com/products/wireless-headphones
       description: A purchasable item with variant options (e.g., size, color) and quantity
     Disclosure:
       type: object

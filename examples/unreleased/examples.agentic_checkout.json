@@ -4,6 +4,7 @@
     "line_items": [
       {
         "id": "item_123",
+        "url": "https://merchant.example.com/products/wireless-headphones",
         "suggested_price": {
           "amount": 7999,
           "source": {
