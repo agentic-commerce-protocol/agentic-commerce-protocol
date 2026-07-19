@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hotel QuoteRequest Schema (Rate Hydration)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["item_id", "stay", "occupancy"],
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "description": "Variant identifier from the catalog feed (primary key)."
+    },
+    "stay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkin", "checkout"],
+      "properties": {
+        "checkin": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO-8601 check-in date (YYYY-MM-DD)."
+        },
+        "checkout": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO-8601 check-out date (YYYY-MM-DD). Must be after checkin."
+        }
+      }
+    },
+    "occupancy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adults"],
+      "properties": {
+        "rooms": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Number of rooms requested."
+        },
+        "adults": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of adult guests."
+        },
+        "children": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Number of child guests."
+        },
+        "child_ages": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0, "maximum": 17 },
+          "description": "Optional list of child ages (length should match children)."
+        }
+      }
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Requested display currency (ISO 4217)."
+    },
+    "rate_access": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Corporate / negotiated / promo access details.",
+      "properties": {
+        "corporate_code": { "type": "string" },
+        "promo_code": { "type": "string" },
+        "rate_access_code": {
+          "type": "string",
+          "description": "Generic rate access code (if used instead of specific fields)."
+        }
+      }
+    },
+    "identity_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional identity context (loyalty/corporate) that can impact eligibility, benefits, and quoted price.",
+      "properties": {
+        "loyalty_program": { "type": "string" },
+        "loyalty_number": { "type": "string" },
+        "tier": { "type": "string" },
+        "corporate_id": { "type": "string" }
+      }
+    },
+    "pricing_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional hint copied from the catalog variant to speed quoting (not required for correctness).",
+      "properties": {
+        "quote_key": { "type": "string" },
+        "offer_ref": { "type": "string" },
+        "inventory_ref": { "type": "string" }
+      }
+    },
+    "client_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional metadata for tracing, idempotency, and localization.",
+      "properties": {
+        "request_id": { "type": "string" },
+        "locale": { "type": "string" },
+        "channel": { "type": "string" }
+      }
+    }
+  }
+}

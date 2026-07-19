@@ -1,0 +1,435 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Hotel Order Schema (Contractual Outcome) — Draft-07
+description: Governance-ready Order object representing the contractual outcome of a hotel booking. Suitable for native agent
+  checkout flows (ACP/UCP-aligned). Supports lifecycle operations such as retrieve, modify, cancel, and refund.
+type: object
+additionalProperties: false
+required:
+- order_id
+- status
+- created_at
+- updated_at
+- items
+- pricing
+- policies
+- customer
+- merchant
+- fulfillment
+properties:
+  order_id:
+    type: string
+    description: Unique order identifier in Sabre/merchant domain.
+  status:
+    type: string
+    enum:
+    - confirmed
+    - pending
+    - failed
+    - cancelled
+    - modified
+    - no_show
+    - refunded
+    - partially_refunded
+    description: Order lifecycle status.
+  created_at:
+    type: string
+    format: date-time
+    description: Order creation timestamp (ISO-8601).
+  updated_at:
+    type: string
+    format: date-time
+    description: Last update timestamp (ISO-8601).
+  source:
+    type: object
+    additionalProperties: false
+    description: Attribution metadata for analytics and partner tracking.
+    properties:
+      channel:
+        type: string
+        description: e.g., chatgpt, gemini, web, mobile
+      utm_source:
+        type: string
+      utm_medium:
+        type: string
+      utm_campaign:
+        type: string
+  references:
+    type: object
+    additionalProperties: false
+    description: Cross-system identifiers for reconciliation and support.
+    properties:
+      reservation_id:
+        type: string
+        description: Internal reservation identifier.
+      supplier_confirmation_number:
+        type: string
+        description: Hotel/CRS confirmation number.
+      pnr:
+        type: string
+        description: Optional PNR-like reference if applicable.
+      quote_token:
+        type: string
+        description: Optional quote token used for booking.
+      quote_expires_at:
+        type: string
+        format: date-time
+        description: Optional quote expiry used at booking time.
+  merchant:
+    type: object
+    additionalProperties: false
+    required:
+    - seller_name
+    - store_country
+    properties:
+      seller_name:
+        type: string
+      seller_url:
+        type: string
+        format: uri
+      store_country:
+        type: string
+        pattern: ^[A-Z]{2}$
+  customer:
+    type: object
+    additionalProperties: false
+    required:
+    - primary_guest
+    properties:
+      primary_guest:
+        type: object
+        additionalProperties: false
+        required:
+        - first_name
+        - last_name
+        properties:
+          first_name:
+            type: string
+          last_name:
+            type: string
+          email:
+            type: string
+            format: email
+          phone:
+            type: string
+      additional_guests:
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+      identity_context:
+        type: object
+        additionalProperties: false
+        description: Optional loyalty/corporate identity used to determine eligibility/benefits.
+        properties:
+          loyalty_program:
+            type: string
+          loyalty_number:
+            type: string
+          tier:
+            type: string
+          corporate_id:
+            type: string
+  fulfillment:
+    type: object
+    additionalProperties: false
+    required:
+    - stay
+    - property
+    properties:
+      stay:
+        type: object
+        additionalProperties: false
+        required:
+        - checkin
+        - checkout
+        properties:
+          checkin:
+            type: string
+            format: date
+          checkout:
+            type: string
+            format: date
+          check_in_time:
+            type: string
+            description: Local time at property (optional).
+          check_out_time:
+            type: string
+            description: Local time at property (optional).
+      occupancy:
+        type: object
+        additionalProperties: false
+        properties:
+          rooms:
+            type: integer
+            minimum: 1
+            default: 1
+          adults:
+            type: integer
+            minimum: 1
+          children:
+            type: integer
+            minimum: 0
+          child_ages:
+            type: array
+            items:
+              type: integer
+              minimum: 0
+              maximum: 17
+      property:
+        type: object
+        additionalProperties: false
+        required:
+        - property_id
+        - name
+        - location
+        properties:
+          property_id:
+            type: string
+          name:
+            type: string
+          brand:
+            type: string
+          location:
+            type: object
+            additionalProperties: false
+            required:
+            - city
+            - country
+            - latitude
+            - longitude
+            properties:
+              address:
+                type: string
+              city:
+                type: string
+              region:
+                type: string
+              country:
+                type: string
+                pattern: ^[A-Z]{2}$
+              postal_code:
+                type: string
+              latitude:
+                type: number
+                minimum: -90
+                maximum: 90
+              longitude:
+                type: number
+                minimum: -180
+                maximum: 180
+      special_requests:
+        type: string
+        description: Optional traveler special requests (e.g., late check-in, high floor).
+  items:
+    type: array
+    minItems: 1
+    description: Booked room items. Typically one per room, but may include multiple rooms/variants.
+    items:
+      type: object
+      additionalProperties: false
+      required:
+      - item_id
+      - title
+      - quantity
+      properties:
+        item_id:
+          type: string
+          description: Variant identifier (from catalog feed).
+        title:
+          type: string
+          description: Room title.
+        quantity:
+          type: integer
+          minimum: 1
+          description: Number of rooms booked for this variant.
+        room_type_code:
+          type: string
+        rate_plan_code:
+          type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        benefits:
+          type: array
+          items:
+            type: string
+  pricing:
+    type: object
+    additionalProperties: false
+    required:
+    - currency
+    - total_amount
+    description: Pricing snapshot captured at booking time.
+    properties:
+      currency:
+        type: string
+        pattern: ^[A-Z]{3}$
+      pricing_model:
+        type: string
+        enum:
+        - per_night
+        - per_stay
+        default: per_stay
+      base_amount:
+        type: number
+        minimum: 0
+      tax_amount:
+        type: number
+        minimum: 0
+      fee_amount:
+        type: number
+        minimum: 0
+      total_amount:
+        type: number
+        minimum: 0
+      nightly:
+        type: array
+        description: Optional nightly breakdown for transparency and post-booking changes.
+        items:
+          type: object
+          additionalProperties: false
+          required:
+          - date
+          - amount
+          properties:
+            date:
+              type: string
+              format: date
+            amount:
+              type: number
+              minimum: 0
+      payment:
+        type: object
+        additionalProperties: false
+        description: Payment status and method captured at booking time.
+        properties:
+          payment_method_type:
+            type: string
+            enum:
+            - prepaid
+            - pay_at_property
+            - guarantee_only
+          payment_status:
+            type: string
+            enum:
+            - paid
+            - authorized
+            - guaranteed
+            - not_charged
+            - refunded
+            - partially_refunded
+          amount_paid:
+            type: number
+            minimum: 0
+          amount_refunded:
+            type: number
+            minimum: 0
+          payment_flow:
+            type: string
+            enum:
+            - delegated
+            - tokenized
+            - none
+            description: How payment was executed for this booking.
+          payment_timing:
+            type: string
+            enum:
+            - prepay
+            - pay_at_property
+            - deposit
+            - guarantee_only
+            description: Hotel payment timing semantics captured at booking time.
+          guarantee_type:
+            type: string
+            enum:
+            - card_guarantee
+            - deposit_required
+            - none
+            description: Guarantee semantics captured at booking time.
+          authorization_id:
+            type: string
+            description: Optional payment authorization identifier (if applicable).
+          capture_id:
+            type: string
+            description: Optional payment capture identifier (if applicable).
+          transaction_id:
+            type: string
+            description: Optional PSP transaction identifier.
+          delegated_payment_reference:
+            type: string
+            description: Optional reference/correlation id for delegated payment token usage (non-sensitive).
+  policies:
+    type: object
+    additionalProperties: false
+    required:
+    - refundable
+    description: Policy snapshot captured at booking time.
+    properties:
+      refundable:
+        type: boolean
+      cancellation_deadline:
+        type: string
+        format: date-time
+      cancellation_policy:
+        type: string
+      refund_policy:
+        type: string
+      no_show_policy:
+        type: string
+      acknowledgements:
+        type: array
+        description: Acknowledgements accepted during checkout (e.g., non_refundable_rate).
+        items:
+          type: object
+          additionalProperties: false
+          required:
+          - type
+          - accepted
+          properties:
+            type:
+              type: string
+            accepted:
+              type: boolean
+  actions:
+    type: object
+    additionalProperties: false
+    description: Supported post-booking actions in this channel (capabilities may vary by supplier).
+    properties:
+      can_cancel:
+        type: boolean
+      can_modify:
+        type: boolean
+      can_refund:
+        type: boolean
+      manage_url:
+        type: string
+        format: uri
+        description: Optional manage-booking URL (redirect flows or supplier-hosted servicing).
+      receipt_url:
+        type: string
+        format: uri
+        description: Optional receipt URL.
+  events:
+    type: array
+    description: Optional event history for auditability and agent messaging.
+    items:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - timestamp
+      properties:
+        type:
+          type: string
+          description: Event type (e.g., booked, modified, cancelled, refunded).
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
