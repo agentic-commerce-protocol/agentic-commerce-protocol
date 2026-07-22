@@ -73,6 +73,53 @@
     "code": "too_many_requests",
     "message": "Too many requests, please retry later"
   },
+  "delegate_payment_request_crypto": {
+    "payment_method": {
+      "type": "crypto",
+      "x402_payload": {
+        "x402Version": 2,
+        "accepted": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": 1000000,
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+          "maxTimeoutSeconds": 3600
+        },
+        "payload": {
+          "signature": "0x...",
+          "authorization": {
+            "from": "0x...",
+            "to": "0x741F3A6452A3d2e6F2b2b2b2b2b2b2b2b2b2b2b2b",
+            "value": "1000000",
+            "validAfter": "1770103150",
+            "validBefore": "1770362350",
+            "nonce": "0x0000000000000000000000000000000000000000000000000000000000000001"
+          }
+        }
+      }
+    },
+    "allowance": {
+      "reason": "one_time",
+      "max_amount": 1000000,
+      "currency": "usd",
+      "checkout_session_id": "csn_01HV3P3XYZ9ABC",
+      "merchant_id": "acme_store",
+      "expires_at": "2025-10-09T07:20:50.52Z"
+    },
+    "risk_signals": [
+      { "type": "crypto_wallet_risk", "score": 5, "action": "authorized" }
+    ],
+    "metadata": {
+      "source": "agent_checkout"
+    }
+  },
+  "delegate_payment_error_x402": {
+    "type": "invalid_request",
+    "code": "x402_rejected",
+    "message": "x402 verification rejected",
+    "param": "payment_method.x402_payload"
+  },
   "delegate_payment_error_idempotency_key_required": {
     "type": "invalid_request",
     "code": "idempotency_key_required",
