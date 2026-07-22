@@ -114,6 +114,8 @@ paths:
             Request-Id:
               description: Echo of the request correlation id
               schema: { type: string }
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -211,6 +213,8 @@ paths:
             Request-Id:
               description: Echo of the request correlation id
               schema: { type: string }
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -270,6 +274,8 @@ paths:
             Request-Id:
               description: Echo of the request correlation id
               schema: { type: string }
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -318,6 +324,13 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API Key
+  headers:
+    ServerTiming:
+      required: false
+      description: Optional server-reported processing duration using the W3C Server-Timing header. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing. ACP responses SHOULD use the `acp` metric with `dur` in milliseconds, for example `acp;dur=42.3`. This excludes network time and is informational; clients SHOULD measure client-observed latency independently.
+      schema:
+        type: string
+        example: acp;dur=42.3
 
   parameters:
     Authorization:

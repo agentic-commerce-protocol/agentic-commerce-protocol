@@ -96,6 +96,8 @@ paths:
               description: Echo of the request correlation id
               schema:
                 type: string
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -173,6 +175,8 @@ paths:
                 type: string
                 enum:
                   - "true"
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -204,6 +208,9 @@ paths:
       responses:
         "200":
           description: Current session
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -288,6 +295,8 @@ paths:
                 type: string
                 enum:
                   - "true"
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -355,6 +364,8 @@ paths:
                 type: string
                 enum:
                   - "true"
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -377,6 +388,13 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API Key
+  headers:
+    ServerTiming:
+      required: false
+      description: Optional merchant-reported server processing duration using the W3C Server-Timing header. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing. ACP responses SHOULD use the `acp` metric with `dur` in milliseconds, for example `acp;dur=42.3`. This excludes network time and is informational; platforms SHOULD measure client-observed latency independently.
+      schema:
+        type: string
+        example: acp;dur=42.3
   parameters:
     Authorization:
       name: Authorization

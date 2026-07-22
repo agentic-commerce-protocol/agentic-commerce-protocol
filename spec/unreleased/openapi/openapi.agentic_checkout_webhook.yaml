@@ -154,6 +154,9 @@ paths:
       responses:
         "200":
           description: Event accepted
+          headers:
+            Server-Timing:
+              $ref: "#/components/headers/ServerTiming"
           content:
             application/json:
               schema:
@@ -209,6 +212,13 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
 
 components:
+  headers:
+    ServerTiming:
+      required: false
+      description: Optional receiver-reported server processing duration using the W3C Server-Timing header. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing. ACP responses SHOULD use the `acp` metric with `dur` in milliseconds, for example `acp;dur=42.3`. This excludes network time and is informational; senders SHOULD measure client-observed latency independently.
+      schema:
+        type: string
+        example: acp;dur=42.3
   schemas:
     EventDataOrder:
       description: |
