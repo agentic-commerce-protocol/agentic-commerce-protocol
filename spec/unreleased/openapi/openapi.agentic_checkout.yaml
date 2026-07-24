@@ -1177,9 +1177,9 @@ components:
         config:
           type: object
           description: Handler-specific configuration
-      display_order:
-        type: integer
-        description: Optional merchant-suggested display order (lower = higher preference). Suggestive only; platform/agent MAY reorder.
+        display_order:
+          type: integer
+          description: Optional merchant-suggested display order (lower = higher preference). Suggestive only; platform/agent MAY reorder.
       required:
         - id
         - name
