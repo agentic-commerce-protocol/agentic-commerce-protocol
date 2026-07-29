@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/redirect-checkout/bundle.schema.json",
+  "title": "Redirect / Hosted Checkout Handler — Schema Bundle",
+  "$defs": {
+    "PaymentMethodRedirect": {
+      "description": "Configuration for the Redirect / Hosted Checkout handler. The hosted page is entirely managed by the payment provider; ACP only needs enough configuration to identify the merchant and declare available methods as a hint.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": ["sandbox", "production"],
+          "description": "Payment API environment"
+        },
+        "merchant_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Merchant identifier assigned by the payment provider"
+        },
+        "merchant_name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name shown in checkout UI"
+        },
+        "supported_methods": {
+          "type": "array",
+          "description": "Hint to the platform about payment methods available on the hosted page. Values are provider-defined strings. The hosted page ultimately controls method selection and availability.",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["card", "wallet"],
+            ["card", "bank_transfer"],
+            ["credit_card", "debit_card", "paypal"]
+          ]
+        }
+      },
+      "required": ["environment", "merchant_id", "merchant_name"],
+      "example": {
+        "environment": "production",
+        "merchant_id": "merchant_live_abc123xyz",
+        "merchant_name": "Demo Merchant",
+        "supported_methods": ["card", "wallet"]
+      }
+    },
+    "Credential": {
+      "description": "Credential for a hosted checkout session. Encodes the minimal information ACP needs to send the buyer to the hosted page and receive an outcome: a URL to open, a session identifier, and return endpoints. Provider-specific fields (prefill data, retry configuration, analytics) are provider implementation details and do not belong in this schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "hosted_checkout",
+          "description": "Always 'hosted_checkout' for this handler"
+        },
+        "checkout_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS URL of the provider-hosted checkout page. The ACP runtime opens this URL via openExternal(). The merchant backend is responsible for constructing this URL, including any provider-specific query parameters."
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Opaque session identifier assigned by the provider. Used to correlate this checkout session when complete_checkout is called."
+        },
+        "return_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS URL the provider redirects the buyer to after a successful payment"
+        },
+        "cancel_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS URL the provider redirects the buyer to on abandonment or cancellation"
+        }
+      },
+      "required": ["type", "checkout_url", "return_url", "cancel_url"],
+      "example": {
+        "type": "hosted_checkout",
+        "checkout_url": "https://checkout.example-provider.com/pay/sess_xyz789",
+        "session_id": "sess_xyz789",
+        "return_url": "https://api.merchant.com/acp/checkout/chk_abc123/return",
+        "cancel_url": "https://api.merchant.com/acp/checkout/chk_abc123/cancel"
+      }
+    },
+    "Instrument": {
+      "description": "Payment instrument for the Redirect / Hosted Checkout handler",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Instrument identifier"
+        },
+        "handler_id": {
+          "type": "string",
+          "description": "Reference to the handler configuration ID"
+        },
+        "type": {
+          "type": "string",
+          "const": "hosted_checkout",
+          "description": "Always 'hosted_checkout' for this handler"
+        },
+        "credential": {
+          "$ref": "#/$defs/Credential"
+        }
+      },
+      "required": ["id", "handler_id", "type", "credential"],
+      "example": {
+        "id": "inst_hosted_001",
+        "handler_id": "redirect_checkout_001",
+        "type": "hosted_checkout",
+        "credential": {
+          "type": "hosted_checkout",
+          "checkout_url": "https://checkout.example-provider.com/pay/sess_xyz789",
+          "session_id": "sess_xyz789",
+          "return_url": "https://api.merchant.com/acp/checkout/chk_abc123/return",
+          "cancel_url": "https://api.merchant.com/acp/checkout/chk_abc123/cancel"
+        }
+      }
+    },
+    "Error": {
+      "description": "Error response for redirect checkout requests",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "invalid_request",
+            "rate_limit_exceeded",
+            "processing_error",
+            "service_unavailable"
+          ],
+          "description": "High-level error category"
+        },
+        "code": {
+          "type": "string",
+          "description": "Provider-defined error code for programmatic handling"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "param": {
+          "type": "string",
+          "description": "JSONPath of the offending field, if applicable"
+        },
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "API version in YYYY-MM-DD format"
+          },
+          "description": "Supported API versions, newest first. Only included in version-related errors."
+        }
+      },
+      "required": ["type", "code", "message"],
+      "example": {
+        "type": "invalid_request",
+        "code": "invalid_merchant_id",
+        "message": "Merchant ID not found or inactive.",
+        "param": "$.config.merchant_id"
+      }
+    }
+  }
+}
