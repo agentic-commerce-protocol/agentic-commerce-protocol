@@ -62,7 +62,8 @@ responses:
         "extends": [
           "$.CheckoutSessionCreateRequest.discounts",
           "$.CheckoutSessionUpdateRequest.discounts",
-          "$.CheckoutSession.discounts"
+          "$.CheckoutSession.discounts",
+          "$.LineItem.discount_eligible"
         ]
       }
     ]
@@ -77,6 +78,7 @@ The `extends` field uses JSONPath expressions to identify the exact fields added
 | `$.CheckoutSessionCreateRequest.discounts` | Adds `discounts.codes` to create requests |
 | `$.CheckoutSessionUpdateRequest.discounts` | Adds `discounts.codes` to update requests |
 | `$.CheckoutSession.discounts` | Adds `discounts.applied` and `discounts.rejected` to responses |
+| `$.LineItem.discount_eligible` | Adds `discount_eligible` boolean to line items |
 
 Merchants **MAY** also include the optional `schema` field with a URL to the
 JSON Schema defining the `discounts` object. For core ACP extensions, this is
@@ -111,6 +113,8 @@ When this extension is active, checkout is extended with a `discounts` object.
 | `method` | string | No | Allocation method: `each` or `across` |
 | `priority` | integer | No | Stacking order (1 = first). Lower numbers applied first. |
 | `allocations` | Allocation[] | No | Breakdown of where discount was allocated |
+
+`AppliedDiscount` represents reductions computed at checkout time, applied **on top of** the line item's `unit_amount`. Catalog-level price changes — where `unit_amount` already reflects the reduced price — MUST NOT be modeled as applied discounts. Such reductions belong to the Sale Extension or are simply the price. The `automatic` field indicates a checkout-time reduction applied by merchant rules without a buyer-submitted code (e.g., "free shipping over $50", "10% off for loyalty members"). It does not indicate a catalog-level price change.
 
 ### 4.3 Coupon
 
@@ -148,6 +152,41 @@ array with the reason:
 | `code` | string | Yes | The discount code that was rejected |
 | `reason` | string | Yes | Error code indicating why (see Section 7.1) |
 | `message` | string | No | Human-readable explanation |
+
+### 4.6 Discount Eligibility
+
+Per-item signal indicating whether the item accepts code-based discount codes:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `discount_eligible` | boolean | No | Whether this item accepts code-based discount codes. Default: `true`. Does not affect automatic discounts. |
+
+This field is a flat property on `LineItem`, governed by the `discount` extension. It is independent of the `sale` extension — items can be discount-ineligible without being on sale (new arrivals, MAP-restricted items, limited editions).
+
+**Semantics:**
+
+- **`false`** — blanket exclusion from ALL code-based discounts. No discount code will apply to this item. This is the protocol equivalent of "excluded from all promotions" as seen on e-commerce storefronts. Agents SHOULD NOT attempt to apply discount codes to this item.
+- **`true` (default)** — the item MAY accept discount codes. This does not guarantee any specific code will apply — per-discount eligibility rules still apply at application time. When a discount is partially applied and specific items are excluded, the `excluded_items` array on `AppliedDiscount` provides per-discount exclusion context.
+
+This field applies only to code-based discounts. Automatic discounts (identified by `automatic: true` on `AppliedDiscount`) are unaffected by this field — a merchant may exclude an item from all coupon codes while still allowing automatic promotions to apply.
+
+If a discount code is submitted for a cart where all eligible items have `discount_eligible: false`, the merchant SHOULD reject with `discount_code_item_ineligible`.
+
+### 4.7 Applied Discount Exclusions
+
+When a discount is partially applied (some items eligible, others not), the `excluded_items` array on `AppliedDiscount` provides transparency:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `excluded_items` | ExcludedItem[] | No | Items excluded from this discount, with reasons |
+
+Each `ExcludedItem`:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | string | Yes | JSONPath to the excluded item (e.g., `$.line_items[0]`) |
+| `reason` | enum | Yes | Machine-readable reason for exclusion. One of: `sale_item`, `map_restricted`, `limited_edition`, `pre_order`, `other`. |
+| `message` | string | No | Human-readable explanation of why the item was excluded. |
 
 ---
 
@@ -264,6 +303,7 @@ To ensure users are informed, merchants **SHOULD** also include a message in the
 | `discount_code_user_not_logged_in` | Code requires authenticated user |
 | `discount_code_user_ineligible` | User does not meet eligibility criteria |
 | `discount_code_usage_limit_reached` | Code has reached maximum redemptions |
+| `discount_code_item_ineligible` | All eligible items are ineligible for this discount code (e.g., on sale, MAP-restricted, limited edition) |
 
 ### 7.2 Message Severity
 
@@ -578,10 +618,14 @@ takes precedence.
 - [ ] Returns rejection reasons via `messages[]` with appropriate codes
 - [ ] Reflects discounts in `totals[]` and line item totals
 - [ ] Accepts deprecated `coupons` field as alias
+- [ ] Returns `discount_eligible` field on line items when applicable
+- [ ] Supports `discount_code_item_ineligible` rejection reason
+- [ ] Includes `excluded_items` on `AppliedDiscount` when items are partially excluded
 
 ---
 
 ## 13. Change Log
 
+- **2026-02-09**: Amendment — added `discount_eligible` field on LineItem, `discount_code_item_ineligible` rejection reason, `excluded_items` on AppliedDiscount (companion to Sale Extension SEP)
 - **2026-01-27**: Initial draft
 
