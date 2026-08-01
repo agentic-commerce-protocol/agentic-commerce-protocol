@@ -182,6 +182,10 @@ Exactly **one** credential type is supported today: **card**.
 - `code` ∈ `invalid_card`, `duplicate_request`, `idempotency_conflict`, `idempotency_key_required`, `idempotency_in_flight`
 - `param` **SHOULD** be an RFC 9535 JSONPath (when applicable).
 
+**Forward compatibility for error codes**
+
+The `type` and `code` enums on the Error object are extensible. New values **MAY** be added in future specification versions without a breaking change. Implementations **MUST NOT** reject responses containing unrecognized `type` or `code` values and **SHOULD** fall back to generic error handling when encountering an unknown value. Strict enum validation of error responses is **NOT RECOMMENDED**.
+
 ---
 
 ## 5. Idempotency & Retries
