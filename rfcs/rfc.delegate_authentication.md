@@ -140,7 +140,7 @@ All endpoints **MUST** use HTTPS and return JSON.
     - `attempted` - Proof of authentication attempt provided; **MUST** call `GET /{id}` to retrieve result
     - `not_authenticated` - Authentication failed; **MUST** call `GET /{id}` to retrieve result
     - `rejected` - Issuer rejected; **MUST NOT** attempt authorization
-    - `unavailable` - Technical error (e.g., `trans_status` `U`, 3DS `Erro` messages, or ACS network timeouts).
+    - `unavailable` - Technical error (e.g., `trans_status` `U`, 3DS `Error` messages, or ACS network timeouts).
     - `expired` - Session has expired; **MUST** create a new session
 - `action` (optional) - Object with `type: challenge` and challenge details
 
@@ -156,7 +156,7 @@ All endpoints **MUST** use HTTPS and return JSON.
     - `attempted` - Proof of authentication attempt provided; **MAY** proceed with authorization
     - `not_authenticated` - Authentication failed; **SHOULD NOT** proceed to authorization
     - `rejected` - Issuer rejected; **MUST NOT** attempt authorization
-    - `unavailable` - Technical error (e.g., `trans_status` `U`, 3DS `Erro` messages, or ACS network timeouts).
+    - `unavailable` - Technical error (e.g., `trans_status` `U`, 3DS `Error` messages, or ACS network timeouts).
     - `expired` - Session has expired
     - `challenge_abandoned` - Challenge was presented but shopper did not complete it
 - `authentication_result` - Object with 3DS data (trans_status, electronic_commerce_indicator, three_ds_cryptogram, transaction_id, three_ds_server_trans_id, version, etc.)
