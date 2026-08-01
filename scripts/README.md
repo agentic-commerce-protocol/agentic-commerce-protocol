@@ -18,6 +18,10 @@ This directory contains automated validation scripts that ensure consistency acr
 - Proper OpenAPI 3.x structure
 - Required fields (openapi, info, paths)
 
+### ✅ OpenAPI semantic validation
+- [`validate-openapi.js`](validate-openapi.js) uses [`@apidevtools/swagger-parser`](https://github.com/APIDevTools/swagger-parser) to validate and dereference each `openapi.*.yaml` under every dated `spec/<version>/openapi/` directory
+- Catches invalid references and structural issues beyond the YAML-level checks in `validate-consistency.js`
+
 ### ✅ Prohibited Schemas
 - Enforces architectural rules for schema placement
 - Extensible for custom validation rules
@@ -58,8 +62,8 @@ pnpm install
 pnpm run validate:all
 
 # Run specific validations
-pnpm run validate:json-schema      # JSON Schema syntax only
-pnpm run validate:openapi           # OpenAPI syntax only
+pnpm run validate:json-schema      # JSON Schema syntax (all versions)
+pnpm run validate:openapi           # OpenAPI semantic validation (swagger-parser)
 pnpm run validate:examples          # Examples against schemas
 pnpm run validate:field-types       # Critical field types
 pnpm run validate:consistency       # Full consistency check
@@ -75,6 +79,8 @@ The PR will:
 - ❌ **Fail** if any errors are found
 
 ## Adding New Validations
+
+Edit `scripts/validate-consistency.js` for cross-spec and documentation rules, or `scripts/validate-openapi.js` for OpenAPI-only semantic checks.
 
 Edit `scripts/validate-consistency.js` to add new validation rules:
 
@@ -94,6 +100,7 @@ const CRITICAL_FIELDS = [
 
 ### Errors (Fail CI)
 - Invalid JSON/YAML syntax
+- OpenAPI documents that fail `@apidevtools/swagger-parser` validation (invalid `$ref`, malformed OpenAPI structure)
 - Prohibited schemas in wrong files
 - Critical fields with incorrect types
 - Examples that don't validate against schemas
