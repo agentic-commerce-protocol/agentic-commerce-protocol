@@ -505,6 +505,10 @@ components:
             - not_supported: Method not available.
         action:
           $ref: "#/components/schemas/Action"
+        authentication_result:
+          allOf:
+            - $ref: "#/components/schemas/AuthenticationResult"
+          description: Final 3DS authentication result. Only present once the session has reached a terminal state, e.g. on the retrieve session response.
       required: [authentication_session_id, status]
 
     DelegateAuthenticationSession:
