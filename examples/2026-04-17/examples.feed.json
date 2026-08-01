@@ -92,6 +92,10 @@
       }
     ]
   },
+  "upsert_products_response": {
+    "id": "feed_8f3K2x",
+    "accepted": true
+  },
   "feed_error_not_found": {
     "type": "invalid_request",
     "code": "feed_not_found",
