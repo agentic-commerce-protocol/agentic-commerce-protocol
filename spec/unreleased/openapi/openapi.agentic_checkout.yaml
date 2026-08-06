@@ -492,7 +492,39 @@ components:
                 code: idempotency_conflict
                 message: Idempotency-Key has already been used with a different request body
   schemas:
-    Address:
+    BillingAddress:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Cardholder name associated with this billing address
+        line_one:
+          type: string
+          description: Primary street address line
+        line_two:
+          type: string
+          description: Secondary address line (apartment, suite, etc.)
+        city:
+          type: string
+          description: City name
+        state:
+          type: string
+          description: State or province code
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+        postal_code:
+          type: string
+          description: Postal or ZIP code
+      required:
+        - country
+        - postal_code
+      example:
+        country: US
+        postal_code: "10001"
+      description: Billing address associated with a payment method
+    FulfillmentAddress:
       type: object
       additionalProperties: false
       properties:
@@ -532,7 +564,7 @@ components:
         state: NY
         country: US
         postal_code: "10001"
-      description: Physical address for shipping, billing, or pickup locations
+      description: Physical address for shipping, delivery, or pickup locations
     AffiliateAttributionSource:
       type: object
       additionalProperties: false
@@ -651,7 +683,7 @@ components:
           format: email
           description: Contact email address
         address:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/FulfillmentAddress"
           description: Fulfillment address
       example:
         name: John Smith
@@ -1539,7 +1571,7 @@ components:
               type: string
               description: Location name
             address:
-              $ref: "#/components/schemas/Address"
+              $ref: "#/components/schemas/FulfillmentAddress"
             phone:
               type: string
               description: Location phone number
@@ -2088,7 +2120,7 @@ components:
             - type
             - credential
         billing_address:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/BillingAddress"
         purchase_order_number:
           type: string
           description: Purchase order number
@@ -2421,7 +2453,7 @@ components:
           format: uri
           description: "URL to track this shipment. Applies to type: shipping."
         destination:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/FulfillmentAddress"
         estimated_delivery:
           $ref: "#/components/schemas/EstimatedDelivery"
         digital_delivery:

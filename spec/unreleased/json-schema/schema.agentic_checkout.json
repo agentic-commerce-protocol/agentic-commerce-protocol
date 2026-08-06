@@ -143,8 +143,55 @@
         "source": "coupon"
       }
     },
-    "Address": {
-      "description": "Physical address for shipping, billing, or pickup locations",
+    "BillingAddress": {
+      "description": "Billing address associated with a payment method",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Cardholder name associated with this billing address"
+        },
+        "line_one": {
+          "type": "string",
+          "description": "Primary street address line"
+        },
+        "line_two": {
+          "type": "string",
+          "description": "Secondary address line (apartment, suite, etc.)"
+        },
+        "city": {
+          "type": "string",
+          "description": "City name"
+        },
+        "state": {
+          "type": "string",
+          "description": "State or province code"
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO 3166-1 alpha-2 country code"
+        },
+        "postal_code": {
+          "type": "string",
+          "description": "Postal or ZIP code"
+        },
+        "company": {
+          "type": "string",
+          "description": "Company or organization name"
+        }
+      },
+      "required": [
+        "country",
+        "postal_code"
+      ],
+      "example": {
+        "country": "US",
+        "postal_code": "10001"
+      }
+    },
+    "FulfillmentAddress": {
+      "description": "Physical address for shipping, delivery, or pickup locations",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -353,7 +400,7 @@
           "description": "Contact email address"
         },
         "address": {
-          "$ref": "#/$defs/Address",
+          "$ref": "#/$defs/FulfillmentAddress",
           "description": "Fulfillment address"
         }
       },
@@ -1356,7 +1403,7 @@
               "description": "Location name"
             },
             "address": {
-              "$ref": "#/$defs/Address",
+              "$ref": "#/$defs/FulfillmentAddress",
               "description": "Pickup address"
             },
             "phone": {
@@ -2160,7 +2207,7 @@
           ]
         },
         "billing_address": {
-          "$ref": "#/$defs/Address",
+          "$ref": "#/$defs/BillingAddress",
           "description": "Billing address for the payment"
         },
         "purchase_order_number": {
@@ -2813,7 +2860,7 @@
           "description": "URL to track this shipment. Applies to type: shipping."
         },
         "destination": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/FulfillmentAddress"
         },
         "estimated_delivery": {
           "$ref": "#/$defs/EstimatedDelivery"

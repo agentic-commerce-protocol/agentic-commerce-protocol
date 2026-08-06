@@ -3,15 +3,15 @@
   "$id": "https://example.com/schemas/delegate-authentication/bundle.schema.json",
   "title": "Delegate Authentication - Schema Bundle",
   "$defs": {
-    "Address": {
+    "BillingAddress": {
       "type": "object",
-      "description": "The physical address details for the shopper.",
+      "description": "Billing address associated with the payment method.",
       "additionalProperties": false,
       "properties": {
         "name": {
           "type": "string",
           "maxLength": 256,
-          "description": "Full name of the recipient"
+          "description": "Cardholder name associated with this billing address"
         },
         "line_one": {
           "type": "string",
@@ -44,13 +44,9 @@
           "description": "Postal or ZIP code"
         }
       },
-      "required": ["name", "line_one", "city", "state", "country", "postal_code"],
+      "required": ["country", "postal_code"],
       "examples": [
         {
-          "name": "Jane Doe",
-          "line_one": "123 Main Street",
-          "city": "Amsterdam",
-          "state": "NH",
           "country": "NL",
           "postal_code": "1012 AB"
         }
@@ -280,7 +276,7 @@
           "description": "Shopper phone number"
         },
         "address": {
-          "$ref": "#/$defs/Address"
+          "$ref": "#/$defs/BillingAddress"
         }
       },
       "examples": [

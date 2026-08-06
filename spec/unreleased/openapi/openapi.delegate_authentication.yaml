@@ -714,24 +714,20 @@ components:
           type: string
           description: Shopper phone number
         address:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/BillingAddress"
 
-    Address:
+    BillingAddress:
       type: object
-      description: Physical address schema for shopper or shipping.
+      description: Billing address associated with the payment method.
       additionalProperties: false
       example:
-        name: "Jane Doe"
-        line_one: "123 Main St"
-        city: "Amsterdam"
-        state: "NH"
         country: "NL"
         postal_code: "1012 AB"
       properties:
         name:
           type: string
           maxLength: 256
-          description: Full name of the recipient.
+          description: Cardholder name associated with this billing address.
         line_one:
           type: string
           maxLength: 60
@@ -756,7 +752,7 @@ components:
           type: string
           maxLength: 20
           description: Postal code or ZIP code.
-      required: [name, line_one, city, state, country, postal_code]
+      required: [country, postal_code]
 
     Action:
       type: object

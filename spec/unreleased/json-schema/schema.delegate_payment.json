@@ -3,15 +3,15 @@
   "$id": "https://example.com/schemas/delegate-payment/bundle.schema.json",
   "title": "Delegate Payment \u2014 Schema Bundle",
   "$defs": {
-    "Address": {
-      "description": "Physical address for billing or shipping purposes",
+    "BillingAddress": {
+      "description": "Billing address associated with a payment method",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "name": {
           "type": "string",
           "maxLength": 256,
-          "description": "Full name of the person at this address"
+          "description": "Cardholder name associated with this billing address"
         },
         "line_one": {
           "type": "string",
@@ -45,19 +45,10 @@
         }
       },
       "required": [
-        "name",
-        "line_one",
-        "city",
-        "state",
         "country",
         "postal_code"
       ],
       "example": {
-        "name": "John Smith",
-        "line_one": "555 Golden Gate Avenue",
-        "line_two": "Apt 401",
-        "city": "San Francisco",
-        "state": "CA",
         "country": "US",
         "postal_code": "94102"
       }
@@ -272,7 +263,7 @@
           "description": "Constraints on how the payment method can be used"
         },
         "billing_address": {
-          "$ref": "#/$defs/Address",
+          "$ref": "#/$defs/BillingAddress",
           "description": "Billing address associated with the payment method"
         },
         "risk_signals": {

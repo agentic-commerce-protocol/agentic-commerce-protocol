@@ -177,8 +177,9 @@ If a client calls `POST .../complete` while `session.status` is `authentication_
 - **CustomAttribute**: `display_name` (string), `value` (string)
 - **MarketplaceSellerDetails**: `name` (string)
 - **Total**: `type` (`items_base_amount | items_discount | subtotal | discount | fulfillment | tax | fee | total`), `display_text`, `amount` (**int**), `description?` (optional string for fees)
-- **Address**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
-- **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested Address object)
+- **BillingAddress**: `country`, `postal_code`, `name?`, `line_one?`, `line_two?`, `city?`, `state?`
+- **FulfillmentAddress**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
+- **FulfillmentDetails**: `name?`, `phone?`, `email?`, `address?` (nested FulfillmentAddress object)
 - **FulfillmentOption (shipping)**: `id`, `title`, `description?`, `carrier?`, `earliest_delivery_time?`, `latest_delivery_time?`, `totals` (array of **Total**)
 - **FulfillmentOption (digital)**: `id`, `title`, `description?`, `totals` (array of **Total**)
 - **FulfillmentOption (pickup)**: `id`, `title`, `description?`, `location`, `pickup_type?`, `ready_by?`, `pickup_by?`, `totals` (array of **Total**)

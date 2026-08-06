@@ -178,7 +178,7 @@ The existing `Order` schema gains optional fields:
 | `carrier` | string | No | Carrier name (shipping only) |
 | `tracking_number` | string | No | Tracking number (shipping only) |
 | `tracking_url` | string (uri) | No | Tracking URL (shipping only) |
-| `destination` | Address | No | Delivery address |
+| `destination` | FulfillmentAddress | No | Delivery address |
 | `estimated_delivery` | EstimatedDelivery | No | Delivery estimate |
 | `digital_delivery` | object | No | Digital delivery details (digital only) |
 | `description` | string | No | Human-readable description |

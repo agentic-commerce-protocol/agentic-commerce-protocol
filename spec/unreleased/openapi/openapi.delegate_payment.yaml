@@ -303,7 +303,7 @@ components:
           $ref: "#/components/schemas/Allowance"
           description: Constraints on how the payment method can be used
         billing_address:
-          $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/BillingAddress"
           description: Billing address associated with the payment method
         risk_signals:
           type: array
@@ -467,14 +467,14 @@ components:
         metadata:
           card_origin: manual_entry
       description: Card payment method details including card number, expiration, and verification data
-    Address:
+    BillingAddress:
       type: object
       additionalProperties: false
       properties:
         name:
           type: string
           maxLength: 256
-          description: Full name of the person at this address
+          description: Cardholder name associated with this billing address
         line_one:
           type: string
           maxLength: 60
@@ -500,21 +500,12 @@ components:
           maxLength: 20
           description: ZIP or postal code
       required:
-        - name
-        - line_one
-        - city
-        - state
         - country
         - postal_code
       example:
-        name: John Smith
-        line_one: 555 Golden Gate Avenue
-        line_two: Apt 401
-        city: San Francisco
-        state: CA
         country: US
         postal_code: "94102"
-      description: Physical address for billing or shipping purposes
+      description: Billing address associated with a payment method
     Allowance:
       type: object
       additionalProperties: false

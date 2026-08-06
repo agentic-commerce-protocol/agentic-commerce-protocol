@@ -91,7 +91,7 @@ Exactly **one** credential type is supported today: **card**.
 | ----------------- | -------------------- | :-: | -------------------------------------------------- |
 | `payment_method`  | PaymentMethodCard    | ✅  | The credential to tokenize. (type MUST be `card`.) |
 | `allowance`       | Allowance            | ✅  | Constraints on how the token may be used.          |
-| `billing_address` | Address              | ❌  | Address associated with the payment method.        |
+| `billing_address` | BillingAddress       | ❌  | Billing address associated with the payment method. |
 | `risk_signals`    | RiskSignal[]         | ✅  | One or more risk signals.                          |
 | `metadata`        | object (map<string>) | ✅  | Arbitrary key/values for correlation.              |
 
@@ -113,10 +113,13 @@ Exactly **one** credential type is supported today: **card**.
 - `display_last4`: string (max 4)
 - `metadata`: map<string,string> (**REQUIRED**)
 
-### 3.4 Address (OPTIONAL)
+### 3.4 BillingAddress (OPTIONAL)
 
-- `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),  
-  `state` (ISO-3166-2 where applicable), `country` (ISO-3166-1 alpha-2), `postal_code` (≤20)
+Providers **MAY** send a complete address, but **MUST NOT** require one.
+
+- **REQUIRED**: `country` (ISO-3166-1 alpha-2), `postal_code` (≤20)
+- **OPTIONAL**: `name` (≤256), `line_one` (≤60), `line_two` (≤60), `city` (≤60),  
+  `state` (ISO-3166-2 where applicable)
 
 ### 3.5 Allowance (REQUIRED)
 

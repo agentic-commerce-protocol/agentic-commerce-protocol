@@ -108,7 +108,7 @@ All endpoints **MUST** use HTTPS and return JSON.
 - `checkout_session_id` (**OPTIONAL**) - Checkout session identifier
 - `flow_preference` (**OPTIONAL**) - Object with `type` (`challenge` | `frictionless`) and optional subtype details
 - `challenge_notification_url` (**OPTIONAL**) - URL for challenge result callback
-- `shopper_details` (**OPTIONAL**) - Object with `name?`, `email?`, `phone_number?`, `address?` (nested Address)
+- `shopper_details` (**OPTIONAL**) - Object with `name?`, `email?`, `phone_number?`, `address?` (nested BillingAddress)
 
 **Response body:**
 
@@ -168,8 +168,8 @@ All endpoints **MUST** use HTTPS and return JSON.
 - **PaymentMethod**: `type` (`card`), `number`, `exp_month`, `exp_year`, `name`
 - **Amount**: `value` (int, minor units), `currency` (ISO 4217)
 - **Channel**: `type` (`browser`), `browser` (object with `accept_header`, `ip_address`, `javascript_enabled`, `language`, `user_agent`, `color_depth`, `java_enabled`, `screen_height`, `screen_width`, `timezone_offset`)
-- **Address**: `name`, `line_one`, `line_two?`, `city`, `state`, `country`, `postal_code`
-- **ShopperDetails**: `name?`, `email?`, `phone_number?`, `address?` (nested Address object)
+- **BillingAddress**: `country`, `postal_code`, `name?`, `line_one?`, `line_two?`, `city?`, `state?`
+- **ShopperDetails**: `name?`, `email?`, `phone_number?`, `address?` (nested BillingAddress object)
 - **FlowPreference**: `type` (`challenge` | `frictionless`), `challenge?` (object with `type`: `mandated` | `preferred`), `frictionless?` (object). Clients **MAY** request a preference, but issuers ultimately decide the actual flow.
 - **Action (fingerprint)**: `type: fingerprint`, `fingerprint` (object with `three_ds_method_url`, `three_ds_server_trans_id`)
 - **Action (challenge)**: `type: challenge`, `challenge` (object with `acs_url`, `acs_trans_id`, `three_ds_server_trans_id`, `message_version`)
