@@ -357,7 +357,8 @@ components:
     Signature:
       name: Signature
       in: header
-      required: false
+      required: true
+      description: Detached JSON signature for request verification. Per the Delegate Authentication RFC §3.1, clients MUST place a base64url-encoded signature over the canonical request in this header; without it, the static bearer credential is the only control on an endpoint that accepts card data and mints 3DS sessions.
       schema: { type: string, example: "ZXltZX..." }
     Timestamp:
       name: Timestamp
