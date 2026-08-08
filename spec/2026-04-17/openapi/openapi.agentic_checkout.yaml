@@ -2893,6 +2893,9 @@ components:
         discounts:
           $ref: "#/components/schemas/DiscountsResponse"
           description: "Discount extension: submitted codes and applied discounts. Present when the 'discount' extension is active."
+        order:
+          $ref: "#/components/schemas/Order"
+          description: Order created when checkout is completed
       required:
         - id
         - status
