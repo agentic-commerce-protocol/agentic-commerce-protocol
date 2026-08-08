@@ -269,16 +269,16 @@ components:
     Signature:
       name: Signature
       in: header
-      required: false
-      description: Detached JSON signature for request verification
+      required: true
+      description: Detached JSON signature for request verification. Per the Delegate Payment RFC, clients MUST compute a detached signature with their private key and place it (base64url-encoded) in this header; without it, the static bearer credential is the only control on an endpoint that mints spendable payment tokens.
       schema:
         type: string
         example: ZXltZX...
     Timestamp:
       name: Timestamp
       in: header
-      required: false
-      description: ISO 8601 timestamp for request timing validation
+      required: true
+      description: ISO 8601 timestamp for request timing validation. Per the Delegate Payment RFC, clients MUST include this header; servers SHOULD reject requests outside an acceptable clock-skew window to prevent replay.
       schema:
         type: string
         format: date-time
