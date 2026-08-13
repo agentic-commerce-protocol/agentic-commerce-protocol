@@ -218,7 +218,8 @@
       "name": "update_checkout_session",
       "arguments": {
         "meta": {
-          "api_version": "2026-01-30"
+          "api_version": "2026-01-30",
+          "idempotency_key": "idem_550e8400-e29b-41d4-a716-446655440002"
         },
         "id": "checkout_session_123",
         "payload": {
@@ -357,7 +358,8 @@
       "name": "cancel_checkout_session",
       "arguments": {
         "meta": {
-          "api_version": "2026-01-30"
+          "api_version": "2026-01-30",
+          "idempotency_key": "idem_550e8400-e29b-41d4-a716-446655440003"
         },
         "id": "checkout_session_123",
         "payload": {

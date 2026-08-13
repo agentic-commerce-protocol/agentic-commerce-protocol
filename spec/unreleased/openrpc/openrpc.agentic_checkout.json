@@ -23,7 +23,7 @@
       "meta": {
         "type": "object",
         "description": "Protocol metadata mapped from ACP HTTP headers. Authentication is handled at the MCP server level and is not included here.",
-        "required": ["api_version"],
+        "required": ["api_version", "idempotency_key"],
         "additionalProperties": true,
         "properties": {
           "api_version": {
@@ -32,7 +32,7 @@
           },
           "idempotency_key": {
             "type": "string",
-            "description": "Unique key for retry safety. Maps to the Idempotency-Key header. Recommended for create and complete operations."
+            "description": "Unique key for retry safety. Maps to the Idempotency-Key header. Required for create, update, complete, and cancel operations."
           },
           "request_id": {
             "type": "string",
