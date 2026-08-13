@@ -107,7 +107,7 @@ These map to fields in the `meta` object:
 | HTTP Header        | MCP Field              | Required | Notes                                          |
 | :----------------- | :--------------------- | :------- | :--------------------------------------------- |
 | `API-Version`      | `meta.api_version`     | Yes      | Date string, e.g. `"2026-01-30"`              |
-| `Idempotency-Key`  | `meta.idempotency_key` | No       | Recommended for create and complete            |
+| `Idempotency-Key`  | `meta.idempotency_key` | Yes      | Required for create, update, complete, cancel  |
 | `Request-Id`       | `meta.request_id`      | No       | Correlation ID                                 |
 | `User-Agent`       | `meta.user_agent`      | No       | Agent identification                           |
 | `Accept-Language`   | `meta.accept_language` | No       | Locale preference                              |
