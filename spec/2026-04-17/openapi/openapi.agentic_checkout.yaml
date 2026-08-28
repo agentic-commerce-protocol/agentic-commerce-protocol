@@ -45,15 +45,17 @@ paths:
               minimal:
                 summary: Single item; no fulfillment details
                 value:
-                  items:
+                  line_items:
                     - id: item_123
-                      quantity: 1
+                  currency: usd
+                  capabilities: {}
               with_address:
                 summary: Single item with shipping address
                 value:
-                  items:
+                  line_items:
                     - id: item_456
-                      quantity: 1
+                  currency: usd
+                  capabilities: {}
                   fulfillment_details:
                     name: test
                     phone_number: "15551234567"
@@ -69,9 +71,10 @@ paths:
               with_first_touch_attribution:
                 summary: With first-touch affiliate attribution
                 value:
-                  items:
+                  line_items:
                     - id: item_123
-                      quantity: 1
+                  currency: usd
+                  capabilities: {}
                   affiliate_attribution:
                     provider: impact.com
                     token: atp_01J8Z3WXYZ9ABC
@@ -3019,9 +3022,8 @@ components:
         - currency
         - capabilities
       example:
-        items:
-          - product_id: prod_tshirt_blue_m
-            quantity: 2
+        line_items:
+          - id: item_tshirt_blue_m
         currency: usd
         capabilities: {}
       description: Request to create a new checkout session
