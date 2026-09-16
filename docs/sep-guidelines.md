@@ -87,20 +87,19 @@ The standard SEP workflow is:
 1. You, the SEP author, create a well-formatted GitHub Issue with the `SEP` and
    `proposal` tags. The SEP number is the same as the GitHub Issue number, the
    two can be used interchangeably.
-2. Find a Founding Maintainer or Maintainer (future tier) to sponsor your
-   proposal. Founding Maintainers and Maintainers will regularly go over the
-   list of open proposals to determine which proposals to sponsor.
+2. Find a TSC member to sponsor your proposal. TSC members will regularly go
+   over the list of open proposals to determine which proposals to sponsor.
 3. Once a sponsor is found, the GitHub Issue is assigned to the sponsor. The
    sponsor will add the `draft` tag, ensure the SEP number is in the title, and
    assign a milestone.
 4. The sponsor will informally review the proposal and may request changes based
    on community feedback. When ready for formal review, the sponsor will add the
-   `in-review` tag.
-5. After the `in-review` tag is added, the SEP enters formal review by the
-   Founding Maintainers team. The SEP may be accepted, rejected, or returned for
-   revision.
-6. If the SEP has not found a sponsor within three months, Founding Maintainers
-   may close the SEP as `dormant`.
+   `in-review` tag, opening the mandatory 7-business-day public review window.
+5. After the `in-review` tag is added, the SEP enters formal review and a vote
+   at the TSC's weekly meeting. The SEP is accepted or rejected by a simple
+   majority vote (50%+1) of the TSC, or returned for revision.
+6. If the SEP has not found a sponsor within three months, the TSC may close
+   the SEP as `dormant`.
 
 **Pull Request Template**: When creating a pull request for your SEP, use the
 [sep-proposal.md](../.github/PULL_REQUEST_TEMPLATE/sep-proposal.md) template.
@@ -149,9 +148,9 @@ SEPs can be one of the following states:
 - `proposal`: SEP proposal without a sponsor.
 - `draft`: SEP proposal with a sponsor.
 - `in-review`: SEP proposal ready for review.
-- `accepted`: SEP accepted by Founding Maintainers, but still requires final
-  wording and reference implementation.
-- `rejected`: SEP rejected by Founding Maintainers.
+- `accepted`: SEP accepted by the TSC, but still requires final wording and
+  reference implementation.
+- `rejected`: SEP rejected by the TSC.
 - `withdrawn`: SEP withdrawn.
 - `final`: SEP finalized.
 - `superseded`: SEP has been replaced by a newer SEP.
@@ -159,7 +158,8 @@ SEPs can be one of the following states:
 
 ### SEP Review & Resolution
 
-SEPs are reviewed by the ACP Founding Maintainers team on a bi-weekly basis.
+SEPs are discussed and voted on at the TSC's weekly meeting, per the SEP
+lifecycle in [governance.md](./governance.md#specification-enhancement-proposals-seps).
 
 For a SEP to be accepted it must meet certain minimum criteria:
 
