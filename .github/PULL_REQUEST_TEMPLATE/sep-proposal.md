@@ -127,7 +127,7 @@ Before submitting this SEP PR, ensure:
 - [ ] This PR includes updates to OpenAPI/JSON schemas (if applicable)
 - [ ] This PR includes example requests/responses (if applicable)
 - [ ] This PR includes a changelog entry file in `changelog/unreleased/your-change-description.md`
-- [ ] I am seeking or have found a sponsor (Founding Maintainer)
+- [ ] I am seeking or have found a sponsor (TSC member)
 
 ---
 
@@ -155,4 +155,4 @@ Before submitting this SEP PR, ensure:
 
 ---
 
-**Note**: SEPs require unanimous approval from Founding Maintainers. See [governance.md](../docs/governance.md) and [sep-guidelines.md](../docs/sep-guidelines.md) for the full process.
+**Note**: SEPs are sponsored by a TSC member and adopted or rejected by a simple majority vote (50%+1) of the TSC. See [governance.md](../docs/governance.md) and [sep-guidelines.md](../docs/sep-guidelines.md) for the full process.
