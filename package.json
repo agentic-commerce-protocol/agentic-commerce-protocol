@@ -7,6 +7,7 @@
     "validate:openapi": "echo 'OpenAPI validation requires additional tooling - see scripts/validate-consistency.js'",
     "validate:examples": "node scripts/validate-consistency.js",
     "validate:consistency": "node scripts/validate-consistency.js",
+    "test:consistency": "node scripts/test-validate-consistency.js",
     "validate:prohibited-schemas": "node scripts/validate-consistency.js",
     "validate:field-types": "node scripts/validate-consistency.js",
     "report:consistency": "node scripts/validate-consistency.js",

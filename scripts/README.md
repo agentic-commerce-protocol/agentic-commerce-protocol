@@ -32,9 +32,10 @@ This directory contains automated validation scripts that ensure consistency acr
 - Automatic schema detection based on example naming
 
 ### ✅ JSON Schema vs OpenAPI Consistency
-- Field types match between JSON Schema and OpenAPI
-- Required fields are consistent
-- Enum values match
+- Property names match between JSON Schema `$defs` and OpenAPI `components.schemas`
+- Pairs using composition (`allOf`/`oneOf`/`anyOf`/`$ref`) or declaring no properties are skipped
+- Pre-existing drift listed in `known-property-drift.txt` is tolerated and reported as known;
+  unlisted drift fails, and a listed entry that no longer matches also fails so the file shrinks
 
 ### ✅ Field Descriptions (unreleased only)
 - **JSON Schema**: All data models have a description at the top level
@@ -56,6 +57,9 @@ pnpm install
 
 # Run all validations
 pnpm run validate:all
+
+# Run regression tests for the property-consistency check
+pnpm run test:consistency
 
 # Run specific validations
 pnpm run validate:json-schema      # JSON Schema syntax only

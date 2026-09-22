@@ -1,0 +1,39 @@
+# Pre-existing JSON Schema <-> OpenAPI property drift, tolerated for now.
+#
+# Format: <version>/<spec>/<schema>/<property> <json-only|openapi-only> # <issue>
+#
+# - Drift listed here is reported as known and does not fail validation.
+# - Drift not listed here fails validation.
+# - An entry that no longer matches any detected drift fails validation, so
+#   entries are removed as the schemas are reconciled.
+
+2025-12-12/agentic_checkout/CheckoutSessionBase/order json-only # 277
+2026-01-16/agentic_checkout/CheckoutSessionBase/order json-only # 277
+2026-01-30/agentic_checkout/CheckoutSessionBase/order json-only # 277
+2026-04-17/agentic_checkout/CheckoutSessionBase/order json-only # 277
+unreleased/agentic_checkout/CheckoutSessionBase/order json-only # 277
+
+2026-04-17/agentic_checkout/Address/company json-only # 297
+2026-04-17/agentic_checkout/CheckoutSessionCompleteRequest/order_notes json-only # 297
+2026-04-17/agentic_checkout/CheckoutSessionCreateRequest/order_notes json-only # 297
+2026-04-17/agentic_checkout/CheckoutSessionUpdateRequest/order_notes json-only # 297
+2026-04-17/agentic_checkout/Order/client_reference_id json-only # 297
+2026-04-17/agentic_checkout/OrderConfirmation/order_notes json-only # 297
+unreleased/agentic_checkout/Address/company json-only # 297
+unreleased/agentic_checkout/CheckoutSessionCompleteRequest/order_notes json-only # 297
+unreleased/agentic_checkout/CheckoutSessionCreateRequest/order_notes json-only # 297
+unreleased/agentic_checkout/CheckoutSessionUpdateRequest/order_notes json-only # 297
+unreleased/agentic_checkout/Order/client_reference_id json-only # 297
+unreleased/agentic_checkout/OrderConfirmation/order_notes json-only # 297
+
+2026-04-17/agentic_checkout/PaymentHandler/display_order json-only # 279
+unreleased/agentic_checkout/PaymentHandler/display_order json-only # 279
+
+# Error.supported_versions is enumerated in #297. The 2026-04-17 entries are
+# tracked under #297 pending a maintainer reassignment. The unreleased entries
+# are tracked under #132, which adds supported_versions to the unreleased
+# agentic_checkout and delegate_payment OpenAPI artifacts.
+2026-04-17/agentic_checkout/Error/supported_versions json-only # 297
+2026-04-17/delegate_payment/Error/supported_versions json-only # 297
+unreleased/agentic_checkout/Error/supported_versions json-only # 132
+unreleased/delegate_payment/Error/supported_versions json-only # 132
