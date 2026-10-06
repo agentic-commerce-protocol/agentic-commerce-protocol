@@ -271,3 +271,12 @@ processes all tool arguments including payment instrument tokens in
 with the REST backend avoids introducing a new intermediary in the payment
 data flow. Third-party hosted proxies that inspect or log payment payloads may
 be in PCI scope even if they do not store card data.
+
+### Optional host-side authorization
+
+Separately from merchant auth and payment-provider controls, an MCP **host**
+may run an optional allow/deny check before it invokes a sensitive ACP tool
+(for example `complete_checkout_session`). That check is host-owned, is not
+part of the ACP wire protocol, and does not replace ACP, merchant
+authorization, or payment rails. See
+[Optional host-side authorization](optional-host-side-authorization.md).
