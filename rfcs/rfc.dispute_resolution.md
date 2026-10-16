@@ -260,6 +260,24 @@ Per line:
    agent confirmed).
 5. Otherwise: **uphold**.
 
+### 7.4a Evidence-pack verdicts (admissibility)
+
+When evidence arrives as a signed, self-contained pack (for example the AP2
+dispute-time evidence format discussed in google-agentic-commerce/AP2#338), the
+provider runs a fail-closed pack verifier **before** Section 7.4 and applies
+this table. The verdict names follow that thread's conformance vectors.
+
+| Verifier verdict | Admissibility | Effect on Section 7.4 |
+|---|---|---|
+| `valid_signed` | Admissible | Apply 7.4 normally |
+| `digest_mismatch`, `anchor_invalid` | Not admissible (tamper) | The pack is excluded. The submitting party may resubmit within the 7.5 clock; the determination **MUST NOT** rely on the excluded pack |
+| `stripped_signature` | Admissible only for facts the mandate's own signature proves | Producer-level claims (who assembled the pack, retention integrity) carry no weight |
+| `unpinned_producer` | Consistency-only | It **MUST NOT** be the sole basis for an `overturn` |
+| `anchor_missing` | Admissible | A time-based ground (execution after `exp`) needs an independent timestamp (PSP or network confirmation); otherwise that ground is not met |
+
+The determination **MUST** record each pack's verdict. A verdict that implies
+an unauthorized mandate routes the claim to the network under Section 7.1.
+
 ### 7.5 Clocks (calendar days)
 
 Open within `window_days` (default 120) of `payment_receipt.iat`; eligibility
@@ -357,6 +375,7 @@ semantics. Clients without extension support ignore the new properties.
 **Provider**
 
 - [ ] Verifies the authorization chain before accepting a dispute (Section 4.4)
+- [ ] Applies the evidence-pack admissibility table of Section 7.4a
 - [ ] Applies the decision rule of Section 7.4 and the clocks of Section 7.5
 - [ ] Meets Sections 7.7 to 7.10
 
@@ -404,6 +423,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 ## 13. Change Log
 
 - **2026-10-16**: Initial draft (SEP #303).
+- **2026-10-16**: Section 7.4a added: evidence-pack verifier verdicts mapped to admissibility (from AP2#338).
 
 ---
 
