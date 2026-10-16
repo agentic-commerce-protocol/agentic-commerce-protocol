@@ -448,14 +448,23 @@ gateway documents a structured way to put it in front of the issuer**.
 |---|---|---|---|---|---|
 | Stripe | `PaymentIntent.agent_details` (`name`, `network_business_profile`), API version 2026-09-30.preview | Yes: `Dispute.payment_intent` (expandable) | None structured; free-text/file evidence only (`evidence.uncategorized_text`, `uncategorized_file`) | mandate + receipt as an uncategorized file | 2026-10-16 |
 | Braintree | `transaction.facilitator_details` (`oauth_application_name`, `oauth_application_client_id`), response only | Yes: `dispute.transaction.id` | None structured; evidence comment/file upload only | mandate + receipt as file evidence | 2026-10-16 |
-| Adyen | | | | | |
-| Worldpay | | | | | |
-| Checkout.com | none documented (2025 blog mentions providing issuers "the original consent record"; not in docs) | | | | |
-| Cybersource | agent-side API only; nothing merchant-side | | | | |
-| Fiserv Commerce Hub | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | |
-| Elavon Converge | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | |
-| Global Payments | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | |
-| (remaining gateways from the 16-gateway scorecard) | | | | | |
+| Adyen | Request side only: `shoppingPlatform` (Agentic Cart API), `metadata.agentPlatform` (UCP); AUTHORISATION webhook echoes `shoppingPlatform` in `additionalData`; nothing on the `/payments` response | Yes: dispute webhook `originalReference` ("The PSP reference of the disputed payment") | None structured; defense documents uploaded as PDF through the Disputes API. Help Center routes Visa CE 3.0 elements through Adyen Support | mandate + receipt as a PDF defense document | 2026-10-15; link 2026-10-16 |
+| Worldpay | Request side only: `instruction.paymentInstrument.type` = `delegate` (ACP); payment response has no agent or delegate term | UNKNOWN (docs not readable) | UNKNOWN (docs not readable) | | 2026-10-15; link 2026-10-16 |
+| Checkout.com | none documented (2025 blog mentions providing issuers "the original consent record"; not in docs) | Yes: `Dispute.payment.id` (`payment_id` in list results) | None structured; `additional_evidence_file` / `additional_evidence_text`, `invoice_or_receipt_file` | mandate as additional evidence file, receipt as `invoice_or_receipt_file` | 2026-10-15; link 2026-10-16 |
+| Shopify Payments | none documented as a field; admin shows "channel or referrer attribution" for AI channel orders | Order only: `ShopifyPaymentsDispute.order`; no payment transaction field | none documented | | 2026-10-15; link 2026-10-16 |
+| Square | none documented as a value; `OrderSource.name` exists, Dashboard groups AI assistant orders by source | Yes: `Dispute.disputed_payment.payment_id` | none documented in the pages read | | 2026-10-15; link 2026-10-16 |
+| PayPal (wallet, Orders v2) | none documented: no agent or facilitator field; `stored_credential.payment_initiator` is `CUSTOMER` or `MERCHANT` only | Yes: `disputed_transactions[].seller_transaction_id` | Wallet disputes are decided by PayPal, not an issuer; evidence goes to PayPal as files and notes, none structured for agents | mandate + receipt as file evidence | 2026-10-15; link 2026-10-16 |
+| Cybersource | agent-side API only; nothing merchant-side | Report only: Chargeback Report `RequestId`, `MerchantReferenceNumber` | none documented | | 2026-10-15; link 2026-10-16 |
+| Nuvei | none documented (TAP pilot announced, H2 2026 target) | Report only: Chargebacks Report `Transaction ID`; no chargeback notification documented | none documented | | 2026-10-15; link 2026-10-16 |
+| Fiserv Commerce Hub | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | 2026-10-15 |
+| Global Payments | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | 2026-10-15 |
+| Elavon Converge | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | 2026-10-15 |
+| Elavon Payment Gateway | none documented (OpenAPI spec version 2026-07-21: no agentic, Agent Pay, Intelligent Commerce or Trusted Agent terms) | Network references only: `GET /disputes/{disputeId}/transaction` returns `acquirerReferenceNumber`, `rocText`; no gateway transaction ID | none documented | | 2026-10-15; link 2026-10-16 |
+| NMI | none documented | Unclear: `chargeback.batch.complete` webhook carries `chargebacks[].id`; docs do not say it is the original transaction ID | none documented | | 2026-10-15; link 2026-10-16 |
+| Authorize.net | none documented | none documented (only eCheck batch `chargebackCount`) | none documented | | 2026-10-15; link 2026-10-16 |
+| Helcim | none documented | none documented (chargebacks are dashboard only; no dispute API in devdocs) | none documented | | 2026-10-15; link 2026-10-16 |
+
+"None documented" means the vendor's public docs, API reference and dispute guides were read and say nothing; it is not a claim that no such capability exists. UNKNOWN means the docs could not be read. Neither means NO.
 
 ### What would close the gap (informative)
 1. A structured agent indicator in the network dispute evidence schema (for example alongside existing compelling-evidence
