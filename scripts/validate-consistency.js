@@ -588,6 +588,16 @@ function validateExamples() {
             } else if (exampleName.includes('complete') && exampleName.includes('request')) {
               schemaRef = '#/$defs/CheckoutSessionCompleteRequest';
             }
+          } else if (spec === 'dispute_resolution') {
+            if (exampleName === 'dispute_resolution_object') {
+              schemaRef = '#/$defs/DisputeResolution';
+            } else if (exampleName === 'dispute_resolution_request_object') {
+              schemaRef = '#/$defs/DisputeResolutionRequest';
+            } else if (exampleName === 'dispute_record') {
+              schemaRef = '#/$defs/DisputeRecord';
+            } else if (exampleName === 'dispute_determination') {
+              schemaRef = '#/$defs/DisputeDetermination';
+            }
           } else if (spec === 'delegate_payment') {
             if (exampleName === 'delegate_payment_request') {
               schemaRef = '#/$defs/DelegatePaymentRequest';

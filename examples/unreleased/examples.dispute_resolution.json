@@ -1,0 +1,136 @@
+{
+  "capability_declaration": {
+    "capabilities": {
+      "extensions": [
+        {
+          "name": "dispute_resolution",
+          "extends": [
+            "$.CheckoutSession.dispute_resolution",
+            "$.CheckoutSessionCompleteRequest.dispute_resolution",
+            "$.Order.adjustments"
+          ],
+          "spec": "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol/issues/303"
+        }
+      ]
+    }
+  },
+  "agent_capability_declaration": {
+    "capabilities": {
+      "extensions": [
+        "dispute_resolution"
+      ]
+    }
+  },
+  "dispute_resolution_object": {
+    "providers": [
+      {
+        "provider_id": "prov_example_neutral",
+        "name": "Example Neutral Provider",
+        "policy_url": "https://provider.example/policy/ATDRP-0.1",
+        "verify_url": "https://provider.example/verify"
+      }
+    ],
+    "policy_url": "https://provider.example/policy/ATDRP-0.1",
+    "fee": {
+      "amount": 500,
+      "currency": "usd"
+    },
+    "window_days": 120
+  },
+  "dispute_resolution_request_object": {
+    "selected_provider": "prov_example_neutral"
+  },
+  "dispute_record": {
+    "dispute_id": "dsp_0001",
+    "policy_version": "ATDRP-0.1",
+    "claimant": "payer",
+    "checkout_hash": "h_7f3a",
+    "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1790000000,
+      "exp": 1790003600,
+      "execution_date": "2026-11-01"
+    },
+    "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1790000100,
+      "order_id": "ord_abc123"
+    },
+    "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1790000200,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+    },
+    "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+        {
+          "id": "line_item_123"
+        }
+      ],
+      "adjustments": []
+    },
+    "claim": {
+      "line_ids": [
+        "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+    }
+  },
+  "dispute_determination": {
+    "determination_id": "det_0001",
+    "dispute_id": "dsp_0001",
+    "policy_version": "ATDRP-0.1",
+    "per_line": [
+      {
+        "line_id": "line_item_123",
+        "outcome": "overturn",
+        "amount": {
+          "amount": 330,
+          "currency": "usd"
+        },
+        "reasons": [
+          "merchant_canceled_without_completed_adjustment"
+        ]
+      }
+    ],
+    "factors": {
+      "mandate_scope": {
+        "finding": "within_mandate"
+      },
+      "merchant_performance": {
+        "finding": "canceled_without_completed_adjustment"
+      },
+      "adjustments_already_made": {
+        "finding": "none"
+      }
+    },
+    "prohibited_screened": true,
+    "drafted_by": "ai_assisted_human_reviewed",
+    "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+    },
+    "issued_at": "2026-11-20T15:00:00Z",
+    "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+    },
+    "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+        "amount": 500,
+        "currency": "usd"
+      }
+    }
+  }
+}

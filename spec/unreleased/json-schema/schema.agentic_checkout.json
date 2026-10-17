@@ -2489,6 +2489,549 @@
       "description": "Error codes for rejected discount codes, used in messages[].code.",
       "example": "discount_code_expired"
     },
+    "DisputeAmount": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A monetary amount in minor currency units paired with its currency.",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Amount in minor currency units (e.g. 100 for $1.00 USD)."
+        },
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217 currency code, lowercase.",
+          "pattern": "^[a-z]{3}$"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "example": {
+        "amount": 500,
+        "currency": "usd"
+      }
+    },
+    "DisputeProviderRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A dispute resolution provider the merchant accepts for this checkout session.",
+      "properties": {
+        "provider_id": {
+          "type": "string",
+          "description": "Stable identifier of the provider. Referenced by selected_provider."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable provider name."
+        },
+        "policy_url": {
+          "type": "string",
+          "description": "URL of the provider's published policy.",
+          "format": "uri"
+        },
+        "verify_url": {
+          "type": "string",
+          "description": "URL at which the provider's determinations can be verified without an account.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "provider_id",
+        "name",
+        "policy_url"
+      ],
+      "example": {
+        "provider_id": "prov_example_neutral",
+        "name": "Example Neutral Provider",
+        "policy_url": "https://provider.example/policy/ATDRP-0.1",
+        "verify_url": "https://provider.example/verify"
+      }
+    },
+    "DisputeResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Dispute resolution extension object on a checkout session response. Present when the 'dispute_resolution' extension is active.",
+      "properties": {
+        "providers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DisputeProviderRef"
+          },
+          "description": "Providers the merchant accepts, in preference order."
+        },
+        "selected_provider": {
+          "type": "string",
+          "description": "provider_id agreed for this session. Set by the agent on complete."
+        },
+        "policy_url": {
+          "type": "string",
+          "description": "The provider's published policy the parties are bound by.",
+          "format": "uri"
+        },
+        "fee": {
+          "$ref": "#/$defs/DisputeAmount",
+          "description": "Loser-pays fee for a single-line resolution, in minor units."
+        },
+        "window_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days after payment_receipt.iat within which a dispute may be opened."
+        }
+      },
+      "required": [
+        "providers",
+        "policy_url",
+        "fee",
+        "window_days"
+      ],
+      "example": {
+        "providers": [
+          {
+            "provider_id": "prov_example_neutral",
+            "name": "Example Neutral Provider",
+            "policy_url": "https://provider.example/policy/ATDRP-0.1",
+            "verify_url": "https://provider.example/verify"
+          }
+        ],
+        "policy_url": "https://provider.example/policy/ATDRP-0.1",
+        "fee": {
+          "amount": 500,
+          "currency": "usd"
+        },
+        "window_days": 120
+      }
+    },
+    "DisputeResolutionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Dispute resolution extension object on a checkout session complete request.",
+      "properties": {
+        "selected_provider": {
+          "type": "string",
+          "description": "provider_id the agent selects for this session."
+        }
+      },
+      "required": [
+        "selected_provider"
+      ],
+      "example": {
+        "selected_provider": "prov_example_neutral"
+      }
+    },
+    "DisputeClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The claim a party makes in a dispute record.",
+      "properties": {
+        "line_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Identifier of a disputed order line item."
+          },
+          "description": "Order line items the claim concerns."
+        },
+        "ground": {
+          "type": "string",
+          "description": "Ground of the claim.",
+          "enum": [
+            "scope",
+            "performance",
+            "intent",
+            "amount"
+          ]
+        },
+        "statement": {
+          "type": "string",
+          "description": "The claimant's statement.",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "line_ids",
+        "ground",
+        "statement"
+      ],
+      "example": {
+        "line_ids": [
+          "li_1"
+        ],
+        "ground": "performance",
+        "statement": "Item was never shipped."
+      }
+    },
+    "DisputeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A dispute record opened by either party at the provider. Every evidence field is by reference to an existing AP2 or ACP schema; this extension adds no new evidence type.",
+      "properties": {
+        "dispute_id": {
+          "type": "string",
+          "description": "Identifier of the dispute."
+        },
+        "policy_version": {
+          "type": "string",
+          "description": "Policy version the dispute is opened under (e.g. 'ATDRP-0.1')."
+        },
+        "claimant": {
+          "type": "string",
+          "description": "Party opening the dispute.",
+          "enum": [
+            "payer",
+            "merchant"
+          ]
+        },
+        "checkout_hash": {
+          "type": "string",
+          "description": "AP2 checkout_mandate.checkout_hash."
+        },
+        "payment_mandate": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "AP2 payment mandate evidence: transaction_id, payee, payment_amount, iat, exp, execution_date, risk_data (risk_data optional and minimized).",
+          "properties": {
+            "transaction_id": {
+              "type": "string",
+              "description": "AP2 payment mandate transaction_id. MUST equal checkout_hash."
+            }
+          },
+          "required": [
+            "transaction_id"
+          ]
+        },
+        "checkout_receipt": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "AP2 checkout receipt evidence: status, reference, iat, order_id.",
+          "properties": {
+            "reference": {
+              "type": "string",
+              "description": "AP2 checkout receipt reference. MUST equal checkout_hash."
+            }
+          },
+          "required": [
+            "reference"
+          ]
+        },
+        "payment_receipt": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "AP2 payment receipt evidence: status, reference, iat, payment_id, psp_confirmation_id, network_confirmation_id.",
+          "properties": {
+            "reference": {
+              "type": "string",
+              "description": "AP2 payment receipt reference. MUST equal checkout_hash."
+            }
+          },
+          "required": [
+            "reference"
+          ]
+        },
+        "order": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "ACP Order evidence: id, status, line_items, fulfillments, adjustments, estimated_delivery."
+        },
+        "user_instruction": {
+          "type": "string",
+          "description": "Optional. The user's instruction, retained by the agent platform."
+        },
+        "confirmed_cart": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional. What the agent confirmed."
+        },
+        "claim": {
+          "$ref": "#/$defs/DisputeClaim",
+          "description": "The claim being made."
+        }
+      },
+      "required": [
+        "dispute_id",
+        "policy_version",
+        "claimant",
+        "checkout_hash",
+        "payment_mandate",
+        "checkout_receipt",
+        "payment_receipt",
+        "order",
+        "claim"
+      ],
+      "example": {
+        "dispute_id": "dsp_0001",
+        "policy_version": "ATDRP-0.1",
+        "claimant": "payer",
+        "checkout_hash": "h_7f3a",
+        "payment_mandate": {
+          "transaction_id": "h_7f3a",
+          "payment_amount": 4500,
+          "iat": 1790000000
+        },
+        "checkout_receipt": {
+          "status": "success",
+          "reference": "h_7f3a",
+          "order_id": "ord_1"
+        },
+        "payment_receipt": {
+          "status": "success",
+          "reference": "h_7f3a",
+          "payment_id": "pay_1"
+        },
+        "order": {
+          "id": "ord_1",
+          "status": "canceled"
+        },
+        "claim": {
+          "line_ids": [
+            "li_1"
+          ],
+          "ground": "performance",
+          "statement": "Order was canceled without a refund."
+        }
+      }
+    },
+    "DisputeDeterminationLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The determination outcome for a single order line.",
+      "properties": {
+        "line_id": {
+          "type": "string",
+          "description": "Identifier of the order line item."
+        },
+        "outcome": {
+          "type": "string",
+          "description": "Outcome for the line.",
+          "enum": [
+            "uphold",
+            "overturn"
+          ]
+        },
+        "amount": {
+          "$ref": "#/$defs/DisputeAmount",
+          "description": "Amount the outcome applies to."
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Reason for the outcome."
+          },
+          "description": "Reasons for the outcome."
+        }
+      },
+      "required": [
+        "line_id",
+        "outcome",
+        "amount",
+        "reasons"
+      ],
+      "example": {
+        "line_id": "li_1",
+        "outcome": "overturn",
+        "amount": {
+          "amount": 4500,
+          "currency": "usd"
+        },
+        "reasons": [
+          "merchant_canceled_without_adjustment"
+        ]
+      }
+    },
+    "DisputeDetermination": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Determination returned by the provider. The merchant records it as an Order adjustment of type 'dispute'.",
+      "properties": {
+        "determination_id": {
+          "type": "string",
+          "description": "Identifier of the determination."
+        },
+        "dispute_id": {
+          "type": "string",
+          "description": "Identifier of the dispute the determination resolves."
+        },
+        "policy_version": {
+          "type": "string",
+          "description": "Policy version applied (e.g. 'ATDRP-0.1')."
+        },
+        "per_line": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DisputeDeterminationLine"
+          },
+          "description": "Per-line outcomes."
+        },
+        "factors": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The five permitted considerations. No other consideration is permitted.",
+          "properties": {
+            "mandate_scope": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Consideration: mandate scope (amount, payee, expiry, reuse)."
+            },
+            "intent_fidelity": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Consideration: intent fidelity. Only when the platform retained the instruction."
+            },
+            "merchant_performance": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Consideration: merchant performance per the ACP Order."
+            },
+            "adjustments_already_made": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Consideration: adjustments already made."
+            },
+            "agent_platform_conduct": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Consideration: agent platform conduct."
+            }
+          }
+        },
+        "prohibited_screened": {
+          "type": "boolean",
+          "description": "True when the provider screened the submissions for prohibited considerations and excluded them."
+        },
+        "drafted_by": {
+          "type": "string",
+          "description": "Disclosure of AI assistance in drafting, when used."
+        },
+        "signer": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The named natural person who signed the determination.",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the signer."
+            },
+            "credential": {
+              "type": "string",
+              "description": "Credential the provider publishes for the signer."
+            }
+          },
+          "required": [
+            "name",
+            "credential"
+          ]
+        },
+        "issued_at": {
+          "type": "string",
+          "description": "RFC 3339 timestamp when the determination was issued.",
+          "format": "date-time"
+        },
+        "seal": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Tamper-evident seal enabling public verification.",
+          "properties": {
+            "record_hash": {
+              "type": "string",
+              "description": "Hash of the determination record."
+            },
+            "chain_head": {
+              "type": "string",
+              "description": "Head of the provider's seal chain at issuance."
+            },
+            "verify_url": {
+              "type": "string",
+              "description": "URL at which the determination can be verified without an account.",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "record_hash",
+            "chain_head",
+            "verify_url"
+          ]
+        },
+        "fee_disposition": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Who pays the provider fee and how much.",
+          "properties": {
+            "paid_by": {
+              "type": "string",
+              "description": "Party that pays the fee.",
+              "enum": [
+                "payer",
+                "merchant"
+              ]
+            },
+            "amount": {
+              "$ref": "#/$defs/DisputeAmount",
+              "description": "Fee amount in minor units."
+            }
+          },
+          "required": [
+            "paid_by",
+            "amount"
+          ]
+        }
+      },
+      "required": [
+        "determination_id",
+        "dispute_id",
+        "policy_version",
+        "per_line",
+        "factors",
+        "prohibited_screened",
+        "signer",
+        "issued_at",
+        "seal",
+        "fee_disposition"
+      ],
+      "example": {
+        "determination_id": "det_0001",
+        "dispute_id": "dsp_0001",
+        "policy_version": "ATDRP-0.1",
+        "per_line": [
+          {
+            "line_id": "li_1",
+            "outcome": "overturn",
+            "amount": {
+              "amount": 4500,
+              "currency": "usd"
+            },
+            "reasons": [
+              "merchant_canceled_without_adjustment"
+            ]
+          }
+        ],
+        "factors": {
+          "merchant_performance": {
+            "finding": "canceled_without_completed_adjustment"
+          }
+        },
+        "prohibited_screened": true,
+        "signer": {
+          "name": "A. Neutral",
+          "credential": "Provider-published arbitrator credential"
+        },
+        "issued_at": "2026-11-20T15:00:00Z",
+        "seal": {
+          "record_hash": "sha256:ab12",
+          "chain_head": "sha256:cd34",
+          "verify_url": "https://provider.example/verify/det_0001"
+        },
+        "fee_disposition": {
+          "paid_by": "merchant",
+          "amount": {
+            "amount": 500,
+            "currency": "usd"
+          }
+        }
+      }
+    },
     "PaymentResponse": {
       "description": "Payment configuration returned by the seller including accepted methods and handlers",
       "type": "object",
@@ -2906,6 +3449,10 @@
       "additionalProperties": false,
       "description": "A post-order change such as refund, credit, return, or dispute.",
       "properties": {
+        "dispute_determination": {
+          "$ref": "#/$defs/DisputeDetermination",
+          "description": "Dispute resolution extension: the provider determination recorded by this adjustment. Present when type is 'dispute' and the 'dispute_resolution' extension produced it."
+        },
         "id": {
           "type": "string",
           "description": "Adjustment identifier"
@@ -3230,6 +3777,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "dispute_resolution": {
+          "$ref": "#/$defs/DisputeResolution",
+          "description": "Dispute resolution extension: accepted providers, policy, fee and window. Present when the 'dispute_resolution' extension is active."
+        },
         "id": {
           "type": "string",
           "description": "Unique identifier for the checkout session"
@@ -3666,6 +4217,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "dispute_resolution": {
+          "$ref": "#/$defs/DisputeResolutionRequest",
+          "description": "Dispute resolution extension: the provider the agent selects for this session."
+        },
         "buyer": {
           "$ref": "#/$defs/Buyer",
           "description": "Final buyer information"
