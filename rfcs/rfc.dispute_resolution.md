@@ -290,6 +290,18 @@ Provider policy requirements:
    keys out of band before treating the mandate as the issuer's, and **MUST**
    record whether they did.
 
+3. A verifier result meaning "no check ran" is not tamper. `key_unresolved`
+   (the verifier's trust material did not resolve the signer) **MUST NOT** be
+   treated as `signature_invalid`: the provider resolves the keys out of band,
+   then re-verifies, and records both steps. A missing counterparty record
+   (`no_record`) maps to `not_responded`; silence **MUST NOT** be treated as
+   acceptance.
+4. Where evidence includes a work-acceptance record (a checking party's
+   findings against stated criteria), the provider gives it weight only if the
+   criteria were committed before the deliverable existed (bound to terms the
+   counterparty signed or to an earlier anchored timestamp), the checker's key
+   is not the producer's, and no required criterion is `not-evaluated`.
+
 The determination **MUST** record the verifier output fields for each pack. A
 result that implies an unauthorized mandate routes the claim to the network
 under Section 7.1.
@@ -441,6 +453,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-16**: Initial draft (SEP #303).
 - **2026-10-16**: Section 7.4a added: evidence-pack verifier verdicts mapped to admissibility (from AP2#338).
 - **2026-10-17**: Section 7.4a restated on verifier output fields; whole-file hash or pinned-key policy and self-asserted-key handling added (review in AP2#338).
+- **2026-10-17**: 7.4a: `key_unresolved` and `no_record` handling; work-acceptance record weighting (review in x402-foundation/tsc#4).
 
 ---
 
