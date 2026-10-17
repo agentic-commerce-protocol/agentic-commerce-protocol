@@ -265,18 +265,34 @@ Per line:
 When evidence arrives as a signed, self-contained pack (for example the AP2
 dispute-time evidence format discussed in google-agentic-commerce/AP2#338), the
 provider runs a fail-closed pack verifier **before** Section 7.4 and applies
-this table. The verdict names follow that thread's conformance vectors.
+this table. Conditions are stated as verifier output fields, not as
+conformance-vector names (the vector names in parentheses are examples only).
 
-| Verifier verdict | Admissibility | Effect on Section 7.4 |
+| Verifier output | Admissibility | Effect on Section 7.4 |
 |---|---|---|
-| `valid_signed` | Admissible | Apply 7.4 normally |
-| `digest_mismatch`, `anchor_invalid` | Not admissible (tamper) | The pack is excluded. The submitting party may resubmit within the 7.5 clock; the determination **MUST NOT** rely on the excluded pack |
-| `stripped_signature` | Admissible only for facts the mandate's own signature proves | Producer-level claims (who assembled the pack, retention integrity) carry no weight |
-| `unpinned_producer` | Consistency-only | It **MUST NOT** be the sole basis for an `overturn` |
-| `anchor_missing` | Admissible | A time-based ground (execution after `exp`) needs an independent timestamp (PSP or network confirmation); otherwise that ground is not met |
+| `valid: true` under the provider's policy (`valid_signed`) | Admissible | Apply 7.4 normally |
+| `digest_ok: false` (`digest_mismatch`), or `rfc3161_verified: false` / a failed `anchors` binding (`anchor_invalid`) | Not admissible (tamper) | The pack is excluded. The submitting party may resubmit within the 7.5 clock; the determination **MUST NOT** rely on the excluded pack |
+| `producer_present: false` (`stripped_signature`) | Admissible only for facts the mandate's own signature proves | Producer-level claims (who assembled the pack, retention integrity) carry no weight |
+| `producer_ok: true`, `producer_trusted: false` (`unpinned_producer`) | Consistency-only | It **MUST NOT** be the sole basis for an `overturn` |
+| `anchors_verified: 0` with `rfc3161_claimed: false` (`anchor_missing`) | Admissible | A time-based ground (execution after `exp`) needs an independent timestamp (PSP or network confirmation); otherwise that ground is not met |
 
-The determination **MUST** record each pack's verdict. A verdict that implies
-an unauthorized mandate routes the claim to the network under Section 7.1.
+Provider policy requirements:
+
+1. The evidence digest covers sealed content only, not signatures or anchors,
+   so a reference by digest cannot distinguish a signed or anchored original
+   from a stripped or re-signed copy. Providers **MUST** either record the
+   SHA-256 of the whole pack file, or verify with pinned producer keys
+   (`require_producer`) and, when a time-based ground rests on the pack's
+   anchor, `require_anchor` (or `min_anchors`).
+2. When the verifier reports `self_asserted_only: true` (mandate keys carried
+   in the pack itself), the mandate signature proves consistency, not issuer
+   identity. Providers **MUST** match those keys against the issuer's published
+   keys out of band before treating the mandate as the issuer's, and **MUST**
+   record whether they did.
+
+The determination **MUST** record the verifier output fields for each pack. A
+result that implies an unauthorized mandate routes the claim to the network
+under Section 7.1.
 
 ### 7.5 Clocks (calendar days)
 
@@ -424,6 +440,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 
 - **2026-10-16**: Initial draft (SEP #303).
 - **2026-10-16**: Section 7.4a added: evidence-pack verifier verdicts mapped to admissibility (from AP2#338).
+- **2026-10-17**: Section 7.4a restated on verifier output fields; whole-file hash or pinned-key policy and self-asserted-key handling added (review in AP2#338).
 
 ---
 
