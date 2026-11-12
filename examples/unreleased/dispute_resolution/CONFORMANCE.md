@@ -9,7 +9,7 @@ the same results.
 | Cold-read reader (Tetsurohhori) | sha256 `b519d178…` | RFC at `089d8f9` | `284db2ec…` (`7cab286`) | 33 of 33 | no (same author) | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
 | Cold-read reader, earlier version (Tetsurohhori) | sha256 `2a5f878e…` | RFC at `db04871` | `284db2ec…` (`7cab286`) | 27 of 33; differs on E1, E2, E4-E7 | no (same author) | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
 
-The cases come from a cold read of the RFC published under CC0 (aos-standard/catalog, `docs/runs/acp-dispute-cold/ddc2871/`).
+The cases come from a cold read of the RFC published under CC0; the `source` member of `conformance_cases.json` names the record.
 A row whose implementation has the same author as the cases shows that the runner and the cases agree with each other
 and that the cases separate the two versions of the text, not that the expectations are right. A run from an
 implementation written by someone else is the row that tests the expectations.
