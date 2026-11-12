@@ -53,6 +53,11 @@ for (const c of cases) {
     process.exit(2);
   }
   ids.add(c.id);
+  // a case with no expectations would agree vacuously and inflate "N of M"
+  if (c.expect === null || typeof c.expect !== 'object' || Array.isArray(c.expect) || !Object.keys(c.expect).length) {
+    console.error(`case ${c.id} has no expectations (expect must be a non-empty object)`);
+    process.exit(2);
+  }
   const run = spawnSync(command, { shell: true, input: JSON.stringify(c.input), encoding: 'utf8', timeout: 30000 });
   let output = null;
   let error = null;
