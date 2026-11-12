@@ -1,15 +1,18 @@
 # Conformance reports
 
 Implementations that have reported results against `conformance_cases.json`, from their own public reports. Each row
-states what the report states; this repository has not run these implementations.
+states what the report states. Both rows below were also rerun with the runner in this repository on 2026-11-11, with
+the same results.
 
-| Implementation | Pinned at | Written against | Case file (sha256) | Result reported | Reported on | Report |
-|---|---|---|---|---|---|---|
-| Cold-read reader (Tetsurohhori) | sha256 `b519d178…` | RFC at `089d8f9` | `284db2ec…` (`7cab286`) | 33 of 33 | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
-| Cold-read reader, earlier version (Tetsurohhori) | sha256 `2a5f878e…` | RFC at `db04871` | `284db2ec…` (`7cab286`) | 27 of 33; differs on E1, E2, E4-E7 | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
+| Implementation | Pinned at | Written against | Case file (sha256) | Result reported | Independent of the case author | Reported on | Report |
+|---|---|---|---|---|---|---|---|
+| Cold-read reader (Tetsurohhori) | sha256 `b519d178…` | RFC at `089d8f9` | `284db2ec…` (`7cab286`) | 33 of 33 | no (same author) | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
+| Cold-read reader, earlier version (Tetsurohhori) | sha256 `2a5f878e…` | RFC at `db04871` | `284db2ec…` (`7cab286`) | 27 of 33; differs on E1, E2, E4-E7 | no (same author) | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
 
-The case expectations and the readers above have the same author, so these rows show that the cases separate the two
-versions of the text, not that the expectations are right.
+The cases come from a cold read of the RFC published under CC0 (aos-standard/catalog, `docs/runs/acp-dispute-cold/ddc2871/`).
+A row whose implementation has the same author as the cases shows that the runner and the cases agree with each other
+and that the cases separate the two versions of the text, not that the expectations are right. A run from an
+implementation written by someone else is the row that tests the expectations.
 
 ## Reporting a run
 
@@ -22,7 +25,7 @@ versions of the text, not that the expectations are right.
    names the case file by its sha256.
 4. Post a report that names:
    - the implementation and the exact version: a commit, or a release with its sha256;
-   - the RFC commit it was written against;
+   - the RFC commit it was written against, and whether its author also wrote or edited the cases;
    - the runner's last line, with the not-evaluable reasons and any differing cases;
    - the date of the run.
 
