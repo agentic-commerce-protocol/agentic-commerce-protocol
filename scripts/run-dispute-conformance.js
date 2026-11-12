@@ -10,8 +10,11 @@
  *
  *   DISPUTE_PROVIDER_CMD="python3 my_provider.py" node scripts/run-dispute-conformance.js [cases.json] [--json]
  *
- * Prints one line per disagreeing case and "N of M cases agree at <cases sha256>". Exit 0 if all agree, 1 if any
- * disagree, 2 on a usage error. Node standard library only.
+ * A provider that does not implement what a case tests prints {"not_evaluable": "<reason>"}; the case is reported as
+ * not evaluable with that reason and does not count as agreeing.
+ *
+ * Prints one line per disagreeing or not-evaluable case and "N of M cases agree[, K not evaluable] at <cases sha256>".
+ * Exit 0 if all agree, 1 otherwise, 2 on a usage error. Node standard library only.
  *
  * Design follows the harness published under CC0 by Tetsurohhori (aos-standard/catalog, e5fbe9c).
  */
@@ -72,23 +75,34 @@ for (const c of cases) {
     }
   }
   const diffs = {};
-  if (!error) {
+  // a provider that does not implement what a case tests says so, with a reason, rather than guessing
+  let notEvaluable = null;
+  if (!error && Object.prototype.hasOwnProperty.call(output, 'not_evaluable')) {
+    if (typeof output.not_evaluable === 'string' && output.not_evaluable.trim()) notEvaluable = output.not_evaluable.trim();
+    else error = 'not_evaluable must be a non-empty reason';
+  }
+  if (!error && !notEvaluable) {
     for (const [key, expected] of Object.entries(c.expect)) {
       if (canonical(output[key]) !== canonical(expected)) {
         diffs[key] = { expected, got: output[key] === undefined ? null : output[key] };
       }
     }
   }
-  rows.push({ id: c.id, agree: !error && Object.keys(diffs).length === 0, error, diffs });
+  const agree = !error && !notEvaluable && Object.keys(diffs).length === 0;
+  rows.push({ id: c.id, agree, not_evaluable: notEvaluable, error, diffs });
 }
 
 const agree = rows.filter((r) => r.agree).length;
+const skipped = rows.filter((r) => r.not_evaluable).length;
 if (asJson) {
-  console.log(JSON.stringify({ cases: path.basename(casesPath), sha256: digest, n: rows.length, agree, rows }, null, 1));
+  console.log(JSON.stringify({ cases: path.basename(casesPath), sha256: digest, n: rows.length, agree,
+    not_evaluable: skipped, rows }, null, 1));
 } else {
   for (const r of rows) {
-    if (!r.agree) console.log(`DIFFER ${r.id}: ${r.error || JSON.stringify(r.diffs)}`);
+    if (r.not_evaluable) console.log(`NOT EVALUABLE ${r.id}: ${r.not_evaluable}`);
+    else if (!r.agree) console.log(`DIFFER ${r.id}: ${r.error || JSON.stringify(r.diffs)}`);
   }
-  console.log(`${agree} of ${rows.length} cases agree at ${digest.slice(0, 12)}`);
+  const ne = skipped ? `, ${skipped} not evaluable` : '';
+  console.log(`${agree} of ${rows.length} cases agree${ne} at ${digest.slice(0, 12)}`);
 }
 process.exit(agree === rows.length ? 0 : 1);

@@ -3,18 +3,28 @@
 Implementations that have reported results against `conformance_cases.json`, from their own public reports. Each row
 states what the report states; this repository has not run these implementations.
 
-To produce a report, run your implementation through the runner and post the last line, which names the case file by
-its sha256:
-
-```
-DISPUTE_PROVIDER_CMD="python3 my_provider.py" node scripts/run-dispute-conformance.js
-```
-
-| Implementation | Written against | Case file (sha256) | Result reported | Report |
-|---|---|---|---|---|
-| Cold-read reader (Tetsurohhori) | RFC at `089d8f9` | `284db2ec…` (`7cab286`) | 33 of 33 | agentic-commerce-protocol#316, comment 6809800426 |
-| Cold-read reader, earlier version (Tetsurohhori) | RFC at `db04871` | `284db2ec…` (`7cab286`) | 27 of 33; differs on E1, E2, E4-E7 | agentic-commerce-protocol#316, comment 6809800426 |
+| Implementation | Pinned at | Written against | Case file (sha256) | Result reported | Reported on | Report |
+|---|---|---|---|---|---|---|
+| Cold-read reader (Tetsurohhori) | sha256 `b519d178…` | RFC at `089d8f9` | `284db2ec…` (`7cab286`) | 33 of 33 | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
+| Cold-read reader, earlier version (Tetsurohhori) | sha256 `2a5f878e…` | RFC at `db04871` | `284db2ec…` (`7cab286`) | 27 of 33; differs on E1, E2, E4-E7 | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
 
 The case expectations and the readers above have the same author, so these rows show that the cases separate the two
-versions of the text, not that the expectations are right. A row is added when an implementer posts a report naming the
-case file and the result.
+versions of the text, not that the expectations are right.
+
+## Reporting a run
+
+1. Write a provider: a command that reads one case `input` as JSON on stdin and prints one JSON object with the keys
+   the cases' `expect` use (`eligible`, `not_eligible`, `approval_bound`, `per_line`, and `det_ok` / `det_problems`
+   when the input has a determination). Extra keys are ignored.
+2. If your implementation does not cover what a case tests, print `{"not_evaluable": "<reason>"}` for it rather
+   than a guess. The case is reported as not evaluable with your reason and does not count as agreeing.
+3. Run `DISPUTE_PROVIDER_CMD="<your command>" node scripts/run-dispute-conformance.js` and keep the last line, which
+   names the case file by its sha256.
+4. Post a report that names:
+   - the implementation and the exact version: a commit, or a release with its sha256;
+   - the RFC commit it was written against;
+   - the runner's last line, with the not-evaluable reasons and any differing cases;
+   - the date of the run.
+
+A row is added for a report that names all four. A result that differs from the cases is listed as it was reported;
+whether the case or the implementation is wrong is settled in the report's thread, not by removing the row.
