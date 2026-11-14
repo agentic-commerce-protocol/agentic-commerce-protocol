@@ -32,7 +32,7 @@
           },
           "idempotency_key": {
             "type": "string",
-            "description": "Unique key for retry safety. Maps to the Idempotency-Key header. Recommended for create and complete operations."
+            "description": "Unique key for retry safety. Maps to the Idempotency-Key header. Required for create, update, complete, and cancel operations (see mutation_meta). Not used by get_checkout_session."
           },
           "request_id": {
             "type": "string",
@@ -56,6 +56,13 @@
             "description": "Request signing timestamp (RFC 3339). Maps to the Timestamp header."
           }
         }
+      },
+      "mutation_meta": {
+        "description": "Protocol metadata for tools that change state (create, update, complete, cancel). Same as meta, with idempotency_key required, matching the REST rule that every POST carries an Idempotency-Key header.",
+        "allOf": [
+          { "$ref": "#/components/schemas/meta" }
+        ],
+        "required": ["idempotency_key"]
       }
     }
   },
@@ -68,7 +75,7 @@
         {
           "name": "meta",
           "required": true,
-          "schema": { "$ref": "#/components/schemas/meta" }
+          "schema": { "$ref": "#/components/schemas/mutation_meta" }
         },
         {
           "name": "payload",
@@ -114,7 +121,7 @@
         {
           "name": "meta",
           "required": true,
-          "schema": { "$ref": "#/components/schemas/meta" }
+          "schema": { "$ref": "#/components/schemas/mutation_meta" }
         },
         {
           "name": "id",
@@ -143,7 +150,7 @@
         {
           "name": "meta",
           "required": true,
-          "schema": { "$ref": "#/components/schemas/meta" }
+          "schema": { "$ref": "#/components/schemas/mutation_meta" }
         },
         {
           "name": "id",
@@ -172,7 +179,7 @@
         {
           "name": "meta",
           "required": true,
-          "schema": { "$ref": "#/components/schemas/meta" }
+          "schema": { "$ref": "#/components/schemas/mutation_meta" }
         },
         {
           "name": "id",
