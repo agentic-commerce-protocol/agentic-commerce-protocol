@@ -13,6 +13,7 @@
  * 7. All data models in unreleased JSON schemas have at least one example
  * 8. All fields in unreleased OpenAPI schemas have descriptions
  * 9. All schemas in unreleased OpenAPI specs have at least one example
+ * 10. MCP tools that change state require meta.idempotency_key (unreleased)
  */
 
 const fs = require('fs');
@@ -640,6 +641,103 @@ function validateExamples() {
   });
 }
 
+// 11. MCP binding: tools that change state require meta.idempotency_key
+// The REST binding requires an Idempotency-Key header on every POST. The MCP
+// binding maps that header to meta.idempotency_key, so the four tools that map
+// to a POST must require it and the tool that maps to a GET must not.
+function validateMcpIdempotencyKey() {
+  console.log('\n🔁 Validating Idempotency-Key requirement in the MCP binding...');
+
+  const MUTATING_TOOLS = [
+    'create_checkout_session',
+    'update_checkout_session',
+    'complete_checkout_session',
+    'cancel_checkout_session'
+  ];
+  const READ_TOOLS = ['get_checkout_session'];
+  const version = 'unreleased';
+  const spec = 'agentic_checkout';
+  const specPath = path.join(__dirname, '..', 'spec', version, 'openrpc', `openrpc.${spec}.json`);
+  const examplesPath = path.join(__dirname, '..', 'examples', version, `examples.mcp.${spec}.json`);
+
+  if (!fs.existsSync(specPath)) {
+    return;
+  }
+
+  try {
+    const doc = JSON.parse(fs.readFileSync(specPath, 'utf8'));
+    const ajv = new Ajv({ strict: false, allErrors: true, validateSchema: false });
+    addFormats(ajv);
+    ajv.addSchema(doc, 'openrpc.json');
+
+    const metaValidators = {};
+    const metaParamRequired = {};
+    (doc.methods || []).forEach(method => {
+      const metaParam = (method.params || []).find(p => p.name === 'meta');
+      if (!metaParam || !metaParam.schema || !metaParam.schema.$ref) {
+        return;
+      }
+      metaParamRequired[method.name] = metaParam.required === true;
+      metaValidators[method.name] = ajv.compile({ $ref: `openrpc.json${metaParam.schema.$ref}` });
+    });
+
+    const withoutKey = { api_version: '2026-01-30' };
+    const withKey = { api_version: '2026-01-30', idempotency_key: 'idem_test' };
+    let failed = false;
+
+    MUTATING_TOOLS.forEach(tool => {
+      const validate = metaValidators[tool];
+      if (!validate) {
+        error(`MCP tool ${tool} has no meta parameter schema`, { version, spec, tool });
+        failed = true;
+        return;
+      }
+      // A caller that may omit meta altogether also omits the key.
+      if (!metaParamRequired[tool]) {
+        error(`MCP tool ${tool} does not require the meta parameter, so idempotency_key can be omitted`, { version, spec, tool });
+        failed = true;
+      }
+      if (validate(withoutKey)) {
+        error(`MCP tool ${tool} accepts meta without idempotency_key, but it maps to a POST that requires Idempotency-Key`, { version, spec, tool });
+        failed = true;
+      }
+      if (!validate(withKey)) {
+        error(`MCP tool ${tool} rejects meta that carries idempotency_key`, { version, spec, tool });
+        failed = true;
+      }
+    });
+
+    READ_TOOLS.forEach(tool => {
+      const validate = metaValidators[tool];
+      if (validate && !validate(withoutKey)) {
+        error(`MCP tool ${tool} requires idempotency_key, but it maps to a GET`, { version, spec, tool });
+        failed = true;
+      }
+    });
+
+    if (fs.existsSync(examplesPath)) {
+      const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf8'));
+      Object.keys(examples).forEach(exampleName => {
+        const params = examples[exampleName] && examples[exampleName].params;
+        if (!params || !params.name || !params.arguments) {
+          return;
+        }
+        const validate = metaValidators[params.name];
+        if (validate && !validate(params.arguments.meta)) {
+          error(`MCP example ${exampleName} does not satisfy the meta schema of ${params.name}`, { version, spec, example: exampleName });
+          failed = true;
+        }
+      });
+    }
+
+    if (!failed) {
+      success(`MCP tools that change state require idempotency_key in ${version}/${spec}`);
+    }
+  } catch (err) {
+    error(`Error validating MCP idempotency for ${version}/${spec}: ${err.message}`, { version, spec });
+  }
+}
+
 // Main execution
 console.log('🔍 Starting Comprehensive Consistency Validation\n');
 console.log('='.repeat(60));
@@ -653,6 +751,7 @@ validateModelExamples();
 validateOpenApiDescriptions();
 validateOpenApiExamples();
 validateExamples();
+validateMcpIdempotencyKey();
 
 console.log('\n' + '='.repeat(60));
 console.log('\n📊 Validation Summary:\n');
