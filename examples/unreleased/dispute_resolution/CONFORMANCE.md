@@ -1,13 +1,14 @@
 # Conformance reports
 
 Implementations that have reported results against `conformance_cases.json`, from their own public reports. Each row
-states what the report states. Both rows below were also rerun with the runner in this repository on 2026-11-11, with
-the same results.
+states what the report states. Every row below was also rerun with the runner in this repository (the first two on
+2026-11-11, the third on 2026-11-15), with the same results.
 
 | Implementation | Pinned at | Written against | Case file (sha256) | Result reported | Independent of the case author | Reported on | Report |
 |---|---|---|---|---|---|---|---|
 | Cold-read reader (Tetsurohhori) | sha256 `b519d178…` | RFC at `089d8f9` | `284db2ec…` (`7cab286`) | 33 of 33 | no (same author) | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
 | Cold-read reader, earlier version (Tetsurohhori) | sha256 `2a5f878e…` | RFC at `db04871` | `284db2ec…` (`7cab286`) | 27 of 33; differs on E1, E2, E4-E7 | no (same author) | 2026-11-11 | agentic-commerce-protocol#316, comment 6809800426 |
+| Blind reader (Flyingmiata-droid) | `reader.py` sha256 `e3077a42…` (`1e9770b`) | RFC at `94a71e9` | `284db2ec…` (`7cab286`) | 33 of 33 | yes (given inputs only) | 2026-11-15 | agentic-commerce-protocol#316, comment 6897853781 |
 
 The cases come from a cold read of the RFC published under CC0; the `source` member of `conformance_cases.json` names the record.
 A row whose implementation has the same author as the cases shows that the runner and the cases agree with each other
