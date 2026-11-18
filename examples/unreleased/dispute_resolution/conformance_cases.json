@@ -1,0 +1,3082 @@
+{
+ "description": "Conformance cases for the dispute_resolution extension. Each case gives a DisputeRecord (input.record) and, for the determination checks, a DisputeDetermination (input.determination). expect states what a provider following the RFC decides. See README.md in this directory for the fields.",
+ "rfc": "rfcs/rfc.dispute_resolution.md at 94a71e94616e8428291cb004207a48a11e47fd95",
+ "readings_stated": {
+  "approval binding (D8, D8b, D8c, D8d)": "Section 4.4a: recompute approval_digest from items and approved_at, and check it equals the digest the merchant received",
+  "intent conflict (D8)": "Section 7.4 rule 4: a finding against the agent platform; the charge stands",
+  "allocation and unfulfilled share (D4d, E7)": "Section 7.4 rules 1 and 3",
+  "adjustment types for rule 3 (E1, E2, E7)": "Section 7.4 rule 3: a completed adjustment of a type counted in rule 1"
+ },
+ "source": {
+  "repository": "https://github.com/aos-standard/catalog",
+  "record": "docs/runs/acp-dispute-cold/ddc2871/",
+  "license": "CC0-1.0"
+ },
+ "cases": [
+  {
+   "id": "D0",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "5_default",
+      "finding": null
+     }
+    ]
+   },
+   "note": "control: delivered, no adjustment"
+  },
+  {
+   "id": "D1a",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_other",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "authorization_chain_broken"
+   },
+   "note": "§4.4 mandate transaction_id != checkout_hash"
+  },
+  {
+   "id": "D1b",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_other",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "authorization_chain_broken"
+   },
+   "note": "§4.4 checkout receipt reference differs"
+  },
+  {
+   "id": "D1c",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_other",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "authorization_chain_broken"
+   },
+   "note": "§4.4 payment receipt reference differs"
+  },
+  {
+   "id": "D1d",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "H_7F3A",
+     "payment_mandate": {
+      "transaction_id": "H_7F3A",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "H_7F3A",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "authorization_chain_broken"
+   },
+   "note": "§4.4 equality is exact string equality"
+  },
+  {
+   "id": "D2",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "failed",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "receipt_status"
+   },
+   "note": "§7.5 a receipt is eligible only when status is success"
+  },
+  {
+   "id": "D3a",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "opened_at": "2027-03-01T12:00:00Z"
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "5_default",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.5 opened day 120 after payment_receipt.iat"
+  },
+  {
+   "id": "D3b",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "opened_at": "2027-03-02T00:00:00Z"
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "outside_window"
+   },
+   "note": "§7.5 opened day 121"
+  },
+  {
+   "id": "D4",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(3) canceled without completed adjustment"
+  },
+  {
+   "id": "D4b",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "refund",
+        "status": "completed",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 330,
+        "currency": "usd",
+        "line_items": [
+         {
+          "id": "line_item_123",
+          "quantity": 1
+         }
+        ]
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "1_moot",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1) completed line refund >= amount: moot"
+  },
+  {
+   "id": "D4c",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "refund",
+        "status": "pending",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 330,
+        "currency": "usd",
+        "line_items": [
+         {
+          "id": "line_item_123",
+          "quantity": 1
+         }
+        ]
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1)/(3) a pending refund is not completed"
+  },
+  {
+   "id": "D4d",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "a",
+        "title": "A",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 0
+        },
+        "subtotal": 200
+       },
+       {
+        "id": "b",
+        "title": "B",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 0
+        },
+        "subtotal": 100
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "refund",
+        "status": "completed",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 200,
+        "currency": "usd"
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "a"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "a",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "5_default",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1) order-level 200 allocated pro rata over the lines with a known amount: 133 to line a (< 200, not moot); rule 3 needs no completed adjustment, so it does not fire (still a reading)"
+  },
+  {
+   "id": "D5",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-02"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "2_after_exp",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(2) before (3): executed the UTC day after exp"
+  },
+  {
+   "id": "D5b",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(2) the same day is not after"
+  },
+  {
+   "id": "D6",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ],
+      "totals": [
+       {
+        "type": "total",
+        "display_text": "Total",
+        "amount": 400
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 70,
+      "rule": "2_over_mandate",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(2) the charge is the order total, compared with payment_amount"
+  },
+  {
+   "id": "D7",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 2,
+         "current": 2,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ],
+      "estimated_delivery": {
+       "earliest": "2026-11-03T00:00:00Z",
+       "latest": "2026-11-05T00:00:00Z"
+      }
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "as_of": "2026-11-20T00:00:00Z"
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 165,
+      "rule": "3_unfulfilled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(3) unfulfilled = current minus fulfilled after estimated_delivery.latest"
+  },
+  {
+   "id": "D8",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330,
+        "item": {
+         "id": "TEE-01",
+         "variant": "black"
+        }
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "intent",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     },
+     "user_approval": {
+      "items": [
+       {
+        "sku": "TEE-01",
+        "variant": "green",
+        "quantity": 1
+       }
+      ],
+      "approved_at": "2026-11-01T09:58:00Z",
+      "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+     }
+    },
+    "complete_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+   },
+   "expect": {
+    "eligible": true,
+    "approval_bound": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "4_intent",
+      "finding": "agent_platform"
+     }
+    ]
+   },
+   "note": "§4.4a bound approval, variant black not approved: finding against platform, charge stands"
+  },
+  {
+   "id": "D8b",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330,
+        "item": {
+         "id": "TEE-01",
+         "variant": "black"
+        }
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "intent",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     },
+     "user_approval": {
+      "items": [
+       {
+        "sku": "TEE-01",
+        "variant": "green",
+        "quantity": 1
+       }
+      ],
+      "approved_at": "2026-11-01T09:58:00Z",
+      "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+     }
+    },
+    "complete_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+   },
+   "expect": {
+    "eligible": true,
+    "approval_bound": false,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "5_default",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§4.4a merchant-received digest differs: not bound, no finding"
+  },
+  {
+   "id": "D8c",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330,
+        "item": {
+         "id": "TEE-01",
+         "variant": "green"
+        }
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "intent",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     },
+     "user_approval": {
+      "items": [
+       {
+        "sku": "TEE-01",
+        "variant": "green",
+        "quantity": 1
+       }
+      ],
+      "approved_at": "2026-11-01T09:58:00Z",
+      "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+     }
+    },
+    "complete_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+   },
+   "expect": {
+    "eligible": true,
+    "approval_bound": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "5_default",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§4.4a bound approval matches the ordered item"
+  },
+  {
+   "id": "D8d",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330,
+        "item": {
+         "id": "TEE-01",
+         "variant": "black"
+        }
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "intent",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     },
+     "user_approval": {
+      "items": [
+       {
+        "sku": "TEE-01",
+        "variant": "green",
+        "quantity": 1
+       }
+      ],
+      "approved_at": "2026-11-01T09:59:00Z",
+      "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+     }
+    },
+    "complete_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+   },
+   "expect": {
+    "eligible": true,
+    "approval_bound": false,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "5_default",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§4.4a approved_at altered: recomputed digest differs"
+  },
+  {
+   "id": "T0",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "intent_fidelity": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      },
+      "agent_platform_conduct": {
+       "finding": "n/a"
+      }
+     },
+     "prohibited_screened": true,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+     },
+     "opened_at": "2026-11-12T09:00:00Z",
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ],
+    "det_ok": true,
+    "det_problems": []
+   },
+   "note": "determination matches the recomputed decision"
+  },
+  {
+   "id": "T1",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "intent_fidelity": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      },
+      "agent_platform_conduct": {
+       "finding": "n/a"
+      }
+     },
+     "prohibited_screened": false,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+     },
+     "opened_at": "2026-11-12T09:00:00Z",
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "det_ok": false,
+    "det_problems": [
+     "prohibited_not_screened"
+    ]
+   },
+   "note": "§7.3 prohibited_screened false"
+  },
+  {
+   "id": "T2",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "intent_fidelity": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      },
+      "agent_platform_conduct": {
+       "finding": "n/a"
+      }
+     },
+     "prohibited_screened": true,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+     },
+     "opened_at": "2026-11-12T09:00:00Z",
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "det_ok": false,
+    "det_problems": [
+     "outcome_differs:line_item_123",
+     "fee_paid_by_differs"
+    ]
+   },
+   "note": "determination overturns a line the rule upholds; merchant pays although the merchant prevailed"
+  },
+  {
+   "id": "T3",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "intent_fidelity": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      },
+      "agent_platform_conduct": {
+       "finding": "n/a"
+      },
+      "party_reputation": {}
+     },
+     "prohibited_screened": true,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+     },
+     "opened_at": "2026-11-12T09:00:00Z",
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "det_ok": false,
+    "det_problems": [
+     "factor_not_permitted:party_reputation"
+    ]
+   },
+   "note": "§7.2/§7.3 a sixth factor"
+  },
+  {
+   "id": "T4",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "intent_fidelity": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      },
+      "agent_platform_conduct": {
+       "finding": "n/a"
+      }
+     },
+     "prohibited_screened": true,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": ""
+     },
+     "opened_at": "2026-11-12T09:00:00Z",
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "det_ok": false,
+    "det_problems": [
+     "signer_incomplete"
+    ]
+   },
+   "note": "§7.7 signer without credential"
+  },
+  {
+   "id": "E1",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "return",
+        "status": "completed",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 330,
+        "currency": "usd",
+        "line_items": [
+         {
+          "id": "line_item_123",
+          "quantity": 1
+         }
+        ]
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1) a completed return of 330 naming the line does not count; canceled without a counted adjustment: overturn"
+  },
+  {
+   "id": "E2",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "cancellation",
+        "status": "completed",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 330,
+        "currency": "usd"
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1) a completed order-level cancellation does not count"
+  },
+  {
+   "id": "E3",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "price_adjustment",
+        "status": "completed",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 330,
+        "currency": "usd",
+        "line_items": [
+         {
+          "id": "line_item_123",
+          "quantity": 1
+         }
+        ]
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "uphold",
+      "amount": 0,
+      "rule": "1_moot",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1) a completed price_adjustment counts: moot"
+  },
+  {
+   "id": "E4",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        }
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": false,
+    "not_eligible": "line_amount_missing"
+   },
+   "note": "§7.5 a disputed line with neither subtotal nor unit_price: ineligible"
+  },
+  {
+   "id": "E5",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      }
+     },
+     "prohibited_screened": true,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+     },
+     "opened_at": "2026-11-12T09:00:00Z",
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "det_ok": false,
+    "det_problems": [
+     "factors_absent:intent_fidelity,agent_platform_conduct"
+    ]
+   },
+   "note": "§4.5 factors with 3 of 5: a problem"
+  },
+  {
+   "id": "E6",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "title": "Tee",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 1
+        },
+        "subtotal": 330
+       }
+      ],
+      "adjustments": [],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "line_item_123"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    },
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "per_line": [
+      {
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "factors": {
+      "mandate_scope": {
+       "finding": "n/a"
+      },
+      "intent_fidelity": {
+       "finding": "n/a"
+      },
+      "merchant_performance": {
+       "finding": "n/a"
+      },
+      "adjustments_already_made": {
+       "finding": "n/a"
+      },
+      "agent_platform_conduct": {
+       "finding": "n/a"
+      }
+     },
+     "prohibited_screened": true,
+     "drafted_by": "ai_assisted_human_reviewed",
+     "signer": {
+      "name": "A. Neutral",
+      "credential": "Provider-published arbitrator credential"
+     },
+     "issued_at": "2026-11-20T15:00:00Z",
+     "seal": {
+      "record_hash": "sha256:ab12",
+      "chain_head": "sha256:cd34",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "fee_disposition": {
+      "paid_by": "merchant",
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      }
+     }
+    }
+   },
+   "expect": {
+    "det_ok": false,
+    "det_problems": [
+     "missing:opened_at"
+    ]
+   },
+   "note": "§4.5 opened_at is required on the determination"
+  },
+  {
+   "id": "E7",
+   "input": {
+    "record": {
+     "dispute_id": "dsp_0001",
+     "policy_version": "ATDRP-0.1",
+     "claimant": "payer",
+     "checkout_hash": "h_7f3a",
+     "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1793491200,
+      "exp": 1793577599,
+      "execution_date": "2026-11-01"
+     },
+     "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491300,
+      "order_id": "ord_abc123"
+     },
+     "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1793491400,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+     },
+     "order": {
+      "id": "ord_abc123",
+      "status": "canceled",
+      "line_items": [
+       {
+        "id": "a",
+        "title": "A",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 0
+        },
+        "subtotal": 200
+       },
+       {
+        "id": "b",
+        "title": "B",
+        "quantity": {
+         "ordered": 1,
+         "current": 1,
+         "fulfilled": 0
+        },
+        "subtotal": 100
+       }
+      ],
+      "adjustments": [
+       {
+        "id": "adj1",
+        "type": "exchange",
+        "status": "completed",
+        "occurred_at": "2026-11-02T00:00:00Z",
+        "amount": 300,
+        "currency": "usd"
+       }
+      ],
+      "fulfillments": [
+       {
+        "id": "f1",
+        "type": "shipping",
+        "status": "delivered"
+       }
+      ]
+     },
+     "claim": {
+      "line_ids": [
+       "a"
+      ],
+      "ground": "performance",
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     }
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "per_line": [
+     {
+      "line_id": "a",
+      "outcome": "overturn",
+      "amount": 200,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ]
+   },
+   "note": "§7.4(1)/(3) a completed order-level exchange counts for nothing, so the line is canceled without a counted adjustment: overturn 200"
+  },
+  {
+   "id": "U3",
+   "input": {
+    "determination": {
+     "determination_id": "det_0001",
+     "dispute_id": "dsp_0001",
+     "drafted_by": "ai_assisted_human_reviewed",
+     "factors": {
+      "adjustments_already_made": {
+       "finding": "none"
+      },
+      "agent_platform_conduct": {
+       "finding": "none"
+      },
+      "intent_fidelity": {
+       "finding": "instruction_not_retained"
+      },
+      "mandate_scope": {
+       "finding": "within_mandate"
+      },
+      "merchant_performance": {
+       "finding": "canceled_without_completed_adjustment"
+      }
+     },
+     "fee_disposition": {
+      "amount": {
+       "amount": 500,
+       "currency": "usd"
+      },
+      "paid_by": "merchant"
+     },
+     "issued_at": "2026-11-20T15:00:00Z",
+     "opened_at": "2026-11-12T09:00:00Z",
+     "per_line": [
+      {
+       "amount": {
+        "amount": 330,
+        "currency": "usd"
+       },
+       "line_id": "line_item_123",
+       "outcome": "overturn",
+       "reasons": [
+        "merchant_canceled_without_completed_adjustment"
+       ]
+      }
+     ],
+     "policy_version": "ATDRP-0.1",
+     "prohibited_screened": true,
+     "seal": {
+      "chain_head": "sha256:cd34",
+      "record_hash": "sha256:ab12",
+      "verify_url": "https://provider.example/verify/det_0001"
+     },
+     "signer": {
+      "credential": "Provider-published arbitrator credential",
+      "name": "A. Neutral"
+     }
+    },
+    "opened_at": "2026-11-12T09:00:00Z",
+    "record": {
+     "checkout_hash": "h_7f3a",
+     "checkout_receipt": {
+      "iat": 1790000100,
+      "order_id": "ord_abc123",
+      "reference": "h_7f3a",
+      "status": "success"
+     },
+     "claim": {
+      "ground": "performance",
+      "line_ids": [
+       "line_item_123"
+      ],
+      "statement": "The order was canceled by the merchant and no refund was issued."
+     },
+     "claimant": "payer",
+     "dispute_id": "dsp_0001",
+     "order": {
+      "adjustments": [],
+      "id": "ord_abc123",
+      "line_items": [
+       {
+        "id": "line_item_123",
+        "subtotal": 330
+       }
+      ],
+      "status": "canceled"
+     },
+     "payment_mandate": {
+      "execution_date": "2026-11-01",
+      "exp": 1794096000,
+      "iat": 1790000000,
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "transaction_id": "h_7f3a"
+     },
+     "payment_receipt": {
+      "iat": 1790000200,
+      "network_confirmation_id": "net_123",
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "reference": "h_7f3a",
+      "status": "success"
+     },
+     "policy_version": "ATDRP-0.1"
+    }
+   },
+   "expect": {
+    "eligible": true,
+    "not_eligible": null,
+    "per_line": [
+     {
+      "line_id": "line_item_123",
+      "outcome": "overturn",
+      "amount": 330,
+      "rule": "3_canceled",
+      "finding": null
+     }
+    ],
+    "det_ok": true,
+    "det_problems": []
+   },
+   "note": "the ddc2871 example pair as published: line_item_123 now carries subtotal 330 (§7.5 eligible, no line_amount_missing); merchant canceled with no completed refund/credit/price_adjustment, which §7.4 rule 3 now states ('of a type counted in rule 1'): overturn 330, as dispute_determination says; opened_at 2026-11-12 in window; five factors present"
+  }
+ ]
+}
